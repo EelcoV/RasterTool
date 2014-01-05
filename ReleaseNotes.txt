@@ -1,0 +1,28 @@
+Proto 4
+=======
+* There are now two types of node classes: plan classes and singular classes. Plain classes are as before: similar nodes that share a single vulnerability assessment. Singular classes indicate that there is one physical component that occurs in more than one service. A plain class can only be converted into a singular class if there is at most one node of that class per service. Singular classes can always be converted back into plain classes.
+* All nodes in a diagram can be moved using the Shift key. Move any node while holding Shift, and all nodes in the diagram will move.
+* It is now possible to select nodes. Simply hold the mouse button down and drag a selection rectangle. All nodes in the selection can be moved by dragging the selection. All nodes in the selection can be deleted by clicking the right mouse button.
+* The project switcher has gone. The current project is now listed in the top right corner. Switching must be done using the Library panel.
+* The library panel is rearranged. The currently active project is indicated, and the rename function has been taken out.
+* The node menu can be invoked using the right mouse button. This is more intuitive for most people.
+* The workspace for diagrams can now be scrolled using normal scrollbars.
+* The analysis tab now features horizontal tabs, and new reports have been added.
+* Added a splash screen that hides the UI until it is ready for interaction.
+* When printing, the diagram view is returned to the top-left and all sigle and common cause failures are expanded. This does not work in all browser (not in Chrome/webkit currently).
+* Vulnerabilities can be left unassessed without affecting the overall vulnerability level. Previously, if any vulnerability was assessed as '-', the overall vulnerability level would be '-'. 
+* Modified the instructions on removing vulnerabilities, to better avoid unwarranted removal of "black swan" vulnerabilities.
+* Saving a project now gives a properly named file to be saved. As a result, files cannot be saved offline (the server is required).
+* Aging on equipment is replaced by the more general 'Malfunction'.
+* Projects can now be shared, and stored on the server. Major rework has been done.
+
+
+Beta 3
+======
+Beta 3 improves the Analysis tab with Quick Wins.
+A notable visible change is that Common Cause Failures are once more called Common Cause Failures.
+The themes Sunny and Overcast did not fit visually with the interface, and are now removed.
+Several bugs were fixed.
+
+$Id: ReleaseNotes.txt,v 1.1.2.3.2.2.2.4 2012/09/11 08:47:37 vriezekolke Exp $
+

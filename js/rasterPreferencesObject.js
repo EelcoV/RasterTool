@@ -1,0 +1,155 @@
+/*
+ * $Id: rasterPreferencesObject.js,v 1.1.1.1.6.1.2.4 2013/07/18 19:52:23 vriezekolke Exp $
+ *
+ */
+var PreferencesObject = function() {
+	this.settheme = function(theme) {
+		this.theme = theme;
+		var cssLink = $('<link href="../css/'+theme+'/jquery-ui-1.8.21.custom.css" type="text/css" rel="stylesheet" class="ui-theme">');
+		$("head").append(cssLink);
+		$("link.ui-theme:first").remove();
+		$('ul.rot-neg-90 li').css('float','right');
+		this.store();
+	};
+	
+	this.setgrid = function(gridonoff) {
+		this.grid = (gridonoff===true);
+		this.store();
+	};
+	
+	this.setlabel = function(labelonoff) {
+		this.label = (labelonoff===true);
+		if (this.label) {
+			$(".nodeheader").removeClass("Chide");
+			$(".contentimg").each(function(index,element){
+				var rn = Node.get(nid2id(this.parentElement.id));
+				var src=$(this).attr("src");
+				src = src.replace(/\/img\/.+\//, '/img/'+rn.color+'/');
+				$(this).attr("src", src);
+			});
+		} else {
+			$(".nodeheader").addClass("Chide");
+			$(".contentimg").each(function(index,element){
+				var src=$(this).attr("src");
+				src = src.replace(/\/img\/.+\//, '/img/none/');
+				$(this).attr("src", src);
+			});
+		}
+		if (this.tab==2) {
+			$('#ccfs_body').empty();
+			AddAllClusters();
+		}
+		this.store();
+	};
+	
+	this.setemblem = function(emsize) {
+		this.emsize = emsize;
+		/* Find a CSS-rule with the exact name "div.nodeMagnitude", then
+		 * modify that rule on the fly.
+		 */
+		var css=document.getElementById("maincssfile").sheet;
+		var rule=null;
+		for (var i=0; i<css.cssRules.length; i++) {
+			if (css.cssRules[i].selectorText=="div.nodeMagnitude") {
+				rule = css.cssRules[i];
+				break;
+			}
+		}
+		if (!rule) {
+			bugreport('cannot locate css rule for emblem size','PreferencesObject.setemblem');
+			return;
+		}
+		if (this.emsize=="em_small") {
+			rule.style.visibility="visible";
+			rule.style.width="8px";
+			rule.style.height="8px";
+			rule.style.color="transparent";
+		} else if (this.emsize=="em_large") {
+			rule.style.visibility="visible";
+			rule.style.width="20px";
+			rule.style.height="15px";
+			rule.style.color="black";
+		} else if (this.emsize=="em_none") {
+			rule.style.visibility="hidden";
+		}
+		this.store();
+	};
+	
+	this.setcurrentproject = function(projectname) {
+		this.currentproject = String(projectname);
+		this.store();
+	};
+
+	this.settab = function(tab) {
+		this.tab = tab;
+		this.store();
+	};
+
+	this.setcreator = function(cr) {
+		this.creator = trimwhitespace(String(cr)).substr(0,100);
+		if (this.creator=="")
+			this.creator="Anonymous";
+		this.store();
+	};
+	
+	this.setonline = function(o) {
+		var newstatus = (o===true);
+		if (this.online==newstatus)
+			return;
+		this.online = newstatus;
+		if (!this.online) {
+			$("#networkactivity").removeClass("activityyes activityno").addClass("activityoff");
+			// Remove all current stub projects
+			var it = new ProjectIterator({stubsonly: true});
+			for (it.first(); it.notlast(); it.next()) {
+				it.getproject().destroy();
+			}
+			refreshProjectList();
+		}
+		this.store();
+		startAutoSave();
+	};
+	
+	this.store = function() {
+		var data = {};
+		data.theme=this.theme;
+		data.grid=this.grid;
+		data.label=this.label;
+		data.emsize =this.emsize;
+		data.currentproject=this.currentproject;
+		data.tab=this.tab;
+		data.creator=this.creator;
+		data.online=this.online;
+		localStorage[LS+'R:0'] = JSON.stringify(data);
+	};
+
+	/* Initialisation: set defaults, and allow localStorage to override these.
+	 * Don't try to set the current project yet, because it may not have been
+	 * loaded.
+	 */
+	this.currentproject = "";
+	this.theme = "smoothness";
+	this.grid = true;
+	this.label=true;
+	this.emsize = "small";
+	this.tab = 0;
+	this.creator = "Anonymous";
+	this.online = true;
+	try {
+		if (localStorage[LS+'R:0']!=null) {
+			var pr = jQuery.parseJSON(localStorage[LS+'R:0']);
+			if (pr.theme!=null) this.settheme(pr.theme);
+			if (pr.grid!=null) this.setgrid(pr.grid);
+			if (pr.label!=null) this.setlabel(pr.grid);
+			if (pr.emsize!=null) this.setemblem(pr.emsize);
+			if (pr.currentproject!=null) this.setcurrentproject(pr.currentproject);
+			if (pr.tab!=null) this.settab(pr.tab);
+			if (pr.creator!=null) this.setcreator(pr.creator);
+			if (pr.online!=null) this.setonline(pr.online);
+		}
+	} catch(e) {
+		// silently ignore
+	}
+	this.store();
+};
+

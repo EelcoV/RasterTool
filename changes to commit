@@ -1,0 +1,11 @@
+Upgrade jsPlumb to 1.4.1.
+Do not show label circles when printing single failures.
+Connection handles (half circles at the top) are now enlarged on hovering.
+Renamed "jsPlumbConnection" to "connection".
+Add shadows to ui-dialogs.
+Removed div projstatus (long unused).
+Cleaned up paint styles for jsPlumb.
+Changes to dragging to create connections: from dragpoint to anywhere on the target (not just the target's dragpoint at the top-center).
+When overall vulnerability levels are hidden, do show them when hovering over the node, and hide them again when the mouse pointer leaves the node.
+Small corrections to default threats.
+Fix: only first edit of labels succeeded, subsequent edits were ignored. Missing $(this).remove(), and therefore duplicate HTML elements.

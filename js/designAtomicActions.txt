@@ -1,0 +1,68 @@
+In general, when object A has some B's, then the action will be in A to add a B, not on B to attach it to A. This applies to 
+-Components having Nodes,
+-NodeClusters having Components,
+-Projects having Services, 
+-Services having nodes.
+-Projects having checklistitems.
+The reverse, removing a B from an A, is the responsibility of B. Typically, when a B is destroyed, it will remove itself from its A.
+
+Actions
+~~~~~~~
+The following are atomic user-interface actions.
+
+Node(s):
+x- create(type,id,service)	[workspacedrophandler:]
+x- connect					[Node.try_attach_center:]
+x- duplicate				[initTabDiagrams: $('#mi_du').mouseup]
+x- destroy(effect)			[initTabDiagrams: $('#mi_de').mouseup]
+x- destroy selection		[initTabDiagrams: $('#mi_sd').mouseup]
+x- changeType(type)			[initTabDiagrams: $('#mi_cttWLS').mouseup and 4 others]
+x- rename(title)				[Node.paint: $('#titlemain'+this.id).editInPlace callback]
+x- move single node			[Node.paint: $(this.jnid).draggable stop handler]
+x- resize single node		[Node.pain:t $("#node"+this.id).resizable stop handler]
+x- move selection			[Service.paintall: $('#selectrect').draggable stop handler]
+x- move all nodes			[Node.paint: $(this.jnid).draggable]
+
+Component:
+x- class to single/mult.	[initTabDiagrams: $('#mi_sm').mouseup]
+x- rename vuln				[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"name"+this.id).editInPlace callback]
+x- setFrequency(vuln,freq)	[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"freq"+this.id).editInPlace callback]
+x- setImpact(vuln,impact)	[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"impact"+this.id).editInPlace callback]
+x- setRemark(vuln,remark)	[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"remark"+this.id).editInPlace callback]
+x- paste					[displayThreatsDialog: $('#dthpastedia'+cid).click handler]
+x- paste					[paintSingleFailures: function pastehandler]
+x- removeVuln(vuln)			[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"del"+this.id).click]
+x- addVuln					[displayThreatsDialog: $('#dthadddia'+cid).click handler]
+x- addVuln					[paintSingleFailures: function addhandler]
+
+NodeCluster:
+- move node or cluster		[nodeClusterReorder: ("Create cluster", "Move node from cluster", "Remove cluster", "Move cluster")]
+- rename cluster			[reallyRepaintTDom: $('.litext').editInPlace callback]
+- set frequency				[as for Component]
+- set impact				[as for Component]
+- set remark				[as for Component]
+Any change could cause clusters to be deleted and nodes to be moved, because of normalisation.
+
+Project:
+x- create(id)				[initLibraryPanel: $('#libadd').click]
+x- create(id)				[initLibraryPanel: $('#libimport').click]
+x- rename					[initLibraryPanel: $('#libprops').click "Change properties" button callback]
+- destroy()					[initLibraryPanel: $('#libdel').click]
+x- share/make private		[initLibraryPanel: $('#libprops').click "Change properties" button callback]
+x- edit labels				[showLabelEditForm]
+
+ChecklistItems (Threat)
+x- add						[initTabDiagrams: function addhandler]
+x- remove					[Threat.addtablerow: $('#thdel'+this.id).click callback]
+x- rename					[Threat.addtablerow: $('#thname'+this.id).editInPlace callback]
+x- change description 		[Threat.addtablerow: $('#thdesc'+this.id).editInPlace callback]
+x- paste					[initTabDiagrams: function pastehandler]
+
+Service:
+x- addService(service)		[initTabDiagrams: $('#servaddbutton').click]
+x- addService(service)		[initTabSingleFs: $('#servaddbuttonf').click]
+x- destroy()				[bottomTabsCloseHandler:]
+x- rename(title)			[diagramTabEditStart: "Change name" button callback]
+
+Other:
+Zap Library is not a UI action that changes a project.

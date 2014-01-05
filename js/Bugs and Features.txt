@@ -1,0 +1,133 @@
+$Id: Bugs\040and\040Features.txt,v 1.1.1.1.4.6.2.9.2.13 2013/07/18 19:52:23 vriezekolke Exp $
+
+BUGS
+When switching projects, the “Sort by” on the Failures and Vulnerabilities tab always displays sorting by Vulnerability, whereas in fact the old sort order is retained. The sort order should probably be a Preferences as well.
+When a project is changes from Private to Shared and then a different project is selected without changing the shared project, no version is uploaded. When re-activating the shared project an error message indicates that the project was deleted from the server. It was never uploaded.
+When Preferences|Show Colours on startup, colors are not shown (have to set that preference again to display colors).
+OnBeforePrint (opening the accordions for single failures and CCFs) do not work anymore. The accordions expand, but the unexpanded version is printed.
+After deleting a node (or a selection), cannot drop new nodes on the diagram. The 'ghost' remains visible, and the new node is positioned top left. No interaction possible.
+Third party cookies must be enabled for localStorage to function. This is a concern, perhaps, when never versions of Firefox disable third party cookies by default.
+Change details of a project on the server but not active: function not implemented.
+Scrollers moves out of view to the left when it is moved from its default position to a position further towards the left of the screen, and the window is resized/made smaller.
+Cannot repeat: When wathcing the prpoject for remote updates, on update the previous project is not deleted?! Project._all is growing.
+Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
+Editing the CCF clusters for a large list of nodes is troublesome. Idea: make clusters collapsable.
+ExportAll 20120718.raster.txt: Error You found a bug in this program. ("No such node in cluster" in function "NodeCluster.removecomponent_threat") on deleting vuln after pasting checklist into it ("UMTS toestel").
+Ignore drag-start when too close to a connector.
+When there are many services, the bottom tabs should scroll.
+Sometimes problem with editing node titles: click+paste, click+paste, click+paste, then sometimes a title becomes inoperative. Only a page reload will reactive the edit-in-place for that title.
+On hold: Must get rid of Project.cid and Service.cid; they cause too many bugs.
+Cannot rename clusters in the table below each node cluster arrangement.
+In a threat report window, edit a field, then cancel with Escape: the window will close.
+Threat (evaluation) table rows cannot be reordered.
+
+CANNOT REPRODUCE
+Dragging a connector sometimes leaves painting artefacts. Is this an issue of FFox 17?
+The initial Service canvas is drawn incorrectly: connectors are offset. Dunno, appears sometimes??
+In Failures and Vulnerabilities clusters show as reduced when there is only a single score, without exclusions. Cannot reproduce?
+Cannot reproduce: Cloud-node as a node class: only one of the clouds appeared in a CCF. Would have expected both to be listed. That threat does not even exist on that cloud (but used to, it was deleted).
+Cannot reproduce: allowDrop called when dragging the scroller?! Reproduce: reload, open a node cluster, go to Diagrams tab, move the scroller: bang!
+You found a bug in this program. ("NodeCluster already contains that child node" in function "NodeCluster.addchildnode"). When renaming a vuln. Cannot reproduce now. Artefact of debugging?
+
+TODO
+Exclude entire vulnerabilities in Failures and Vulnerabilities tab.
+Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
+Opmerkingen toevoegen aan diagram nodes??
+Add “Comment” component, containing just text.
+Add a popup with meaning of the freq/impact classes to SF and CCF pages.
+Add a longlist function to the analysis tab: select cut-offs for single vulns, CCFs, and quick wins --> list of threats to include.
+Add Copy option to the popup menu of a selection (difficult?).
+Must replace link to the manual.
+Clean up the code so that UI stuff is more clearly separated from the objects themselves. Also rearrange code between rasterMain.js and the objects. For example, rasterService contains newDiagramTab(). This is confusing.
+Add ability to edit/choose the suffix for nodes in a node class, so that a more descriptive name can be chosen if designed. E.g. "POP (Zwolle)", "POP (Arnhem)".
+When adding a threat to a Unknown node, the type of the new threat is always tEQT. It should be possible to change the type to tWRD or tWLS.
+Have separate Paste functions for merging and overwriting?
+Change from accordion widget to the Collapser plugin?
+Filter on Single Failures, including on overall threat score.
+Sort vulns for a component on name/freq/impact/total/remark
+Better handling of redundancy in telecom services.
+Undo
+Set description on added threats.
+Position Node report dialogs close to their node?
+Consistency report for the entire diagram, plus UI.
+Allow comments to be set on a project. Include versioning info?
+Allow for icons to be added to nodes (from a fixed library?)
+Add functionality for graph expansion? Expand a cloud into subcomponents?
+
+
+PROPOSAL FOR SHARED PROJECTS
+By default, projects are stored locally only (private).
+When a project is marked 'shared', it will also be stored remotely.
+Remotely stored projects that are not also stored locally are called 'remote'.
+The Library panel will show local (private and public) as well as remote projects.
+Private projects will be grouped separately from shared projects (both local and remote).
+If a shared project is active, it will be saved to the server periodically (after a fixed time, after each transaction, or both).
+If, when saving, the project was saved by another browser, a warning will be presented and the project will be made private.
+This way, it is enforced that only one browser can edit a public project at any time.
+Private projects must have a locally unique name. Public projects must have a globally unique name.
+When a project is made public a unique name must be chosen, if necessary.
+Projects have metadata: name, description, last saved timestamp, last saved by.
+Browsers have an option for name of creator (Options panel). There is no check whether that name is unique. This is a feature: one person can use two browsers, and two people can work as a team (but not simultaneously).
+
+Actions on private projects:
+- activate: nothing special.
+- details, name or description: nothing special.
+- details, change to shared: name must not exist on server, user is prompted to rename first. Otherwise, project is saved. If saving fails,  a warning is shown and the project is marked as private (again).
+- delete: no preconditions, no effect on server.
+- export: no preconditions, no effect on server.
+- merge: no preconditions. If the second project is remote, it will be fetched and merged, and become public.
+
+Actions on shared project:
+- activate: update if server version is more recent. If project has been removed from server, show warning and make private.
+- details, name or description: new name must not exist locally or on the server, if so the name reverts to the old value. Otherwise, name and description are changed locally and on the server. If the project does not exist remotely, show warning and make local.
+- details, change to private: no preconditions. The file will be removed from the server. It is not an error if the project does not exist remotely.
+- delete: no preconditions, removed locally and from the server. It is not an error if the project does not exist remotely.
+- export: no preconditions, no effect on server. Check if project is still on server, if not: show warning and make local.
+- merge: no preconditions. If the second project is remote, it will be fetched and merged, and become public.
+
+Actions on remote project:
+- activate: name must not match with existing private project (if so, warn and stop), no effect on server. Project becomes public.
+- details, name or description: new name must not exist locally or on the server, if so the name reverts to the old value. Otherwise, name and description are changed locally and on the server. If the project does not exist remotely, show warning and make local.
+- details, change to private: no preconditions. The file will be removed from the server. It is not an error if the project does not exist remotely.
+- delete: no preconditions, removed locally and from the server. It is not an error if the project does not exist remotely.
+- export: no preconditions, no effect on server. Check if project is still on server, if not: show warning and make local.
+- merge: no preconditions. If the second project is remote, it will be fetched and merged, and become public.
+
+When (re)loading the tool:
+- private projects: no action
+- public projects: reload from server, if the server is newer
+- remote project: nothing.
+
+
+ALTERNATIVE PROPOSAL FOR SHARED PROJECTS
+All documents should be stored remotely, transparently.
+Interactions with the UI will be combined into atomic actions.
+Actions will be pushed to the server, and the server will push actions to the browser.
+Conflicts will be resolved: conflicting actions pushed to the server will be reverted, and actions received from the server will always be executed.
+The list of recent actions acts as an Undo queue.
+
+
+YET ANOTHER ALTERNATIVE PROPOSAL FOR SHARED PROJECTS
+There will be a central repository of projects. A project in the repository is called a remote project. 
+Each remote project has a name and datetime stamp, and is marked with the name of its creator and optional free-form remarks.
+Remote projects can be listed, and one can be selected for downloading. A downloaded remote project becomes a local project. Remote projects cannot be edited.
+Local projects are stored in LocalStorage only, and are tied to one particular web browser. Local projects can be edited, imported/exported, merged, and deleted.
+Empty local projects can be created. There is no built-in function to duplicate a project, but it can be exported and then imported.
+Local projects can be uploaded into the central repository.
+>>Local projects can be marked for automatic uploading. If so, each update will replace the latest project with the same name by the same creator. When marking a project for automatic uploading, the first copy will be uploaded first.
+All local projects are collectively called the Library.
+The upload/download functions are very similar to the export/import function.
+
+Since there is no strong access control, we drop all pretense and do away with access control. Users set their desired creator ID, and will take care among themselves to choose names that are tied to a single person. 
+There is no access control. Any user can download any project in the repository, and delete any project from the repository.
+Users must take care not to choose the same name for two different projects.
+There is no concept of a group of users or project-versions. 
+A meaningful authentication scheme can be added later.
+
+
+OTHER / WON'T FIX
+Make the "Total" column in threat tables couloured? Probably doesn't look too good. Tried it a bit.
+Two sub-clusters on the same level can have the same name. Since it is OK for sub-clusters not sharing the same parent to have the same name, and since it does not break anything, we won't fix this.
+The list in Single Failures cannot be grouped by service, as some components belong to more than one service. They would then be duplicated, which complicates the UI too much (e.g. a single edit may change multiple objects on the screen).
+Drag to create may create rnode somewhat outside canvas --> won't fix, will be corrected on first drag/move
+Adding a shadow to nodes as they are dragged is not good; the shadow will follow the rectangular contour of the node, not the real shape. That looks odd.

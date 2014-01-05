@@ -1,0 +1,15 @@
+AuthUserFile /WebSpace/Db/maics/vriezekolke/public_html/Raster/proto4/AT/.htpasswd
+AuthGroupFile /dev/null
+AuthName "Restricted access for this group of Raster projects"
+AuthType Basic
+<Limit GET POST>
+require valid-user
+</Limit>
+
+<Files *.raster>
+Deny from all
+</Files>
+
+<Files *.csv>
+Deny from all
+</Files>
