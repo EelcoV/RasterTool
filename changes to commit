@@ -1,6 +1,1 @@
-Fixed: When Preferences|Show Colours on startup, colors are not shown (have to set that preference again to display colors).
-Fixed: Label-display preferences restored properly.
-Removed (some of the) CVS $Id$ tags.
-Fixed: When switching projects, the “Sort by” on the Failures and Vulnerabilities tab always displays sorting by Vulnerability, whereas in fact the old sort order is retained. The sort order should probably be a Preferences as well.
-Fixed "transparant" --> "transparent" in networkactivity.activityoff (raster.css).
-Fixed: OnBeforePrint (opening the accordions for single failures and CCFs) do not work anymore. The accordions expand, but the unexpanded version is printed.
+

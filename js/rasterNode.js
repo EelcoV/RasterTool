@@ -470,7 +470,8 @@ Node.prototype = {
 			/* Already connected. Detach the newly attached connection
 		  	 * without visual feedback.
 		  	 */
-		  	this.dragpoint.detachAll();
+			// Line below no longer necessary for jsPlumb 1.5.5, and causes an error if present
+		  	//this.dragpoint.detachAll();
 		} else if (C['Total']>Rules.totaledgeMax[this.type] 
 		  || C[dst.type]>=Rules.edgeMax[this.type][dst.type] ) {
 		  	/* detach the newly attached connection, and flash the element for
@@ -478,10 +479,12 @@ Node.prototype = {
 		  	 */
 		  	$(this.jnid).effect("pulsate", { times:2 }, 200);
 		  	$(dst.jnid).effect("pulsate", { times:2 }, 200);
-		  	this.dragpoint.detachAll();
+			// Line below no longer necessary for jsPlumb 1.5.5, and causes an error if present
+		  	//this.dragpoint.detachAll();
 		} else {
 		 	/* Move the begin and endpoints to the center points */
-		  	this.dragpoint.detachAll();
+			// Line below no longer necessary for jsPlumb 1.5.5, and causes an error if present
+		  	//this.dragpoint.detachAll();
 		  	this.attach_center(dst);
 			transactionCompleted("Node connect");
 		 }
@@ -658,7 +661,8 @@ Node.prototype = {
 			isTarget: false,
 			endpointsOnTop: true,
 			maxConnections: -1,
-			container: this.nid
+			container: this.nid,
+			dragOptions: {opacity: 0.1}  // a ghost appears next to the dragged dot otherwise
 		}); 
 		$(this.dragpoint.canvas).css({visibility: "hidden"});
 		this.centerpoint = jsPlumb.addEndpoint(this.nid, {

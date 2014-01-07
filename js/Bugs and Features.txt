@@ -30,13 +30,14 @@ The sort order on the Failures and Vulnerabilities tab should probably be a Pref
 Exclude entire vulnerabilities in Failures and Vulnerabilities tab.
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
 Opmerkingen toevoegen aan diagram nodes??
+Add ability to edit/choose the suffix for nodes in a node class, so that a more descriptive name can be chosen if designed. E.g. "POP (Zwolle)", "POP (Arnhem)".
 Add “Comment” component, containing just text.
+Reorder the options in the node menu (change properties at the top, operations at the bottom)
 Add a popup with meaning of the freq/impact classes to SF and CCF pages.
 Add a longlist function to the analysis tab: select cut-offs for single vulns, CCFs, and quick wins --> list of threats to include.
 Add Copy option to the popup menu of a selection (difficult?).
 Must replace link to the manual.
 Clean up the code so that UI stuff is more clearly separated from the objects themselves. Also rearrange code between rasterMain.js and the objects. For example, rasterService contains newDiagramTab(). This is confusing.
-Add ability to edit/choose the suffix for nodes in a node class, so that a more descriptive name can be chosen if designed. E.g. "POP (Zwolle)", "POP (Arnhem)".
 When adding a threat to a Unknown node, the type of the new threat is always tEQT. It should be possible to change the type to tWRD or tWLS.
 Have separate Paste functions for merging and overwriting?
 Change from accordion widget to the Collapser plugin?
