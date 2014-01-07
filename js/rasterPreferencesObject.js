@@ -1,5 +1,4 @@
 /*
- * $Id: rasterPreferencesObject.js,v 1.1.1.1.6.1.2.4 2013/07/18 19:52:23 vriezekolke Exp $
  *
  */
 var PreferencesObject = function() {
@@ -140,7 +139,7 @@ var PreferencesObject = function() {
 			var pr = jQuery.parseJSON(localStorage[LS+'R:0']);
 			if (pr.theme!=null) this.settheme(pr.theme);
 			if (pr.grid!=null) this.setgrid(pr.grid);
-			if (pr.label!=null) this.setlabel(pr.grid);
+			if (pr.label!=null) this.setlabel(pr.label);
 			if (pr.emsize!=null) this.setemblem(pr.emsize);
 			if (pr.currentproject!=null) this.setcurrentproject(pr.currentproject);
 			if (pr.tab!=null) this.settab(pr.tab);

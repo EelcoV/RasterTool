@@ -1,6 +1,4 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * $Id: rasterMain.js,v 1.1.1.1.4.11.2.7.2.13 2013/07/18 19:52:23 vriezekolke Exp $
- *
 
 Property		setter					fieldname in export/localStorage
 --------		--------------------	--------------------------------
@@ -377,10 +375,8 @@ function nextUnusedIndex(arr) {
 }
 
 /* H: make a string safe to use inside HTML code
+ * MOVED TO BOTTOM OF THIS FILE.
  */
-function H(str) {
-	return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
 
 /* prettyDate: reformat the timestamp string for server projects.
  */
@@ -1937,6 +1933,8 @@ function initOptionsPanel() {
 			$('#gridonoff').buttonset("refresh");
 			$(Preferences.online?'#online_on':'#online_off').prop("checked","checked");
 			$('#onlineonoff').buttonset("refresh");
+			$(Preferences.label?'#label_on':'#label_off').prop("checked","checked");
+			$('#labelonoff').buttonset("refresh");
 			if ($('#librarypanel').css('display')!='none') $('#libraryactivator').click();
 			$('#optionspanel').show();
 			$('#optionsactivator').addClass('actactive');
@@ -2862,8 +2860,15 @@ function expandAllSingleF(sid) {
 		var cm = it.getcomponent();
 		if (cm.type=='tACT') continue;
 		var el = $('#sfaccordion'+sid+'_'+cm.id);
-		if (el.accordion("option","active")===false)
-			el.accordion("activate",0);
+
+		if (el.accordion("option","active")===false) {
+			el.accordion("option", "active", 0);
+			// The following is not necessary during normal use, but appears to be required when
+			// expandAllSingleF() is called from window.onBeforePrint, or when stepping through
+			// this loop using a debugger ?!
+			$('#sfaccordion'+sid+'_'+cm.id+' .ui-accordion-content').css('height','').css('overflow','').css('padding-top','').css('padding-bottom','');
+			el.accordion("refresh");
+		}
 	}
 }
 
@@ -3394,7 +3399,7 @@ function AddAllAnalysis() {
 	paintChecklistReports();
 }
 
-var FailureThreatSortOpt = {failure: "threat", threat: "alpha"};
+var FailureThreatSortOpt = {node: "threat", threat: "alpha"};
 
 function paintNodeThreatTables() {
 	ComponentExclusions = {};
@@ -3431,7 +3436,7 @@ function paintNodeThreatTables() {
 	$('#at1').html(snippet);
 	$('#ana_nodeselect').change( function(){
 		var selected = $('#ana_nodeselect option:selected').val();
-		FailureThreatSortOpt.failure = selected;
+		FailureThreatSortOpt.node = selected;
 		paintSFTable();
 		paintCCFTable();
 	});
@@ -3553,7 +3558,7 @@ function paintSFTable() {
 	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	var cit = new ComponentIterator({project: Project.cid});
 		
-	switch (FailureThreatSortOpt.failure) {
+	switch (FailureThreatSortOpt.node) {
 	case "alpha":
 		cit.sortByName();
 		break;
@@ -3685,7 +3690,7 @@ function paintCCFTable() {
 	var ncit = new NodeClusterIterator({project: Project.cid, isroot: true, isstub: false});
 	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
     
-	switch (FailureThreatSortOpt.failure) {
+	switch (FailureThreatSortOpt.node) {
 	case "alpha":
 		ncit.sortByName();
 		break;
@@ -4317,6 +4322,16 @@ function showcustomvulns() {
 	
 	return snippet;
 }
+
+/* H: make a string safe to use inside HTML code
+ *
+ * This function should be further up in this source file, but XCode fails to properly parse the
+ * complex regex properly. Therefore included as last.
+ */
+function H(str) {
+	return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 
 
 /*,…....,.............,....,...,....................................... ......

@@ -72,7 +72,7 @@ body {
 	z-index: 9999;
 	border-radius: 4px;
 }
-.activityoff {background: transparant; border: none;}
+.activityoff {background: transparent; border: none;}
 .activityyes {background: lightgreen; border: 1px solid grey;}
 .activityno  {background: white; border: 1px solid grey;}
 

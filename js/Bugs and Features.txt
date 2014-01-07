@@ -1,10 +1,6 @@
-$Id: Bugs\040and\040Features.txt,v 1.1.1.1.4.6.2.9.2.13 2013/07/18 19:52:23 vriezekolke Exp $
 
 BUGS
-When switching projects, the “Sort by” on the Failures and Vulnerabilities tab always displays sorting by Vulnerability, whereas in fact the old sort order is retained. The sort order should probably be a Preferences as well.
 When a project is changes from Private to Shared and then a different project is selected without changing the shared project, no version is uploaded. When re-activating the shared project an error message indicates that the project was deleted from the server. It was never uploaded.
-When Preferences|Show Colours on startup, colors are not shown (have to set that preference again to display colors).
-OnBeforePrint (opening the accordions for single failures and CCFs) do not work anymore. The accordions expand, but the unexpanded version is printed.
 After deleting a node (or a selection), cannot drop new nodes on the diagram. The 'ghost' remains visible, and the new node is positioned top left. No interaction possible.
 Third party cookies must be enabled for localStorage to function. This is a concern, perhaps, when never versions of Firefox disable third party cookies by default.
 Change details of a project on the server but not active: function not implemented.
@@ -30,6 +26,7 @@ Cannot reproduce: allowDrop called when dragging the scroller?! Reproduce: reloa
 You found a bug in this program. ("NodeCluster already contains that child node" in function "NodeCluster.addchildnode"). When renaming a vuln. Cannot reproduce now. Artefact of debugging?
 
 TODO
+The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
 Exclude entire vulnerabilities in Failures and Vulnerabilities tab.
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
 Opmerkingen toevoegen aan diagram nodes??

@@ -1,11 +1,6 @@
-Upgrade jsPlumb to 1.4.1.
-Do not show label circles when printing single failures.
-Connection handles (half circles at the top) are now enlarged on hovering.
-Renamed "jsPlumbConnection" to "connection".
-Add shadows to ui-dialogs.
-Removed div projstatus (long unused).
-Cleaned up paint styles for jsPlumb.
-Changes to dragging to create connections: from dragpoint to anywhere on the target (not just the target's dragpoint at the top-center).
-When overall vulnerability levels are hidden, do show them when hovering over the node, and hide them again when the mouse pointer leaves the node.
-Small corrections to default threats.
-Fix: only first edit of labels succeeded, subsequent edits were ignored. Missing $(this).remove(), and therefore duplicate HTML elements.
+Fixed: When Preferences|Show Colours on startup, colors are not shown (have to set that preference again to display colors).
+Fixed: Label-display preferences restored properly.
+Removed (some of the) CVS $Id$ tags.
+Fixed: When switching projects, the “Sort by” on the Failures and Vulnerabilities tab always displays sorting by Vulnerability, whereas in fact the old sort order is retained. The sort order should probably be a Preferences as well.
+Fixed "transparant" --> "transparent" in networkactivity.activityoff (raster.css).
+Fixed: OnBeforePrint (opening the accordions for single failures and CCFs) do not work anymore. The accordions expand, but the unexpanded version is printed.
