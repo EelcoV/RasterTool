@@ -26,6 +26,7 @@ Cannot reproduce: allowDrop called when dragging the scroller?! Reproduce: reloa
 You found a bug in this program. ("NodeCluster already contains that child node" in function "NodeCluster.addchildnode"). When renaming a vuln. Cannot reproduce now. Artefact of debugging?
 
 TODO
+Remove the code for upgrading ancient formats to the new format.
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
 Exclude entire vulnerabilities in Failures and Vulnerabilities tab.
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.

@@ -12,7 +12,7 @@
  *	projecthastitle(p,str): project 'p' has a node with title 'str'.
  *	servicehastitle(s,str): service 's' has a node with title 'str'.
  * Instance properties:
- *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK'
+ *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK', 'tNOT'
  *	title: name of the node
  *	suffix: letter a,b,c... to distiguish nodes with the same title (set by Component)
  *	id: unique number
@@ -76,7 +76,8 @@ var Node = function(type, id) {
 	this.component = null;
 	this.title = "";
 	this.suffix = "";
-	this.color = "none";
+	// Sticky notes are traditionally yellow
+	this.color = (this.type=='tNOT' ? "yellow" : "none");
 
 	this.store();
 	Node._all[this.id] = this;
@@ -127,8 +128,8 @@ Node.destroyselection = function () {
 
 Node.prototype = {
 	destroy: function(effect) {
-		jsPlumb.deleteEndpoint(this.centerpoint);
-		jsPlumb.deleteEndpoint(this.dragpoint);
+		if (this.centerpoint) jsPlumb.deleteEndpoint(this.centerpoint);
+		if (this.dragpoint) jsPlumb.deleteEndpoint(this.dragpoint);
 		if (this.component!=null) {
 			var cm = Component.get(this.component);
 			cm.removenode(this.id);
@@ -164,6 +165,8 @@ Node.prototype = {
 	},
 	
 	changetype: function(typ) {
+		if (this.type=='tNOT')
+			bugreport("Attempt to change the type of a note","Node.changetype");
 		var i;
 		var newn = new Node(typ);
 		newn.position.x = this.position.x;
@@ -233,6 +236,8 @@ Node.prototype = {
 	},
 	
 	setcomponent: function(c) {
+		if (this.type=='tNOT')
+			bugreport("Attempt to attach component to a note","Node.setcomponent");
 		this.component = c;
 		this.store();
 	},
@@ -242,7 +247,9 @@ Node.prototype = {
 			newtitle = Rules.nodetypes[this.type];
 		var targettitle = newtitle;
 		var n=0;
-		if (this.type=='tACT') {
+		if (this.type=='tNOT') {
+			this.settitle(targettitle);
+		} else if (this.type=='tACT') {
 			while (Node.servicehastitle(Service.cid,targettitle)!=-1)
 				targettitle = newtitle + ' (' + (++n) + ')';
 			this.settitle(targettitle);
@@ -262,6 +269,11 @@ Node.prototype = {
 			return;
 		if (str=="") {
 			// Blank title is not allowed. Retain current title.
+			return;
+		}
+		// Notes can be identical (can have the same 'title').
+		if (this.type=='tNOT') {
+			this.settitle(str);
 			return;
 		}
 		// Actors don't have (nor need) components, since they have no threat evaluations
@@ -422,6 +434,8 @@ Node.prototype = {
 	},
 	
 	setmarker: function(cn) {
+		if (this.type=='tNOT')
+			return;
 		var es = this.edgecount( (cn ? cn : jsPlumb.getConnections({scope:'center'})) );
 		if (!this.connectionsOK(es)) {
 			$('#nodeMagnitude'+this.id).hide();
@@ -466,13 +480,14 @@ Node.prototype = {
 		 * or the maximum number of edges to nodes of type dst.type has been
 		 * exceeded.
 		 */
-		if (jQuery.inArray(dst.id,this.connect)>-1) {
+		//if (jQuery.inArray(dst.id,this.connect)>-1) {
 			/* Already connected. Detach the newly attached connection
 		  	 * without visual feedback.
 		  	 */
 			// Line below no longer necessary for jsPlumb 1.5.5, and causes an error if present
 		  	//this.dragpoint.detachAll();
-		} else if (C['Total']>Rules.totaledgeMax[this.type] 
+		//} else
+		if (C['Total']>Rules.totaledgeMax[this.type]
 		  || C[dst.type]>=Rules.edgeMax[this.type][dst.type] ) {
 		  	/* detach the newly attached connection, and flash the element for
 		  	 * visual feedback.
@@ -655,41 +670,43 @@ Node.prototype = {
 				}
 			}
 		});
-		this.dragpoint = jsPlumb.addEndpoint(this.nid, {
-			anchor: "TopCenter",
-			isSource: true,
-			isTarget: false,
-			endpointsOnTop: true,
-			maxConnections: -1,
-			container: this.nid,
-			dragOptions: {opacity: 0.1}  // a ghost appears next to the dragged dot otherwise
-		}); 
-		$(this.dragpoint.canvas).css({visibility: "hidden"});
-		this.centerpoint = jsPlumb.addEndpoint(this.nid, {
-			anchor: "Center",
-			paintStyle: {fillStyle:"transparent"},
-			isSource: false,
-			isTarget: false,
-			endpointsOnTop: false,
-			maxConnections: -1, // unlimited
-			scope: 'center'
-		}); 
-		// Drop connections onto the target node, not just on the dragpoint of the target node.
-		jsPlumb.makeTarget(this.nid, {
-			// endpoints will be deleted/hidden in rasterNode.js:initTabDiagrams:connfunction
-			deleteEndpointsOnDetach: false
-		});
+		if (this.type!='tNOT') {
+			this.dragpoint = jsPlumb.addEndpoint(this.nid, {
+				anchor: "TopCenter",
+				isSource: true,
+				isTarget: false,
+				endpointsOnTop: true,
+				maxConnections: -1,
+				container: this.nid,
+				dragOptions: {opacity: 0.1}  // a ghost appears next to the dragged dot otherwise
+			}); 
+			$(this.dragpoint.canvas).css({visibility: "hidden"});
+			this.centerpoint = jsPlumb.addEndpoint(this.nid, {
+				anchor: "Center",
+				paintStyle: {fillStyle:"transparent"},
+				isSource: false,
+				isTarget: false,
+				endpointsOnTop: false,
+				maxConnections: -1, // unlimited
+				scope: 'center'
+			});
+			// Drop connections onto the target node, not just on the dragpoint of the target node.
+			jsPlumb.makeTarget(this.nid, {
+				// endpoints will be deleted/hidden in rasterNode.js:initTabDiagrams:connfunction
+				deleteEndpointsOnDetach: false
+			});
+		}
 
 		$(this.jnid).hover( function() {
 			var id = nid2id(this.id);
 			$('#nodeC'+id).css({visibility: "visible"});
-			$(Node.get(id).dragpoint.canvas).css({visibility: "visible"});
+			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: "visible"});
 			if (Preferences.emsize=="em_none")
 				$('#nodeMagnitude'+id).addClass('doshow'); 
 		},function() {
 			var id = nid2id(this.id);
 			$('#nodeC'+id).css({visibility: "hidden"});
-			$(Node.get(id).dragpoint.canvas).css({visibility: "hidden"});
+			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: "hidden"});
 			$('#nodeMagnitude'+id).removeClass('doshow'); 
 		});
 		
@@ -774,8 +791,8 @@ Node.prototype = {
 	},
 	
 	unpaint: function() {
-		jsPlumb.deleteEndpoint(this.centerpoint);
-		jsPlumb.deleteEndpoint(this.dragpoint);
+		if (this.centerpoint) jsPlumb.deleteEndpoint(this.centerpoint);
+		if (this.dragpoint) jsPlumb.deleteEndpoint(this.dragpoint);
 
 		if (this.id==Node.DialogNode) 
 			$('#nodereport').dialog("close");
@@ -788,12 +805,16 @@ Node.prototype = {
 		var cm = Component.get(this.component);
 		$('#nodemenu').css("left", x);
 		$('#nodemenu').css("top", y);
-		$('.popupmenuitem').removeClass('menuhigh popmenuitemdisabled');
+		$('.popupmenuitem').removeClass('menuhigh popupmenuitemdisabled');
 		$('.popupsubmenu').hide();
+		if (this.type=='tNOT') {
+			$('#mi_th').addClass('popupmenuitemdisabled');
+			$('#mi_ct').addClass('popupmenuitemdisabled');
+		}
 		if (this.type=='tACT')
-			$('#mi_th').addClass('popmenuitemdisabled');
+			$('#mi_th').addClass('popupmenuitemdisabled');
 		if (cm==null || cm.nodes.length<2)
-			$('#mi_sm').addClass('popmenuitemdisabled');
+			$('#mi_sm').addClass('popupmenuitemdisabled');
 		$('#mi_sm>span').html(cm!=null && cm.single ? "Make class" : "Make single");
 		populateLabelMenu();
 		var s=p.strToLabel(this.color);
@@ -849,6 +870,8 @@ Node.prototype = {
 		if (Rules.nodetypes[this.type]==undefined) {
 			errors += "Node "+this.id+" has weird type-value "+this.type+".\n";
 		}
+		if ((this.type=='tACT' || this.type=='tNOT') && this.component!=null)
+			errors += "Node "+this.id+" has a component, but should have none.\n";
 		if (this.component!=null && Component.get(this.component)==null)
 			errors += "Node "+this.id+" has invalid component.\n";
 		if (this.position.x<0 || this.position.x>9999 || this.position.y<0 || this.position.y>9999) {
@@ -979,32 +1002,34 @@ var Rules = {
 	/* English translations of node types.
 	 * Can also be used as enumerator:   for (var t in Rules.nodetypes) { ... }
 	 */
-	nodetypes: {'tWLS': 'wireless link','tWRD': 'wired link','tEQT': 'equipment','tACT': 'actor','tUNK': 'cloud'},
+	nodetypes: {'tWLS': 'wireless link','tWRD': 'wired link','tEQT': 'equipment','tACT': 'actor','tUNK': 'cloud', 'tNOT': 'note'},
 	/* per nodetype, minimum number of that type to appear in a diagram.
 	 * There is no maximum.
 	 */
-	minnode: {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 2,'tUNK': 0},
+	minnode: {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 2,'tUNK': 0,'tNOT': 0},
 	/* per nodetype, the minimum number of edges to each of the other nodetypes.
 	 * if node A cannot connect to node B, both the minimum and the maximum numer
 	 * will be zero.
 	 */
 	edgeMin: {
-		'tWLS': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0},
-		'tWRD': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0},
-		'tEQT': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0},
-		'tACT': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0},
-		'tUNK': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0}	
+		'tWLS': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0,'tNOT': 0},
+		'tWRD': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0,'tNOT': 0},
+		'tEQT': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0,'tNOT': 0},
+		'tACT': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0,'tNOT': 0},
+		'tUNK': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0,'tNOT': 0},
+		'tNOT': {'tWLS': 0,'tWRD': 0,'tEQT': 0,'tACT': 0,'tUNK': 0,'tNOT': 0}
 	},
 	/* per nodetype, the maximum number of edges to each of the other nodetypes.
 	 * Set to 99 for a (practically) unlimited number of edges.
 	 * Set to 0 if no edge to that node-type is allowed.
 	 */
 	edgeMax: {
-		'tWLS': {'tWLS':  0,'tWRD':  0,'tEQT': 99,'tACT':  0,'tUNK': 99},
-		'tWRD': {'tWLS':  0,'tWRD':  0,'tEQT':  2,'tACT':  0,'tUNK':  2},
-		'tEQT': {'tWLS': 99,'tWRD': 99,'tEQT':  0,'tACT': 99,'tUNK': 99},
-		'tACT': {'tWLS':  0,'tWRD':  0,'tEQT': 99,'tACT':  0,'tUNK': 99},
-		'tUNK': {'tWLS': 99,'tWRD': 99,'tEQT': 99,'tACT': 99,'tUNK': 99}	
+		'tWLS': {'tWLS':  0,'tWRD':  0,'tEQT': 99,'tACT':  0,'tUNK': 99,'tNOT': 0},
+		'tWRD': {'tWLS':  0,'tWRD':  0,'tEQT':  2,'tACT':  0,'tUNK':  2,'tNOT': 0},
+		'tEQT': {'tWLS': 99,'tWRD': 99,'tEQT':  0,'tACT': 99,'tUNK': 99,'tNOT': 0},
+		'tACT': {'tWLS':  0,'tWRD':  0,'tEQT': 99,'tACT':  0,'tUNK': 99,'tNOT': 0},
+		'tUNK': {'tWLS': 99,'tWRD': 99,'tEQT': 99,'tACT': 99,'tUNK': 99,'tNOT': 0},
+		'tNOT': {'tWLS':  0,'tWRD':  0,'tEQT':  0,'tACT':  0,'tUNK':  0,'tNOT': 0}
 	},
 	/* per nodetype, the minimum number of edges in total for a single node */
 	totaledgeMin: {
@@ -1012,7 +1037,8 @@ var Rules = {
 		'tWRD': 2,
 		'tEQT': 1,
 		'tACT': 1,
-		'tUNK': 1	
+		'tUNK': 1,
+		'tNOT': 0
 	},
 	/* per nodetype, the maximum number of edges in total, or 99 for unlimited. */
 	totaledgeMax: {
@@ -1020,7 +1046,8 @@ var Rules = {
 		'tWRD':  2,
 		'tEQT': 99,
 		'tACT': 99,
-		'tUNK': 99	
+		'tUNK': 99,
+		'tNOT': 0
 	},
 	/* Check whether the rules for a given type are consistent. If called without
 	 * an argument it will check all types.

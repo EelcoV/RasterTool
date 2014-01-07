@@ -1692,7 +1692,10 @@ function initLibraryPanel() {
 		$('#libselect option').css("background-image","");
 		$('#libselect option[value='+Project.cid+']').css("background-image","url(../img/selected.png)");
 	});
-		
+	$('#libselect').dblclick( function(){
+		$('#libactivate').click();
+	});
+	
 	// Add --------------------
 	$('#libadd').click( function(){
 		var p = new Project();
@@ -2009,6 +2012,7 @@ function initTabDiagrams() {
 	$('#tEQT').attr('title', "Drag to add an equipment item.");
 	$('#tACT').attr('title', "Drag to add an actor (someone using this telecom services).");
 	$('#tUNK').attr('title', "Drag to add an unknown link.");
+	$('#tNOT').attr('title', "Drag to add an area for comments.");
 	
 	$("#nodereport").dialog({
 		autoOpen: false,
@@ -2061,14 +2065,14 @@ function initTabDiagrams() {
 	$('#mi_th').mouseup(function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
-		if (rn.type!='tACT')
+		if (rn.type!='tACT' && rn.type!='tNOT')
 //			$('#node'+rn.id).effect("pulsate", { times:2 }, 200);
 //		else
 			displayThreatsDialog(rn.component);
 	});
 //	$('#mi_ct span.ui-icon').hover(function(){
 	$('#mi_ct').hover(function(){
-		$('#mi_ctsm').show();
+		if (!$('#mi_ct').hasClass("popupmenuitemdisabled")) $('#mi_ctsm').show();
 	},function(){
 		$('#mi_ctsm').hide();
 	});
@@ -2110,7 +2114,7 @@ function initTabDiagrams() {
 	$('#mi_sm').mouseup(function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
-		if (rn.component==null)	// Actors don't have components
+		if (rn.component==null)	// Actors and notes don't have components
 			return;
 		var cm = Component.get(rn.component);
 		cm.setsingle(cm.single==false);
@@ -2121,17 +2125,18 @@ function initTabDiagrams() {
 		var rn = Node.get( Node.MenuNode );
 		var nn = new Node(rn.type);
 		nn.autosettitle(rn.title);
-		var rnc = Component.get(rn.component);
-		var nnc= Component.get(nn.component);
-		nnc.setproject(rnc.project);
-		var ts = [].concat(nnc.thrass);
-		for (var i=0; i<ts.length; i++) {
-			var th = ThreatAssessment.get(ts[i]);
-			NodeCluster.removecomponent_threat(nnc.project,nnc.id,th.title,th.type);
-			nnc.removethrass(ts[i]);
+		if (rn.component!=null) {
+			var rnc = Component.get(rn.component);
+			var nnc= Component.get(nn.component);
+			nnc.setproject(rnc.project);
+			var ts = [].concat(nnc.thrass);
+			for (var i=0; i<ts.length; i++) {
+				var th = ThreatAssessment.get(ts[i]);
+				NodeCluster.removecomponent_threat(nnc.project,nnc.id,th.title,th.type);
+				nnc.removethrass(ts[i]);
+			}
+			nnc.adddefaultthreatevaluations(rnc.id);
 		}
-		nnc.adddefaultthreatevaluations(rnc.id);
-
 		var fh = $('.fancyworkspace').height();
 		var fw = $('.fancyworkspace').width();
 		nn.paint();
@@ -2449,7 +2454,6 @@ function workspacedrophandler(event, ui) {
 	 * The center of the new Node is therefore roughly on the the drop spot.
 	 */
 	rn.autosettitle();
-//	var r = $('#diagrams_workspace'+Service.cid).position();
 	var r = $('#tab_diagrams').offset();
 	rn.paint();
 	rn.setposition(
@@ -2458,15 +2462,12 @@ function workspacedrophandler(event, ui) {
 	);
 	// Now we now the width and height. Adjust the position if necessary.
 	rn.setposition(rn.position.x,rn.position.y);
-//	if (rn.type!='tACT')
-//		rn.addtonodeclusters();
 	$('.tC').css('visibility','hidden');
 	transactionCompleted("Node add");
 }
 
 function displayThreatsDialog(cid) {
 	var c = Component.get(cid);
-	if (c.type=='tACT') return; // Actors do not have threats.
 	Component.ThreatsComponent = cid;
 	var snippet = '<div id="dialogthreatlist">\
 		<div class="threat">\
@@ -2858,7 +2859,10 @@ function expandAllSingleF(sid) {
 	var it = new ComponentIterator({service: sid});
 	for (it.first(); it.notlast(); it.next()) {
 		var cm = it.getcomponent();
-		if (cm.type=='tACT') continue;
+		if (cm.type=='tACT') {
+			bugreport("Found a component of type actor. That should not exist.", "expandAllSingleF");
+			continue;
+		}
 		var el = $('#sfaccordion'+sid+'_'+cm.id);
 
 		if (el.accordion("option","active")===false) {
@@ -2876,7 +2880,10 @@ function collapseAllSingleF(sid) {
 	var it = new ComponentIterator({service: sid});
 	for (it.first(); it.notlast(); it.next()) {
 		var cm = it.getcomponent();
-		if (cm.type=='tACT') continue;
+		if (cm.type=='tACT') {
+			bugreport("Found a component of type actor. That should not exist.", "collapseAllSingleF");
+			continue;
+		}
 		$('#sfaccordion'+sid+'_'+cm.id).accordion("activate",false);
 	}
 }

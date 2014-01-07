@@ -44,6 +44,8 @@
 var Component = function(type, id) {
 	if (type=='tACT')
 		bugreport("attempt to create component for actor node","Component.constructor");
+	if (type=='tNOT')
+		bugreport("attempt to create component for a note","Component.constructor");
 	if (id!=null && Component._all[id]!=null)
 		bugreport("Component with id "+id+" already exists","Component.constructor");
 	this.id = (id==null ? nextUnusedIndex(Component._all) : id);

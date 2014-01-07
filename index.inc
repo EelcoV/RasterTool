@@ -86,6 +86,10 @@
 		<div id="tUNK" class="templatebg"><img class="templateicon" src="../img/tUNKicon.png"></div>
 		<div class="templatelabel ui-widget">Unknown</div>
 	</div>
+	<div class="template t6">
+		<div id="tNOT" class="templatebg"><img class="templateicon" src="../img/tNOTicon.png"></div>
+		<div class="templatelabel ui-widget">note</div>
+	</div>
 </div> <!-- id="templates" -->
 
 <div id="libraryactivator" class="activator ui-widget">Library<span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>

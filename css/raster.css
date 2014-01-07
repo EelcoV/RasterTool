@@ -104,11 +104,21 @@ div.templatebg {
 	overflow: hidden;
 	z-index: 100;
 }
+#tNOT {
+	background: white;
+	height: 25px;
+	width: 25px;
+	left: 12px;
+}
+#tNOT .templateicon {
+	padding-left: 3px;
+}
 .t1 {left: 0px;}
 .t2 {left: 62px;}
 .t3 {left: 124px;}
 .t4 {left: 186px;}
 .t5 {left: 248px;}
+.t6 {left: 330px;}
 img.templateicon { padding-top: 1px; }
 img.tC {
 	position: absolute;
@@ -229,7 +239,7 @@ div.popupsubmenu {
 }
 div.popupmenuitem {
 	width: 130px;
-	height: 24px;
+	height: 25px;
 	text-align: left;
 	margin: 0;
 }
@@ -258,7 +268,7 @@ div.popupmenuitem {
 	width: 115px;
 }
 #mlabel {width:95px !important}
-div.popmenuitemdisabled {
+div.popupmenuitemdisabled {
 	color: #aaa;
 }
 #form_editlabels input {margin-bottom: 5px; }
@@ -673,6 +683,26 @@ div.tUNKheader {
 .tUNKMagnitude { 
 	top: 2px !important;
 	left: 5px !important;
+}
+
+/* Mods for Notes */
+.tNOT {
+	width: 100px;
+	height: 50px;
+	overflow: hidden;
+}
+div.tNOTheader {
+	top: 5%;
+	left: 3%;
+	right: 3%;
+	width: 96%;
+	text-align: left;
+}
+.tNOTD {
+	top: 0px !important;
+}
+.tNOTMagnitude, .tNOTW {
+	visibility: hidden !important;
 }
 
 #selectrect {

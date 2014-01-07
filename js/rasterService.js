@@ -413,7 +413,7 @@ function newDiagramTab(id,title,tabprefix) {
 	});
 
 	$('.workspace').droppable({
-		accept: '.templatebg',
+		accept: '.templatebg,#nNote',
 		drop: workspacedrophandler
 	});
 	SizeDOMElements();

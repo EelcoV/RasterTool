@@ -49,7 +49,7 @@
 var ThreatAssessment = function(type,id) {
 	if (id!=null && ThreatAssessment._all[id]!=null)
 		bugreport("ThreatAssessment with id "+id+" already exists","ThreatAssessment.constructor");
-	if (type=='tACT' || type=='tUNK')
+	if (type=='tACT' || type=='tUNK' || type=='tNOT')
 		bugreport("ThreatAssessment with id "+id+" has illegal type "+type,"ThreatAssessment.constructor");
 	this.id = (id==null ? nextUnusedIndex(ThreatAssessment._all) : id);
 	this.type = type;

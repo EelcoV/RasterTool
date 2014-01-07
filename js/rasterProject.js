@@ -122,7 +122,7 @@ Project.merge = function(intoproject,otherproject) {
 		it = new NodeIterator({service: s.id});
 		for (it.first(); it.notlast(); it.next()) {
 			var rn = it.getnode();
-			if (rn.type=='tACT')
+			if (rn.type=='tACT' || rn.type=='tNOT')
 				break;
 			cm = Component.get(rn.component);
 			// If the node was added to a singular component, it doesn't need to added
