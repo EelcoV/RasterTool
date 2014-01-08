@@ -350,9 +350,9 @@ function newDiagramTab(id,title,tabprefix) {
 		$('#'+tabprefix+'_workspace'+id).mouseup( function(evt) {
 			if (evt.button!=0) 
 				return; // only do plain left mousebutton drags
+			if (evt.eventPhase==Event.BUBBLING_PHASE) return; // Only direct events
 			// Direct click on the workspace, steal the focus from wherever it was.
 			$( document.activeElement ).blur();
-//			if ($('#selectrect').width()==0)
 			if (Node.nodesinselection().length==0)
 				$('#selectrect').hide();
 			// If any text was selected (accidentally, most likely), then deselect it.
@@ -413,7 +413,7 @@ function newDiagramTab(id,title,tabprefix) {
 	});
 
 	$('.workspace').droppable({
-		accept: '.templatebg,#nNote',
+		accept: '.templatebg,.templatebgNOT',
 		drop: workspacedrophandler
 	});
 	SizeDOMElements();

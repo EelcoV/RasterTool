@@ -1,5 +1,8 @@
 
 BUGS
+Create a new project, change its details to Shared, then switch to it: error message about project not being on the server.
+With only stub/shared projects, delete the remaining empty local project. Now switch to project. The diagram tab will stay white.
+Cannot use mouse to position cursor or select text in editInPlace.
 When a project is changes from Private to Shared and then a different project is selected without changing the shared project, no version is uploaded. When re-activating the shared project an error message indicates that the project was deleted from the server. It was never uploaded.
 After deleting a node (or a selection), cannot drop new nodes on the diagram. The 'ghost' remains visible, and the new node is positioned top left. No interaction possible.
 Third party cookies must be enabled for localStorage to function. This is a concern, perhaps, when never versions of Firefox disable third party cookies by default.
@@ -46,6 +49,7 @@ Filter on Single Failures, including on overall threat score.
 Sort vulns for a component on name/freq/impact/total/remark
 Better handling of redundancy in telecom services.
 Undo
+Localization
 Set description on added threats.
 Position Node report dialogs close to their node?
 Consistency report for the entire diagram, plus UI.

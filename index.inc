@@ -62,21 +62,21 @@
 
 <div id="networkactivity" class="donotprint"></div>
 
-<div id="templates">
+<div id="templates" class="ui-state-default">
 	<div class="template t1">
 		<div id="tWLS" class="templatebg"><img class="templateicon" src="../img/tWLSicon.png"></div>
 		<div class="templatelabel ui-widget">Wireless</div>
-		<img id="tC_tWLS" class="tC" src="../img/dropdown.png">
+		<img id="tC_tWLS" class="tC" src="../img/dropedit.png">
 	</div>
 	<div class="template t2">
 		<div id="tWRD" class="templatebg"><img class="templateicon" src="../img/tWRDicon.png"></div>
 		<div class="templatelabel ui-widget">Wired</div>
-		<img id="tC_tWRD" class="tC" src="../img/dropdown.png">
+		<img id="tC_tWRD" class="tC" src="../img/dropedit.png">
 	</div>
 	<div class="template t3">
 		<div id="tEQT" class="templatebg"><img class="templateicon" src="../img/tEQTicon.png"></div>
 		<div class="templatelabel ui-widget">Equipment</div>
-		<img id="tC_tEQT" class="tC" src="../img/dropdown.png">
+		<img id="tC_tEQT" class="tC" src="../img/dropedit.png">
 	</div>
 	<div class="template t4">
 		<div id="tACT" class="templatebg"><img class="templateicon" src="../img/tACTicon.png"></div>
@@ -87,7 +87,7 @@
 		<div class="templatelabel ui-widget">Unknown</div>
 	</div>
 	<div class="template t6">
-		<div id="tNOT" class="templatebg"><img class="templateicon" src="../img/tNOTicon.png"></div>
+		<div id="tNOT" class="templatebgNOT"><img class="templateicon" src="../img/tNOTicon.png"></div>
 		<div class="templatelabel ui-widget">note</div>
 	</div>
 </div> <!-- id="templates" -->

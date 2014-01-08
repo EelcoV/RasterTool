@@ -2044,7 +2044,7 @@ function initTabDiagrams() {
 		transactionCompleted("Service add");
 	});
 
-	$(".templatebg").draggable({
+	$(".templatebg,.templatebgNOT").draggable({
 		cursor: "move",
 		helper: 'clone'
 	});
@@ -2185,7 +2185,7 @@ function initTabDiagrams() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		rasterConfirm("Delete element node?",
-			'Are you sure you want to delete node "'+ rn.htmltitle() +'"?',
+			'Are you sure you want to delete ' + (rn.type=='tNOT'?"note":"node") + ' "' + rn.htmltitle() +'"?',
 			'Delete','Cancel',
 			function() {
 				transactionCompleted("Node delete");
