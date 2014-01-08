@@ -715,6 +715,7 @@ div.tNOTheader {
 .tNOTtitle .inplace_field {
 	width: 97% !important;
 }
+.tNOTtitle span {white-space: pre-wrap;}
 
 #selectrect {
 	position: absolute;
