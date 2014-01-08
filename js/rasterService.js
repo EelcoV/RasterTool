@@ -350,7 +350,7 @@ function newDiagramTab(id,title,tabprefix) {
 		$('#'+tabprefix+'_workspace'+id).mouseup( function(evt) {
 			if (evt.button!=0) 
 				return; // only do plain left mousebutton drags
-			if (evt.eventPhase==Event.BUBBLING_PHASE) return; // Only direct events
+			if (evt.target.id=="") return; // Only direct events, or drag-stops
 			// Direct click on the workspace, steal the focus from wherever it was.
 			$( document.activeElement ).blur();
 			if (Node.nodesinselection().length==0)
