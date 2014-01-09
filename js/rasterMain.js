@@ -258,6 +258,7 @@ function loadDefaultProject() {
 	s.autosettitle();
 	p.autosettitle();
 	p.load();
+	s.paintall();
 }
 
 /* SizeDOMElements()

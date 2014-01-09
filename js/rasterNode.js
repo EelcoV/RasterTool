@@ -794,6 +794,8 @@ Node.prototype = {
 	unpaint: function() {
 		if (this.centerpoint) jsPlumb.deleteEndpoint(this.centerpoint);
 		if (this.dragpoint) jsPlumb.deleteEndpoint(this.dragpoint);
+		this.centerpoint=null;
+		this.dragpoint=null;
 
 		if (this.id==Node.DialogNode) 
 			$('#nodereport').dialog("close");

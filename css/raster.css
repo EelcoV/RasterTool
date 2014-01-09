@@ -719,6 +719,7 @@ div.tNOTheader {
 
 #selectrect {
 	position: absolute;
+	display: none;
 	background: blue;
 	opacity: 0.2;
 	border-radius: 7px;

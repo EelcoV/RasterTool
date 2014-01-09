@@ -238,7 +238,6 @@
 
 <div id="tab_diagrams" class="workbody workouter">
   <div id="diagrams_body" class="tabs-bottom">
-  <div id="selectrect"></div>
 	<input id="servaddbutton" class="servplusbutton" type="button" value=" + ">
 	<ul>
 	</ul>
