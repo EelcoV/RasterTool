@@ -806,7 +806,7 @@ Project.prototype = {
 			errors += cm.internalCheck();
   		}
 		// Check all threats on this project
-		for (var i=0; i<this.threats.length; i++) {
+		for (i=0; i<this.threats.length; i++) {
 			var t = Threat.get(this.threats[i]);
 			if (!t) {
 				errors += "Threat "+this.threats[i]+" does not exist.\n";
@@ -819,7 +819,7 @@ Project.prototype = {
 		// Check all threats
 		it = new ThreatIterator(this.id,'tUNK');
   		for (it.first(); it.notlast(); it.next()) {
- 			var t = it.getthreat();
+ 			t = it.getthreat();
 			if (!t) {
 				errors += "Component "+it.getthreatid()+" does not exist.\n";
 				continue;

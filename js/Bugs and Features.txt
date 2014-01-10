@@ -27,18 +27,16 @@ Cannot reproduce: allowDrop called when dragging the scroller?! Reproduce: reloa
 You found a bug in this program. ("NodeCluster already contains that child node" in function "NodeCluster.addchildnode"). When renaming a vuln. Cannot reproduce now. Artefact of debugging?
 
 TODO
+Make notes so that their aspect ratio need not be constant.
 Remove the code for upgrading ancient formats to the new format.
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
 Exclude entire vulnerabilities in Failures and Vulnerabilities tab.
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
 Opmerkingen toevoegen aan diagram nodes??
 Add ability to edit/choose the suffix for nodes in a node class, so that a more descriptive name can be chosen if designed. E.g. "POP (Zwolle)", "POP (Arnhem)".
-Add “Comment” component, containing just text.
 Reorder the options in the node menu (change properties at the top, operations at the bottom)
-Add a popup with meaning of the freq/impact classes to SF and CCF pages.
 Add a longlist function to the analysis tab: select cut-offs for single vulns, CCFs, and quick wins --> list of threats to include.
 Add Copy option to the popup menu of a selection (difficult?).
-Must replace link to the manual.
 Clean up the code so that UI stuff is more clearly separated from the objects themselves. Also rearrange code between rasterMain.js and the objects. For example, rasterService contains newDiagramTab(). This is confusing.
 When adding a threat to a Unknown node, the type of the new threat is always tEQT. It should be possible to change the type to tWRD or tWLS.
 Have separate Paste functions for merging and overwriting?

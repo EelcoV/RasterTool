@@ -176,6 +176,33 @@ $(function() {
 	$('#tabs').tabs("select",Preferences.tab);
 	forceSelectVerticalTab(Preferences.tab);
 
+	$('#helpimg').hover( function() {
+			$('#helpimg').attr("src","../img/qm-hi.png");
+		}, function() {
+			$('#helpimg').attr("src","../img/qm-lo.png");
+	});
+	$('#helptabs').tabs({
+		cache: true,
+		heightStyle: "fill"
+	});
+	$('#helptabs li:last-of-type').css("margin-left","10px");
+	$('#helppanel').dialog({
+		title: "Information on using this tool",
+		autoOpen: false,
+		height: 450,
+		minHeight: 120,
+		width: 600,
+		minWidth: 470,
+		maxWidth: 800,
+		resize: function(event,ui) {
+			$('#helptabs ul').width(ui.size.width-36);
+		}
+	});
+	$('#helppanel').dialog("widget").css("overflow","visible").addClass("donotprint");
+	$('#helpbutton img').click( function() {
+		$('#helppanel').dialog("open");
+	});
+
 	var flashTimer;
 	$("#networkactivity").ajaxSend(function(){
 		window.clearTimeout(flashTimer);
@@ -2014,6 +2041,9 @@ function initTabDiagrams() {
 	$('#tACT').attr('title', "Drag to add an actor (someone using this telecom services).");
 	$('#tUNK').attr('title', "Drag to add an unknown link.");
 	$('#tNOT').attr('title', "Drag to add an area for comments.");
+	$('#tC_tWLS').attr('title', "Click to edit default threats for Wireless links.");
+	$('#tC_tWRD').attr('title', "Click to edit default threats for Wired links.");
+	$('#tC_tEQT').attr('title', "Click to edit default threats for Equipment components.");
 	
 	$("#nodereport").dialog({
 		autoOpen: false,

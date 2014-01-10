@@ -92,6 +92,18 @@
 	</div>
 </div> <!-- id="templates" -->
 
+<div id="helpbutton" class="donotprint"><img id="helpimg" src="../img/qm-lo.png"></div>
+<div id="helppanel">
+	<div id="helptabs">
+		<ul>
+			<li><a href="../helpFrequency.html">Frequency</a></li>
+			<li><a href="../helpImpact.html">Impact</a></li>
+			<li><a href="../helpProcess.html">How to use</a></li>
+			<li><a href="../helpAbout.html">About</a></li>
+		</ul>
+	</div>
+</div>
+
 <div id="libraryactivator" class="activator ui-widget">Library<span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
 <div id="optionsactivator" class="activator ui-widget">Options<span id="optionsupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
 
@@ -153,7 +165,6 @@
 		<span class="leftlabel">Your name:</span>
 		<input type="text" id="creator" size="35">
 	</div>
-	<p>Raster prototype 4. For help <a id="manual" href="../manual-0.8.pdf" target="rastermanual">see the manual</a>.</p>
 </div>
 
 <div id="nodemenu" class="popupmenu">

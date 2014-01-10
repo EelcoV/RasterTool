@@ -80,12 +80,12 @@ body {
 /* Templates of the 5 node types, for dragging onto the workspace */
 #templates {
 	position: absolute; 
-	left: 440px;
+	left: 400px;
 	top: 8px;
 	width: 398px;
 	height: 40px;
-	border-radius: 0 0 3px 3px;
-	z-index: 1;
+	border-radius: 0 0 5px 5px;
+	z-index: 100;
 }
 .template {
 	position: absolute;
@@ -149,6 +149,24 @@ img.tC {
 	-ms-user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
+}
+
+#helpbutton {
+	position: absolute;
+	top: 12px;
+	left: 820px;
+	z-index: 100;
+}
+#helppanel {
+	width: auto;
+}
+#helptabs td { padding: 2px; }
+#helptabs table p { margin: 0; }
+.exampleMagnitude {
+	border: 1px solid grey;
+	border-radius: 3px;
+	width: 2em;
+	text-align: center;
 }
 
 /* Hoverbuttons to activate the three panels */
@@ -310,8 +328,8 @@ div.th_descr {
 }
 div.th_del { display: table-cell; width: 4em; }
 div.th_del input { padding: 4px; margin: 1px 0;}
-.th_name .inplace_field { width: 14em; font-size: 11px; border: 0px; background: rgb(255,204,102);}
-.th_descr .inplace_field { width: 46em; font-size: 11px; border: 0px; background: rgb(255,204,102);}
+.th_name .inplace_field { width: 14em; font-size: 11px; border: 2px dotted grey; border-radius: 4px; background: rgb(255,204,102);}
+.th_descr .inplace_field { width: 46em; font-size: 11px; border: 2px dotted grey; border-radius: 4px; background: rgb(255,204,102);}
 
 /* Dialog: checklist */
 .checklist { display: none; }
@@ -323,7 +341,7 @@ div.th_freq { display: table-cell; width: 5em; background: #eee; }
 div.th_impact { display: table-cell; width: 5em; background: #eee; }
 div.th_total { display: table-cell; width: 5em; text-align: center; background: #eee; }
 div.th_remark { display: table-cell; width: 36em; padding-bottom: 0.8ex; background: #eee; }
-.th_remark .inplace_field { width: 36em; font-size: 11px; border: 0px; background: rgb(255,204,102);}
+.th_remark .inplace_field { width: 36em; font-size: 11px; border: 2px dotted grey; border-radius: 4px; background: rgb(255,204,102);}
 
 .copybutton {margin-left: 20px; }
 
@@ -375,7 +393,7 @@ div.th_remark { display: table-cell; width: 36em; padding-bottom: 0.8ex; backgro
 	border-top: none; 
 	border-bottom-width: 1px; 
 }
-.tabs-bottom li .inplace_field { 
+.tabs-bottom li .inplace_field { /* is this still used? */
 	width: 20em; 
 	font-size: 11px; 
 	font-weight: bold;
@@ -503,7 +521,9 @@ div.nodeheader {
 div.nodeheader .inplace_field {
 	width: 10em;
 	font-size: 11px;
-	border: 0px; background: rgb(255,204,102);
+	border: 2px dotted grey;
+	border-radius: 4px;
+	background: rgb(255,204,102);
 }
 div.nodetitle {
 	position: relative;
@@ -706,7 +726,8 @@ div.tNOTheader {
 	text-align: left;
 }
 .tNOTD {
-	top: 0px !important;
+	top: -3px !important;
+	right: -3px !important;
 }
 .tNOTMagnitude, .tNOTW {
 	visibility: hidden !important;

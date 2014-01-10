@@ -546,6 +546,6 @@ ThreatIterator.prototype = {
 	next: function() {this.index++;},
 	notlast: function() {return (this.index < this.itemlength);},
 	getthreat: function() {return Threat.get( this.item[this.index] );},
-	getthreatid: function() {return this.item[this.index];},
+	getthreatid: function() {return this.item[this.index];}
 };
 

@@ -771,9 +771,9 @@ Node.prototype = {
 			//containment: '#workspace',//is buggy?
 			aspectRatio: true,
 			minWidth: this._normw,
-			maxWidth: 2*this._normw,
+			maxWidth: (this.type=='tNOT' ? 3 : 2) * this._normw,
 			minHeight: this._normh,
-			maxHeight: 2*this._normh,
+			maxHeight: (this.type=='tNOT' ? 3 : 2) * this._normh,
 			resize: function(event,ui) {
 				var rn = Node.get( nid2id(this.id) );
 				rn.position.x -= (ui.size.width-rn.position.width)/2;
