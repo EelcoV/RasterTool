@@ -480,14 +480,12 @@ Node.prototype = {
 		 * or the maximum number of edges to nodes of type dst.type has been
 		 * exceeded.
 		 */
-		//if (jQuery.inArray(dst.id,this.connect)>-1) {
+		if (jQuery.inArray(dst.id,this.connect)>-1) {
 			/* Already connected. Detach the newly attached connection
 		  	 * without visual feedback.
 		  	 */
-			// Line below no longer necessary for jsPlumb 1.5.5, and causes an error if present
-		  	//this.dragpoint.detachAll();
-		//} else
-		if (C['Total']>Rules.totaledgeMax[this.type]
+			null;
+		} else if (C['Total']>Rules.totaledgeMax[this.type]
 		  || C[dst.type]>=Rules.edgeMax[this.type][dst.type] ) {
 		  	/* detach the newly attached connection, and flash the element for
 		  	 * visual feedback.
@@ -672,7 +670,8 @@ Node.prototype = {
 		});
 		if (this.type!='tNOT') {
 			this.dragpoint = jsPlumb.addEndpoint(this.nid, {
-				anchor: "TopCenter",
+				// For clouds, the dragpoint is slightly off-center.
+				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : "TopCenter"),
 				isSource: true,
 				isTarget: false,
 				endpointsOnTop: true,
@@ -690,14 +689,18 @@ Node.prototype = {
 				maxConnections: -1, // unlimited
 				scope: 'center'
 			});
-			// Drop connections onto the target node, not just on the dragpoint of the target node.
+			// Drop connections onto the target node, not on the dragpoint of the target node (as in older versions).
 			jsPlumb.makeTarget(this.nid, {
 				// endpoints will be deleted/hidden in rasterNode.js:initTabDiagrams:connfunction
-				deleteEndpointsOnDetach: false
+// Is this still the case?
+// Chaned value from false to true, without any adverse effects?!?
+// In fact, there appear to be no effects at all???
+				deleteEndpointsOnDetach: true
 			});
 		}
 
-		$(this.jnid).hover( function() {
+		$(this.jnid).hover( function(evt) {
+			if (evt.buttons!=0) return; // Not while dragging a dragpoint
 			var id = nid2id(this.id);
 			$('#nodeC'+id).css({visibility: "visible"});
 			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: "visible"});

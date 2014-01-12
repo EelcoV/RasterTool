@@ -11,7 +11,6 @@ Cannot rename clusters in the table below each node cluster arrangement.
 In a threat report window, edit a field, then cancel with Escape: the window will close.
 
 TODO
-On clouds, the cursor may appear to be on the connector dot, but actually on the transparent top-part of the cloud image. Dragging will then drag the node, not a connection.
 Remove the code for upgrading ancient formats to the new format.
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
 Exclude entire vulnerabilities in Failures and Vulnerabilities tab.

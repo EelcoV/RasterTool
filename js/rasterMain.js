@@ -2348,6 +2348,8 @@ function initTabDiagrams() {
 				src.try_attach_center(dst);
 				// Delete the temporary eindpoint, and hide the source endpoint
 				jsPlumb.deleteEndpoint(data.targetEndpoint);
+// The following line does not work. In fact, the div is already hidden.
+// Problem is that there are three (!) endpoints within the node at this stage?!
 				$(data.sourceEndpoint.canvas).css({visibility: 'hidden'});
 			}
 		};
@@ -3489,8 +3491,7 @@ function paintNodeThreatTables() {
 
 	$('#at1').empty();
 	var snippet = '\
-		<h1 class="printonly underlay">Reports and Analysis Tools</h1>\
-		<h2 class="printonly underlay projectname">Project: _PN_</h2>\
+		<h1 class="printonly underlay projectname">_PN_</h1>\
 		<h2 class="printonly underlay projectname">Single & Common Cause Failures versus Vulnerabilities</h2>\
 	';
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
