@@ -1895,6 +1895,8 @@ jQuery.extend({
 
 	// A method for determining if a DOM node can handle the data expando
 	acceptData: function( elem ) {
+		if (!elem)
+			console.log("kaboem");
 		if ( elem.nodeName ) {
 			var match = jQuery.noData[ elem.nodeName.toLowerCase() ];
 

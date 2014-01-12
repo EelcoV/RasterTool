@@ -305,10 +305,12 @@ Component.prototype = {
 				this.thrass.push(te.id);
 			}
 		} else {
-			// Copy default threats
-			var it = new ThreatIterator(Project.cid,this.type);
-			for (it.first(); it.notlast(); it.next()) {
-				var th = it.getthreat();
+			// Copy default threats, preserving the order in which they appear in the project.
+			var p = Project.get(Project.cid);
+			for (i=0; i<p.threats.length; i++) {
+				var th = Threat.get(p.threats[i]);
+				if (th.type!=this.type && this.type!='tUNK')
+					continue;
 				// ThreatAssessments on a node/component of type tUNK will have the type of
 				// the Threat, not tUNK. So a tUNK component will have TAs with a type that
 				// differs from the node/component itself.

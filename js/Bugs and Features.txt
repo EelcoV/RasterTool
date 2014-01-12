@@ -1,33 +1,17 @@
 
 BUGS
 Create a new project, change its details to Shared, then switch to it: error message about project not being on the server.
-When a project is changes from Private to Shared and then a different project is selected without changing the shared project, no version is uploaded. When re-activating the shared project an error message indicates that the project was deleted from the server. It was never uploaded.
-After deleting a node (or a selection), cannot drop new nodes on the diagram. The 'ghost' remains visible, and the new node is positioned top left. No interaction possible.
+When a project is changed from Private to Shared and then a different project is selected without changing the shared project, no version is uploaded. When re-activating the shared project an error message indicates that the project was deleted from the server. It was never uploaded.
 Third party cookies must be enabled for localStorage to function. This is a concern, perhaps, when never versions of Firefox disable third party cookies by default.
 Change details of a project on the server but not active: function not implemented.
-Scrollers moves out of view to the left when it is moved from its default position to a position further towards the left of the screen, and the window is resized/made smaller.
-Cannot repeat: When wathcing the prpoject for remote updates, on update the previous project is not deleted?! Project._all is growing.
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 Editing the CCF clusters for a large list of nodes is troublesome. Idea: make clusters collapsable.
-ExportAll 20120718.raster.txt: Error You found a bug in this program. ("No such node in cluster" in function "NodeCluster.removecomponent_threat") on deleting vuln after pasting checklist into it ("UMTS toestel").
-Ignore drag-start when too close to a connector.
 When there are many services, the bottom tabs should scroll.
-Sometimes problem with editing node titles: click+paste, click+paste, click+paste, then sometimes a title becomes inoperative. Only a page reload will reactive the edit-in-place for that title.
-On hold: Must get rid of Project.cid and Service.cid; they cause too many bugs.
 Cannot rename clusters in the table below each node cluster arrangement.
 In a threat report window, edit a field, then cancel with Escape: the window will close.
-Threat (evaluation) table rows cannot be reordered.
-
-CANNOT REPRODUCE
-Dragging a connector sometimes leaves painting artefacts. Is this an issue of FFox 17?
-The initial Service canvas is drawn incorrectly: connectors are offset. Dunno, appears sometimes??
-In Failures and Vulnerabilities clusters show as reduced when there is only a single score, without exclusions. Cannot reproduce?
-Cannot reproduce: Cloud-node as a node class: only one of the clouds appeared in a CCF. Would have expected both to be listed. That threat does not even exist on that cloud (but used to, it was deleted).
-Cannot reproduce: allowDrop called when dragging the scroller?! Reproduce: reload, open a node cluster, go to Diagrams tab, move the scroller: bang!
-You found a bug in this program. ("NodeCluster already contains that child node" in function "NodeCluster.addchildnode"). When renaming a vuln. Cannot reproduce now. Artefact of debugging?
 
 TODO
-Make notes so that their aspect ratio need not be constant.
+On clouds, the cursor may appear to be on the connector dot, but actually on the transparent top-part of the cloud image. Dragging will then drag the node, not a connection.
 Remove the code for upgrading ancient formats to the new format.
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
 Exclude entire vulnerabilities in Failures and Vulnerabilities tab.
@@ -52,6 +36,25 @@ Consistency report for the entire diagram, plus UI.
 Allow comments to be set on a project. Include versioning info?
 Allow for icons to be added to nodes (from a fixed library?)
 Add functionality for graph expansion? Expand a cloud into subcomponents?
+
+CANNOT REPRODUCE
+Sometimes problem with editing node titles: click+paste, click+paste, click+paste, then sometimes a title becomes inoperative. Only a page reload will reactive the edit-in-place for that title.
+Cannot repeat: When wathcing the prpoject for remote updates, on update the previous project is not deleted?! Project._all is growing.
+After deleting a node (or a selection), cannot drop new nodes on the diagram. The 'ghost' remains visible, and the new node is positioned top left. No interaction possible.
+Dragging a connector sometimes leaves painting artefacts. Is this an issue of FFox 17?
+The initial Service canvas is drawn incorrectly: connectors are offset. Dunno, appears sometimes??
+In Failures and Vulnerabilities clusters show as reduced when there is only a single score, without exclusions. Cannot reproduce?
+Cannot reproduce: Cloud-node as a node class: only one of the clouds appeared in a CCF. Would have expected both to be listed. That threat does not even exist on that cloud (but used to, it was deleted).
+Cannot reproduce: allowDrop called when dragging the scroller?! Reproduce: reload, open a node cluster, go to Diagrams tab, move the scroller: bang!
+You found a bug in this program. ("NodeCluster already contains that child node" in function "NodeCluster.addchildnode"). When renaming a vuln. Cannot reproduce now. Artefact of debugging?
+
+OTHER / WON'T FIX
+Make the "Total" column in threat tables couloured? Probably doesn't look too good. Tried it a bit.
+Two sub-clusters on the same level can have the same name. Since it is OK for sub-clusters not sharing the same parent to have the same name, and since it does not break anything, we won't fix this.
+The list in Single Failures cannot be grouped by service, as some components belong to more than one service. They would then be duplicated, which complicates the UI too much (e.g. a single edit may change multiple objects on the screen).
+Drag to create may create rnode somewhat outside canvas --> won't fix, will be corrected on first drag/move
+Adding a shadow to nodes as they are dragged is not good; the shadow will follow the rectangular contour of the node, not the real shape. That looks odd.
+
 
 
 PROPOSAL FOR SHARED PROJECTS
@@ -124,9 +127,3 @@ There is no concept of a group of users or project-versions.
 A meaningful authentication scheme can be added later.
 
 
-OTHER / WON'T FIX
-Make the "Total" column in threat tables couloured? Probably doesn't look too good. Tried it a bit.
-Two sub-clusters on the same level can have the same name. Since it is OK for sub-clusters not sharing the same parent to have the same name, and since it does not break anything, we won't fix this.
-The list in Single Failures cannot be grouped by service, as some components belong to more than one service. They would then be duplicated, which complicates the UI too much (e.g. a single edit may change multiple objects on the screen).
-Drag to create may create rnode somewhat outside canvas --> won't fix, will be corrected on first drag/move
-Adding a shadow to nodes as they are dragged is not good; the shadow will follow the rectangular contour of the node, not the real shape. That looks odd.

@@ -13,7 +13,7 @@
 <link rel="shortcut icon" href="../img/Raster.png">
 <!--script type="text/javascript" src="../js/eventsource.js"></script-->
 <script type="text/javascript" src="../js/jquery-1.7.2.js"></script>
-<script type="text/javascript" src="../js/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" src="../js/jquery-ui-1.8.24.js"></script>
 <script type="text/javascript" src="../js/ui.tabs.closable.js"></script>
 <script type="text/javascript" src="../js/jquery.jsPlumb-1.5.5.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>  

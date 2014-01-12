@@ -332,6 +332,17 @@ function SizeDOMElements() {
 	var scroller_w = $('.scroller_overview').width();
 	$('.scroller_region').height( (wsh/fh) * scroller_h );
 	$('.scroller_region').width( (wsw/fw) * scroller_w );
+	
+	var scroller = $('#scroller_overview'+Service.cid);
+	var o = scroller.offset();
+	// Make sure that we only touch the top and right attributes and not the left attribute,
+	// so that the scroller remains fixed relative to the upper-right corner of the workspace.
+	if (o && o.left>0 && o.left<50) {
+		scroller.css("right", (wsw-60) + "px");
+	}
+	if (o && o.top>0 && o.top>wsh-30) {
+		scroller.css("top", (wsh-30) + "px");
+	}
 }
 
 function removetransientwindows(evt) {
@@ -1772,7 +1783,7 @@ function initLibraryPanel() {
 			'Erase everything','Cancel',
 			function() {
 				rasterConfirm('Delete all?',
-					"Really sure? You will lose <b>everything</b> that is not stored on the server!\n",
+					"Really sure? You will lose <b>all private</b> projects!\n",
 					'Yes, really erase all','Cancel',
 					function() {
 						localStorage.clear();
@@ -1822,6 +1833,12 @@ function initLibraryPanel() {
 	});
 	$('#libraryactivator').click( function() {
 		if ($('#librarypanel').css('display')=='none') {
+			var it = new ProjectIterator({stubsonly: false});
+			var nump = it.number();
+			nump += 4; // Allow space for option group titles.
+			if (nump<8) nump=8;
+			if (nump>15) nump=15;
+			$('#libselect').attr("size",nump);
 			removetransientwindows();
 			$('#librarypanel').show();
 			// Show project list using current stubs, but do fire an update
@@ -2599,10 +2616,19 @@ function displayThreatsDialog(cid) {
 	// First delete button gains focus, and is highlighted. Looks ugly.
 	$('#dialogthreatlist input').blur();
 	
-	$("#dialogthreatlist .threats").sortable({
-		items: ".threat",
-		containment: "parent"
-	}).disableSelection();
+	$("#threats"+cid).sortable({
+		containment: "parent",
+		helper: "clone",
+		deactivate: function(e,ui) {
+			var newlist = [];
+			for (var i=0; i<this.children.length; i++)
+				newlist.push( nid2id(this.children[i].id) );
+			if (newlist.length != c.thrass.length)
+				bugreport("internal error in sorting","displayThreatsDialog");
+			c.thrass = newlist;
+			transactionCompleted("Reorder thrass of component "+c.id);
+		}
+	});
 }
 
 function displayChecklistsDialog(type) {
@@ -2780,10 +2806,12 @@ function paintSingleFailures(s) {
 			snippet = snippet.replace(/_LB_/, '');
 		}
 
+snippet += "<div class='sfa_sortable'>\n";
 		for (i=0; i<cm.thrass.length; i++) {
 			var te = ThreatAssessment.get(cm.thrass[i]);
 			snippet += te.addtablerow_textonly("sfa"+s.id+'_'+cm.id);
 		}
+snippet += "</div>\n";
 		snippet += '\n\
 			 <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="+ Add vulnerability">\n\
 			 <input id="sfacopy_SV___ID_" class="copybutton" type="button" value="Copy">\n\
@@ -2857,6 +2885,22 @@ function paintSingleFailures(s) {
 			active: (cm.accordionopened ? 0 : false)
 		});
 		acc.accordion("option", "animated", "slide");
+		
+		$(acc.selector + ' .sfa_sortable').sortable({
+			containment: "parent",
+			helper: "clone",
+			deactivate: function(e,ui) {
+				var newlist = [];
+				for (var i=0; i<this.children.length; i++) {
+					var obj = $('#' + this.children[i].id);
+					newlist.push( nid2id(this.children[i].id) );
+				}
+				if (newlist.length != cm.thrass.length)
+					bugreport("internal error in sorting","paintSingleFailures");
+				cm.thrass = newlist;
+				transactionCompleted("Reorder thrass of component "+cm.id);
+			}
+		});
 	}
 	
 	$('#expandalls'+s.id).click( function(evt){

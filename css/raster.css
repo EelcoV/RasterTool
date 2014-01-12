@@ -47,6 +47,23 @@ body {
 .workinner {overflow: auto; border-radius: 4px 0 4px 0; }
 .workbody h1 {margin-top: 0;}
 
+input.inplace_field, textarea,inplace_field {
+	font-size: 11px;
+	box-shadow: 0 0 0 4px white;
+	outline: 2px dotted grey;
+	-moz-outline-border: 4px;
+	border: 0;
+	z-index: 1100;
+/* Version 2
+	outline: 4px dotted grey;
+	outline-offset: 0;
+*/
+/* Version !
+	border: 2px dotted grey;
+	border-radius: 4px;
+*/
+	background: rgb(255,204,102);
+}
 
 .ui-link { cursor: pointer; text-decoration: underline; }
 
@@ -313,7 +330,6 @@ div.threat {
 	display: table-row;
 	vertical-align: top;
 	padding: 2px;
-	border: 1px dotted black;
 }
 div.th_name {
 	display: table-cell;
@@ -328,8 +344,8 @@ div.th_descr {
 }
 div.th_del { display: table-cell; width: 4em; }
 div.th_del input { padding: 4px; margin: 1px 0;}
-.th_name .inplace_field { width: 14em; font-size: 11px; border: 2px dotted grey; border-radius: 4px; background: rgb(255,204,102);}
-.th_descr .inplace_field { width: 46em; font-size: 11px; border: 2px dotted grey; border-radius: 4px; background: rgb(255,204,102);}
+.th_name .inplace_field { width: 14em; }
+.th_descr .inplace_field { width: 46em; }
 
 /* Dialog: checklist */
 .checklist { display: none; }
@@ -341,7 +357,7 @@ div.th_freq { display: table-cell; width: 5em; background: #eee; }
 div.th_impact { display: table-cell; width: 5em; background: #eee; }
 div.th_total { display: table-cell; width: 5em; text-align: center; background: #eee; }
 div.th_remark { display: table-cell; width: 36em; padding-bottom: 0.8ex; background: #eee; }
-.th_remark .inplace_field { width: 36em; font-size: 11px; border: 2px dotted grey; border-radius: 4px; background: rgb(255,204,102);}
+.th_remark .inplace_field { width: 35em; }
 
 .copybutton {margin-left: 20px; }
 
@@ -503,7 +519,7 @@ div.nodeheader {
 	color: black;
 	text-align: center;
 	font: 12px sans-serif;
-	z-index: 11;
+	z-index: 1001; /* Higher than resize handle and dropdown, especially when inplace editing */
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
@@ -518,12 +534,10 @@ div.nodeheader {
 .purple {color: black !important;}
 .grey {color: #aaa !important;}
 .Chide {color: black !important;}
-div.nodeheader .inplace_field {
-	width: 10em;
-	font-size: 11px;
-	border: 2px dotted grey;
-	border-radius: 4px;
-	background: rgb(255,204,102);
+div.nodeheader input.inplace_field {
+	position: relative;
+	left: -4em;
+	width: 15em;
 }
 div.nodetitle {
 	position: relative;
@@ -732,11 +746,13 @@ div.tNOTheader {
 .tNOTMagnitude, .tNOTW {
 	visibility: hidden !important;
 }
-/*.tNOTtitle .inplace_field { width: 46em; font-size: 11px; border: 0px; background: rgb(255,204,102);}*/
+/*
 .tNOTtitle .inplace_field {
 	width: 97% !important;
 }
+*/
 .tNOTtitle span {white-space: pre-wrap;}
+.tNOTcontent {height: 100%;}
 
 #selectrect {
 	position: absolute;

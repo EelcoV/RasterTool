@@ -433,6 +433,41 @@ Project.prototype = {
 				bugreport('unknown type encountered','Project.load'); 
 			}
 		}
+
+		var pid = this.id;
+		var sortfunc = function(e,ui) {
+			var p = Project.get(pid);
+			var newlist = [];
+			$("#tWLSthreats .threat").each( function(index,elem) {
+				newlist.push( nid2id(elem.id) );
+			});
+			$("#tWRDthreats .threat").each( function(index,elem) {
+				newlist.push( nid2id(elem.id) );
+			});
+			$("#tEQTthreats .threat").each( function(index,elem) {
+				newlist.push( nid2id(elem.id) );
+			});
+			if (newlist.length != p.threats.length)
+				bugreport("internal error in sorting default vulnerabilities","Project.load");
+			p.threats = newlist;
+			transactionCompleted("Project threats reordered "+pid);
+		};
+		$("#tWLSthreats").sortable({
+			containment: "parent",
+			helper: "clone",
+			deactivate: sortfunc
+		});
+		$("#tWRDthreats").sortable({
+			containment: "parent",
+			helper: "clone",
+			deactivate: sortfunc
+		});
+		$("#tEQTthreats").sortable({
+			containment: "parent",
+			helper: "clone",
+			deactivate: sortfunc
+		});
+
 		$('.projectname').text(this.title);
 		Project.cid = this.id;
 		Service.cid = this.services[0];
@@ -916,6 +951,7 @@ var ProjectIterator = function(opt) {
 ProjectIterator.prototype = {
 	first: function() {this.index=0;},
 	next: function() {this.index++;},
+	number: function() {return this.item.length;},
 	notlast: function() {return (this.index < this.item.length);},
 	getprojectid: function() {return this.item[this.index];},
 	getproject: function() {return Project.get( this.item[this.index] );},
