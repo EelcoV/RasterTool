@@ -700,7 +700,16 @@ Node.prototype = {
 		}
 
 		$(this.jnid).hover( function(evt) {
-			if (evt.buttons!=0) return; // Not while dragging a dragpoint
+			// If a mouse button is down, then Firefox will set .buttons to nonzero.
+			// Google Chrome does not set .buttons, but uses .which; when a mouse button is down
+			// .which will be non-zero.
+			// On Firefox, .which appears to be 1 always.
+			// Return is a mouse button is down.
+			if (evt.buttons!=null) {
+				if (evt.buttons!=0) return;
+			} else {
+				if (evt.which!=0) return;
+			}
 			var id = nid2id(this.id);
 			$('#nodeC'+id).css({visibility: "visible"});
 			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: "visible"});
@@ -759,6 +768,19 @@ Node.prototype = {
 				rn.store();
 				transactionCompleted("Node rename");
 				return H(rn.title);
+			},
+			/* Make sure that the editor is above all node decorations. */
+			delegate: {
+				didOpenEditInPlace: function(aDOMNode, aSettingsDict) {
+					var id = nid2id(aDOMNode[0].id);
+					$("#node"+id).css("z-index","1001");
+					$("#nodeheader"+id).css("z-index","1001");
+				},
+				didCloseEditInPlace: function (aDOMNode, aSettingsDict) {
+					var id = nid2id(aDOMNode[0].id);
+					$("#node"+id).css("z-index","");
+					$("#nodeheader"+id).css("z-index","");
+				}
 			}
 		});
 		
@@ -943,7 +965,7 @@ var NodeIterator = function(opt) {
 		if (opt.match!=undefined && 
 			!(rn.type==opt.match 
 			 || rn.type=='tUNK' 
-			 || (rn.type!='tACT' && 'tUNK'==opt.match)
+			 || (rn.type!='tACT' && rn.type!='tNOT' && 'tUNK'==opt.match)
 			)
 		   ) continue;
 		this.item.push(i);

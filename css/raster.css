@@ -47,21 +47,13 @@ body {
 .workinner {overflow: auto; border-radius: 4px 0 4px 0; }
 .workbody h1 {margin-top: 0;}
 
-input.inplace_field, textarea,inplace_field {
+input.inplace_field, textarea.inplace_field {
 	font-size: 11px;
 	box-shadow: 0 0 0 4px white;
 	outline: 2px dotted grey;
 	-moz-outline-border: 4px;
 	border: 0;
 	z-index: 1100;
-/* Version 2
-	outline: 4px dotted grey;
-	outline-offset: 0;
-*/
-/* Version !
-	border: 2px dotted grey;
-	border-radius: 4px;
-*/
 	background: rgb(255,204,102);
 }
 
@@ -480,7 +472,12 @@ div.th_remark { display: table-cell; width: 36em; padding-bottom: 0.8ex; backgro
 	-moz-user-select: none;
 	-webkit-user-select: none;
 }
+/*
+Work around a bug in Safari, where the class "_jsPlumb_connector" suddenly changes to
+"[object SVGAnimatedString]" when the mouse moves over the connector.
 ._jsPlumb_connector path {
+*/
+svg path {
 	stroke-width: 3;
 	stroke: #666;
 }
@@ -519,7 +516,6 @@ div.nodeheader {
 	color: black;
 	text-align: center;
 	font: 12px sans-serif;
-	z-index: 1001; /* Higher than resize handle and dropdown, especially when inplace editing */
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;

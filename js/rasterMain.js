@@ -2621,6 +2621,7 @@ function displayThreatsDialog(cid) {
 	$("#threats"+cid).sortable({
 		containment: "parent",
 		helper: "clone",
+		cursor: "ns-resize",
 		deactivate: function(e,ui) {
 			var newlist = [];
 			for (var i=0; i<this.children.length; i++)
@@ -2891,13 +2892,15 @@ snippet += "</div>\n";
 		$(acc.selector + ' .sfa_sortable').sortable({
 			containment: "parent",
 			helper: "clone",
+			cursor: "ns-resize",
 			deactivate: function(e,ui) {
 				var newlist = [];
+				var cm = Component.get( nid2id(this.previousElementSibling.id) );
 				for (var i=0; i<this.children.length; i++) {
 					var obj = $('#' + this.children[i].id);
 					newlist.push( nid2id(this.children[i].id) );
 				}
-				if (newlist.length != cm.thrass.length)
+				if (cm==null || newlist.length != cm.thrass.length)
 					bugreport("internal error in sorting","paintSingleFailures");
 				cm.thrass = newlist;
 				transactionCompleted("Reorder thrass of component "+cm.id);

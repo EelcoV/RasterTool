@@ -1,5 +1,6 @@
 
 BUGS
+When reordering theats or vulnerabilities, change cursor to 'ns-resize' (as on the CCF tables).
 Create a new project, change its details to Shared, then switch to it: error message about project not being on the server.
 When a project is changed from Private to Shared and then a different project is selected without changing the shared project, no version is uploaded. When re-activating the shared project an error message indicates that the project was deleted from the server. It was never uploaded.
 Third party cookies must be enabled for localStorage to function. This is a concern, perhaps, when never versions of Firefox disable third party cookies by default.
@@ -9,8 +10,11 @@ Editing the CCF clusters for a large list of nodes is troublesome. Idea: make cl
 When there are many services, the bottom tabs should scroll.
 Cannot rename clusters in the table below each node cluster arrangement.
 In a threat report window, edit a field, then cancel with Escape: the window will close.
+The scroller can move out of the workspace at the top, when the window is made very short.
 
 TODO
+Windows (node reports, list of vulnerabilities) animate with growing instead of fading in? The origin should be that particular node, or the mouse position that called up the popup window. This may solve the next Todo as well.
+Position Node report dialogs close to their node?
 Remove the code for upgrading ancient formats to the new format.
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
 Exclude entire vulnerabilities in Failures and Vulnerabilities tab.
@@ -30,7 +34,6 @@ Better handling of redundancy in telecom services.
 Undo
 Localization
 Set description on added threats.
-Position Node report dialogs close to their node?
 Consistency report for the entire diagram, plus UI.
 Allow comments to be set on a project. Include versioning info?
 Allow for icons to be added to nodes (from a fixed library?)
@@ -53,7 +56,7 @@ Two sub-clusters on the same level can have the same name. Since it is OK for su
 The list in Single Failures cannot be grouped by service, as some components belong to more than one service. They would then be duplicated, which complicates the UI too much (e.g. a single edit may change multiple objects on the screen).
 Drag to create may create rnode somewhat outside canvas --> won't fix, will be corrected on first drag/move
 Adding a shadow to nodes as they are dragged is not good; the shadow will follow the rectangular contour of the node, not the real shape. That looks odd.
-
+It would be nice if hover over edit-in place would not be a orange rectangle but had rounded corners. Tried it, won't work (as node titles can wrap, a linebreak in a <span> with rounded corners looks odd).
 
 
 PROPOSAL FOR SHARED PROJECTS

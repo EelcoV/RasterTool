@@ -455,16 +455,19 @@ Project.prototype = {
 		$("#tWLSthreats").sortable({
 			containment: "parent",
 			helper: "clone",
+			cursor: "ns-resize",
 			deactivate: sortfunc
 		});
 		$("#tWRDthreats").sortable({
 			containment: "parent",
 			helper: "clone",
+			cursor: "ns-resize",
 			deactivate: sortfunc
 		});
 		$("#tEQTthreats").sortable({
 			containment: "parent",
 			helper: "clone",
+			cursor: "ns-resize",
 			deactivate: sortfunc
 		});
 
