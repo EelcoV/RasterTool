@@ -737,7 +737,7 @@ Node.prototype = {
 		});
 		$('#nodeC'+this.id).click( function(e){ return false; });
 		
-		$("#nodeW"+this.id).click(function() {
+		$("#nodeW"+this.id).click(function(e) {
 			// this.id is like "nodeWxxx", where xxx is the node id number
 			var id = nid2id(this.id);
 			var rn = Node.get(id);
@@ -749,10 +749,22 @@ Node.prototype = {
 			else {
 				s = report.join("<p>");
 			}
+			if ($("#nodereport").dialog("isOpen"))
+				$("#nodereport").dialog("close");
 			$("#nodereport").html( s );
 			$("#nodereport").dialog({
 				title: 'Warning report on '+rn.htmltitle(),
-				zIndex: 400
+				position: [e.clientX, e.clientY],
+				zIndex: 400,
+				open: function() {
+					$("#nodereport").dialog("widget")
+					.css({display: "", opacity: 0})
+					.animate({
+						opacity: 1,
+						left: e.clientX+100,
+						top: e.clientY+20
+					}, 250);
+				}
 			});
 			$("#nodereport").dialog("open");
 			Node.DialogNode = id;
@@ -775,11 +787,13 @@ Node.prototype = {
 					var id = nid2id(aDOMNode[0].id);
 					$("#node"+id).css("z-index","1001");
 					$("#nodeheader"+id).css("z-index","1001");
+					$("#nodetitle"+id+" span:last-child").css("display","none");
 				},
 				didCloseEditInPlace: function (aDOMNode, aSettingsDict) {
 					var id = nid2id(aDOMNode[0].id);
 					$("#node"+id).css("z-index","");
 					$("#nodeheader"+id).css("z-index","");
+					$("#nodetitle"+id+" span:last-child").css("display","");
 				}
 			}
 		});

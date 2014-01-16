@@ -1,6 +1,6 @@
 
 BUGS
-When reordering theats or vulnerabilities, change cursor to 'ns-resize' (as on the CCF tables).
+Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?
 Create a new project, change its details to Shared, then switch to it: error message about project not being on the server.
 When a project is changed from Private to Shared and then a different project is selected without changing the shared project, no version is uploaded. When re-activating the shared project an error message indicates that the project was deleted from the server. It was never uploaded.
 Third party cookies must be enabled for localStorage to function. This is a concern, perhaps, when never versions of Firefox disable third party cookies by default.
@@ -10,12 +10,10 @@ Editing the CCF clusters for a large list of nodes is troublesome. Idea: make cl
 When there are many services, the bottom tabs should scroll.
 Cannot rename clusters in the table below each node cluster arrangement.
 In a threat report window, edit a field, then cancel with Escape: the window will close.
-The scroller can move out of the workspace at the top, when the window is made very short.
 
 TODO
-Windows (node reports, list of vulnerabilities) animate with growing instead of fading in? The origin should be that particular node, or the mouse position that called up the popup window. This may solve the next Todo as well.
-Position Node report dialogs close to their node?
-Remove the code for upgrading ancient formats to the new format.
+SIngle click to delete connectors?
+Remove the code for upgrading ancient formats to the new format?
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
 Exclude entire vulnerabilities in Failures and Vulnerabilities tab.
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.

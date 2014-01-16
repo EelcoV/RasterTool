@@ -123,7 +123,7 @@ Project.merge = function(intoproject,otherproject) {
 		for (it.first(); it.notlast(); it.next()) {
 			var rn = it.getnode();
 			if (rn.type=='tACT' || rn.type=='tNOT')
-				break;
+				continue;
 			cm = Component.get(rn.component);
 			// If the node was added to a singular component, it doesn't need to added
 			if (cm.single)

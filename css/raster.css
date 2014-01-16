@@ -145,6 +145,7 @@ img.tC {
 	height: 16px;
 	z-index: 105;
 	visibility: hidden;
+	cursor: context-menu;
 }
 .templatelabel {
 	position: relative;
@@ -154,6 +155,7 @@ img.tC {
 	white-space: nowrap;
 	text-align: center;
 	color: #666;
+	cursor: default;
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
@@ -485,11 +487,13 @@ svg path {
 .connbutton {
 	font-size: 16px !important;
 	z-index: 2;
+	cursor: pointer;
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
 }
+/* Are these two still used? */
 .connbuttonNormal {
 	color: black !important;
 }
@@ -537,14 +541,13 @@ div.nodeheader input.inplace_field {
 }
 div.nodetitle {
 	position: relative;
-/*	top: -0.3em;*/
 	top: 0em;
-	cursor: text;
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
 }
+.nodetitle span { cursor: pointer; }
 .marktitleM {
 	color: rgb(153,51,0);
 	position: relative;
@@ -572,7 +575,7 @@ img.nodeC {
 	width: 16px; 
 	height: 16px;
 	z-index: 15;
-	cursor: pointer;
+	cursor: context-menu;
 	visibility: hidden;
 }
 .markhi { visibility: visible; }
@@ -598,7 +601,6 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 	top: -3px;
 	left: 2px;
 	z-index: 15;
-	cursor: pointer;
 	box-shadow: 2px 2px 3px #999;
 }
 .M0 { background: rgb(255,255,255) }	/* '-' */
@@ -742,11 +744,6 @@ div.tNOTheader {
 .tNOTMagnitude, .tNOTW {
 	visibility: hidden !important;
 }
-/*
-.tNOTtitle .inplace_field {
-	width: 97% !important;
-}
-*/
 .tNOTtitle span {white-space: pre-wrap;}
 .tNOTcontent {height: 100%;}
 

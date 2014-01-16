@@ -341,7 +341,8 @@ function SizeDOMElements() {
 		scroller.css("right", (wsw-60) + "px");
 	}
 	if (o && o.top>0 && o.top>wsh-30) {
-		scroller.css("top", (wsh-30) + "px");
+		var t = wsh-30;
+		scroller.css("top", (t<60 ? 60 : t) + "px");
 	}
 }
 
@@ -2064,17 +2065,11 @@ function initTabDiagrams() {
 	
 	$("#nodereport").dialog({
 		autoOpen: false,
-		show: "fade",
-		hide: "fade",
-		title: "Warning report",
 		minHeight: 80,
 		zIndex: 400
 	});
 	$("#componentthreats").dialog({
 		autoOpen: false,
-		show: "fade",
-		hide: "fade",
-		title: "Vulnerability report",
 		minHeight: 100,
 		minWidth: 785,
 		maxWidth: 785,
@@ -2110,13 +2105,12 @@ function initTabDiagrams() {
 		return false;
 	});
 	
-	$('#mi_th').mouseup(function() {
+	$('#mi_th').mouseup(function(e) {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
-		if (rn.type!='tACT' && rn.type!='tNOT')
-//			$('#node'+rn.id).effect("pulsate", { times:2 }, 200);
-//		else
-			displayThreatsDialog(rn.component);
+		if (rn.type=='tACT' || rn.type=='tNOT')
+			return;
+		displayThreatsDialog(rn.component,e);
 	});
 //	$('#mi_ct span.ui-icon').hover(function(){
 	$('#mi_ct').hover(function(){
@@ -2516,7 +2510,7 @@ function workspacedrophandler(event, ui) {
 	transactionCompleted("Node add");
 }
 
-function displayThreatsDialog(cid) {
+function displayThreatsDialog(cid,event) {
 	var c = Component.get(cid);
 	Component.ThreatsComponent = cid;
 	var snippet = '<div id="dialogthreatlist">\
@@ -2608,11 +2602,26 @@ function displayThreatsDialog(cid) {
 		transactionCompleted("Vuln paste");
 	});
 		
+	if ($("#componentthreats").dialog("isOpen"))
+		$("#componentthreats").dialog("close");
 	$("#componentthreats").dialog({
 		'title': 'Vulnerability assessment for "'+H(c.title)+'" ' + (c.nodes.length>1 ? "("+c.nodes.length+" nodes)" : ""),
 		minWidth: 725,
 		minHeight: 180,
-		zIndex: 400
+		zIndex: 400,
+		position: [event.clientX, event.clientY],
+		open: function() {
+			var o = $("#componentthreats").dialog("widget").offset();
+			// Fade in the menu, and move it left & down, but only move it if the call to "open" did not adjust the position
+			// of the window. Windows are adjusted to prevent them from sticking out of the viewport.
+			$("#componentthreats").dialog("widget")
+			.css({display: "", opacity: 0})
+			.animate({
+				opacity: 1,
+				left: o.left+(event.clientX==o.left? 50 : 0),
+				top: o.top+(event.clientY==o.top ? 30 : 0)
+			}, 250);
+		}
 	});
 	$("#componentthreats").dialog("open");
 	// First delete button gains focus, and is highlighted. Looks ugly.
