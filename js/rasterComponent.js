@@ -326,7 +326,8 @@ Component.prototype = {
 
 	calculatemagnitude: function() {
 		if (this.thrass.length==0) {
-			this.magnitude='U';
+			// Must be the same as default for new nodes, which also have no thrass[].
+			this.magnitude='-';
 			return;
 		}
 		this.magnitude = ThreatAssessment.get(this.thrass[0]).total;

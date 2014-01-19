@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="../css/raster.css" type="text/css" id="maincssfile">
 <link rel="stylesheet" href="../css/raster-print.css" type="text/css">
 <link rel="shortcut icon" href="../img/Raster.png">
-<!--script type="text/javascript" src="../js/eventsource.js"></script-->
+<script type="text/javascript" src="../js/eventsource.js"></script>
 <script type="text/javascript" src="../js/jquery-1.7.2.js"></script>
 <script type="text/javascript" src="../js/jquery-ui-1.8.24.js"></script>
 <script type="text/javascript" src="../js/ui.tabs.closable.js"></script>
