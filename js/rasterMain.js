@@ -2033,6 +2033,10 @@ function bottomTabsShowHandlerSFaults(event,ui) {
 	paintSingleFailures(Service.get(id));
 }
 
+// Timer to prevent submenus from disappearing too quickly
+//
+var menuTimerct, menuTimercc;
+
 function initTabDiagrams() {
 	$('#WLSaddthreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#WLScopythreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
@@ -2114,14 +2118,16 @@ function initTabDiagrams() {
 	});
 //	$('#mi_ct span.ui-icon').hover(function(){
 	$('#mi_ct').hover(function(){
+		clearTimeout(menuTimerct);
 		if (!$('#mi_ct').hasClass("popupmenuitemdisabled")) $('#mi_ctsm').show();
 	},function(){
-		$('#mi_ctsm').hide();
+		menuTimerct = setTimeout( function() {$('#mi_ctsm').hide();}, 150);
 	});
 	$('#mi_ctsm').hover(function(){
+		clearTimeout(menuTimerct);
 		$('#mi_ctsm').show();
 	},function(){
-		$('#mi_ctsm').hide();
+		menuTimerct = setTimeout( function() {$('#mi_ctsm').hide();}, 150);
 	});
 	$('#mi_cttWLS').mouseup(function() {
 		$('#nodemenu').css("display", "none");
@@ -2166,8 +2172,9 @@ function initTabDiagrams() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		var nn = new Node(rn.type);
-		nn.autosettitle(rn.title);
-		if (rn.component!=null) {
+//		nn.autosettitle(rn.title);
+		nn.changetitle(rn.title);
+/*		if (rn.component!=null) {
 			var rnc = Component.get(rn.component);
 			var nnc= Component.get(nn.component);
 			nnc.setproject(rnc.project);
@@ -2179,7 +2186,7 @@ function initTabDiagrams() {
 			}
 			nnc.adddefaultthreatevaluations(rnc.id);
 		}
-		var fh = $('.fancyworkspace').height();
+*/		var fh = $('.fancyworkspace').height();
 		var fw = $('.fancyworkspace').width();
 		nn.paint();
 		nn.setposition(
@@ -2189,6 +2196,7 @@ function initTabDiagrams() {
 		transactionCompleted("Node duplicate");
 	});
 	$('#mi_cc').hover(function(){
+		clearTimeout(menuTimercc);
 		// Remove any previous custom style
 		$('#mi_ccsm').attr('style','');
 		$('#mi_ccsm').show();
@@ -2200,12 +2208,13 @@ function initTabDiagrams() {
 		 	$('#mi_ccsm').offset(o);
 		} 
 	},function(){
-		$('#mi_ccsm').hide();
+		menuTimercc = setTimeout( function() {$('#mi_ccsm').hide();}, 150);
 	});
 	$('#mi_ccsm').hover(function(){
+		clearTimeout(menuTimercc);
 		$('#mi_ccsm').show();
 	},function(){
-		$('#mi_ccsm').hide();
+		menuTimercc = setTimeout( function() {$('#mi_ccsm').hide();}, 150);
 	});
 	function colorfunc(c) { return function() {
 		$('#nodemenu').css("display", "none");

@@ -798,6 +798,10 @@ Project.prototype = {
 	internalCheck: function() {
 		var errors = "";
 		var it;
+		if (this.stub && this.services.length>0)
+			errors += "Project is marked as a stub, but does have services.\n";
+		if (!this.stub && this.services.length==0)
+			errors += "Project is has no services.\n";
 		// Check each service, and all nodes in each service
 		for (var i=0; i<this.services.length; i++) {
 			var s = Service.get(this.services[i]);
@@ -825,6 +829,8 @@ Project.prototype = {
   		}
 		// Check all node clusters
 		it = new NodeClusterIterator({project: this.id});
+		if (this.stub && it.notlast())
+			errors += "Project is marked as a stub, but does have node clusters.\n";
   		for (it.first(); it.notlast(); it.next()) {
  			var nc = it.getNodeCluster();
 			if (!nc) {
@@ -835,6 +841,8 @@ Project.prototype = {
   		}
 		// Check all components
 		it = new ComponentIterator({project: this.id});
+		if (this.stub && it.notlast())
+			errors += "Project is marked as a stub, but does have components.\n";
   		for (it.first(); it.notlast(); it.next()) {
  			var cm = it.getcomponent();
 			if (!cm) {
@@ -844,6 +852,8 @@ Project.prototype = {
 			errors += cm.internalCheck();
   		}
 		// Check all threats on this project
+		if (this.stub && this.threats.length>0)
+			errors += "Project is marked as a stub, but does have a threats array.\n";
 		for (i=0; i<this.threats.length; i++) {
 			var t = Threat.get(this.threats[i]);
 			if (!t) {
@@ -856,6 +866,8 @@ Project.prototype = {
 		}
 		// Check all threats
 		it = new ThreatIterator(this.id,'tUNK');
+		if (this.stub && it.notlast())
+			errors += "Project is marked as a stub, but does have threats.\n";
   		for (it.first(); it.notlast(); it.next()) {
  			t = it.getthreat();
 			if (!t) {

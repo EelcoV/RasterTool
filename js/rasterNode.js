@@ -646,6 +646,8 @@ Node.prototype = {
 				// Reset the node to the grid, if necessary
 				var rn = Node.get( nid2id(this.id) );
 				rn.setposition(rn.position.x,rn.position.y);
+				// Disallow dragging for 100msec
+				setTimeout( function(){rn.dragging=false;}, 100);
 				transactionCompleted("Node move (selection)");
 			},
 			drag: function(event,ui) {
@@ -656,6 +658,7 @@ Node.prototype = {
 				var st = $('#diagrams'+rn.service).scrollTop();
 				var dx = (ui.offset.left-r.left+sl) - rn.position.x;
 				var dy = (ui.offset.top-r.top+st) - rn.position.y;
+				rn.dragging = true;
 				if (event.shiftKey) {
 					// Drag the whole service diagram
 					var ni = new NodeIterator({service: rn.service});
@@ -783,6 +786,11 @@ Node.prototype = {
 			},
 			/* Make sure that the editor is above all node decorations. */
 			delegate: {
+				shouldOpenEditInPlace: function(aDOMNode, aSettingsDict, triggeringEvent) {
+					var id = nid2id(aDOMNode[0].id);
+					var rn = Node.get(id);
+					return (rn.dragging != true);
+				},
 				didOpenEditInPlace: function(aDOMNode, aSettingsDict) {
 					var id = nid2id(aDOMNode[0].id);
 					$("#node"+id).css("z-index","1001");

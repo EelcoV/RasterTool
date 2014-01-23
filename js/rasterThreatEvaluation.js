@@ -263,7 +263,15 @@ ThreatAssessment.prototype = {
 			$("#dth_"+prefix+"del"+this.id).button().removeClass('ui-corner-all').addClass('ui-corner-right');
 		}
 		
-		var selectoptions = ThreatAssessment.values.join(",");
+//		var selectoptions = ThreatAssessment.values.join(",");
+		var selectoptions = "";
+		for (i=0; i<ThreatAssessment.values.length; i++) {
+			if (selectoptions!="")
+				selectoptions += ',';
+			selectoptions += '_L_ _D_:_L_';
+			selectoptions = selectoptions.replace(/_L_/g, ThreatAssessment.values[i]);
+			selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
+		}
 		var te = this;
 		var c;
 
