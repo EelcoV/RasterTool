@@ -1,0 +1,11 @@
+Fixed: removed spurious jsPlumb repaint after deleting a node (on change node type).
+Fixed: Removing the first node from a 'single' component resulted in incorrect node clusters.
+Fixed error when repainting while deleting a project.
+Fixed: a cloud could be connected to itself.
+Added test for node being connected to itself.
+Fixed : duplicating a 'Single' component is an illegal operation. Make impossible and disable menu item.
+Fixed: deleting the first node in a 'single' component corrupted the project (unreachable code solved).
+Change: on the CCF tab: list childclusters before unclustered nodes (helps with working on long lists of nodes)
+Change: a node cluster should only have a non-empty threat assessment if it has at least two child nodes. Hide threat tablerow unless >1 child.
+Change: indent nodes in the lists on the CCF tab.
+Fixed: list of nodes in node clusters now scrolls when dragging. The UI is not very attractive but at least functional. Without scrolling, a long list of nodes cannot be dragged into subclusters.

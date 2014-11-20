@@ -239,15 +239,17 @@ Component.prototype = {
 		// in the node clusters.
 		var i = this.nodes.indexOf(id);
 		this.nodes.splice(i,1);
-		if (this.nodes.length<2)
+		var wassingle = this.single;
+		if (this.nodes.length<2) {
 			this.single = false;
+		}
 		this._setalltitles();
-		if (i==0 && this.single) {
+		if (i==0 && wassingle) {
 			// Removing the one node that was present in the node clusters
-			var rn = Node.get(id);
-			rn.removefromnodeclusters();			
+			//var rn = Node.get(id);
+			//rn.removefromnodeclusters();
 			// Add a new placeholder into the clusters
-			rn = Node.get(this.nodes[0]);
+			var rn = Node.get(this.nodes[0]);
 			rn.addtonodeclusters();
 		}
 		if (this.nodes.length==0)

@@ -776,6 +776,7 @@ for checklists and threat evaluations.
 */
 .sfaccordion {
 	width: 810px !important;
+	margin-bottom: 3px !important;
 }
 
 .incomplete {
@@ -826,6 +827,7 @@ for checklists and threat evaluations.
 .shfaccordion {
 	width: 810px !important;
 	margin-left: 15px !important;
+	margin-bottom: 3px !important;
 }
 
 .shfaccordionbody {
@@ -833,12 +835,25 @@ for checklists and threat evaluations.
 }
 
 .threatdomain {
-/*
-	margin-left: 15px;
-	margin-top: 10px;
-	padding-left: 2.2em;
-	padding-bottom: 10px;
-*/
+	height: 450px;
+	margin-top: 5px;
+
+	overflow: auto;
+	background:
+		linear-gradient(white 30%, rgba(255,255,255,0)),
+		linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+		radial-gradient(50% 0, farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)),
+		radial-gradient(50% 100%,farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
+	background:
+		linear-gradient(white 30%, rgba(255,255,255,0)),
+		linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+		radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
+		radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
+	background-repeat: no-repeat;
+	background-size: 100% 40px, 100% 40px, 100% 10px, 100% 10px;
+	
+	/* Opera doesn't support this in the shorthand */
+	background-attachment: local, local, scroll, scroll;
 }
 
 .tlist {
@@ -878,7 +893,8 @@ for checklists and threat evaluations.
 	background: #bdb !important;
 }
 
-.clusternode {
+.childnode {
+	  margin-left: 10px;
 }
 
 .labelind {

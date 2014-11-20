@@ -196,7 +196,7 @@ Node.prototype = {
 //				newn.addtonodeclusters();
 //		}
 		this.destroy(false);
-		jsPlumb.repaint(this.nid);
+//		jsPlumb.repaint(this.nid);
 	},
 	
 	setposition: function(px,py,snaptogrid) {
@@ -473,6 +473,10 @@ Node.prototype = {
 	},
 	
 	try_attach_center: function(dst) {
+		// Never attach a node to itself. This only applies to Unknown Links, as no other type
+		// can be connected to a node of that same type.
+		if (this.id==dst.id)
+			return;
 		var C = this.edgecount();
 		/* Node has C['TOTAL'] edges, C[t] per type t; this includes one edge
 		 * to the node of type dst.type.
@@ -538,10 +542,12 @@ Node.prototype = {
 	detach_center: function(dst) {
 		var i;
 		i = this.connect.indexOf(dst.id);
-		if (i==-1) bugreport('incorrect connection info','Node.detach_center');
+		if (i==-1)
+			bugreport('incorrect connection info (A)','Node.detach_center');
 		this.connect.splice( i,1 );
 		i = dst.connect.indexOf(this.id);
-		if (i==-1) bugreport('incorrect connection info','Node.detach_center');
+		if (i==-1)
+			bugreport('incorrect connection info (B)','Node.detach_center');
 		dst.connect.splice( i,1 );		
 		this.store();
 		dst.store();
@@ -866,6 +872,9 @@ Node.prototype = {
 		if (cm==null || cm.nodes.length<2)
 			$('#mi_sm').addClass('popupmenuitemdisabled');
 		$('#mi_sm>span').html(cm!=null && cm.single ? "Make class" : "Make single");
+		if (cm!=null && cm.single) {
+			$('#mi_du').addClass('popupmenuitemdisabled');
+		}
 		populateLabelMenu();
 		var s=p.strToLabel(this.color);
 		if (s=="")
@@ -929,6 +938,9 @@ Node.prototype = {
 		}
 		if (this.position.width<0 || this.position.width>999 || this.position.height<0 || this.position.height>999) {
 			errors += "Node "+this.id+" has weird size.\n";
+		}
+		if (this.connect.indexOf(this.id)!=-1) {
+			errors += "Node "+this.id+" is connected to itself.\n";
 		}
 		for (var i=0; i<this.connect.length; i++) {
 			var rn = Node.get(this.connect[i]);

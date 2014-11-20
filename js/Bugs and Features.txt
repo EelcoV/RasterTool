@@ -1,5 +1,6 @@
 
 BUGS
+In the help screens, the symbol for 'Unknown' shows a 'U' instead of 'X' (both freq and impact).
 Editing labels failed again!?
 Must store current group in Preferences, and make error messages more appropriate when swapping groups.
 Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?
@@ -14,6 +15,9 @@ Cannot rename clusters in the table below each node cluster arrangement.
 In a threat report window, edit a field, then cancel with Escape: the window will close.
 
 TODO
+Make bottom tabs sortable. That is easy, but make sure that deleting one tab in Diagram removes the correct counterpart in Single Failures.
+When changing the type of a node: if the name of the node looks like a default one, then update the name to reflect the new type; otherwise, leave the name untouched.
+Have a look at the (experimental) fullScreen API.
 SIngle click to delete connectors?
 Remove the code for upgrading ancient formats to the new format?
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
@@ -112,7 +116,7 @@ The list of recent actions acts as an Undo queue.
 
 
 YET ANOTHER ALTERNATIVE PROPOSAL FOR SHARED PROJECTS
-There will be a central repository of projects. A project in the repository is called a remote project. 
+There will be a central repository of projects. A project in the repository is called a remote project.
 Each remote project has a name and datetime stamp, and is marked with the name of its creator and optional free-form remarks.
 Remote projects can be listed, and one can be selected for downloading. A downloaded remote project becomes a local project. Remote projects cannot be edited.
 Local projects are stored in LocalStorage only, and are tied to one particular web browser. Local projects can be edited, imported/exported, merged, and deleted.
@@ -122,10 +126,10 @@ Local projects can be uploaded into the central repository.
 All local projects are collectively called the Library.
 The upload/download functions are very similar to the export/import function.
 
-Since there is no strong access control, we drop all pretense and do away with access control. Users set their desired creator ID, and will take care among themselves to choose names that are tied to a single person. 
+Since there is no strong access control, we drop all pretense and do away with access control. Users set their desired creator ID, and will take care among themselves to choose names that are tied to a single person.
 There is no access control. Any user can download any project in the repository, and delete any project from the repository.
 Users must take care not to choose the same name for two different projects.
-There is no concept of a group of users or project-versions. 
+There is no concept of a group of users or project-versions.
 A meaningful authentication scheme can be added later.
 
 

@@ -2171,6 +2171,14 @@ function initTabDiagrams() {
 	$('#mi_du').mouseup(function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
+		if (rn.component!=null) {
+			var cm = Component.get(rn.component);
+			if (cm.single) {
+				// A component marked 'single' cannot be duplicated, as it would create a second
+				// instance within the same diagram.
+				return;
+			}
+		}
 		var nn = new Node(rn.type);
 //		nn.autosettitle(rn.title);
 		nn.changetitle(rn.title);
@@ -3136,11 +3144,28 @@ function repaintTDom(elem) {
 function reallyRepaintTDom(elem) {
 	delete REPAINT_TIMEOUTS[elem];
 	var nc = NodeCluster.get(elem);
+	if (!nc)
+		return;
 	if (!nc.isroot())
 		bugreport("Repainting a non-root cluster","repaintTDom");
-	var snippet = '<div id="tdom_ID_" class="threatdomain"></div>';
+
+	var snippet = '<div>\
+		<div class="threat">\
+		<div class="th_name thr_header">Name</div>\
+		<div class="th_freq thr_header">Freq.</div>\
+		<div class="th_impact thr_header">Impact</div>\
+		<div class="th_total thr_header">Total</div>\
+		<div class="th_remark thr_header">Remark</div>\
+		</div>\
+		<div id="shftable_ID_" class="threats">\
+		</div></div>\n\
+		<div id="tdom_ID_" class="threatdomain"></div>\n';
 	snippet = snippet.replace(/_ID_/g, nc.id);
 	$('#shfaccordionbody'+nc.id).html( snippet );
+	appendAllThreats(nc,"#shftable"+nc.id,"shf"+nc.id);
+	nc.calculatemagnitude();
+	nc.setallmarkeroid("#shfamark");
+
 	if (nc.childclusters.length + nc.childnodes.length < 2) {
 		// Just an empty/invisible placeholder for a node cluster that is too small
 		$('#shfaccordion'+nc.id).css("display", "none");
@@ -3164,7 +3189,9 @@ function reallyRepaintTDom(elem) {
 		containment: '#tdom'+nc.id,
 		revert: "invalid",
 		revertDuration: 300, // Default is 500 ms
-		axis: 'y'
+		axis: 'y',
+		scrollSensitivity: 40,
+		scrollSpeed: 10
 	});
 	$('.tlistitem,.tlistroot').droppable({
 		accept: allowDrop,
@@ -3183,23 +3210,6 @@ function reallyRepaintTDom(elem) {
 			return H(nc.title);
 		}
 	});
-
-	snippet = '<div>\
-		<div class="threat">\
-		<div class="th_name thr_header">Name</div>\
-		<div class="th_freq thr_header">Freq.</div>\
-		<div class="th_impact thr_header">Impact</div>\
-		<div class="th_total thr_header">Total</div>\
-		<div class="th_remark thr_header">Remark</div>\
-		</div>\
-		<div id="shftable_ID_" class="threats">\
-		</div></div>';
-	snippet = snippet.replace(/_ID_/g, nc.id);
-	$('#shfaccordionbody'+nc.id).append( snippet );
-
-	appendAllThreats(nc,"#shftable"+nc.id,"shf"+nc.id);
-	nc.calculatemagnitude();
-	nc.setallmarkeroid("#shfamark");
 }
 
 function listFromCluster(nc) {
@@ -3223,7 +3233,16 @@ function listFromCluster(nc) {
 	str = str.replace(/_TI_/g, H(nc.title));
 	str = str.replace(/_TY_/g, Rules.nodetypes[nc.type]);
 	
-	for (var i=0; i<nc.childnodes.length; i++) {
+	for (var i=0; i<nc.childclusters.length; i++) {
+		var cc = NodeCluster.get(nc.childclusters[i]);
+		str += '<li>\n';
+		str += listFromCluster(cc);
+		str += '</li>\n';
+	}
+	if (nc.isroot()) {
+		str += '<li>&nbsp;</li>\n';
+	}
+	for (i=0; i<nc.childnodes.length; i++) {
 		var rn = Node.get(nc.childnodes[i]);
 		if (rn==null)
 			bugreport("Child node does not exist","listFromCluster");
@@ -3237,13 +3256,6 @@ function listFromCluster(nc) {
 		str += '</li>\n';
 	}
 		 
-	for (i=0; i<nc.childclusters.length; i++) {
-		var cc = NodeCluster.get(nc.childclusters[i]);
-		str += '<li>\n';
-		str += listFromCluster(cc);
-		str += '</li>\n';
-	}
-	
 	str += '</ul>\n';
 	return str;
 }
@@ -3252,7 +3264,17 @@ function appendAllThreats(nc,domid,prefix) {
 	if (DEBUG && nc==null)
 		bugreport("nc is null","appendAllThreats");
 	var th = ThreatAssessment.get(nc.thrass);
-	th.addtablerow(domid,prefix,false);
+	if (nc.childnodes.length>1) {
+		// Only paint threat assessment if at least two child nodes (clusters don't count)
+		th.addtablerow(domid,prefix,false);
+	} else {
+		// If less than two children, then this thrass must not contribute to the cluster total.
+		//
+		// This logic should probably move into rasterNodeCluster?
+		//
+		th.setfreq('-');
+		th.setimpact('-');
+	}
 	for (var i=0; i<nc.childclusters.length; i++) {
 		var cc = NodeCluster.get(nc.childclusters[i]);
 		appendAllThreats(cc,domid,prefix);

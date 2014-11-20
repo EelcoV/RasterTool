@@ -265,7 +265,7 @@ ThreatAssessment.prototype = {
 		
 //		var selectoptions = ThreatAssessment.values.join(",");
 		var selectoptions = "";
-		for (i=0; i<ThreatAssessment.values.length; i++) {
+		for (var i=0; i<ThreatAssessment.values.length; i++) {
 			if (selectoptions!="")
 				selectoptions += ',';
 			selectoptions += '_L_ _D_:_L_';
