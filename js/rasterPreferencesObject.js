@@ -87,7 +87,7 @@ var PreferencesObject = function() {
 	this.setcreator = function(cr) {
 		this.creator = trimwhitespace(String(cr)).substr(0,100);
 		if (this.creator=="")
-			this.creator="Anonymous";
+			this.creator=_("Anonymous");
 		this.store();
 	};
 	
@@ -132,7 +132,7 @@ var PreferencesObject = function() {
 	this.label=true;
 	this.emsize = "small";
 	this.tab = 0;
-	this.creator = "Anonymous";
+	this.creator = _("Anonymous");
 	this.online = true;
 	try {
 		if (localStorage[LS+'R:0']!=null) {

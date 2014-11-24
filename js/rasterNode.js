@@ -361,32 +361,32 @@ Node.prototype = {
 	},
 	
 	getreport: function (es) {
-		function plural_s(str,num) { return (num==1 ? str : (str+'s')); }
 		var report = [];
 		var C = (es ? es : this.edgecount() );
+		var minhave = Rules.totaledgeMin[this.type];
+		var maxhave = Rules.totaledgeMax[this.type];
 		if (C['TOTAL']<Rules.totaledgeMin[this.type]) {
-			var toolittle = Rules.totaledgeMin[this.type]-C['TOTAL'];
-			var unlimited = (Rules.totaledgeMax[this.type]==99);
-			var options = arrayJoinAsString(this.edgeUnderflow(C), "or");
+			var toolittle = minhave-C['TOTAL'];
+			var options = arrayJoinAsString(this.edgeUnderflow(C), _("or"));
+			var unlimited = (maxhave==99);
+			var conns = plural(_("connection"),_("connections"),minhave);
 			report.push( 
-				"Must have " + 
-				(unlimited ? "at least " : "")+ 
-				Rules.totaledgeMin[this.type] +
-				plural_s(" connection",Rules.totaledgeMin[this.type]) + " (you have " + 
-					(C['TOTAL']>0 ? "only "+C['TOTAL'] : "none") + 
-				"). " +
-				"Add " + toolittle + plural_s(" connection",toolittle) + 
-				" to a " + options + "."
+				(unlimited ? _("Must have at least %% %% ", minhave,conns) : _("Must have %% %% ", minhave,conns))
+				 + (C['TOTAL']>0 ? _(" (you only have %%). ",C['TOTAL']) : _("(you have none)."))
+				 + _("Add %% %% to a %%.", toolittle, plural(_("connection"),_("connections"),toolittle), options)
 			);
 		}
 		if (C['TOTAL']>Rules.totaledgeMax[this.type]) {
 			var toomany = C['TOTAL'] - Rules.totaledgeMax[this.type];
 			report.push( 
-				"Can have at most " + Rules.totaledgeMax[this.type] +
-				plural_s(" connection",Rules.totaledgeMax[this.type]) + " (you have " + C['TOTAL'] + "). " +
-				"Remove " + toomany + plural_s(" connection",toomany) + 
-				" to " + (toomany==1?"a ":"") +"neighbouring " + plural_s("node",toomany) + "."
+				_("Can have at most %% %%", maxhave, plural(_("connection"),_("connections"),maxhave))
+				+ _(" (you have %%).", C['TOTAL'])
 			);
+			if (toomany==1) {
+				report.push(_("Remove one connection to a neighbouring node."));
+			} else {
+				report.push(_("Remove %% connections to neighbouring nodes.",toomany));
+			}
 		}
 		var mustadd = [];
 		var mustremove = [];
@@ -399,19 +399,15 @@ Node.prototype = {
 			}
 		}
 		if (mustadd.length>0) {
+			var nds = (mustadd.length==1 ? mustadd[0] : arrayJoinAsString(mustadd,_("and")));
 			report.push(
-				(mustadd.length==1 ? "A connection " : "Connections ") +
-				"must be added to " +
-				(mustadd.length==1 ? "a node of type " : "nodes of type ") +
-				(mustadd.length==1 ? mustadd[0] : arrayJoinAsString(mustadd,"and")) + "."
+				(mustadd.length==1 ? _("A connection must be added to a node of type %%.",nds) : _("Connections must be added to nodes of type %%.", nds))
 			);
 		}
 		if (mustremove.length>0) {
+			nds = (mustremove.length==1 ? mustremove[0] : arrayJoinAsString(mustremove,_("and")));
 			report.push(
-				(mustremove.length==1 ? "A connection " : "Connections ") +
-				"must be removed from " +
-				(mustremove.length==1 ? "a node of type " : "nodes of type ") +
-				(mustremove.length==1 ? mustremove[0] : arrayJoinAsString(mustremove,"and")) + "."
+				(mustremove.length==1 ? _("A connection must be removed from a node of type %%.",nds) : _("Connections must be removed from nodes of type %%.",nds))
 			);
 		}
 		
@@ -754,7 +750,7 @@ Node.prototype = {
 			var s;
 			
 			if (report.length==0)
-				s = "Node is OK; there are no warnings.";
+				s = _("Node is OK; there are no warnings.");
 			else {
 				s = report.join("<p>");
 			}
@@ -762,7 +758,7 @@ Node.prototype = {
 				$("#nodereport").dialog("close");
 			$("#nodereport").html( s );
 			$("#nodereport").dialog({
-				title: 'Warning report on '+rn.htmltitle(),
+				title: _("Warning report on %%", rn.htmltitle()),
 				position: [e.clientX, e.clientY],
 				zIndex: 400,
 				open: function() {
@@ -871,14 +867,14 @@ Node.prototype = {
 			$('#mi_th').addClass('popupmenuitemdisabled');
 		if (cm==null || cm.nodes.length<2)
 			$('#mi_sm').addClass('popupmenuitemdisabled');
-		$('#mi_sm>span').html(cm!=null && cm.single ? "Make class" : "Make single");
+		$('#mi_sm>span').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
 		if (cm!=null && cm.single) {
 			$('#mi_du').addClass('popupmenuitemdisabled');
 		}
 		populateLabelMenu();
 		var s=p.strToLabel(this.color);
 		if (s=="")
-			s = "Label";
+			s = _("Label");
 		else
 			s = '"' + s + '"';
 //		s += '<span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span>';
@@ -1064,7 +1060,7 @@ var Rules = {
 	/* English translations of node types.
 	 * Can also be used as enumerator:   for (var t in Rules.nodetypes) { ... }
 	 */
-	nodetypes: {'tWLS': 'wireless link','tWRD': 'wired link','tEQT': 'equipment','tACT': 'actor','tUNK': 'cloud', 'tNOT': 'note'},
+	nodetypes: {'tWLS': _("wireless link"),'tWRD': _("wired link"), 'tEQT': _("equipment"),'tACT': _("actor"), 'tUNK': _("cloud"), 'tNOT': _("note")},
 	/* per nodetype, minimum number of that type to appear in a diagram.
 	 * There is no maximum.
 	 */

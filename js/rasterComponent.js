@@ -52,7 +52,7 @@ var Component = function(type, id) {
 	this.type = type;
 	this.project = Project.cid;
 	this.nodes = [];
-	this.title = "Component " + Rules.nodetypes[this.type] + " " + this.id;	
+	this.title = _("Component ") + Rules.nodetypes[this.type] + " " + this.id;
 	this.thrass = [];
 	this.magnitude = '-';
 	this.single = false;
@@ -227,7 +227,8 @@ Component.prototype = {
 		this.store();
 		if (this.id==Component.ThreatsComponent)
 			$("#componentthreats").dialog('option', 'title',
-				'Vulnerability assessment for "'+H(this.title)+'" ' + (this.nodes.length>1 ? "("+this.nodes.length+" nodes)" : "")
+				_("Vulnerability assessment for '%%'", H(this.title)) +
+				(this.nodes.length>1 ? _(" (%% nodes)",this.nodes.length) : "")
 			);
 	},
 	
@@ -258,7 +259,8 @@ Component.prototype = {
 			this.store();
 			if (this.id==Component.ThreatsComponent)
 				$("#componentthreats").dialog('option', 'title',
-					'Vulnerability assessment for "'+H(this.title)+'" ' + (this.nodes.length>1 ? "("+this.nodes.length+" nodes)" : "")
+					_("Vulnerability assessment for '%%'", H(this.title)) +
+					(this.nodes.length>1 ? _(" (%% nodes)",this.nodes.length) : "")
 				);
 		}
 	},
@@ -397,7 +399,7 @@ Component.prototype = {
 				+ThreatAssessment.valueindex[this.magnitude]
 				+'" title="'+ThreatAssessment.descr[ThreatAssessment.valueindex[this.magnitude]]+'">'+this.magnitude+'</span>';
 		if (this.threatsnotevaluated()!=0)
-			str = '<span class="incomplete">Incomplete</span>' + str;
+			str = '<span class="incomplete">' + _("Incomplete") + '</span>' + str;
 		$(this._markeroid).html(str);
 	},
 

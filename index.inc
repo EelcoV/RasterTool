@@ -7,6 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <meta charset="UTF-8"> 
 <title>Raster - Risk Assessment of Telecoms Services</title>
+<!-- First stylesheet must be the one that is a custom setting. -->
 <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.21.custom.css" class="ui-theme">
 <link rel="stylesheet" href="../css/raster.css" type="text/css" id="maincssfile">
 <link rel="stylesheet" href="../css/raster-print.css" type="text/css">
@@ -14,12 +15,14 @@
 <script type="text/javascript" src="../js/eventsource.js"></script>
 <script type="text/javascript" src="../js/jquery-1.7.2.js"></script>
 <script type="text/javascript" src="../js/jquery-ui-1.8.24.js"></script>
+<script type="text/javascript" src="../js/jquery.localisation.js"></script>
 <script type="text/javascript" src="../js/ui.tabs.closable.js"></script>
 <script type="text/javascript" src="../js/jquery.jsPlumb-1.5.5.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>  
 <script type="text/javascript" src="../js/jquery.json-2.2.min.js"></script>  
 <script type="text/javascript" src="../js/encodedecode.js"></script>
 <script type="text/javascript" src="../js/rasterMain.js"></script>  
+<script type="text/javascript">$.localise('../js/translation');</script>
 <script type="text/javascript" src="../js/rasterProject.js"></script>  
 <script type="text/javascript" src="../js/rasterService.js"></script>  
 <script type="text/javascript" src="../js/rasterThreatEvaluation.js"></script>  
@@ -104,8 +107,8 @@
 	</div>
 </div>
 
-<div id="libraryactivator" class="activator ui-widget">Library<span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
-<div id="optionsactivator" class="activator ui-widget">Options<span id="optionsupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
+<div id="libraryactivator" class="activator ui-widget"><span>Library</span><span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
+<div id="optionsactivator" class="activator ui-widget"><span>Options</span><span id="optionsupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
 
 <div id="librarypanel" class="actpanel ui-widget">
   <form id="libform">
@@ -169,7 +172,7 @@
 
 <div id="nodemenu" class="popupmenu">
 	<div id="mi_th" class="popupmenuitem">Vulnerabilities</div>
-	<div id="mi_ct" class="popupmenuitem">Change type<span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
+	<div id="mi_ct" class="popupmenuitem"><span>Change type</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
 	 <div id="mi_ctsm" class="popupsubmenu">
 	  <div id="mi_cttWLS" class="popupmenuitem popupsubmenuitem">Wireless link</div>
 	  <div id="mi_cttWRD" class="popupmenuitem popupsubmenuitem">Wired link</div>
@@ -195,7 +198,7 @@
 </div>
 <div id="selectmenu" class="popupmenu">
 	<div id="mi_sd" class="popupmenuitem">Delete selection</div>
-	<div id="mi_sc" class="popupmenuitem">Label<span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
+	<div id="mi_sc" class="popupmenuitem"><span>Label</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
 	 <div id="mi_scsm" class="popupsubmenu">
 	  <div id="mi_scnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="Bnone"><img src="../img/nolabel.png"></div>No label</div>
 	  <div id="mi_scred" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bred"></div><div class="labeltext">Red</div></div>

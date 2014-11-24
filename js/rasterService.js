@@ -88,7 +88,7 @@ Service.prototype = {
 	},
 
 	autosettitle: function() {
-		this.settitle("New service");
+		this.settitle(_("New service"));
 	},
 
 	setproject: function(p) {
@@ -268,16 +268,18 @@ function newDiagramTab(id,title,tabprefix) {
 		$('#diagrams_body').append(snippet);
 		snippet = '\n\
 			<h1 class="printonly underlay servicename_I_">_SN_</h1>\n\
-			<h2 class="printonly underlay projectname">Project: _PN_</h2>\n\
+			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
 			<div id="'+tabprefix+'_workspace_I_" class="fancyworkspace"></div>\n\
 		';
 	} else {
 		snippet = '\n\
-			<h1 class="printonly underlay servicename_I_">Single failures: _SN_</h1>\n\
-			<h2 class="printonly underlay projectname">Project: _PN_</h2>\n\
+			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n\
+			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
 			<div id="'+tabprefix+'_workspace_I_" class="workspace plainworkspace"></div>\n\
 		';
 	}
+	snippet = snippet.replace(/_LP_/g, _("Project"));
+	snippet = snippet.replace(/_LSF_/g, _("Single failures"));
 	snippet = snippet.replace(/_I_/g, id);
 	snippet = snippet.replace(/_SN_/g, H(title));
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Service.get(id).project).title));
@@ -461,23 +463,29 @@ function diagramTabEditStart(event) {
 	';
 	snippet = snippet.replace(/_SN_/g, H(s.title));
 	dialog.append(snippet);
-	dialog.dialog({
-		title: "Rename service '" + H(s.title) + "'",
-		modal: true,
-		position: [80,'center'],
-		width: 405,
-		height: 130,
-		buttons: {
-			"Change name": function() {
+	var dbuttons = [];
+	dbuttons.push({
+		text: _("Change name"),
+		click: function() {
 				var name = $('#field_servicerename');
 				s.settitle(name.val());
 				$(this).dialog("close");
 				transactionCompleted("Service rename");
-			},
-			Cancel: function() {
+			}
+	});
+	dbuttons.push({
+		text: _("Cancel"),
+		click: function() {
 				$(this).dialog("close");
 			}
-		},
+	});
+	dialog.dialog({
+		title: _("Rename service '%%'", H(s.title)),
+		modal: true,
+		position: [80,'center'],
+		width: 405,
+		height: 130,
+		buttons: dbuttons,
 		open: function() {
 			$('#field_servicerename').focus().select();
 			$('#form_servicerename').submit(function() {

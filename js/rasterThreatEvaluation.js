@@ -55,7 +55,7 @@ var ThreatAssessment = function(type,id) {
 	this.type = type;
 	this.component = null;
 	this.cluster = null;
-	this.title = "Vulnerability "+this.id;
+	this.title = _("Vulnerability ")+this.id;
 	this.description = "";
 	this.freq='-';
 	this.impact='-';
@@ -88,14 +88,14 @@ ThreatAssessment.valueindex['H']=5;
 ThreatAssessment.valueindex['V']=6;
 ThreatAssessment.valueindex['X']=7;
 ThreatAssessment.descr = [
-	"Undetermined",
-	"Ambiguous",
-	"Extremely low",
-	"Low",
-	"Medium",
-	"High",
-	"Extremely high",
-	"Unknown"
+	_("Undetermined"),
+	_("Ambiguous"),
+	_("Extremely low"),
+	_("Low"),
+	_("Medium"),
+	_("High"),
+	_("Extremely high"),
+	_("Unknown")
 ];
 /* Combine all risk factors into a combined total score for a single threat
  * ThreatAssessment.combine[freq][impact], where
@@ -229,7 +229,7 @@ ThreatAssessment.prototype = {
 	addtablerow_textonly: function(prefix,interact) {
 		if (interact==null) interact=true;
 		if (this.component!=null && Component.get(this.component).type=='tUNK') {
-			this.remark = prependIfMissing("Note: for "+Rules.nodetypes[this.type]+" only.", this.remark);
+			this.remark = prependIfMissing(_("Note: for %% only.",Rules.nodetypes[this.type]), this.remark);
 		}
 		var snippet = '<div id="dth_PF___TI_" class="threat">\
 			<div id="dth__PF_name_TI_" class="th_name">_TT_</div>\
@@ -277,15 +277,25 @@ ThreatAssessment.prototype = {
 
 		if (this.component==null && this.cluster==null)
 			bugreport('neither .component nor .cluster is set','this.addtablerow');
-		if (this.component!=null) c = Component.get(this.component);
-		if (this.cluster!=null) c = NodeCluster.get(this.cluster);
+		if (this.component!=null)
+			c = Component.get(this.component);
+		var nc_isroot = false;
+		if (this.cluster!=null) {
+			c = NodeCluster.get(this.cluster);
+			nc_isroot = c.isroot();
+		}
 		
-		if (interact) $("#dth_"+prefix+"name"+this.id).editInPlace({
+		if (!nc_isroot) $("#dth_"+prefix+"name"+this.id).editInPlace({
 			bg_out: "#eee", bg_over: "rgb(255,204,102)",
 			callback: function(oid, enteredText) {
 				te.settitle(enteredText);
 				te.setdescription(""); // Description from checklist does not apply anymore now.
 				$("#dth_"+prefix+"name"+te.id).attr('title', '');
+				if (c.parentcluster != undefined) {
+					// c is a nodecluster, not a component
+					c.settitle(te.title);
+					$('#litext'+c.id).html(H(te.title));
+				}
 				transactionCompleted("Vuln rename");
 				return H(te.title);
 			}
@@ -343,11 +353,10 @@ ThreatAssessment.prototype = {
 				c.setmarker();
 				transactionCompleted("Vuln delete");
 			};
-			newRasterConfirm('Delete vulnerability?',
-				'Vulnerabilities should only be deleted when physically impossible.\n Are you sure that  "'
-				+H(th.title)+'" for "'+H(c.title)
-				+'" is nonsensical?',
-				'It\'s impossible','Cancel'
+			newRasterConfirm(_("Delete vulnerability?"),
+				_("Vulnerabilities should only be deleted when physically impossible.\n")+
+				_("Are you sure that '%%' for '%%' is nonsensical?", H(th.title),H(c.title)),
+				_("It's impossible"),_("Cancel")
 			).done(dokill);
 		});
 	},
@@ -378,19 +387,19 @@ ThreatAssessment.prototype = {
 
 var DefaultThreats = [
 /* [ type , title , description ] */
-["tWLS","Interference","Unintentional interference by a radio source using the same frequency band."],
-["tWLS","Jamming","Intentional interference by some third party."],
-["tWLS","Congestion","The amount of traffic offered exceeds the capacity of the link."],
-["tWLS","Signal weakening","Loss of signal strength through distance or blocking by buildings, trees, etc."],
-["tWRD","Break","Cable damaged by natural events, trenching, anchors, or other external influence."],
-["tWRD","Congestion","The amount of traffic offered exceeds the capacity of the link."],
-["tWRD","Cable aging","Insulation weakens with age."],
-["tWRD","EMC","Electromagnetic influences from neighbouring cables or radio sources."],
-["tEQT","Physical damage","Fire, flood, knocks and other physical damage inflicted."],
-["tEQT","Power","Failure of electrical power supply."],
-["tEQT","EMC","Electromagnetic influences from neighbouring cables or radio sources."],
-["tEQT","Configuration","Incorrect configuration or mistakes by operators."],
-["tEQT","Malfunction","Failure of an internal module without a clear external cause, possibly by aging."]
+["tWLS",_("Interference"),		_("Unintentional interference by a radio source using the same frequency band.")],
+["tWLS",_("Jamming"),			_("Intentional interference by some third party.")],
+["tWLS",_("Congestion"),		_("The amount of traffic offered exceeds the capacity of the link.")],
+["tWLS",_("Signal weakening"),	_("Loss of signal strength through distance or blocking by buildings, trees, etc.")],
+["tWRD",_("Break"),				_("Cable damaged by natural events, trenching, anchors, or other external influence.")],
+["tWRD",_("Congestion"),		_("The amount of traffic offered exceeds the capacity of the link.")],
+["tWRD",_("Cable aging"),		_("Insulation weakens with age.")],
+["tWRD",_("EMC"),				_("Electromagnetic influences from neighbouring cables or radio sources.")],
+["tEQT",_("Physical damage"),	_("Fire, flood, knocks and other physical damage inflicted.")],
+["tEQT",_("Power"),				_("Failure of electrical power supply.")],
+["tEQT",_("EMC"),				_("Electromagnetic influences from neighbouring cables or radio sources.")],
+["tEQT",_("Configuration"),		_("Incorrect configuration or mistakes by operators.")],
+["tEQT",_("Malfunction"),		_("Failure of an internal module without a clear external cause, possibly by aging.")]
 ];
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
@@ -421,8 +430,8 @@ var Threat = function(type,id) {
 	this.id = (id==null ? nextUnusedIndex(Threat._all) : id);
 	this.type = type;
 	this.project = Project.cid;
-	this.title = "Vulnerability "+this.id;
-	this.description = "Description threat "+this.id;
+	this.title = _("Vulnerability ")+this.id;
+	this.description = _("Description threat ")+this.id;
 	
 	this.store();
 	Threat._all[this.id]=this;
@@ -491,9 +500,9 @@ Threat.prototype = {
 		});
 		$('#thdel'+this.id).click( function() {
 			var th = Threat.get(nid2id(this.id));
-			newRasterConfirm('Delete vulnerability?',
-				'Do you want to delete the vulnerability "'+H(th.title)+'" for '+Rules.nodetypes[th.type]+' nodes?',
-				'Remove','Cancel'
+			newRasterConfirm(_("Delete vulnerability?"),
+				_("Do you want to delete the vulnerability '%%' for '%%' nodes?", H(th.title), Rules.nodetypes[th.type]),
+				_("Remove"),_("Cancel")
 			)
 			.done(function() {
 				Project.get(th.project).removethreat(th.id); 

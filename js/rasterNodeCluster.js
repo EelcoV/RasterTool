@@ -335,7 +335,7 @@ NodeCluster.prototype = {
 				+ThreatAssessment.valueindex[this.magnitude]
 				+'" title="'+ThreatAssessment.descr[ThreatAssessment.valueindex[this.magnitude]]+'">'+this.magnitude+'</span>';
 		if (this.isroot() && this.isincomplete())
-			str = '<span class="incomplete">Incomplete</span>' + str;
+			str = '<span class="incomplete">' + _("Incomplete") + '</span>' + str;
 		$(this._markeroid).html(str);
 	},
 	
@@ -409,6 +409,8 @@ NodeCluster.prototype = {
 				errors += offender+"has a member vuln assessment "+ta.id+" that also refers to a component.\n";
 			if (ta.type!=this.type) 
 				errors += offender+"has a member vuln assessment "+ta.id+" with a non-matching type.\n";
+			if (ta.title!=this.title)
+				errors += offender+"has a member vuln assessment "+ta.id+" with a different title.\n";
 		}
 		return errors;
 	}

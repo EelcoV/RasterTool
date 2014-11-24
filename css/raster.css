@@ -238,17 +238,17 @@ img.tC {
 .actpanel #libzap  {float: right;}
 
 /* Panel for projects */
-#librarypanel { width: 415px; left: 55px; border-top-left-radius: 0; }
+#librarypanel { width: 470px; left: 55px; border-top-left-radius: 0; }
 #fileElem {visibility: hidden; width: 0; height: 0; }
 
 #form_projectprops input,textarea,#sh_onoff { margin: 0 0 5px; }
 
 /* Panel for options */
-#optionspanel { width: 420px; left: 175px; border-top-left-radius: 0; }
+#optionspanel { width: 435px; left: 175px; border-top-left-radius: 0; }
 #optionspanel .ui-button .ui-button-text { line-height: 1.0; } /* radio buttons */
 #switcher, #gridonoff, #labelonoff, #emblem_size, #onlineonoff { margin-bottom: 10px; }
 #manual { text-decoration: underline; }
-.leftlabel { display: inline-block; width: 11em; }
+.leftlabel { display: inline-block; width: 13em; }
 
 /* 
 Dialog windows:
@@ -272,6 +272,7 @@ div.popupsubmenu {
 	margin-top: -22px;
 	z-index: 701;
 	display: none;
+	width: 155px;
 	box-shadow: 7px 7px 6px #999;
 }
 div.popupmenuitem {
@@ -280,6 +281,10 @@ div.popupmenuitem {
 	text-align: left;
 	margin: 0;
 }
+.popupsubmenuitem {
+	width: 155px !important;
+}
+
 .smallblock {
 	display: inline-block;
 	width: 10px;
@@ -831,11 +836,12 @@ for checklists and threat evaluations.
 }
 
 .shfaccordionbody {
-	padding-top: 0 !important;
+	padding-top: 0px !important;
+	padding-right: 0px !important;
 }
 
 .threatdomain {
-	height: 450px;
+/*	height: 450px; is now set in SizeDOMElements() */
 	margin-top: 5px;
 
 	overflow: auto;

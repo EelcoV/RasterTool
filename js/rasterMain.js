@@ -119,10 +119,14 @@ $(function() {
 	$('#tab_analysis').click(removetransientwindows);
 
 	// tab_diagrams, tab_singlefs, tab_ccfs
-	$("a[href^=#tab_diagrams]").attr('title', "Draw diagrams for the services.");
-	$("a[href^=#tab_singlefs]").attr('title', "Assess all single failures.");
-	$("a[href^=#tab_ccfs]").attr('title', "Assess all common cause failures.");
-	$("a[href^=#tab_analysis]").attr('title', "Reporting and analysis tools.");
+	$("a[href^=#tab_diagrams]").attr('title', _("Draw diagrams for the services."));
+	$("a[href^=#tab_singlefs]").attr('title', _("Assess all single failures."));
+	$("a[href^=#tab_ccfs]").attr('title', _("Assess all common cause failures."));
+	$("a[href^=#tab_analysis]").attr('title', _("Reporting and analysis tools."));
+	$("a[href^=#tab_diagrams]").html(_("Diagrams"));
+	$("a[href^=#tab_singlefs]").html(_("Single failures"));
+	$("a[href^=#tab_ccfs]").html(_("Common cause failures"));
+	$("a[href^=#tab_analysis]").html(_("Analysis"));
 
 	if (!testLocalStorage()) {
 		// The splash screen is still visible, and will obscure any interaction.
@@ -256,6 +260,43 @@ $(function() {
 	};
 });
 
+/* In the code, use _("blue sky") instead of "blue sky"
+ * Use
+ *		_("I have %% potatoes!", num)
+ * to get (in EN)
+ *		"I have 15 potatoes!"
+ * and (in NL)
+ *		"Ik heb 15 aardappels!"
+ *
+ * In file 'translation-nl.js', use a list of Javascript statements in the form
+ * _t["blue sky"] = "blauwe lucht";
+ * _t["I have %% potatoes!"] = "Ik heb %% aardappels!";
+ * _t["I have %% %%!"] = "Ik heb %% %%!";
+ * _t["I have %1 %2."] = "Van %2 heb ik er %1.";    <-- not used yet
+ *
+ * If no translation is provided, the default is to show the unlocalised English version.
+ */
+var _t = new Array;
+
+function _(s) {
+	var str = _t[s];
+	if (!str) {
+		// No localisation available. Default to English version
+		if (DEBUG) {console.log("_t[\"" + s + "\"] = \"" + s + "\";");}
+		str=s;
+	}
+	// Replace %1, %2, ... %9 by the first, second, ... ninth argument.
+	//for (var i=1; i<10; i++) {
+	//	str = str.replace("%"+i, arguments[i])
+	//}
+	var i = 1;
+	while (i<arguments.length) {
+		str = str.replace("%%", arguments[i]);
+		i++;
+	}
+	return str;
+}
+
 /* testLocalStorage(): returns boolean
  * Checks whether the browser supports storing values in localStorage.
  */
@@ -316,6 +357,23 @@ function SizeDOMElements() {
 	$('.workbody').height(wh-62);
 	$('.workouter').css('padding','0px');
 	
+	/* Find a CSS-rule with the exact name "div.nodeMagnitude", then
+	 * modify that rule on the fly.
+	 */
+	var css=document.getElementById("maincssfile").sheet;
+	var rule=null;
+	for (var i=0; i<css.cssRules.length; i++) {
+		if (css.cssRules[i].selectorText==".threatdomain") {
+			rule = css.cssRules[i];
+			break;
+		}
+	}
+	if (!rule) {
+		bugreport('cannot locate css rule for .threatdomain width','SizeDOMElements');
+	} else {
+		rule.style.height= (wh-250) + "px";
+	}
+
 	$('#servaddbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	// special setting for tab "Services"
 	//$('#tab_diagrams').height(wh-90);
@@ -359,11 +417,11 @@ function removetransientwindows(evt) {
 function switchToProject(pid,dorefresh) {
 	if (pid==Project.cid)
 		return;
-	$('#nodereport').dialog("close");
-	$('#componentthreats').dialog("close");
-	$('#checklist_tWLS').dialog("close");
-	$('#checklist_tWRD').dialog("close");
-	$('#checklist_tEQT').dialog("close");
+	$('#nodereport').dialog('close');
+	$('#componentthreats').dialog('close');
+	$('#checklist_tWLS').dialog('close');
+	$('#checklist_tWRD').dialog('close');
+	$('#checklist_tEQT').dialog('close');
 	removetransientwindows();
 	if (Project.get(Project.cid)!=null)
 		// Project might have been deleted by libdel button
@@ -390,10 +448,12 @@ function trimwhitespace(str) {
 	return str;
 }
 
-/* Add an 's' or other plural suffix to the end of a string, if necessary
+/* Use singular or plural phrase, depending on an integer number.
+ * This used to append a suffix (defaulting to "s"), which works fine for
+ * English but is difficult to localise.
  */
-function plural(str,suffix,num) {
-	return (num==1 ? str : (str+suffix));
+function plural(singular,plural,num) {
+	return (num==1 ? singular : plural);
 }
 
 /* Prepend string 'a' to 'b' and join with a space, unless 'a' already occurs within 'b'.
@@ -435,8 +495,8 @@ function prettyDate(d) {
  */
 function rasterAlert(title,msg) {
 	$('#modaldialog').dialog("option", "buttons", [
-	{text: "Close", click: function(){ 
-		$(this).dialog("close"); 
+	{text: _("Close"), click: function(){
+		$(this).dialog('close'); 
 	} }
 	]);
 	$('#modaldialog').dialog({
@@ -464,11 +524,11 @@ function rasterAlert(title,msg) {
 function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
 	$('#modaldialog').dialog("option", "buttons", [
 	{text: buttcancel, click: function(){ 
-		$(this).dialog("close"); 
+		$(this).dialog('close'); 
 		if (funcnoaction) funcnoaction();
 	} },
 	{text: buttok, click: function(){ 
-		$(this).dialog("close"); 
+		$(this).dialog('close'); 
 		funcaction(); 
 	} }
 	]);
@@ -485,11 +545,11 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 	var dfd = $.Deferred();
 	$('#modaldialog').dialog("option", "buttons", [
 	{text: buttcancel, click: function(){ 
-		$(this).dialog("close"); 
+		$(this).dialog('close'); 
 		dfd.reject(false);
 	} },
 	{text: buttok, click: function(){ 
-		$(this).dialog("close"); 
+		$(this).dialog('close'); 
 		dfd.resolve(true); 
 	} }
 	]);
@@ -1444,7 +1504,7 @@ function exportAll() {
 		s+= key+'\t';
 		s+= localStorage[key]+'\n';
 	}  
-	var url = "data:text/x-raster;," + urlEncode(s);
+	var url = 'data:text/x-raster;,' + urlEncode(s);
 	document.location.assign(url);
 }
 
@@ -1467,12 +1527,12 @@ function vertTabSelected(event, ui) {
 		// A horizontal tab was selected. Let's get out of here.
 		return;
 //	$('body').css('cursor','progress'); // this does not seem to be effective, at least not on FF4
-	$('#nodereport').dialog("close");
-	$('#componentthreats').dialog("close");
-	$('#checklist_tWLS').dialog("close");
-	$('#checklist_tWRD').dialog("close");
-	$('#checklist_tEQT').dialog("close");
-	$('#anareport').dialog("close");
+	$('#nodereport').dialog('close');
+	$('#componentthreats').dialog('close');
+	$('#checklist_tWLS').dialog('close');
+	$('#checklist_tWRD').dialog('close');
+	$('#checklist_tEQT').dialog('close');
+	$('#anareport').dialog('close');
 
 	switch (ui.index) {
 	case 0:		// tab Services
@@ -1512,16 +1572,29 @@ function vertTabSelected(event, ui) {
 }
 
 function initLibraryPanel() {
-	$('#libactivate').attr('title','Continue working with the selected project.');
-	$('#libprops').attr('title','Change the name, description, and sharing status of the selected project.');
-	$('#libexport').attr('title','Save the selected project to a file.');
-	$('#libdel').attr('title','Permanently remove the selected project.');
-	$('#libmerge').attr('title','Join the selected project into the current one.');
-	$('#libadd').attr('title','Add a new, blank project to the library.');
-	$('#libimport').attr('title','Load a project from a file.');
-	$('#libexportall').attr('title','Save all projects into a single file.');
-	$('#libzap').attr('title','Permanently remove all projects.');
-	$('#libcheck').attr('title','Check the project for internal consistency.');
+	$('#libraryactivator span').first().html(_("Library"));
+
+	$('#libactivate').attr('title',_("Continue working with the selected project."));
+	$('#libprops').attr('title',_("Change the name, description, and sharing status of the selected project."));
+	$('#libexport').attr('title',_("Save the selected project to a file."));
+	$('#libdel').attr('title',_("Permanently remove the selected project."));
+	$('#libmerge').attr('title',_("Join the selected project into the current one."));
+	$('#libadd').attr('title',_("Add a new, blank project to the library."));
+	$('#libimport').attr('title',_("Load a project from a file."));
+	$('#libexportall').attr('title',_("Save all projects into a single file."));
+	$('#libzap').attr('title',_("Permanently remove all projects."));
+	$('#libcheck').attr('title',_("Check the projects for internal consistency."));
+
+	$('#libactivate').val(_("Activate"));
+	$('#libprops').val(_("Details"));
+	$('#libexport').val(_("Export"));
+	$('#libdel').val(_("Delete"));
+	$('#libmerge').val(_("Merge"));
+	$('#libadd').val(_("New"));
+	$('#libimport').val(_("Import"));
+	$('#libexportall').val(_("Export all"));
+	$('#libzap').val(_("Zap library"));
+	$('#libcheck').val(_("?"));
 
 	// Activate --------------------
 	$('#libactivate').click( function() {
@@ -1532,9 +1605,8 @@ function initLibraryPanel() {
 			// Activating a stub project.
 			// Make sure that there is no local project with that name
 			if (Project.withTitle(p.title)!=null) {
-				rasterAlert('That project name is used already',
-					'There is already a project called "'+H(p.title)+'". '+
-					'Please rename that project first.'
+				rasterAlert(_('That project name is used already'),
+					_("There is already a project called '%%'. Please rename that project first.", H(p.title))
 				);
 			} else {
 				// Do a retrieve operation, and switch to that new project, if successful.
@@ -1552,27 +1624,28 @@ function initLibraryPanel() {
 		var dialog = $('<div></div>');
 		var snippet ='\
 			<form id="form_projectprops">\n\
-			Title:<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
-			<div id="stubdetails" style="display:_DI_;">Creator: _CR_, last stored on _DA_.<br><br></div>\n\
-			Description:<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
-			<div id="sh_onoff"><input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">Private</label>\n\
-			<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">Shared</label></div>\n\
+			_LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
+			<div id="stubdetails" style="display:_DI_;">_LC_ _CR_, last stored on _DA_.<br><br></div>\n\
+			_LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
+			<div id="sh_onoff"><input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
+			<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label></div>\n\
 			</form>\
 		';
+		snippet = snippet.replace(/_LT_/g, _("Title:"));
+		snippet = snippet.replace(/_LC_/g, _("Creator:"));
+		snippet = snippet.replace(/_LD_/g, _("Description:"));
+		snippet = snippet.replace(/_LP_/g, _("Private"));
+		snippet = snippet.replace(/_LS_/g, _("Shared"));
 		snippet = snippet.replace(/_PN_/g, H(p.title));
 		snippet = snippet.replace(/_PD_/g, H(p.description));
 		snippet = snippet.replace(/_CR_/g, (p.shared && !p.stub ? H(Preferences.creator) : H(p.creator)));
 		snippet = snippet.replace(/_DA_/g, H(prettyDate(p.date)));
 		snippet = snippet.replace(/_DI_/g, (p.stub||p.shared ? 'block' : 'none'));
 		dialog.append(snippet);
-		dialog.dialog({
-			title: "Properties for project '" + H(p.title) + "'",
-			modal: true,
-			position: [90,130],
-			width: 480,
-			height: 265,
-			buttons: {
-				"Change properties": function() {
+		var dbuttons = [];
+		dbuttons.push({
+			text: _("Change properties"),
+			click: function() {
 					if (!p.stub) {
 						var fname = $('#field_projecttitle');
 						p.settitle(fname.val());
@@ -1587,15 +1660,13 @@ function initLibraryPanel() {
 						var becomesShared; 
 						// This is ugly. The .checked status does not get updated when the radio buttons
 						// are clicked. It should. Instead, look at the visual state of the labels. Fragile.
-						becomesShared = ($('label[for=sh_on]').attr('aria-pressed')=="true");
+						becomesShared = ($('label[for=sh_on]').attr('aria-pressed')=='true');
 						if (!p.shared && becomesShared) {
 							var it = new ProjectIterator({title: p.title, stubsonly: true});
 							if (it.notlast()) {
-								rasterAlert("Cannot share this project yet",
-									"There is already a project named '"
-									+H(p.title)
-									+"' on the server. You must rename this project before it can be shared."
-								);	
+								rasterAlert(_("Cannot share this project yet"),
+									_("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
+								);
 							} else {
 								// transactionCompleted() will take care of the server, if project p is the current project.
 								p.setshared(becomesShared,(p.id!=Project.cid)); 
@@ -1607,18 +1678,28 @@ function initLibraryPanel() {
 							stopWatching(p.id);
 							p.setshared(becomesShared,true);
 						}
-						$(this).dialog("close");
+						$(this).dialog('close');
 						populateProjectList();
 						transactionCompleted("Project props change");
 					} else {
 						// Not implemented yet.
-						rasterAlert('Cannot change project on server','This function is not implemented yet.');
+						rasterAlert(_("Cannot change project on server"),_("This function is not implemented yet."));
 					}
-				},
-				Cancel: function() {
-					$(this).dialog("close");
 				}
-			},
+		});
+		dbuttons.push({
+			text: _("Cancel"),
+			click: function() {
+					$(this).dialog('close');
+				}
+		});
+		dialog.dialog({
+			title: _("Properties for project '%%'", H(p.title)),
+			modal: true,
+			position: [90,130],
+			width: 480,
+			height: 265,
+			buttons: dbuttons,
 			open: function() {
 				$('#sh_onoff').buttonset();
 //				$( (p.shared?'#sh_on':'#sh_off')).attr("checked","checked");
@@ -1646,8 +1727,8 @@ function initLibraryPanel() {
 			// First retrieve the project, then start exporting it
 			Project.retrieve(p.id,function(newpid){
 				if (newpid==null) {
-					rasterAlert('Invalid project received from server',
-						'The project "'+H(p.title)+'" was retrieved from the server but contained invalid data.'
+					rasterAlert(_("Invalid project received from server"),
+						_("The project '%%' was retrieved from the server but contained invalid data.", H(p.title))
 					);
 					return;
 				}
@@ -1682,15 +1763,15 @@ function initLibraryPanel() {
 			}
 			populateProjectList();
 		};
-		newRasterConfirm('Delete project?',
-		'Are you sure you want to remove project <i>"'+H(p.title)+'"</i>?\n<strong>This cannot be undone.</strong>',
-		'Remove','Cancel'
+		newRasterConfirm(_("Delete project?"),
+		_("Are you sure you want to remove project <i>'%%'</i>?\n<strong>This cannot be undone.</strong>", H(p.title)),
+		_("Remove"),_("Cancel")
 		).done(function() {
 			var t=p.totalnodes();
 			if (t>2) {
-				newRasterConfirm('Delete project?',
-					'This project has '+t+' nodes.\nAre you <i>really</i> sure you want to discard these?',
-					'Yes, really remove','Cancel')
+				newRasterConfirm(_("Delete project?"),
+					_("This project has %% nodes.\nAre you <i>really</i> sure you want to discard these?", t),
+					_("Yes, really remove"),_("Cancel"))
 				.done(dokill);
 			} else {
 				dokill();
@@ -1705,7 +1786,7 @@ function initLibraryPanel() {
 	$('#libmerge').click( function() {
 		var otherproject = Project.get( $('#libselect option:selected').val() );
 		if (otherproject.stub) {
-			rasterAlert("Cannot merge a remote project","This tool currently cannot merge remote projects. Activate that project first, then try to merge again.");
+			rasterAlert(_("Cannot merge a remote project"),_("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
 			return;
 		}
 		var currentproject = Project.get( Project.cid );
@@ -1780,12 +1861,12 @@ function initLibraryPanel() {
 	// Zap! --------------------
 	$('#libzap').click( function(){
 		rasterConfirm('Delete all?',
-			"This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?",
-			'Erase everything','Cancel',
+			_("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
+			_("Erase everything"),_("Cancel"),
 			function() {
-				rasterConfirm('Delete all?',
-					"Really sure? You will lose <b>all private</b> projects!\n",
-					'Yes, really erase all','Cancel',
+				rasterConfirm(_('Delete all?'),
+					_("Really sure? You will lose <b>all private</b> projects!\n"),
+					_("Yes, really erase all"),_("Cancel"),
 					function() {
 						localStorage.clear();
 						// Preserve the user's preferences
@@ -1811,12 +1892,12 @@ function initLibraryPanel() {
 				e.sort();
 				if (errors!="")
 					errors += "<p>";
-				errors += "Project <i>"+H(p.title)+"</i>:\n" + e.join('<br>\n');
+				errors += _("Project <i>%%</i>:\n", H(p.title)) + e.join('<br>\n');
 			}
 		}
 		if (errors=="")
-			errors = "There were no errors; all projects are OK.\n";
-		rasterAlert("Checked "+n+" projects", errors);
+			errors = _("There were no errors; all projects are OK.\n");
+		rasterAlert(_("Checked %% projects", n), errors);
 		$('#libcheck').removeClass('ui-state-hover');
 		$('#libselect').focus(); // Won't work, because the alert is still active.
 	});
@@ -1869,7 +1950,7 @@ function populateProjectList() {
 		if (p.stub || p.shared)
 			continue;
 		if (snippet=="")
-			snippet = '<optgroup class="optgroup" label="Private projects">\n';
+			snippet = '<optgroup class="optgroup" label="'+_("Private projects")+'">\n';
 		snippet += '<option value="'+p.id+'" title="'+p.description+'">'+p.title+'</option>\n';
 	}
 	if (snippet!="")
@@ -1882,7 +1963,7 @@ function populateProjectList() {
 		if (p.stub || !p.shared)
 			continue;
 		if (snippet=="")
-			snippet = '<optgroup class="optgroup" label="Shared projects">\n';
+			snippet = '<optgroup class="optgroup" label="'+_("Shared projects")+'">\n';
 		snippet += '<option value="'+p.id+'" title="'+p.description+'">'+p.title+'</option>\n';
 	}
 	if (snippet!="")
@@ -1919,7 +2000,7 @@ function refreshProjectList() {
 	for (it.first(); it.notlast(); it.next()) {
 		var p = it.getproject();
 		if (snippet=="")
-			snippet = '<optgroup id="stubgroup" class="optgroup" label="Other projects on the server">\n';
+			snippet = '<optgroup id="stubgroup" class="optgroup" label="'+_("Other projects on the server")+'">\n';
 		snippet += '<option value="'+p.id+'" title="'+p.description+'">'+p.title+', by '+p.creator+' on '+prettyDate(p.date)+'</option>\n';
 	}
 	if (snippet!="")
@@ -1931,30 +2012,47 @@ function refreshProjectList() {
 
 
 function initOptionsPanel() {
+	$('#optionsactivator span').first().html(_("Options"));
+
 	$('#switcher').buttonset();
 	$('#emblem_size').buttonset();
 	$('#gridonoff').buttonset();
 	$('#labelonoff').buttonset();
 	$('#onlineonoff').buttonset();
 
+	$('#switcher span').first().html( _("Visual style:") );
 	$('[for=smoothness]').click( function() { Preferences.settheme("smoothness"); });
 	$('[for=pepper-grinder]').click( function() { Preferences.settheme("pepper-grinder"); });
 	$('[for=redmond]').click( function() { Preferences.settheme("redmond"); });
 	$('#'+Preferences.theme).click();
 
+	$('#emblem_size span').first().html( _("Vulnerability levels:") );
+	$('#emblem_size label span').eq(0).html( _("Small") );
+	$('#emblem_size label span').eq(1).html( _("Large") );
+	$('#emblem_size label span').eq(2).html( _("None") );
 	$('[for=em_small]').click( function() { Preferences.setemblem("em_small"); });
 	$('[for=em_large]').click( function() { Preferences.setemblem("em_large"); });
 	$('[for=em_none]').click( function() { Preferences.setemblem("em_none"); });
 	
+	$('#labelonoff span').first().html( _("Labels:") );
+	$('#labelonoff label span').eq(0).html( _("Hide color") );
+	$('#labelonoff label span').eq(1).html( _("Show color") );
 	$('[for=label_off]').click( function() { Preferences.setlabel(false); });
 	$('[for=label_on]').click( function() { Preferences.setlabel(true); });
 	
+	$('#gridonoff span').first().html( _("Move nodes:") );
+	$('#gridonoff label span').eq(0).html( _("Move freely") );
+	$('#gridonoff label span').eq(1).html( _("Snap to grid") );
 	$('[for=grid_off]').click( function() { Preferences.setgrid(false); });
 	$('[for=grid_on]').click( function() { Preferences.setgrid(true); });
 	
+	$('#onlineonoff span').first().html( _("Network connection:") );
+	$('#onlineonoff label span').eq(0).html( _("Offline") );
+	$('#onlineonoff label span').eq(1).html( _("Online") );
 	$('[for=online_off]').click( function() { Preferences.setonline(false); });
 	$('[for=online_on]').click( function() { Preferences.setonline(true); });
 
+	$('#creator_name span').first().html( _("Your name:") );
 	$('#creator').change( function(evt){
 		Preferences.setcreator($('#creator').val());
 		$('#creator').val(Preferences.creator);
@@ -2004,10 +2102,9 @@ function bottomTabsCloseHandler(index,elem) {
 	}
 	$('#selectrect').hide();
 	var s = Service.get(nid2id(elem));
-	rasterConfirm('Delete service?',
-		'Are you sure you want to remove service "'+
-		H(s.title)+'" from project "'+p.title+'"?\nThis cannot be undone.',
-		'Remove service','Cancel',
+	rasterConfirm(_("Delete service?"),
+		_("Are you sure you want to remove service '%%' from project '%%'?\nThis cannot be undone.", H(s.title), H(p.title)),
+		_("Remove service"),_("Cancel"),
 		function() {
 			p.removeservice( s.id );
 //			if (s.id == Service.cid)
@@ -2021,7 +2118,7 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 	/* ui.tab.hash is the DOM object with id #tabtitle<nn> */
 	var id = nid2id(ui.tab.hash);
 	$('#selectrect').hide();
-	$('#nodereport').dialog("close");
+	$('#nodereport').dialog('close');
 	Service.get(id).paintall();
 	Service.cid = id;
 }
@@ -2054,18 +2151,42 @@ function initTabDiagrams() {
 	});
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
+	$('.th_name.thr_header').html( _("Name") );
+	$('.th_descr.thr_header').html( _("Description") );
+	$('.addthreatbutton').val( _("+ Add vulnerability"));
+	$('.copybutton').val( _("Copy"));
+	$('.pastebutton').val( _("Paste"));
+	
 	$('.popupmenuitem').button();
 	$('.popupmenuitem').removeClass('ui-corner-all');
+	$("#mi_th span").html( _("Vulnerabilities") );
+	$("#mi_ct span span").html( _("Change type") );
+	$("#mi_cttWLS span").html( _("Wireless link") );
+	$("#mi_cttWRD span").html( _("Wired link") );
+	$("#mi_cttEQT span").html( _("Equipment") );
+	$("#mi_cttACT span").html( _("Actor") );
+	$("#mi_cttUNK span").html( _("Unknown link") );
+	$("#mi_du span").html( _("Duplicate") );
+	$("#mi_de span").html( _("Delete") );
+
+	$("#mi_sd span").html( _("Delete selection") );
+	$("#mi_sc span span").html( _("Label") );
 	
-	$('#tWLS').attr('title', "Drag to add a wireless link.");
-	$('#tWRD').attr('title', "Drag to add a wired link (cable).");
-	$('#tEQT').attr('title', "Drag to add an equipment item.");
-	$('#tACT').attr('title', "Drag to add an actor (someone using this telecom services).");
-	$('#tUNK').attr('title', "Drag to add an unknown link.");
-	$('#tNOT').attr('title', "Drag to add an area for comments.");
-	$('#tC_tWLS').attr('title', "Click to edit default threats for Wireless links.");
-	$('#tC_tWRD').attr('title', "Click to edit default threats for Wired links.");
-	$('#tC_tEQT').attr('title', "Click to edit default threats for Equipment components.");
+	$('#templates .t1 .templatelabel').html( _("Wireless") );
+	$('#templates .t2 .templatelabel').html( _("Wired") );
+	$('#templates .t3 .templatelabel').html( _("Equipment") );
+	$('#templates .t4 .templatelabel').html( _("Actor") );
+	$('#templates .t5 .templatelabel').html( _("Unknown") );
+	$('#templates .t6 .templatelabel').html( _("note") );
+	$('#tWLS').attr('title', _("Drag to add a wireless link."));
+	$('#tWRD').attr('title', _("Drag to add a wired link (cable)."));
+	$('#tEQT').attr('title', _("Drag to add an equipment item."));
+	$('#tACT').attr('title', _("Drag to add an actor (someone using this telecom services)."));
+	$('#tUNK').attr('title', _("Drag to add an unknown link."));
+	$('#tNOT').attr('title', _("Drag to add an area for comments."));
+	$('#tC_tWLS').attr('title', _("Click to edit default threats for Wireless links."));
+	$('#tC_tWRD').attr('title', _("Click to edit default threats for Wired links."));
+	$('#tC_tEQT').attr('title', _("Click to edit default threats for Equipment components."));
 	
 	$("#nodereport").dialog({
 		autoOpen: false,
@@ -2243,9 +2364,9 @@ function initTabDiagrams() {
 	$('#mi_de').mouseup(function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
-		rasterConfirm("Delete element node?",
-			'Are you sure you want to delete ' + (rn.type=='tNOT'?"note":"node") + ' "' + rn.htmltitle() +'"?',
-			'Delete','Cancel',
+		rasterConfirm(_("Delete element node?"),
+			_("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
+			_("Delete"),_("Cancel"),
 			function() {
 				transactionCompleted("Node delete");
 				rn.destroy(); 
@@ -2265,9 +2386,9 @@ function initTabDiagrams() {
 			var rn = Node.get(nodes[i]);
 		  	$(rn.jnid).effect("pulsate", { times:10 }, 2000);
 		}
-		rasterConfirm("Delete " + num + plural(" node","s",num) + " in selection?",
-			'Are you sure you want to delete all selected nodes?',
-			'Delete '+ num + plural(" node","s",num),'Cancel',
+		rasterConfirm(_("Delete %% %% in selection?", num, plural(_("node"),_("nodes"),num)),
+			_("Are you sure you want to delete all selected nodes?"),
+			_("Delete %% %%", num, plural(_("node"),_("nodes"),num)),_("Cancel"),
 			function() {
 				// Stop any leftover pulsate effects
 				for (var i=0; i<num; i++) {
@@ -2476,16 +2597,16 @@ function showLabelEditForm() {
 	snippet = snippet.replace(/_PURPLE_/g, H(p.labels[5]));
 	snippet = snippet.replace(/_GREY_/g, H(p.labels[6]));
 	dialog.append(snippet);
-	dialog.dialog({
-		title: "Edit labels",
-		modal: true,
-		width: 285,
-		height: 290,
-		buttons: {
-			Cancel: function() {
-				$(this).dialog("close");
-			},
-			"Done": function() {
+	var dbuttons = [];
+	dbuttons.push({
+		text: _("Cancel"),
+		click: function() {
+				$(this).dialog('close');
+			}
+	});
+	dbuttons.push({
+		text: _("Done"),
+		click: function() {
 				p.labels[0] = trimwhitespace(String($('#field_red').val())).substr(0,50);
 				p.labels[1] = trimwhitespace(String($('#field_orange').val())).substr(0,50);
 				p.labels[2] = trimwhitespace(String($('#field_yellow').val())).substr(0,50);
@@ -2498,11 +2619,17 @@ function showLabelEditForm() {
 						p.labels[i] = Project.defaultlabels[i];
 				}
 				p.store();
-				$(this).dialog("close");
+				$(this).dialog('close');
 				transactionCompleted("Label edit");
 				$(this).remove();
 			}
-		}
+	});
+	dialog.dialog({
+		title: _("Edit labels"),
+		modal: true,
+		width: 285,
+		height: 290,
+		buttons: dbuttons
 	});
 }
 
@@ -2532,17 +2659,25 @@ function displayThreatsDialog(cid,event) {
 	Component.ThreatsComponent = cid;
 	var snippet = '<div id="dialogthreatlist">\
 		<div class="threat">\
-		<div class="th_name thr_header">Name</div>\
-		<div class="th_freq thr_header">Freq.</div>\
-		<div class="th_impact thr_header">Impact</div>\
-		<div class="th_total thr_header">Total</div>\
-		<div class="th_remark thr_header">Remark</div>\
+		<div class="th_name thr_header">_LN_</div>\
+		<div class="th_freq thr_header">_LF_</div>\
+		<div class="th_impact thr_header">_LI_</div>\
+		<div class="th_total thr_header">_LT_</div>\
+		<div class="th_remark thr_header">_LR_</div>\
 		</div>\
 		<div id="threats_CI_" class="threats"></div>\
-		<input id="dthadddia_CI_" class="addthreatbutton" type="button" value="+ Add vulnerability">\
-		<input id="dthcopydia_CI_" class="copybutton" type="button" value="Copy">\
-		<input id="dthpastedia_CI_" class="pastebutton" type="button" value="Paste">\
+		<input id="dthadddia_CI_" class="addthreatbutton" type="button" value="_BA_">\
+		<input id="dthcopydia_CI_" class="copybutton" type="button" value="_BC_">\
+		<input id="dthpastedia_CI_" class="pastebutton" type="button" value="_BP_">\
 		</div>';
+	snippet = snippet.replace(/_LN_/g, _("Name"));
+	snippet = snippet.replace(/_LF_/g, _("Freq."));
+	snippet = snippet.replace(/_LI_/g, _("Impact"));
+	snippet = snippet.replace(/_LT_/g, _("Total"));
+	snippet = snippet.replace(/_LR_/g, _("Remark"));
+	snippet = snippet.replace(/_BA_/g, _("+ Add vulnerability"));
+	snippet = snippet.replace(/_BC_/g, _("Copy"));
+	snippet = snippet.replace(/_BP_/g, _("Paste"));
 	snippet = snippet.replace(/_CI_/g, cid);
 	$("#componentthreats").html(snippet);
 	c.setmarkeroid(null);
@@ -2620,9 +2755,9 @@ function displayThreatsDialog(cid,event) {
 	});
 		
 	if ($("#componentthreats").dialog("isOpen"))
-		$("#componentthreats").dialog("close");
+		$("#componentthreats").dialog('close');
 	$("#componentthreats").dialog({
-		'title': 'Vulnerability assessment for "'+H(c.title)+'" ' + (c.nodes.length>1 ? "("+c.nodes.length+" nodes)" : ""),
+		'title': _("Vulnerability assessment for '%%'", H(c.title)) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
 		minWidth: 725,
 		minHeight: 180,
 		zIndex: 400,
@@ -2665,7 +2800,7 @@ function displayChecklistsDialog(type) {
 	// Since that is confusing, we prevent obscuration by using a type-specific offset.
 	var offsets = {'tWLS': 0, 'tWRD': 30, 'tEQT': 60};
 	$("#checklist_"+type).dialog({
-		'title': 'Default vulnerabilities for new nodes of type "'+Rules.nodetypes[type]+'"',
+		title: _("Default vulnerabilities for new nodes of type '%%'", Rules.nodetypes[type]),
 		minWidth: 725,
 		minHeight: 180,
 		position: [150+offsets[type],100+offsets[type]],
@@ -2684,7 +2819,7 @@ function displayChecklistsDialog(type) {
  * E.g. arrayJoinAsString(["red","green","orange","blue"],"and") = "red, green, orange and blue"
  */
 function arrayJoinAsString(a,str) {
-	if (a.length==0) return "(none)";
+	if (a.length==0) return _("(none)");
 	if (a.length==1) return a[0];
 	var last = a.pop();
 	return a.join(", ")	+ " " + str + " " + last;
@@ -2698,13 +2833,13 @@ function RefreshNodeReportDialog() {
 	var s;
 				
 	if (report.length==0)
-		s = "Connections are OK; no warnings.";
+		s = _("Connections are OK; no warnings.");
 	else {
 		s = report.join("<p>");
 	}
 	$("#nodereport").html( s );
 	$("#nodereport").dialog({
-		title: 'Warning report on '+rn.htmltitle(),
+		title: _("Warning report on %%", rn.htmltitle()),
 		zIndex: 400
 	});
 	$("#nodereport").dialog("open");
@@ -2746,9 +2881,10 @@ function paintSingleFailures(s) {
 	it.first();
 	if (!it.notlast()) {
 		$('#singlefs_workspace'+s.id).append(
-			'<p class="firstp sfaccordion">This space will show all vulnerability evaluations for the components in this service.\
-			Since all service diagrams are empty, there is nothing to see here yet.\
-			Add some nodes to the diagrams first.'
+			'<p class="firstp sfaccordion">'
+			+ _("This space will show all vulnerability evaluations for the components in this service. ")
+			+ _("Since this diagram for this service is empty, there is nothing to see here yet. ")
+			+ _("Add some nodes to the diagrams first.")
 		);
 		return;
 	}
@@ -2774,16 +2910,22 @@ function paintSingleFailures(s) {
 	// behaviour stuff.
 	snippet = '\
 		<p class="firstp donotprint">\
-		[+] <span id="expandalls_SV_" class="ui-link">Expand all</span>\
+		[+] <span id="expandalls_SV_" class="ui-link">_EA_</span>\
 		&nbsp;&nbsp;&nbsp;&nbsp;\
-		[&minus;] <span id="collapsealls_SV_" class="ui-link">Collapse all</span>\
-		<span id="sortalls_SV_" class="sortalls">Sort: <select id="sfselect_SV_">\n\
-			<option value="alpha">Alphabetically</option>\n\
-			<option value="type">by Type</option>\n\
-			<option value="threat">by Vulnerability level</option>\n\
+		[&minus;] <span id="collapsealls_SV_" class="ui-link">_CA_</span>\
+		<span id="sortalls_SV_" class="sortalls">_LS_ <select id="sfselect_SV_">\n\
+			<option value="alpha">_O1_</option>\n\
+			<option value="type">_O2_</option>\n\
+			<option value="threat">_O3_</option>\n\
 		</select></span>\n\
 		</p>\
 	';
+	snippet = snippet.replace(/_EA_/g, _("Expand all"));
+	snippet = snippet.replace(/_CA_/g, _("Collapse all"));
+	snippet = snippet.replace(/_LS_/g, _("Sort:"));
+	snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
+	snippet = snippet.replace(/_O2_/g, _("by Type"));
+	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
 	snippet = snippet.replace(/_SN_/g, H(s.title));
 	snippet = snippet.replace(/_SV_/g, s.id);
 	snippet = snippet.replace(/_PN_/g, H(Project.get(s.project).title));
@@ -2796,18 +2938,24 @@ function paintSingleFailures(s) {
 		//if (cm.type=='tACT') continue;
 		var snippet = '\n\
 		  <div id="sfaccordion_SV___ID_" class="sfaccordion">\n\
-			<h3><a href="#">Single failures for "_TI_" (_TY__AP_) _LB_<span id="sfamark_SV___ID_"></span></a></h3>\n\
+			<h3><a href="#">_LSF_ "_TI_" (_TY__AP_) _LB_<span id="sfamark_SV___ID_"></span></a></h3>\n\
 			<div>\n\
 			 <div id="sfa_SV___ID_">\n\
 			  <div class="threat">\n\
-			   <div class="th_name thr_header">Name</div>\n\
-			   <div class="th_freq thr_header">Freq.</div>\n\
-			   <div class="th_impact thr_header">Impact</div>\n\
-			   <div class="th_total thr_header">Total</div>\n\
-			   <div class="th_remark thr_header">Remark</div>\n\
+			   <div class="th_name thr_header">_LN_</div>\n\
+			   <div class="th_freq thr_header">_LF_</div>\n\
+			   <div class="th_impact thr_header">_LI_</div>\n\
+			   <div class="th_total thr_header">_LT_</div>\n\
+			   <div class="th_remark thr_header">_LR_</div>\n\
 			  </div>\n\
 			 </div>\n\
 		';
+		snippet = snippet.replace(/_LSF_/g, _("Single failures for"));
+		snippet = snippet.replace(/_LN_/g, _("Name"));
+		snippet = snippet.replace(/_LF_/g, _("Freq."));
+		snippet = snippet.replace(/_LI_/g, _("Impact"));
+		snippet = snippet.replace(/_LT_/g, _("Total"));
+		snippet = snippet.replace(/_LR_/g, _("Remark"));
 
 		if (Preferences.label) {
 			var p = Project.get(cm.project);
@@ -2842,12 +2990,15 @@ snippet += "<div class='sfa_sortable'>\n";
 		}
 snippet += "</div>\n";
 		snippet += '\n\
-			 <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="+ Add vulnerability">\n\
-			 <input id="sfacopy_SV___ID_" class="copybutton" type="button" value="Copy">\n\
-			 <input id="sfapaste_SV___ID_" class="pastebutton" type="button" value="Paste">\n\
+			 <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="_BA_">\n\
+			 <input id="sfacopy_SV___ID_" class="copybutton" type="button" value="_BC_">\n\
+			 <input id="sfapaste_SV___ID_" class="pastebutton" type="button" value="_BP_">\n\
 			</div>\n\
 		  </div>\n\
 		';
+		snippet = snippet.replace(/_BA_/g, _("+ Add vulnerability"));
+		snippet = snippet.replace(/_BC_/g, _("Copy"));
+		snippet = snippet.replace(/_BP_/g, _("Paste"));
 		snippet = snippet.replace(/_SV_/g, s.id);
 		snippet = snippet.replace(/_ID_/g, cm.id);
 		snippet = snippet.replace(/_TY_/g, Rules.nodetypes[cm.type]);
@@ -3009,22 +3160,33 @@ var CCFSortOpt = "alpha";
 
 function AddAllClusters() {
 	var snippet = '\
-		<h1 class="printonly underlay">Common Cause failures</h1>\
-		<h2 class="printonly underlay projectname">Project: _PN_</h2>\
-		<p id="noshf" class="firstp sfaccordion">This space will show all vulnerabilities domains for the components in this project.\
-		Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet.\
-		Add some nodes to the diagrams first.</p>\
+		<h1 class="printonly underlay">_LCCF_</h1>\
+		<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\
+		<p id="noshf" class="firstp sfaccordion">_N1_\
+		_N2_\
+		_N3_</p>\
 		<p id="someshf" class="firstp donotprint">\
-		[+] <span id="expandallshf" class="ui-link">Expand all</span>\
+		[+] <span id="expandallshf" class="ui-link">_EA_</span>\
 		&nbsp;&nbsp;&nbsp;&nbsp;\
-		[&minus;] <span id="collapseallshf" class="ui-link">Collapse all</span>\
-		<span id="sortallccf" class="sortalls">Sort: <select id="ccfselect">\n\
-			<option value="alpha">Alphabetically</option>\n\
-			<option value="type">by Type</option>\n\
-			<option value="threat">by Vulnerability level</option>\n\
+		[&minus;] <span id="collapseallshf" class="ui-link">_CA_</span>\
+		<span id="sortallccf" class="sortalls">_LS_ <select id="ccfselect">\n\
+			<option value="alpha">_O1_</option>\n\
+			<option value="type">_O2_</option>\n\
+			<option value="threat">_O3_</option>\n\
 		</select></span>\n\
 		</p>\
 	';
+	snippet = snippet.replace(/_LP_/g, _("Project"));
+	snippet = snippet.replace(/_LCCF_/g, _("Common Cause Failures"));
+	snippet = snippet.replace(/_N1_/g, _("This space will show all vulnerabilities domains for the components in this project."));
+	snippet = snippet.replace(/_N2_/g, _("Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet."));
+	snippet = snippet.replace(/_N3_/g, _("Add some nodes to the diagrams first."));
+	snippet = snippet.replace(/_EA_/g, _("Expand all"));
+	snippet = snippet.replace(/_CA_/g, _("Collapse all"));
+	snippet = snippet.replace(/_LS_/g, _("Sort:"));
+	snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
+	snippet = snippet.replace(/_O2_/g, _("by Type"));
+	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
 	snippet = snippet.replace(/_PJ_/g, Project.cid);
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	$('#ccfs_body').append(snippet);
@@ -3080,12 +3242,13 @@ function AddAllClusters() {
 function addTDomElements(nc) {
 	var snippet = '\n\
 	  <div id="shfaccordion_ID_" class="shfaccordion">\n\
-		<h3><a href="#">Common Cause failures for "_TI_" (_TY_) <span id="shfamark_ID_"></span></a></h3>\n\
+		<h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="shfamark_ID_"></span></a></h3>\n\
 		<div id="shfaccordionbody_ID_" class="shfaccordionbody">\n\
 		  <div id="tdom_ID_" class="threatdomain"></div>\n\
 		</div>\n\
 	  </div>\n\
 	';
+	snippet = snippet.replace(/_LCCF_/g, _("Common Cause failures for"));
 	snippet = snippet.replace(/_ID_/g, nc.id);
 	snippet = snippet.replace(/_TI_/g, H(nc.title));
 	snippet = snippet.replace(/_TY_/g, Rules.nodetypes[nc.type]);
@@ -3151,15 +3314,20 @@ function reallyRepaintTDom(elem) {
 
 	var snippet = '<div>\
 		<div class="threat">\
-		<div class="th_name thr_header">Name</div>\
-		<div class="th_freq thr_header">Freq.</div>\
-		<div class="th_impact thr_header">Impact</div>\
-		<div class="th_total thr_header">Total</div>\
-		<div class="th_remark thr_header">Remark</div>\
+		<div class="th_name thr_header">_LN_</div>\
+		<div class="th_freq thr_header">_LF_</div>\
+		<div class="th_impact thr_header">_LI_</div>\
+		<div class="th_total thr_header">_LT_</div>\
+		<div class="th_remark thr_header">_LR_</div>\
 		</div>\
 		<div id="shftable_ID_" class="threats">\
 		</div></div>\n\
 		<div id="tdom_ID_" class="threatdomain"></div>\n';
+	snippet = snippet.replace(/_LN_/g, _("Name"));
+	snippet = snippet.replace(/_LF_/g, _("Freq."));
+	snippet = snippet.replace(/_LI_/g, _("Impact"));
+	snippet = snippet.replace(/_LT_/g, _("Total"));
+	snippet = snippet.replace(/_LR_/g, _("Remark"));
 	snippet = snippet.replace(/_ID_/g, nc.id);
 	$('#shfaccordionbody'+nc.id).html( snippet );
 	appendAllThreats(nc,"#shftable"+nc.id,"shf"+nc.id);
@@ -3515,6 +3683,12 @@ function allowDrop(elem) {
 
 
 function initTabAnalysis() {
+	$("a[href^=#at1]").html(_("Failures and Vulnerabilities"));
+	$("a[href^=#at2]").html(_("Single failures by level"));
+	$("a[href^=#at3]").html(_("Node counts"));
+	$("a[href^=#at4]").html(_("Checklist reports"));
+
+
 	$('#analysis_body').tabs();
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 }
@@ -3534,31 +3708,43 @@ function paintNodeThreatTables() {
 
 	$('#at1').empty();
 	var snippet = '\
-		<h1 class="printonly underlay projectname">_PN_</h1>\
-		<h2 class="printonly underlay projectname">Single & Common Cause Failures versus Vulnerabilities</h2>\
+		<h1 class="printonly underlay">_LTT_</h1>\
+		<h2 class="printonly underlay projectname">_LP_ _PN_</h1>\
+		<h2 class="printonly underlay projectname">_L1_</h2>\
 	';
+	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LP_/g, _("Project:") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	
 	snippet += '\n\
 		<table id="ana_nodethreattop" class="donotprint"><tr>\n\
-		<td id="ana_nodesort">Sort nodes and clusters: <select id="ana_nodeselect">\n\
-			<option value="threat">by Vulnerability level</option>\n\
-			<option value="alpha">Alphabetically</option>\n\
-			<option value="type">by Type</option>\n\
+		<td id="ana_nodesort">_LS1_ <select id="ana_nodeselect">\n\
+			<option value="threat">_O3_</option>\n\
+			<option value="alpha">_O1_</option>\n\
+			<option value="type">_O2_</option>\n\
 		</select></td>\n\
-		<td id="ana_failuresort">Sort vulnerabilities: <select id="ana_failureselect">\n\
-			<option value="alpha">Alphabetically</option>\n\
-			<option value="type">by Type</option>\n\
-			<!--option value="threat">by Vulnerability level</option-->\n\
+		<td id="ana_failuresort">_LS2_ <select id="ana_failureselect">\n\
+			<option value="alpha">_O1_</option>\n\
+			<option value="type">_O2_</option>\n\
+			<!--option value="threat">_O3_</option-->\n\
 		</select></td>\n\
 		<td id="ana_exclusions">\n\
-		<input type="button" id="quickwinslink" value="show Quick Wins">\n\
-		<input type="button" id="clearexclusions" value="clear exclusions"><br>\n\
-		<p class="donotprint">Click a coloured cell to include/exclude a failure or CCF</p>\n\
+		<input type="button" id="quickwinslink" value="_Q1_">\n\
+		<input type="button" id="clearexclusions" value="_Q2_"><br>\n\
+		<p class="donotprint">_Q3_</p>\n\
 		</td></tr></table>\n\
 		<div id="ana_nodethreattable"></div>\n\
 		<div id="ana_ccftable"></div>\n\
 	';
+	snippet = snippet.replace(/_L1_/g, _("Single & Common Cause Failures versus Vulnerabilities"));
+	snippet = snippet.replace(/_LS1_/g, _("Sort nodes and clusters:"));
+	snippet = snippet.replace(/_LS2_/g, _("Sort vulnerabilities:"));
+	snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
+	snippet = snippet.replace(/_O2_/g, _("by Type"));
+	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
+	snippet = snippet.replace(/_Q1_/g, _("show Quick Wins"));
+	snippet = snippet.replace(/_Q2_/g, _("clear exclusions"));
+	snippet = snippet.replace(/_Q3_/g, _("Click a coloured cell to include/exclude a failure or CCF"));
 	$('#at1').html(snippet);
 	$('#ana_nodeselect').change( function(){
 		var selected = $('#ana_nodeselect option:selected').val();
@@ -3719,11 +3905,11 @@ function paintSFTable() {
 	// If the table would be empty, then don't paint row and column headers
 	// but show a message instead
 	if (numthreats==0) {
-		$('#ana_nodethreattable').html('\
-		<p style="margin-left:3em; width:50em;">This space will show an overview of all diagram nodes and their vulnerabilities.\n\
-		Since all service diagrams are empty, there is nothing to see here yet.\n\
-		Add some nodes to the diagrams first.</p>\n\
-		');
+		$('#ana_nodethreattable').html("<p style=\"margin-left:3em; width:50em;\">"
+			+ _("This space will show an overview of all diagram nodes and their vulnerabilities. ")
+			+ _("Since all service diagrams are empty, there is nothing to see here yet. ")
+			+ _("Add some nodes to the diagrams first.")
+		);
 		return;
 	}
 	
@@ -3737,11 +3923,12 @@ function paintSFTable() {
 		<colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
 		<thead>\n\
 		 <tr>\n\
-		  <td class="nodetitlecell largetitlecell">Single failures</td>\n\
+		  <td class="nodetitlecell largetitlecell">_SF_</td>\n\
 	';
 	// 20em = width of first column
 	// 1.7em = width of threat columns
 	// numthreats = number of threat columns
+	snippet = snippet.replace(/_SF_/, _("Single failures"));
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
 	snippet = snippet.replace(/_TW_/, 20+1.7*(numthreats+1));
@@ -3750,11 +3937,12 @@ function paintSFTable() {
 		var nc = tit.getNodeCluster();
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}	
-	snippet += '<td class="headercell"><b>Overall</b></td>\n\
+	snippet += '<td class="headercell"><b>_OV_</b></td>\n\
 		 </tr>\n\
 		</thead>\n\
 		<tbody>\n\
 	';
+	snippet = snippet.replace(/_OV_/, _("Overall"));
 	// Do each of the table rows
 	for (cit.first(); cit.notlast(); cit.next()) {
 		var cm = cit.getcomponent();
@@ -3789,7 +3977,7 @@ function paintSFTable() {
 		if (cm.magnitude==Nodesum[cm.id])
 			snippet = snippet.replace(/_ZZ_/g, '');
 		else
-			snippet = snippet.replace(/_ZZ_/g, '<span class="reduced">reduced</span>');
+			snippet = snippet.replace(/_ZZ_/g, '<span class="reduced">' + _("reduced") + '</span>');
 	}
 	// Do the ending/closing
 	snippet += '\n\
@@ -3856,8 +4044,9 @@ function paintCCFTable() {
     <colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
     <thead>\n\
     <tr>\n\
-    <td class="nodetitlecell largetitlecell">Common cause failures</td>\n\
+    <td class="nodetitlecell largetitlecell">_CCF_</td>\n\
 	';
+	snippet = snippet.replace(/_CCF_/, _("Common cause failures"));
 	// 20em = width of first column
 	// 1.7em = width of threat columns
 	// numthreats = number of threat columns
@@ -3869,11 +4058,12 @@ function paintCCFTable() {
 		var nc = tit.getNodeCluster();
 		snippet += '<td class="printonlycell headercell">'+H(nc.title)+'</td>\n';
 	}	
-	snippet += '<td class="printonlycell headercell"><b>Overall</b></td>\n\
+	snippet += '<td class="printonlycell headercell"><b>_OV_</b></td>\n\
 		 </tr>\n\
 		</thead>\n\
 		<tbody>\n\
 	';
+	snippet = snippet.replace(/_OV_/, _("Overall"));
 
     // Do each of the table rows
 	for (ncit.first(); ncit.notlast(); ncit.next()) {
@@ -3938,7 +4128,7 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
 		if (cl.magnitude==clustertotal)
 			snippet = snippet.replace(/_ZZ_/g, '');
 		else
-			snippet = snippet.replace(/_ZZ_/g, '<span class="reduced">reduced</span>');
+			snippet = snippet.replace(/_ZZ_/g, '<span class="reduced">' + _("reduced") + '</span>');
 	}
 	for (i=0; i<cl.childclusters.length; i++) {
 		var ccl = NodeCluster.get(cl.childclusters[i]);
@@ -3963,10 +4153,13 @@ function ClusterMagnitudeWithExclusions(cl,list) {
 
 function paintVulnsTable() {
 	var snippet = '\
-		<h1 class="printonly underlay">Reports and Analysis Tools</h1>\
-		<h2 class="printonly underlay projectname">Project: _PN_</h2>\
-		<h2 class="printonly underlay projectname">Vulnerability assessment details</h2>\
+		<h1 class="printonly underlay">_LTT_</h1>\
+		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
+		<h2 class="printonly underlay projectname">_LD_</h2>\
 	';
+	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LP_/g, _("Project:") );
+	snippet = snippet.replace(/_LD_/g, _("Vulnerability assessment details") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	$('#at2').html(snippet);
 	// Frequency
@@ -3975,11 +4168,10 @@ function paintVulnsTable() {
 	// If the table would be empty, then don't paint row and column headers
 	// but show a message instead
 	if (snippet=="") {
-		snippet = '\
-		<p style="margin-left:3em; margin-top:4em; width:50em;">This space will show an overview of all vulnerabilities and their severities.\n\
-		Since all service diagrams are empty, there is nothing to see here yet.\n\
-		Add some nodes to the diagrams first.</p>\n\
-		';
+		snippet = '<p style="margin-left:3em; margin-top:4em; width:50em;">'
+			+ _("This space will show an overview of all vulnerabilities and their severities. ")
+			+ _("Since all service diagrams are empty, there is nothing to see here yet. ")
+			+ _("Add some nodes to the diagrams first.");
 	} else {
 		// Impact
 		snippet += paintVulnsTableType(2);
@@ -4048,22 +4240,22 @@ function paintVulnsTableType(tabletype) {
 	    
 	// Do the header
 	var snippet = '\n\
-	<a name="frag__TT_"><br><br>Jump to:</a>&nbsp;<a href="#frag_frequencies">Frequencies</a>&nbsp;&nbsp;<a href="#frag_impacts">Impacts</a>&nbsp;&nbsp;<a href="#frag_levels">Overall levels</a><br>\n\
+	<a name="frag__TT_"><br><br>_LJ_</a>&nbsp;<a href="#frag_frequencies">_LF_</a>&nbsp;&nbsp;<a href="#frag_impacts">_LI_</a>&nbsp;&nbsp;<a href="#frag_levels">_LO_</a><br>\n\
     <table class="SFvulnstable" style="width:57em">\n\
     <colgroup><col span="1" style="width:30em"></colgroup>\n\
     <colgroup><col span="9" style="width:3em"></colgroup>\n\
     <thead>\n\
     <tr>\n\
-    <td class="nodetitlecell largetitlecell">Single vulnerability _TT_</td>\n\
-    <td class="headercell">U: extremely low</td>\n\
-    <td class="headercell">L: low</td>\n\
-    <td class="headercell">M: medium</td>\n\
-    <td class="headercell">H: high</td>\n\
-    <td class="headercell">V: extremely high</td>\n\
-    <td class="headercell">X: unknown</td>\n\
-    <td class="headercell">A: ambiguous</td>\n\
-    <td class="headercell">-: undetermined</td>\n\
-    <td class="headercell"><b>Total</b></td>\n\
+    <td class="nodetitlecell largetitlecell">_SV_ _TT_</td>\n\
+    <td class="headercell">U: _LVU_</td>\n\
+    <td class="headercell">L: _LVL_</td>\n\
+    <td class="headercell">M: _LVM_</td>\n\
+    <td class="headercell">H: _LVH_</td>\n\
+    <td class="headercell">V: _LVV_</td>\n\
+    <td class="headercell">X: _LVX_</td>\n\
+    <td class="headercell">A: _LVA_</td>\n\
+    <td class="headercell">-: _LVN_</td>\n\
+    <td class="headercell"><b>_LT_</b></td>\n\
 	</tr>\n\
 	</thead>\n\
 	<tbody>\n\
@@ -4079,8 +4271,22 @@ function paintVulnsTableType(tabletype) {
 	  <td class="M0" style="border:1px solid grey;"></td>\n\
 	</tr>\n\
 	';
-	
-	snippet = snippet.replace(/_TT_/g, (tabletype==0 ? "levels" : (tabletype==1 ? "frequencies" : "impacts") ));
+
+	snippet = snippet.replace(/_LJ_/g, _("Jump to:"));
+	snippet = snippet.replace(/_LF_/g, _("Frequencies"));
+	snippet = snippet.replace(/_LI_/g, _("Impacts"));
+	snippet = snippet.replace(/_LO_/g, _("Overall levels"));
+	snippet = snippet.replace(/_SV_/g, _("Single vulnerability"));
+	snippet = snippet.replace(/_LVU_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['U']] );
+	snippet = snippet.replace(/_LVL_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['L']] );
+	snippet = snippet.replace(/_LVM_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['M']] );
+	snippet = snippet.replace(/_LVH_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['H']] );
+	snippet = snippet.replace(/_LVV_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['V']] );
+	snippet = snippet.replace(/_LVX_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['X']] );
+	snippet = snippet.replace(/_LVA_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['A']] );
+	snippet = snippet.replace(/_LVN_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['-']] );
+	snippet = snippet.replace(/_LT_/g, _("Total") );
+	snippet = snippet.replace(/_TT_/g, (tabletype==0 ? "levels" : (tabletype==1 ? _("frequencies") : _("impacts")) ));
     // Do each of the table rows
     var col = 0;
 	for (tit.first(); tit.notlast(); tit.next()) {
@@ -4150,11 +4356,15 @@ function paintNodeTypeStats() {
 	var sit = new ServiceIterator(Project.cid);
 
 	$('#at3').empty();
+
 	var snippet = '\
-		<h1 class="printonly underlay">Reports and Analysis Tools</h1>\
-		<h2 class="printonly underlay projectname">Project: _PN_</h2>\
-		<h2 class="printonly underlay projectname">Node types counted by service</h2>\
+		<h1 class="printonly underlay">_LTT_</h1>\
+		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
+		<h2 class="printonly underlay projectname">_LD_</h2>\
 	';
+	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LP_/g, _("Project:") );
+	snippet = snippet.replace(/_LD_/g, _("Node types counted by service") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
 	for (var typ in Rules.nodetypes) tStats[typ] = 0;
@@ -4173,9 +4383,11 @@ function paintNodeTypeStats() {
 		<div id="servicestats_SI_" class="servicestats">\n\
 		<b>_SN_</b><br>\n\
 		<table class="statstable">\n\
-		<thead><th class="statstype">Type</th><th class="statsnum">Num</th></thead>\n\
+		<thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n\
 		<tbody>\n\
 		';
+		snippet = snippet.replace(/_LT_/g, _("Type") );
+		snippet = snippet.replace(/_LN_/g, _("Num") );
 		snippet = snippet.replace(/_SI_/g, s.id);
 		snippet = snippet.replace(/_SN_/g, H(s.title));
 		for (nit.first(); nit.notlast(); nit.next()) {
@@ -4193,10 +4405,11 @@ function paintNodeTypeStats() {
 			snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+sStats[typ]+'</td></tr>';
 		}
 		snippet += '\n\
-		<tr><td class="statstype">Total</td><td class="statsnum">'+sTot+'</td></tr>\n\
+		<tr><td class="statstype">_LT_</td><td class="statsnum">'+sTot+'</td></tr>\n\
 		</tbody></table></div>\n\
 		</td>\n\
 		';
+		snippet = snippet.replace(/_LT_/g, _("Total") );
 		numservice++;
 		if (numservice%6==0) {
 			snippet += '\n\
@@ -4209,19 +4422,23 @@ function paintNodeTypeStats() {
 	snippet += '\n\
 	<td>\n\
 	<div id="servicestatsTotal" class="servicestats">\n\
-	<b>Entire project</b><br>\n\
+	<b>_LP_</b><br>\n\
 	<table class="statstable">\n\
-	<thead><th class="statstype">Type</th><th class="statsnum">Num</th></thead>\n\
+	<thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n\
 	<tbody>\n\
 	';
+	snippet = snippet.replace(/_LP_/g, _("Entire project:") );
+	snippet = snippet.replace(/_LT_/g, _("Type") );
+	snippet = snippet.replace(/_LN_/g, _("Num") );
 	for (typ in Rules.nodetypes) {
 		snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+tStats[typ]+'</td></tr>';
 	}
 	snippet += '\n\
-	<tr><td class="statstype">Total</td><td class="statsnum">'+tTot+'</td></tr>\n\
+	<tr><td class="statstype">_LT_</td><td class="statsnum">'+tTot+'</td></tr>\n\
 	</tbody></table></div>\n\
 	</td>\n\
 	';
+	snippet = snippet.replace(/_LT_/g, _("Total") );
 	// Finishing
 	snippet += '\n\
 	</tr></table>\n\
@@ -4231,21 +4448,21 @@ function paintNodeTypeStats() {
 
 function paintChecklistReports() {
 	$('#at4').empty();
+
+
 	var snippet = '\
-		<h1 class="printonly underlay">Reports and Analysis Tools</h1>\
-		<h2 class="printonly underlay projectname">Project: _PN_</h2>\
-		<h2 class="printonly underlay projectname">Checklist usage</h2>\
+		<h1 class="printonly underlay">_LTT_</h1>\
+		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
+		<h2 class="printonly underlay projectname">_LD_</h2>\
 	';
+	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LP_/g, _("Project:") );
+	snippet = snippet.replace(/_LD_/g, _("Checklist usage") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	
-	snippet += '\
-	<h3>Removed vulnerabilities</h3>\n\
-	';
+	snippet += '<h3>' + _("Removed vulnerabilities") + '</h3>\n';
 	snippet += showremovedvulns();
-
-	snippet += '\
-	<h3>Custom vulnerabilities</h3>\n\
-	';
+	snippet += '<h3>' + _("Custom vulnerabilities") + '</h3>\n';
 	snippet += showcustomvulns();
 
 	$('#at4').html(snippet);
@@ -4338,12 +4555,17 @@ function showremovedvulns() {
 	';
 
 	if (num==0)
-		snippet += 'No checklist vulnerabilities have been discarded on components of this project.';
+		snippet += _("No checklist vulnerabilities have been discarded on components of this project.");
 	else
 		snippet += '<br>'+
-			num+' checklist vulnerabilit'+(num==1?'y':'ies (for ')+VulnIDs.length+' unique vulnerabilit'+(VulnIDs.length==1?'y':'ies')+
-			') discarded on '+
-			CompIDs.length+' '+plural('component','s',CompIDs.length)+' of this project.';
+			_("%% checklist %% (for %% unique %%) discarded on %% %% of this project.",
+			num,
+			plural(_("vulnerability"), _("vulnerabilities"), num),
+			VulnIDs.length,
+			plural(_("vulnerability"), _("vulnerabilities"), VulnIDs.length),
+			CompIDs.length,
+			plural(_("component"), _("components"), CompIDs.length)
+		);
 	snippet += '<br><br>\n';
 
 	return snippet;
@@ -4437,13 +4659,17 @@ function showcustomvulns() {
 	';
 
 	if (num==0)
-		snippet += 'No custom vulnerabilities have been added to any of the components in this project.';
+		snippet += _("No custom vulnerabilities have been added to any of the components in this project.");
 	else
 		snippet += '<br>'+
-			num+' custom vulnerabilit'+(num==1?'y':'ies')+
-			' (for '+VulnTitles.length+' unique vulnerabilit'+(VulnTitles.length==1?'y':'ies')+
-			') added to '+
-			CompIDs.length+' '+plural('component','s',CompIDs.length)+' of this project.';
+			_("%% custom %% (for %% unique %%) added to %% %% of this project.",
+				num,
+				plural(_("vulnerability"), _("vulnerabilities"), num),
+				VulnTitles.length,
+				plural(_("vulnerability"), _("vulnerabilities"), VulnTitles.length),
+				CompIDs.length,
+				plural(_("component"), _("components"), CompIDs.length)
+			);
 	snippet += '<br><br>\n';
 	
 	return snippet;
