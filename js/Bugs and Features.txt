@@ -1,6 +1,6 @@
 
 BUGS
-In the help screens, the symbol for 'Unknown' shows a 'U' instead of 'X' (both freq and impact).
+When opening a project in a browser with different localisation, the remarks/notes on cloud-vulnerabilities become multilingual.
 Editing labels failed again!?
 Must store current group in Preferences, and make error messages more appropriate when swapping groups.
 Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?

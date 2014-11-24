@@ -39,7 +39,7 @@ body {
 	-webkit-transform-origin: 0 0;
 	-o-transform-origin:  0 0;
 }	
-.ui-tabs-nav li a { width: 7em; overflow: hidden; z-index: 150;}
+.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150;}
 .longlink { width: 12.5em !important; }
 
 /* The content panes to each vertical tab */

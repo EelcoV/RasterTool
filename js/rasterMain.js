@@ -130,11 +130,11 @@ $(function() {
 
 	if (!testLocalStorage()) {
 		// The splash screen is still visible, and will obscure any interaction.
-		$('#splashstatus').html("Error: no local storage available.<br>Adjust cookie or privacy settings?");
-		rasterAlert("Cannot continue",
-			"HTML5 local storage is not supported by this browser or configuration. "
-			+ "This app will not work properly. "
-			+ "<p>Try adjusting your cookie or privacy settings.");
+		$('#splashstatus').html( _("Error: no local storage available.<br>Adjust cookie or privacy settings?") );
+		rasterAlert(_("Cannot continue"),
+			_("HTML5 local storage is not supported by this browser or configuration. ")
+			+ _("This app will not work properly. ")
+			+ "<p>" + _("Try adjusting your cookie or privacy settings."));
 	}
 	
 	// Load preferences
@@ -185,13 +185,21 @@ $(function() {
 		}, function() {
 			$('#helpimg').attr("src","../img/qm-lo.png");
 	});
+	$('#helptabs a').eq(0).html( _("Frequency") );
+	$('#helptabs a').eq(1).html( _("Impact") );
+	$('#helptabs a').eq(2).html( _("How to use") );
+	$('#helptabs a').eq(3).html( _("About") );
+	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
+	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
+	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
+	$('#helptabs a').eq(3).attr('href', _("../help/About.html") );
 	$('#helptabs').tabs({
 		cache: true,
 		heightStyle: "fill"
 	});
 	$('#helptabs li:last-of-type').css("margin-left","10px");
 	$('#helppanel').dialog({
-		title: "Information on using this tool",
+		title: _("Information on using this tool"),
 		autoOpen: false,
 		height: 450,
 		minHeight: 120,

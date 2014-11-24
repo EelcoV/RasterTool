@@ -99,10 +99,10 @@
 <div id="helppanel">
 	<div id="helptabs">
 		<ul>
-			<li><a href="../helpFrequency.html">Frequency</a></li>
-			<li><a href="../helpImpact.html">Impact</a></li>
-			<li><a href="../helpProcess.html">How to use</a></li>
-			<li><a href="../helpAbout.html">About</a></li>
+			<li><a href="../help/Frequency.html">Frequency</a></li>
+			<li><a href="../help/Impact.html">Impact</a></li>
+			<li><a href="../help/Process.html">How to use</a></li>
+			<li><a href="../help/About.html">About</a></li>
 		</ul>
 	</div>
 </div>
