@@ -310,6 +310,7 @@ Node.prototype = {
 			// add this node to that component
 			Component.get( n ).addnode(this.id);
 		}
+		this.setmarker();
 		if (prevcomponent) prevcomponent.removenode(this.id);
 		RefreshNodeReportDialog();
 	},

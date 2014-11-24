@@ -3011,7 +3011,7 @@ snippet += "</div>\n";
 		snippet = snippet.replace(/_ID_/g, cm.id);
 		snippet = snippet.replace(/_TY_/g, Rules.nodetypes[cm.type]);
 		snippet = snippet.replace(/_TI_/g, H(cm.title));
-		snippet = snippet.replace(/_AP_/g, (cm.nodes.length==1 || cm.single ? '' : ', '+cm.nodes.length+' nodes' ));
+		snippet = snippet.replace(/_AP_/g, (cm.nodes.length==1 || cm.single ? '' : ', '+cm.nodes.length+' '+_("nodes") ));
 		appendstring += snippet;
 	}
 	
