@@ -310,4 +310,7 @@ _t["HTML5 local storage is not supported by this browser or configuration. "] = 
 _t["This app will not work properly. "] = "Dit programma zal niet goed werken. ";
 _t["Try adjusting your cookie or privacy settings."] = "Probeer uw cookie of privacy installingen aan te passen.";
 _t["New node group"] = "Nieuwe componentgroep";
-
+_t["Find:"] = "Vind:";
+_t["Results:"] = "Resultaten:";
+_t["Find nodes"] = "Vind componenten";
+_t["Node '%%' (%%) in service '%%'"] = "Component '%%' (%%) in dienst '%%'";

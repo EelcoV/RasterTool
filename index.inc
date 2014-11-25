@@ -95,6 +95,8 @@
 	</div>
 </div> <!-- id="templates" -->
 
+<div id="findbutton" class="donotprint"><img id="findimg" src="../img/find.png"></div>
+
 <div id="helpbutton" class="donotprint"><img id="helpimg" src="../img/qm-lo.png"></div>
 <div id="helppanel">
 	<div id="helptabs">

@@ -180,6 +180,24 @@ img.tC {
 	text-align: center;
 }
 
+#findbutton {
+	position: absolute;
+	top: 12px;
+	left: 350px;
+	z-index: 100;
+}
+#field_found {
+	width: 380px;
+	height: 180px;
+	resize: none;
+}
+#field_find {
+	width: 376px;
+}
+#helppanel {
+	width: auto;
+}
+
 /* Hoverbuttons to activate the three panels */
 .activator {
 	position: absolute;

@@ -215,6 +215,41 @@ $(function() {
 		$('#helppanel').dialog("open");
 	});
 
+	$('#findbutton img').click( function() {
+		var dialog = $('<div></div>');
+		var snippet ='\
+			<form id="form_find">\n\
+			_LS_<br><input id="field_find" name="fld" type="text" value=""><br>\n\
+			_LF_<br><textarea id="field_found" readonly="true" wrap="off"></textarea>\n\
+			</form>\
+		';
+		snippet = snippet.replace(/_LS_/g, _("Find:"));
+		snippet = snippet.replace(/_LF_/g, _("Results:"));
+		dialog.append(snippet);
+		
+		dialog.dialog({
+			title: _("Find nodes"),
+			width: 405,
+			resizable: true,
+			buttons: [{ text: _("Done"),
+				click: function() {dialog.dialog("close");}
+			}],
+			open: function(event, ui) {
+				$('#field_find').focus().select();
+				nodeFindString = "";
+				findTimer = window.setTimeout(updateFind,500);
+			},
+			close: function(event, ui) {
+				window.clearTimeout(findTimer);
+				dialog.remove();
+			},
+			resize: function(event,ui) {
+				$('#field_find').width(ui.size.width-32);
+				$('#field_found').width(ui.size.width-28).height(ui.size.height-150);
+			}
+		});
+	});
+
 	var flashTimer;
 	$("#networkactivity").ajaxSend(function(){
 		window.clearTimeout(flashTimer);
@@ -267,6 +302,31 @@ $(function() {
 		}
 	};
 });
+
+var findTimer;
+var nodeFindString = "";
+var updateFind = function() {
+	var str = $('#field_find').val();
+	if (str==nodeFindString) {
+		findTimer = window.setTimeout(updateFind,500);
+		return;
+	}
+	nodeFindString = str;
+	var res = "";
+	if (nodeFindString!='') {
+		var it = new NodeIterator({project: Project.cid});
+		for (it.first(); it.notlast(); it.next()) {
+			var rn = it.getnode();
+			var s = Service.get(rn.service);
+			if (rn.title.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1) {
+				res += _("'%%' (%%) in service '%%'", H(rn.title), H(Rules.nodetypes[rn.type]), H(s.title));
+				res += '\n';
+			}
+		}
+	}
+	$('#field_found').html(res);
+	findTimer = window.setTimeout(updateFind,500);
+};
 
 /* In the code, use _("blue sky") instead of "blue sky"
  * Use
