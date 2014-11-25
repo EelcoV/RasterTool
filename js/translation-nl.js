@@ -116,7 +116,9 @@ _t["Delete %% %% in selection?"] = "Verwijder %% geselecteerde %%?";
 _t["Are you sure you want to delete all selected nodes?"] = "Weet u zeker dat u alle geselecteerde componenten wilt verwijderen?";
 _t["Delete %% %%"] = "Verwijder %% %%";
 _t["Edit labels"] = "Wijzig labels";
-_t["Done"] = "Done";
+_t["No label"] = "Geen label";
+_t["Edit labels ..."] = "Wijzig labels ...";
+_t["Done"] = "Klaar";
 _t["Name"] = "Naam";
 _t["Freq."] = "Kans";
 _t["Impact"] = "Gevolg";
@@ -182,7 +184,7 @@ _t["New project"] = "Nieuw project";
 _t["Update project?"] = "Project actualiseren?";
 _t["There is a more recent version of this project available. "] = "Een meer recente versie van dit project is beschikbaar. ";
 _t["You should update your project. "] = "U zou uw project moeten actualiseren. ";
-_t["If you want to continue using this version, you must make it into a private project."] = "Als u met de huidige versie wilt verderwerken, moet u er een privé project van maken.";
+_t["If you want to continue using this version, you must make it into a private project."] = "Als u met de huidige versie wilt verder werken, moet u er een privé project van maken.";
 _t["Make private"] = "Maak privé";
 _t["Update"] = "Actualiseer";
 _t["Overrule"] = "Verwerpen";
@@ -307,5 +309,5 @@ _t["Cannot continue"] = "Kan niet verder gaan";
 _t["HTML5 local storage is not supported by this browser or configuration. "] = "HTML5 'local storage' is niet beschikbaar in deze webbrowser of met de huidige instellingen. ";
 _t["This app will not work properly. "] = "Dit programma zal niet goed werken. ";
 _t["Try adjusting your cookie or privacy settings."] = "Probeer uw cookie of privacy installingen aan te passen.";
-
+_t["New node group"] = "Nieuwe componentgroep";
 

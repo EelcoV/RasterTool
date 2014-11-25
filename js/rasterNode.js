@@ -23,6 +23,7 @@
  *	position: current position on workspace, and size {x,y,width,height}
  *	dragpoint: jsPlumb endpoint from which to drag new connectors
  *	centerpoint: jsPlumb endpoint to which connectors are attached
+ *	color: node label
  *	connect[]: array over Node id's of booleans, indicating whether this
  *		Node is connected to each other Node.
  *	_normw: normal width (default width)
@@ -43,6 +44,7 @@
  *	setmarker(cn): sets or hides the rule violation marker. cn is optional.
  *	hidemarker(): hides the rule violation marker.
  *	showmarker(): shows the rule violation marker.
+ *	setlabel(): sets the color.
  *	try_attach_center(dst): called when this node gets connected to Node dst.
  *	attach_center(dst): create and draw the connector.
  *	detach_center(dst): called when the connection from this node to Node dst

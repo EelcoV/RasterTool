@@ -20,6 +20,7 @@
  *	description: free-form description (max 100 chars).
  *	services[]: list of service IDs of all services belonging to this project. Empty for stubs.
  *	threats[]: list of all checklist threats belonging to this project. Empty for stubs.
+ *	labels[]: list of all label strings.
  *	creator: (string) creator, as returned by the server. Only used for stubs.
  *	date: (string) date, as returned by the server. Only used for stubs.
  *	stub: (boolean) true iff this is a stub.

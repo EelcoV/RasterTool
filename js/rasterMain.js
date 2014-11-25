@@ -2195,6 +2195,11 @@ function initTabDiagrams() {
 	$('#tC_tWLS').attr('title', _("Click to edit default threats for Wireless links."));
 	$('#tC_tWRD').attr('title', _("Click to edit default threats for Wired links."));
 	$('#tC_tEQT').attr('title', _("Click to edit default threats for Equipment components."));
+
+	$("#mi_ccnone .plainlabel").html( _("No label") );
+	$("#mi_ccedit .plainlabel").html( _("Edit labels ...") );
+	$("#mi_scnone .plainlabel").html( _("No label") );
+	$("#mi_scedit .plainlabel").html( _("Edit labels ...") );
 	
 	$("#nodereport").dialog({
 		autoOpen: false,
@@ -3474,6 +3479,7 @@ function triggerRepaint(elem) {
 /* 
 	Drag node onto node, belonging to the same cluster, #childnodes>2:
 	Create a new node cluster, containing those two nodes.
+	If the two nodes have the same label, set the title of the new cluster to that label.
 	Remove the two nodes from the containing cluster.
 	Set the parent cluster to the containing cluster.
 	Add the new cluster to the containing cluster, and repaint.
@@ -3547,6 +3553,17 @@ function nodeClusterReorder(event,ui) {
 			// Dropped on a node of the same cluster
 			var nc = new NodeCluster(drag_cluster.type);
 			nc.setproject(drag_cluster.project);
+			{
+				var dragNode = Node.get(drag_n);
+				var dropNode = Node.get(drop_n);
+				if (!dragNode || !dropNode)
+					bugreport('drag node or drop node does not exist', 'nodeClusterReorder');
+				if (dragNode.color==dropNode.color && dragNode.color!="none") {
+					// Both have the same label. Name the new node cluster after this label.
+					var p = Project.get(Project.cid);
+					nc.settitle( p.strToLabel(dragNode.color) );
+				}
+			}
 			nc.addchildnode(drag_n);
 			nc.addchildnode(drop_n);
 			drag_cluster.removechildnode(drag_n);

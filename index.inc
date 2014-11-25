@@ -184,7 +184,7 @@
 	<div id="mi_du" class="popupmenuitem">Duplicate</div>
 	<div id="mi_cc" class="popupmenuitem"><div id="mlabel" class="labeltext">Label</div><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
 	 <div id="mi_ccsm" class="popupsubmenu">
-	  <div id="mi_ccnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="Bnone"><img src="../img/nolabel.png"></div>No label</div>
+	  <div id="mi_ccnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="Bnone"><img src="../img/nolabel.png"></div><span class="plainlabel">No label</span></div>
 	  <div id="mi_ccred" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bred"></div><div class="labeltext">Red</div></div>
 	  <div id="mi_ccorange" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Borange"></div><div class="labeltext">Orange</div></div>
 	  <div id="mi_ccyellow" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Byellow"></div><span class="labeltext">Yellow</span></div>
@@ -192,7 +192,7 @@
 	  <div id="mi_ccblue" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bblue"></div><span class="labeltext">Blue</span></div>
 	  <div id="mi_ccpurple" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpurple"></div><span class="labeltext">Purple</span></div>
 	  <div id="mi_ccgrey" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgrey"></div><span class="labeltext">Grey</span></div>
-	  <div id="mi_ccedit" class="popupmenuitem popupsubmenuitem labelmenuitem">Edit labels ...</div>
+	  <div id="mi_ccedit" class="popupmenuitem popupsubmenuitem labelmenuitem"><span class="plainlabel">Edit labels ...</span></div>
 	 </div>
 	<div id="mi_de" class="popupmenuitem">Delete</div>
 </div>
@@ -200,7 +200,7 @@
 	<div id="mi_sd" class="popupmenuitem">Delete selection</div>
 	<div id="mi_sc" class="popupmenuitem"><span>Label</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
 	 <div id="mi_scsm" class="popupsubmenu">
-	  <div id="mi_scnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="Bnone"><img src="../img/nolabel.png"></div>No label</div>
+	  <div id="mi_scnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="Bnone"><img src="../img/nolabel.png"></div><span class="plainlabel">No label</span></div>
 	  <div id="mi_scred" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bred"></div><div class="labeltext">Red</div></div>
 	  <div id="mi_scorange" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Borange"></div><div class="labeltext">Orange</div></div>
 	  <div id="mi_scyellow" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Byellow"></div><span class="labeltext">Yellow</span></div>
@@ -208,7 +208,7 @@
 	  <div id="mi_scblue" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bblue"></div><span class="labeltext">Blue</span></div>
 	  <div id="mi_scpurple" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpurple"></div><span class="labeltext">Purple</span></div>
 	  <div id="mi_scgrey" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgrey"></div><span class="labeltext">Grey</span></div>
-	  <div id="mi_scedit" class="popupmenuitem popupsubmenuitem labelmenuitem">Edit labels ...</div>
+	  <div id="mi_scedit" class="popupmenuitem popupsubmenuitem labelmenuitem"><span class="plainlabel">Edit labels ...</span></div>
 	 </div>
 </div>
 <div id="nodereport" class="nodereport"></div>
