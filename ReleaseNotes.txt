@@ -1,3 +1,35 @@
+INSTALLATION
+============
+You will need a web server that can handle PHP. Place all files in a directory that is
+accessible by the web server. All files require read-permission. The webserver requires
+write-permission on the directory 'public_group'.
+
+To creat a separate set of server projects, duplicate the directory 'public group' and
+restrict access to it. A sample '.htaccess' file is provided for reference. Consult the
+manual of your web server for specifics.
+
+The tool is accessible via the URL http://yourwebserver/path/public_group/.
+
+
+November 2014
+=============
+The tool is sufficiently stable and usable to drop the 'proto' name. Since proto4, the
+following features were added:
+* Dutch translation added. The language preferences of your web browser will determine
+  which interface language is shown. The default is still English, and currently only
+  a Dutch translation is provided.
+* S quick search feature was added. This is of use only in large projects.
+* Double-clicking a project in the Library will not activate that project.
+* You can add sticky notes to diagrams.
+* Duplicating a node now creates a node class, not a duplicate with a different name.
+* A help button was added. This mostly shows the tables for Frequency and Impact, but
+  does allow for further expansion.
+* Vulnerabilities can now be reordered: drag them up and down to put them in the
+  order that seems most logical to you.
+* Some visual niceties and improvements.
+* And many bug fixes, some of which could lead to data corruption.
+
+
 Proto 4
 =======
 * There are now two types of node classes: plan classes and singular classes. Plain classes are as before: similar nodes that share a single vulnerability assessment. Singular classes indicate that there is one physical component that occurs in more than one service. A plain class can only be converted into a singular class if there is at most one node of that class per service. Singular classes can always be converted back into plain classes.
