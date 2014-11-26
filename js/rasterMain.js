@@ -3613,16 +3613,14 @@ function nodeClusterReorder(event,ui) {
 			// Dropped on a node of the same cluster
 			var nc = new NodeCluster(drag_cluster.type);
 			nc.setproject(drag_cluster.project);
-			{
-				var dragNode = Node.get(drag_n);
-				var dropNode = Node.get(drop_n);
-				if (!dragNode || !dropNode)
-					bugreport('drag node or drop node does not exist', 'nodeClusterReorder');
-				if (dragNode.color==dropNode.color && dragNode.color!="none") {
-					// Both have the same label. Name the new node cluster after this label.
-					var p = Project.get(Project.cid);
-					nc.settitle( p.strToLabel(dragNode.color) );
-				}
+			var dragNode = Node.get(drag_n);
+			var dropNode = Node.get(drop_n);
+			if (!dragNode || !dropNode)
+				bugreport('drag node or drop node does not exist', 'nodeClusterReorder');
+			if (dragNode.color==dropNode.color && dragNode.color!="none") {
+				// Both have the same label. Name the new node cluster after this label.
+				var p = Project.get(Project.cid);
+				nc.settitle( p.strToLabel(dragNode.color) );
 			}
 			nc.addchildnode(drag_n);
 			nc.addchildnode(drop_n);
