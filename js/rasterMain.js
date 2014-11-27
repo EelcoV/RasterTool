@@ -313,13 +313,23 @@ var updateFind = function() {
 	}
 	nodeFindString = str;
 	var res = "";
+	var currtype='';
 	if (nodeFindString!='') {
 		var it = new NodeIterator({project: Project.cid});
+		it.sortByType();
 		for (it.first(); it.notlast(); it.next()) {
 			var rn = it.getnode();
 			var s = Service.get(rn.service);
-			if (rn.title.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1) {
-				res += _("'%%' (%%) in service '%%'", H(rn.title), H(Rules.nodetypes[rn.type]), H(s.title));
+			if (rn.title.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1
+			 && (rn.suffix=='' || rn.suffix=='a')
+			) {
+				if (rn.type!=currtype) {
+					if (res!='')
+						res += '\n';
+					res += _("%%\n", H(Rules.nodetypes[rn.type].toUpperCase()));
+					currtype = rn.type;
+				}
+				res += _("'%%' in service '%%'", H(rn.title), H(s.title));
 				res += '\n';
 			}
 		}
@@ -473,6 +483,7 @@ function SizeDOMElements() {
 }
 
 function removetransientwindows(evt) {
+	$(".ui-dialog-content").dialog("close");
 	$('#nodemenu').hide();
 	$('#selectmenu').hide();
 	$('.popupsubmenu').hide();
