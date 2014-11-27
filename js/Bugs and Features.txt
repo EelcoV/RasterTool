@@ -1,7 +1,6 @@
 
 BUGS
 When opening a project in a browser with different localisation, the remarks/notes on cloud-vulnerabilities become multilingual.
-Editing labels failed again!?
 Must store current group in Preferences, and make error messages more appropriate when swapping groups.
 Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?
 Create a new project, change its details to Shared, then switch to it: error message about project not being on the server.
@@ -10,7 +9,6 @@ Third party cookies must be enabled for localStorage to function. This is a conc
 Change details of a project on the server but not active: function not implemented.
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 Editing the CCF clusters for a large list of nodes is troublesome. Idea: make clusters collapsable.
-When there are many services, the bottom tabs should scroll.
 In a threat report window, edit a field, then cancel with Escape: the window will close.
 
 TODO
@@ -43,6 +41,7 @@ Allow for icons to be added to nodes (from a fixed library?)
 Add functionality for graph expansion? Expand a cloud into subcomponents?
 
 CANNOT REPRODUCE
+Editing labels failed again!?
 Sometimes problem with editing node titles: click+paste, click+paste, click+paste, then sometimes a title becomes inoperative. Only a page reload will reactive the edit-in-place for that title.
 Cannot repeat: When wathcing the prpoject for remote updates, on update the previous project is not deleted?! Project._all is growing.
 After deleting a node (or a selection), cannot drop new nodes on the diagram. The 'ghost' remains visible, and the new node is positioned top left. No interaction possible.

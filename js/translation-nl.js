@@ -313,4 +313,4 @@ _t["New node group"] = "Nieuwe componentgroep";
 _t["Find:"] = "Vind:";
 _t["Results:"] = "Resultaten:";
 _t["Find nodes"] = "Vind componenten";
-_t["'%%' (%%) in service '%%'"] = "'%%' (%%) in dienst '%%'";
+_t["'%%' in service '%%'"] = "'%%' in dienst '%%'";

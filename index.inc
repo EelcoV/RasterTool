@@ -255,7 +255,7 @@
 <div id="tab_diagrams" class="workbody workouter">
   <div id="diagrams_body" class="tabs-bottom">
 	<input id="servaddbutton" class="servplusbutton" type="button" value=" + ">
-	<ul>
+	<ul id="bottomtabs">
 	</ul>
   </div>	
 </div>

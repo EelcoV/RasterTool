@@ -114,9 +114,9 @@ $(function() {
 
 	$('#modaldialog').dialog({ autoOpen:false, modal:true, width: 400 });
 
-	$('#tab_singlefs').click(removetransientwindows);
-	$('#tab_ccfs').click(removetransientwindows);
-	$('#tab_analysis').click(removetransientwindows);
+	$('#tab_singlefs').click(removetransientwindowsanddialogs);
+	$('#tab_ccfs').click(removetransientwindowsanddialogs);
+	$('#tab_analysis').click(removetransientwindowsanddialogs);
 
 	// tab_diagrams, tab_singlefs, tab_ccfs
 	$("a[href^=#tab_diagrams]").attr('title', _("Draw diagrams for the services."));
@@ -326,7 +326,7 @@ var updateFind = function() {
 				if (rn.type!=currtype) {
 					if (res!='')
 						res += '\n';
-					res += _("%%\n", H(Rules.nodetypes[rn.type].toUpperCase()));
+					res += H(Rules.nodetypes[rn.type].toUpperCase())+'\n';
 					currtype = rn.type;
 				}
 				res += _("'%%' in service '%%'", H(rn.title), H(s.title));
@@ -458,7 +458,11 @@ function SizeDOMElements() {
 	$('.tabs-bottom > .ui-tabs-nav').width(ww-99);
 	$('.tabs-bottom').width(ww-64);
 	$('.tabs-bottom').height(wh-66);
-	$('.workspace').height(wh-89);
+	// #bottomtabs height is 27px per row. Double rows possible with many services
+	// and/or a narrow window.
+	// Adjust the workspace height if the row
+	$('.workspace').height(wh-89+27-$('#bottomtabs').height());
+	$('.servplusbutton').height($('#bottomtabs').height()+2);
 	
 	var fh = $('.fancyworkspace').height();
 	var fw = $('.fancyworkspace').width();
@@ -483,7 +487,6 @@ function SizeDOMElements() {
 }
 
 function removetransientwindows(evt) {
-	$(".ui-dialog-content").dialog("close");
 	$('#nodemenu').hide();
 	$('#selectmenu').hide();
 	$('.popupsubmenu').hide();
@@ -492,7 +495,12 @@ function removetransientwindows(evt) {
 	$('#libraryupdown').removeClass('ui-icon-triangle-1-n').addClass('ui-icon-triangle-1-s');
 	$('#optionsupdown').removeClass('ui-icon-triangle-1-n').addClass('ui-icon-triangle-1-s');
 }
-	
+
+function removetransientwindowsanddialogs(evt) {
+	$(".ui-dialog-content").dialog("close");
+	removetransientwindows();
+}
+
 function switchToProject(pid,dorefresh) {
 	if (pid==Project.cid)
 		return;
@@ -501,7 +509,7 @@ function switchToProject(pid,dorefresh) {
 	$('#checklist_tWLS').dialog('close');
 	$('#checklist_tWRD').dialog('close');
 	$('#checklist_tEQT').dialog('close');
-	removetransientwindows();
+	removetransientwindowsanddialogs();
 	if (Project.get(Project.cid)!=null)
 		// Project might have been deleted by libdel button
 		Project.get(Project.cid).unload();
@@ -2197,7 +2205,7 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 	/* ui.tab.hash is the DOM object with id #tabtitle<nn> */
 	var id = nid2id(ui.tab.hash);
 	$('#selectrect').hide();
-	$('#nodereport').dialog('close');
+	removetransientwindowsanddialogs();
 	Service.get(id).paintall();
 	Service.cid = id;
 }
