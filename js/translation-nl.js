@@ -225,6 +225,7 @@ _t["High"] = "Hoog";
 _t["Extremely high"] = "Extreem hoog";
 _t["Note: for %% only."] = "Noot: alleen voor %%.";
 _t["Delete vulnerability?"] = "Verwijder kwetsbaarheid?";
+_t["Vulnerabilities should only be deleted when physically impossible."] = "Kwetsbaarheden mogen alleen verwijderd worden als ze fysiek onmogelijk zijn.";
 _t["Are you sure that '%%' for '%%' is nonsensical?"] = "Weet u zeker dat '%%' voor '%%' onzinnig is?";
 _t["It's impossible"] = "Het is onmogelijk";
 _t["Do you want to delete the vulnerability '%%' for '%%' nodes?"] = "Wilt u de kwetsbaarheid '%%' verwijderen voor '%%' componenten?";

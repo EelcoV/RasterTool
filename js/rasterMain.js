@@ -114,9 +114,9 @@ $(function() {
 
 	$('#modaldialog').dialog({ autoOpen:false, modal:true, width: 400 });
 
-	$('#tab_singlefs').click(removetransientwindowsanddialogs);
-	$('#tab_ccfs').click(removetransientwindowsanddialogs);
-	$('#tab_analysis').click(removetransientwindowsanddialogs);
+	$('#tab_singlefs').click(removetransientwindows);
+	$('#tab_ccfs').click(removetransientwindows);
+	$('#tab_analysis').click(removetransientwindows);
 
 	// tab_diagrams, tab_singlefs, tab_ccfs
 	$("a[href^=#tab_diagrams]").attr('title', _("Draw diagrams for the services."));
@@ -2532,7 +2532,8 @@ function initTabDiagrams() {
 		}
 		for (var i=0; i<num; i++) {
 			var rn = Node.get(nodes[i]);
-			rn.setlabel(c);
+			if (rn.type!='tNOT')
+				rn.setlabel(c);
 		}
 		transactionCompleted("Node change selection color "+c);
 	  };

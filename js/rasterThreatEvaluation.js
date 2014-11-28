@@ -354,7 +354,8 @@ ThreatAssessment.prototype = {
 				transactionCompleted("Vuln delete");
 			};
 			newRasterConfirm(_("Delete vulnerability?"),
-				_("Vulnerabilities should only be deleted when physically impossible.\n")+
+				_("Vulnerabilities should only be deleted when physically impossible.")+
+				'<br>\n'+
 				_("Are you sure that '%%' for '%%' is nonsensical?", H(th.title),H(c.title)),
 				_("It's impossible"),_("Cancel")
 			).done(dokill);
