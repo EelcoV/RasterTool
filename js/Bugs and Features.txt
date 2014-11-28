@@ -12,10 +12,12 @@ Editing the CCF clusters for a large list of nodes is troublesome. Idea: make cl
 In a threat report window, edit a field, then cancel with Escape: the window will close.
 
 TODO
+The <select> for frequency and impact are ugly, because of the tablecell layout.
+Sorting of threats is possible within dialogs, but not on the Single Failures list.
+Look at more efficient placement of text within nodes, when titles span >1 line.
 Make bottom tabs sortable. That is easy, but make sure that deleting one tab in Diagram removes the correct counterpart in Single Failures.
 When changing the type of a node: if the name of the node looks like a default one, then update the name to reflect the new type; otherwise, leave the name untouched.
-Have a look at the (experimental) fullScreen API.
-SIngle click to delete connectors?
+Single click to delete connectors?
 Remove the code for upgrading ancient formats to the new format?
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
 Exclude entire vulnerabilities in Failures and Vulnerabilities tab.

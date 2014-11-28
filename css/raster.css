@@ -189,10 +189,13 @@ img.tC {
 #field_found {
 	width: 380px;
 	height: 180px;
-	resize: none;
+	overflow: auto;
+	white-space: nowrap;
+	border: 1px solid grey;
 }
 #field_find {
 	width: 376px;
+	margin-bottom: 5px;
 }
 #helppanel {
 	width: auto;
@@ -310,6 +313,23 @@ div.popupmenuitem {
 	border: 1px solid grey;
 	border-radius: 6px;
 	margin-right: 10px;
+}
+.tinyblock {
+	display: inline-block;
+	width: 5px;
+	height: 5px;
+	border: 1px solid grey;
+	border-radius: 3px;
+	margin-left: 3px;
+	margin-right: 3px;
+}
+.tinysquare {
+	display: inline-block;
+	width: 5px;
+	height: 5px;
+	border: 1px solid grey;
+	margin-left: 3px;
+	margin-right: 3px;
 }
 .labelmenuitem { width: 160px !important; }
 .Bnone {display: inline-block; margin-right: 10px;}

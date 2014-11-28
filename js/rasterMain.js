@@ -220,7 +220,7 @@ $(function() {
 		var snippet ='\
 			<form id="form_find">\n\
 			_LS_<br><input id="field_find" name="fld" type="text" value=""><br>\n\
-			_LF_<br><textarea id="field_found" readonly="true" wrap="off"></textarea>\n\
+			_LF_<br><div id="field_found"></textarea>\n\
 			</form>\
 		';
 		snippet = snippet.replace(/_LS_/g, _("Find:"));
@@ -325,12 +325,38 @@ var updateFind = function() {
 			) {
 				if (rn.type!=currtype) {
 					if (res!='')
-						res += '\n';
-					res += H(Rules.nodetypes[rn.type].toUpperCase())+'\n';
+						res += '<br>\n';
+					res += '<b>'+H(Rules.nodetypes[rn.type])+'</b><br>\n';
 					currtype = rn.type;
 				}
-				res += _("'%%' in service '%%'", H(rn.title), H(s.title));
-				res += '\n';
+				// Show a small circle in the label color, if any.
+				if (Preferences.label) {
+					var p = Project.get(Project.cid);
+					if (rn.color && rn.color!='none') {
+						res += '<div class="tinyblock B' + rn.color + '" title="' + H(p.strToLabel(rn.color)) + '"></div>';
+					} else {
+						res += '<div class="tinyblock" style="border: 1px solid white;"></div>';
+					}
+				}
+				// Show a small square in the overall vulnerability level, if any
+				if (rn.component) {
+					var cm = Component.get(rn.component);
+					if (cm.magnitude!='-')
+						res += '<div class="tinysquare M'
+						+ ThreatAssessment.valueindex[cm.magnitude]
+						+ '" title="' + H(ThreatAssessment.descr[ThreatAssessment.valueindex[cm.magnitude]])
+						+ '"></div>';
+					else
+						res += '<div class="tinysquare" style="border: 1px solid white;"></div>';
+				} else {
+					res += '<div class="tinysquare" style="border: 1px solid white;"></div>';
+				}
+				res += ' ' + H(rn.title)
+				+ ' <span style="color:grey;">'
+				+ _("in service")
+				+ '</span> '
+				+ H(s.title);
+				res += '<br>\n';
 			}
 		}
 	}
@@ -2409,11 +2435,15 @@ function initTabDiagrams() {
 		}
 */		var fh = $('.fancyworkspace').height();
 		var fw = $('.fancyworkspace').width();
+		// Duplicate size and width, but offset the position
+		nn.position.width = rn.position.width;
+		nn.position.height = rn.position.height;
 		nn.paint();
 		nn.setposition(
 			(rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70),
 			(rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30)
 		);
+		nn.setlabel(rn.color);
 		transactionCompleted("Node duplicate");
 	});
 	$('#mi_cc').hover(function(){
