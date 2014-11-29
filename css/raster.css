@@ -918,7 +918,11 @@ for checklists and threat evaluations.
 	border-radius: 3px;
 	cursor: ns-resize;
 }
-
+.li_selected {
+	padding: 0px 4px;
+	border: 2px solid #fcc;
+	background: #fee;
+}
 .tlistroot { /* Identical to .tlistitem */
 	margin: 0 44px 5px 0px;
 	padding: 1px 5px;

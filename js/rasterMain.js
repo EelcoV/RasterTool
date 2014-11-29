@@ -3428,6 +3428,9 @@ function repaintTDom(elem) {
 	REPAINT_TIMEOUTS[elem] = setTimeout(func,100);
 }
 
+// To remember the scroll position within a .threatdomain div.
+var ScrollBarPosition;
+
 function reallyRepaintTDom(elem) {
 	delete REPAINT_TIMEOUTS[elem];
 	var nc = NodeCluster.get(elem);
@@ -3475,7 +3478,8 @@ function reallyRepaintTDom(elem) {
 	}
 
 	$('#shfaccordion'+nc.id).css("display", "block");
-	$('#tdom'+nc.id).append( listFromCluster(nc) );
+	// Retain scrollbar position
+	$('#tdom'+nc.id).append( listFromCluster(nc) ).scrollTop(ScrollBarPosition);
 	nc.setallmarkeroid("#shfamark");
 	$('#tdom'+nc.id+' .tlistitem').draggable({
 		containment: '#tdom'+nc.id,
@@ -3483,7 +3487,19 @@ function reallyRepaintTDom(elem) {
 		revertDuration: 300, // Default is 500 ms
 		axis: 'y',
 		scrollSensitivity: 40,
-		scrollSpeed: 10
+		scrollSpeed: 10,
+		start: function(event,ui) {
+			ScrollBarPosition = $(this).parents('.threatdomain').scrollTop();
+		}
+//
+//	REMOVED FOR NOW
+//
+//		start: function(event,ui) {
+//			$('.li_selected').addClass('ui-draggable-dragging');
+//		},
+//		stop: function(event,ui) {
+//			$('.tlistitem').removeClass('ui-draggable-dragging li_selected');
+//		}
 	});
 	$('.tlistitem,.tlistroot').droppable({
 		accept: allowDrop,
@@ -3502,6 +3518,25 @@ function reallyRepaintTDom(elem) {
 			return H(nc.title);
 		}
 	});
+//
+//	REMOVED FOR NOW
+//
+//	$('.tlistitem').click(function(ev){
+//		// Select or deselect list items. Extend the selection using
+//		// the shift key.
+//		if ($(this).hasClass('li_selected')) {
+//			if (!ev.shiftKey) {
+//				$('.tlistitem').removeClass('li_selected');
+//				$(this).addClass('li_selected');
+//			} else
+//				$(this).removeClass('li_selected');
+//		} else {
+//			if (!ev.shiftKey)
+//				$('.tlistitem').removeClass('li_selected');
+//			$(this).addClass('li_selected');
+//		}
+//		return true;
+//	});
 }
 
 function listFromCluster(nc) {
@@ -3534,10 +3569,31 @@ function listFromCluster(nc) {
 	if (nc.isroot()) {
 		str += '<li>&nbsp;</li>\n';
 	}
-	for (i=0; i<nc.childnodes.length; i++) {
-		var rn = Node.get(nc.childnodes[i]);
-		if (rn==null)
-			bugreport("Child node does not exist","listFromCluster");
+	
+	// Sort childnodes by label
+	var node = [];
+	var addnodeswithcolor = function(arr,col,fromarr) {
+		for (i=0; i<fromarr.length; i++) {
+			var rn = Node.get(nc.childnodes[i]);
+			if (rn==null)
+				bugreport("Child node does not exist","listFromCluster:addnodeswithcolor");
+			if (rn.color==col)
+				arr.push(rn.id);
+		}
+	};
+	addnodeswithcolor(node,"red",nc.childnodes);
+	addnodeswithcolor(node,"orange",nc.childnodes);
+	addnodeswithcolor(node,"yellow",nc.childnodes);
+	addnodeswithcolor(node,"green",nc.childnodes);
+	addnodeswithcolor(node,"blue",nc.childnodes);
+	addnodeswithcolor(node,"purple",nc.childnodes);
+	addnodeswithcolor(node,"grey",nc.childnodes);
+	addnodeswithcolor(node,"none",nc.childnodes);
+	if (node.length!=nc.childnodes.length)
+		bugreport("Invalidly labeled children","listFromCluster");
+	
+	for (i=0; i<node.length; i++) {
+		var rn = Node.get(node[i]);
 		str += '<li id="linode'+rn.id+'_'+nc.id+'" class="tlistitem childnode">\n';
 		str += rn.htmltitle();
 		if (Preferences.label && rn.color!="none") {
