@@ -315,3 +315,5 @@ _t["Find:"] = "Vind:";
 _t["Results:"] = "Resultaten:";
 _t["Find nodes"] = "Vind componenten";
 _t["in service"] = "in dienst";
+_t["Type here to search nodes"] = "Typ hier om componenten te zoeken";
+

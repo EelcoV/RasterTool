@@ -200,6 +200,10 @@ img.tC {
 #helppanel {
 	width: auto;
 }
+::-webkit-input-placeholder { font-style: italic; }
+::-moz-placeholder { font-style: italic; }
+:-ms-input-placeholder { font-style: italic; }
+
 
 /* Hoverbuttons to activate the three panels */
 .activator {

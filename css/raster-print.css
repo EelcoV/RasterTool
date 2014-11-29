@@ -49,6 +49,10 @@ body {
 	background: transparent !important;
 }
 
+.threatdomain {
+	height: auto !important;
+}
+
 .ui-state-default {
 	background: transparent !important;
 }
@@ -56,10 +60,6 @@ body {
 .connbutton { display: none !important; }
 ._jsPlumb_endpoint { visibility: hidden !important; }
 
-/* Page break instructions don't seem to work in Firefox.
- * https://bugzilla.mozilla.org/show_bug.cgi?id=132035
- * Appears to have been fixed from FFox 19.0 onwards.
- */
 .sfaccordion { page-break-inside: avoid; }
 .shfaccordion { page-break-inside: avoid; }
 .sfaccordion h3 { page-break-after: avoid; }

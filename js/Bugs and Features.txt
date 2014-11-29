@@ -1,6 +1,6 @@
 
 BUGS
-When opening a project in a browser with different localisation, the remarks/notes on cloud-vulnerabilities become multilingual.
+SizeDOMElements is not called when browser goes fullscreen. The bottm tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?When opening a project in a browser with different localisation, the remarks/notes on cloud-vulnerabilities become multilingual.
 Must store current group in Preferences, and make error messages more appropriate when swapping groups.
 Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?
 Create a new project, change its details to Shared, then switch to it: error message about project not being on the server.
@@ -41,6 +41,7 @@ Consistency report for the entire diagram, plus UI.
 Allow comments to be set on a project. Include versioning info?
 Allow for icons to be added to nodes (from a fixed library?)
 Add functionality for graph expansion? Expand a cloud into subcomponents?
+Add a feature to test whether the tool is already running inside another browser tab. How?
 
 CANNOT REPRODUCE
 Editing labels failed again!?
