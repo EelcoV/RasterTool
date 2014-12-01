@@ -316,4 +316,10 @@ _t["Results:"] = "Resultaten:";
 _t["Find nodes"] = "Vind componenten";
 _t["in service"] = "in dienst";
 _t["Type here to search nodes"] = "Typ hier om componenten te zoeken";
-
+_t["Longlist"] = "Groslijst";
+_t["Risk longlist"] = "Risico groslijst";
+_t["Include Unknown"] = "Inclusief Onzeker";
+_t["Include Ambiguous"] = "Inclusief Tegenstrijdig";
+_t["Minimum value"] = "Ondergrens";
+_t["Number of risks on longlist:"] = "Aantal risico's op de groslijst:";
+_t["and risk"] = "en risico";

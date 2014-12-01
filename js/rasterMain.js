@@ -3888,7 +3888,7 @@ function initTabAnalysis() {
 	$("a[href^=#at2]").html(_("Single failures by level"));
 	$("a[href^=#at3]").html(_("Node counts"));
 	$("a[href^=#at4]").html(_("Checklist reports"));
-
+	$("a[href^=#at5]").html(_("Longlist"));
 
 	$('#analysis_body').tabs();
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
@@ -3899,6 +3899,7 @@ function AddAllAnalysis() {
 	paintVulnsTable();
 	paintNodeTypeStats();
 	paintChecklistReports();
+	paintLonglist();
 }
 
 var FailureThreatSortOpt = {node: "threat", threat: "alpha"};
@@ -4874,6 +4875,151 @@ function showcustomvulns() {
 	snippet += '<br><br>\n';
 	
 	return snippet;
+}
+
+// Initial cut-off for longlist
+var MinValue = 'H';
+
+function paintLonglist() {
+	$('#at5').empty();
+
+
+	var snippet = '\
+		<h1 class="printonly underlay">_LTT_</h1>\
+		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
+		<h2 class="printonly underlay projectname">_LD_</h2>\
+	';
+	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LP_/g, _("Project:") );
+	snippet = snippet.replace(/_LD_/g, _("Risk longlist") );
+	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
+	
+	snippet += '\n\
+		<div id="lloptions">\n\
+		<b>_INS_</b><br>\n\
+		<label for="incX">_LU_:</label> <span class="itemll"><input type="checkbox" id="incX"></span><br>\n\
+		<label for="incA">_LA_:</label> <span class="itemll"><input type="checkbox" id="incA"></span><br>\n\
+		<label for="minV">_LV_:</label> <span class="itemll"><select id="minV"></select></span><br>\n\
+		</div>\n\
+		<div id="longlist"></div>\
+	';
+	snippet = snippet.replace(/_INS_/g, _("Set the criteria for risks on the longlist.") );
+	snippet = snippet.replace(/_LU_/g, _("Include Unknown") );
+	snippet = snippet.replace(/_LA_/g, _("Include Ambiguous") );
+	snippet = snippet.replace(/_LV_/g, _("Minimum value") );
+
+	var selectoptions = "";
+	for (var i=ThreatAssessment.valueindex['U']; i<=ThreatAssessment.valueindex['V']; i++) {
+		selectoptions += '<option value="_V_">_D_</option>\n';
+		selectoptions = selectoptions.replace(/_V_/g, ThreatAssessment.values[i]);
+		selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
+	}
+	$('#at5').html(snippet);
+	$('#minV').html(selectoptions);
+	$('#minV').val(MinValue);
+	$('#incX').change( function() {
+		$('#longlist').html(listSelectedRisks());
+	});
+	$('#incA').change( function() {
+		$('#longlist').html(listSelectedRisks());
+	});
+	$('#minV').change( function() {
+		// Remember the new cut-off point for longlist
+		MinValue = $('#minV option:selected').val();
+		$('#longlist').html(listSelectedRisks());
+	});
+
+	$('#longlist').html(listSelectedRisks());
+}
+
+function listSelectedRisks() {
+	var snippet = '';
+	var matches = [];
+	var cit = new ComponentIterator({project: Project.cid});
+	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
+	cit.sortByName();
+
+	for (cit.first(); cit.notlast(); cit.next()) {
+		var cm = cit.getcomponent();
+		for (tit.first(); tit.notlast(); tit.next()) {
+			var nc = tit.getNodeCluster();
+			// Find the threat assessment for this node
+			for (var i=0; i<cm.thrass.length; i++) {
+				var ta = ThreatAssessment.get(cm.thrass[i]);
+				if (ta.title==nc.title && ta.type==nc.type) break;
+			}
+			if (ta.title==nc.title && ta.type==nc.type
+			 && (
+				(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
+				||
+				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
+				||
+				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
+				)
+			) {
+				matches.push({
+					ta: ta.title,
+					cm: cm.title,
+					v: ThreatAssessment.valueindex[ta.total]
+				});
+			}
+		}	
+	}
+	matches.sort( function(a,b) {
+		// A(mbiguous) is the highest
+		if (a.v==ThreatAssessment.valueindex['A']) {
+			if (b.v==ThreatAssessment.valueindex['A'])
+				return 0;
+			else
+				return 1;
+		}
+		if (b.v==ThreatAssessment.valueindex['A']) {
+			return -1;
+		}
+		// Neither A nor B is A(mbiguous). We can compare by valueindex
+		if (a.v!=b.v) {
+			return b.v - a.v;
+		}
+		// Same threat level, sort by component title
+		return a.cm.toLocaleLowerCase().localeCompare(b.cm.toLocaleLowerCase());
+	});
+	var lastV = null;
+	var count = [];
+	for (i=0; i<matches.length; i++) {
+		var m = matches[i];
+		if (m.v!=lastV) {
+			if (snippet!='')
+				snippet+='<br>\n';
+			snippet += '<b>' + H(ThreatAssessment.descr[m.v]) + '</b><br>\n';
+			lastV = m.v;
+		}
+		if (count[m.v])
+			count[m.v]++;
+		else
+			count[m.v]=1;
+		snippet += H(m.cm) + ' <span style="color: grey;">' + _("and risk") + '</span> ' + H(m.ta) + '<br>\n';
+	}
+	// Add a line with subtotals and totals to the front of the snippet.
+	var head = '';
+	for (i=ThreatAssessment.valueindex['A']; i<=ThreatAssessment.valueindex['X']; i++) {
+		if (!count[i])
+			continue;
+		if (head=='')
+			head += '(';
+		else
+			head += ', ';
+		head += count[i] + ' ' + H(ThreatAssessment.descr[i]);
+	}
+	if (head!='')
+		head += ')';
+	
+	var total = 0;
+	for (i=0; i<count.length; i++)
+		total += (count[i] ? count[i] : 0);
+	head = _("Number of risks on longlist:") + ' ' + total + ' '+ head;
+	head += '<br>\n';
+	
+	return head + '<br>' + snippet;
 }
 
 /* H: make a string safe to use inside HTML code

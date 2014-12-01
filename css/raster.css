@@ -1070,3 +1070,19 @@ for checklists and threat evaluations.
 .thinrow { height: 5px; }
 
 #ana_reports { margin-left: 20px; }
+
+.itemll { left: 140px; position: absolute; }
+
+#lloptions {
+	margin-top: 10px;
+	margin-right: 20px;
+	margin-bottom: 20px;
+	line-height: 25px;
+	background: lightgrey;
+	padding-bottom: 10px;
+	width: 800px;
+}
+
+#longlist {
+	margin-bottom: 30px;
+}

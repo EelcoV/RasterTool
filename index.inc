@@ -283,11 +283,13 @@
  	<li class="longtab"><a class="longlink" href="#at2">Single failures by level</a></li>
  	<li class="longtab"><a class="longlink" href="#at3">Node counts</a></li>
  	<li class="longtab"><a class="longlink" href="#at4">Checklist reports</a></li>
+ 	<li class="longtab"><a class="longlink" href="#at5">Longlist</a></li>
   </ul>
   <div id="at1" class="workspace plainworkspace"></div>
   <div id="at2" class="workspace plainworkspace"></div>
   <div id="at3" class="workspace plainworkspace"></div>
   <div id="at4" class="workspace plainworkspace"></div>
+  <div id="at5" class="workspace plainworkspace"></div>
   </div>
 </div>
 
