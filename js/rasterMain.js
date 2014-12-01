@@ -3572,7 +3572,9 @@ function listFromCluster(nc) {
 	
 	// Sort childnodes by label
 	var node = [];
-	var addnodeswithcolor = function(arr,col,fromarr) {
+	// Return array of nodes from 'fromarr' with color 'col', sorted by name
+	var sortednodeswithcolor = function(col,fromarr) {
+		var arr = [];
 		for (i=0; i<fromarr.length; i++) {
 			var rn = Node.get(nc.childnodes[i]);
 			if (rn==null)
@@ -3580,15 +3582,24 @@ function listFromCluster(nc) {
 			if (rn.color==col)
 				arr.push(rn.id);
 		}
+		// Array temp now holds all node of color 'col. Now sort those by name
+		arr.sort( function(a,b) {
+			var na = Node.get(a);
+			var nb = Node.get(b);
+			var ta = na.title+na.suffix;
+			var tb = nb.title+nb.suffix;
+			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
+		});
+		return arr;
 	};
-	addnodeswithcolor(node,"red",nc.childnodes);
-	addnodeswithcolor(node,"orange",nc.childnodes);
-	addnodeswithcolor(node,"yellow",nc.childnodes);
-	addnodeswithcolor(node,"green",nc.childnodes);
-	addnodeswithcolor(node,"blue",nc.childnodes);
-	addnodeswithcolor(node,"purple",nc.childnodes);
-	addnodeswithcolor(node,"grey",nc.childnodes);
-	addnodeswithcolor(node,"none",nc.childnodes);
+	node = node.concat(sortednodeswithcolor("red",nc.childnodes));
+	node = node.concat(sortednodeswithcolor("orange",nc.childnodes));
+	node = node.concat(sortednodeswithcolor("yellow",nc.childnodes));
+	node = node.concat(sortednodeswithcolor("green",nc.childnodes));
+	node = node.concat(sortednodeswithcolor("blue",nc.childnodes));
+	node = node.concat(sortednodeswithcolor("purple",nc.childnodes));
+	node = node.concat(sortednodeswithcolor("grey",nc.childnodes));
+	node = node.concat(sortednodeswithcolor("none",nc.childnodes));
 	if (node.length!=nc.childnodes.length)
 		bugreport("Invalidly labeled children","listFromCluster");
 	
@@ -4295,7 +4306,7 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
 		suffix = " :" + new Array(indent+1).join("&nbsp;&nbsp;");
 	var snippet = '<tr><td class="nodetitlecell">'+H(cl.title)+suffix+'&nbsp;</td>\n';
 	for (var i=0; i<numthreats; i++) {
-		if (i==col) {
+		if (i==col &&cl.childnodes.length>1) {
 			snippet += '<td class="clustercell _EX_ M_CL_" cluster="_CI_" title="_TI_">_TO_</td>';
 			snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[ta.total]);
 			snippet = snippet.replace(/_TO_/g, ta.total);

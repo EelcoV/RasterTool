@@ -228,9 +228,6 @@ ThreatAssessment.prototype = {
 
 	addtablerow_textonly: function(prefix,interact) {
 		if (interact==null) interact=true;
-		if (this.component!=null && Component.get(this.component).type=='tUNK') {
-			this.remark = prependIfMissing(_("Note: for %% only.",Rules.nodetypes[this.type]), this.remark);
-		}
 		var snippet = '<div id="dth_PF___TI_" class="threat">\
 			<div id="dth__PF_name_TI_" class="th_name">_TT_</div>\
 			<div id="dth__PF_freq_TI_" class="th_freq">_DF_</div>\
@@ -258,7 +255,12 @@ ThreatAssessment.prototype = {
 	
 	addtablerow_behavioronly: function(oid,prefix,interact) {
 		if (interact==null) interact=true;
-		$("#dth_"+prefix+"name"+this.id).attr('title', H(this.description));
+
+		if (this.component!=null && Component.get(this.component).type=='tUNK') {
+			$("#dth_"+prefix+"name"+this.id).attr('title', _("For %%: ",Rules.nodetypes[this.type]) + H(this.description));
+		} else {
+			$("#dth_"+prefix+"name"+this.id).attr('title', H(this.description));
+		}
 		if (interact) {
 			$("#dth_"+prefix+"del"+this.id).button().removeClass('ui-corner-all').addClass('ui-corner-right');
 		}

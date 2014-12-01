@@ -1,5 +1,6 @@
 
 BUGS
+When printing CCF, the accordions are not always all expanded.
 SizeDOMElements is not called when browser goes fullscreen. The bottm tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?When opening a project in a browser with different localisation, the remarks/notes on cloud-vulnerabilities become multilingual.
 Must store current group in Preferences, and make error messages more appropriate when swapping groups.
 Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?
@@ -10,6 +11,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 Editing the CCF clusters for a large list of nodes is troublesome. Idea: make clusters collapsable.
 In a threat report window, edit a field, then cancel with Escape: the window will close.
+When accessing the same project under different localisations, the type-remarks on vulns for Unknown links are duplicated. Change type-hints to a title-attribute or some other (localisable) marker.
 
 TODO
 The <select> for frequency and impact are ugly, because of the tablecell layout.
@@ -35,7 +37,6 @@ Filter on Single Failures, including on overall threat score.
 Sort vulns for a component on name/freq/impact/total/remark
 Better handling of redundancy in telecom services.
 Undo
-Localization
 Set description on added threats.
 Consistency report for the entire diagram, plus UI.
 Allow comments to be set on a project. Include versioning info?

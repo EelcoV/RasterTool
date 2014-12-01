@@ -314,7 +314,7 @@ NodeCluster.prototype = {
 	
 	isincomplete: function() {
 		var ta = ThreatAssessment.get(this.thrass);
-		if (ta.freq=="-" || ta.impact=="-")
+		if ((ta.freq=="-" || ta.impact=="-") && this.childnodes.length>1)
 			return true;
 		for (var i=0; i<this.childclusters.length; i++) {
 			var cc = NodeCluster.get(this.childclusters[i]);

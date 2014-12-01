@@ -1,5 +1,4 @@
 /* 
-$Id: raster-print.css,v 1.1.1.1.4.1.2.3.2.5 2013/07/18 19:52:23 vriezekolke Exp $
 
                               --== Raster tool Stylesheet ==--
 
@@ -51,6 +50,7 @@ body {
 
 .threatdomain {
 	height: auto !important;
+	background-image: none !important;
 }
 
 .ui-state-default {
