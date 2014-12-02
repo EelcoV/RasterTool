@@ -87,7 +87,7 @@
 	</div>
 	<div class="template t5">
 		<div id="tUNK" class="templatebg"><img class="templateicon" src="../img/tUNKicon.png"></div>
-		<div class="templatelabel ui-widget">Unknown</div>
+		<div class="templatelabel ui-widget">Unexplored</div>
 	</div>
 	<div class="template t6">
 		<div id="tNOT" class="templatebgNOT"><img class="templateicon" src="../img/tNOTicon.png"></div>

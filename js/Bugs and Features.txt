@@ -1,5 +1,6 @@
 
 BUGS
+Be consistent: cloud, unknown link, unexplored link.
 When printing CCF, the accordions are not always all expanded.
 SizeDOMElements is not called when browser goes fullscreen. The bottm tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?When opening a project in a browser with different localisation, the remarks/notes on cloud-vulnerabilities become multilingual.
 Must store current group in Preferences, and make error messages more appropriate when swapping groups.
@@ -14,6 +15,7 @@ In a threat report window, edit a field, then cancel with Escape: the window wil
 When accessing the same project under different localisations, the type-remarks on vulns for Unknown links are duplicated. Change type-hints to a title-attribute or some other (localisable) marker.
 
 TODO
+Add a function to rename a node class. Currently, renaming a member-node will make it drop out from the class.
 The <select> for frequency and impact are ugly, because of the tablecell layout.
 Sorting of threats is possible within dialogs, but not on the Single Failures list.
 Look at more efficient placement of text within nodes, when titles span >1 line.

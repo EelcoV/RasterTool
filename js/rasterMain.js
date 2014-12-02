@@ -1739,7 +1739,7 @@ function initLibraryPanel() {
 		var snippet ='\
 			<form id="form_projectprops">\n\
 			_LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
-			<div id="stubdetails" style="display:_DI_;">_LC_ _CR_, last stored on _DA_.<br><br></div>\n\
+			<div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n\
 			_LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
 			<div id="sh_onoff"><input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
 			<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label></div>\n\
@@ -1750,6 +1750,7 @@ function initLibraryPanel() {
 		snippet = snippet.replace(/_LD_/g, _("Description:"));
 		snippet = snippet.replace(/_LP_/g, _("Private"));
 		snippet = snippet.replace(/_LS_/g, _("Shared"));
+		snippet = snippet.replace(/_STR_/g, _("last stored on"));
 		snippet = snippet.replace(/_PN_/g, H(p.title));
 		snippet = snippet.replace(/_PD_/g, H(p.description));
 		snippet = snippet.replace(/_CR_/g, (p.shared && !p.stub ? H(Preferences.creator) : H(p.creator)));
@@ -2290,7 +2291,7 @@ function initTabDiagrams() {
 	$('#templates .t2 .templatelabel').html( _("Wired") );
 	$('#templates .t3 .templatelabel').html( _("Equipment") );
 	$('#templates .t4 .templatelabel').html( _("Actor") );
-	$('#templates .t5 .templatelabel').html( _("Unknown") );
+	$('#templates .t5 .templatelabel').html( _("Unexplored") );
 	$('#templates .t6 .templatelabel').html( _("note") );
 	$('#tWLS').attr('title', _("Drag to add a wireless link."));
 	$('#tWRD').attr('title', _("Drag to add a wired link (cable)."));
@@ -4969,12 +4970,15 @@ function listSelectedRisks() {
 	var tit = new NodeClusterIterator({project: Project.cid, isempty: false});
 	for (tit.first(); tit.notlast(); tit.next()) {
 		var nc = tit.getNodeCluster();
+		if (!nc.thrass)
+			continue;
+		var ta = ThreatAssessment.get(nc.thrass);
 		if (
-			(ThreatAssessment.valueindex[nc.magnitude]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[nc.magnitude]<ThreatAssessment.valueindex['X'])
+			(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
 			||
-			(ThreatAssessment.valueindex[nc.magnitude]==ThreatAssessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
+			(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
 			||
-			(ThreatAssessment.valueindex[nc.magnitude]==ThreatAssessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
+			(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
 		) {
 			var r = NodeCluster.get(nc.root());
 			matches.push({
