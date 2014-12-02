@@ -4960,10 +4960,30 @@ function listSelectedRisks() {
 				matches.push({
 					ta: ta.title,
 					cm: cm.title,
+					ccf: false,
 					v: ThreatAssessment.valueindex[ta.total]
 				});
 			}
 		}	
+	}
+	var tit = new NodeClusterIterator({project: Project.cid, isempty: false});
+	for (tit.first(); tit.notlast(); tit.next()) {
+		var nc = tit.getNodeCluster();
+		if (
+			(ThreatAssessment.valueindex[nc.magnitude]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[nc.magnitude]<ThreatAssessment.valueindex['X'])
+			||
+			(ThreatAssessment.valueindex[nc.magnitude]==ThreatAssessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
+			||
+			(ThreatAssessment.valueindex[nc.magnitude]==ThreatAssessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
+		) {
+			var r = NodeCluster.get(nc.root());
+			matches.push({
+				ta: r.title,
+				cm: (nc.isroot() ? _("All nodes") : nc.title),
+				ccf: true,
+				v: ThreatAssessment.valueindex[nc.magnitude]
+			});
+		}
 	}
 	matches.sort( function(a,b) {
 		// A(mbiguous) is the highest
@@ -4997,7 +5017,7 @@ function listSelectedRisks() {
 			count[m.v]++;
 		else
 			count[m.v]=1;
-		snippet += H(m.cm) + ' <span style="color: grey;">' + _("and risk") + '</span> ' + H(m.ta) + '<br>\n';
+		snippet += H(m.cm) + ' <span style="color: grey;">' + (m.ccf ? _("and common cause risk") : _("and risk")) + '</span> ' + H(m.ta) + '<br>\n';
 	}
 	// Add a line with subtotals and totals to the front of the snippet.
 	var head = '';

@@ -324,3 +324,7 @@ _t["Include Ambiguous"] = "Inclusief Tegenstrijdig";
 _t["Minimum value"] = "Ondergrens";
 _t["Number of risks on longlist:"] = "Aantal risico's op de groslijst:";
 _t["and risk"] = "en risico";
+_t["All nodes"] = "Alle componenten";
+_t["and common cause risk"] = "en gelijktijdig risico";
+
+
