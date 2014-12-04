@@ -15,7 +15,7 @@ In a threat report window, edit a field, then cancel with Escape: the window wil
 When accessing the same project under different localisations, the type-remarks on vulns for Unknown links are duplicated. Change type-hints to a title-attribute or some other (localisable) marker.
 
 TODO
-Add a function to rename a node class. Currently, renaming a member-node will make it drop out from the class.
+Add a function to rename a node class. Currently, renaming a member-node will make it drop out from the class. "Rename all". Single node rename stays as direct manipulation.
 The <select> for frequency and impact are ugly, because of the tablecell layout.
 Sorting of threats is possible within dialogs, but not on the Single Failures list.
 Look at more efficient placement of text within nodes, when titles span >1 line.

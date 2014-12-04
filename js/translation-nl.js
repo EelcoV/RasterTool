@@ -328,4 +328,4 @@ _t["and risk"] = "en risico";
 _t["All nodes"] = "Alle componenten";
 _t["and common cause risk"] = "en gelijktijdig risico";
 _t["last stored on"] = "laatst opgeslagen op";
-
+_t["(quick wins)"] = "(snelle verbetering)";

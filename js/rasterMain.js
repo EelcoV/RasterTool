@@ -4896,10 +4896,10 @@ function paintLonglist() {
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	
 	snippet += '\n\
-		<div id="lloptions">\n\
+		<div id="lloptions" class="donotprint">\n\
 		<b>_INS_</b><br>\n\
-		<label for="incX">_LU_:</label> <span class="itemll"><input type="checkbox" id="incX"></span><br>\n\
-		<label for="incA">_LA_:</label> <span class="itemll"><input type="checkbox" id="incA"></span><br>\n\
+		<label for="incX">_LU_:</label> <span class="itemll"><input type="checkbox" id="incX" checked></span><br>\n\
+		<label for="incA">_LA_:</label> <span class="itemll"><input type="checkbox" id="incA" checked></span><br>\n\
 		<label for="minV">_LV_:</label> <span class="itemll"><select id="minV"></select></span><br>\n\
 		</div>\n\
 		<div id="longlist"></div>\
@@ -4938,6 +4938,10 @@ function listSelectedRisks() {
 	var matches = [];
 	var cit = new ComponentIterator({project: Project.cid});
 	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
+	// exclCm is a list (array) of "componentID_ThreatAssessmentID"
+	// exclCl is a list (array) of "clusterID_0"
+	var exclCm = computeComponentQuickWins();
+	var exclCl = computeClusterQuickWins();
 	cit.sortByName();
 
 	for (cit.first(); cit.notlast(); cit.next()) {
@@ -4962,6 +4966,7 @@ function listSelectedRisks() {
 					ta: ta.title,
 					cm: cm.title,
 					ccf: false,
+					qw: (exclCm.indexOf(cm.id+'_'+ta.id)>=0),
 					v: ThreatAssessment.valueindex[ta.total]
 				});
 			}
@@ -4985,6 +4990,7 @@ function listSelectedRisks() {
 				ta: r.title,
 				cm: (nc.isroot() ? _("All nodes") : nc.title),
 				ccf: true,
+				qw: (exclCl.indexOf(nc.id+'_0')>=0),
 				v: ThreatAssessment.valueindex[nc.magnitude]
 			});
 		}
@@ -5004,24 +5010,38 @@ function listSelectedRisks() {
 		if (a.v!=b.v) {
 			return b.v - a.v;
 		}
-		// Same threat level, sort by component title
+		// Same threat level, prefer quick wins
+		if (a.qw!=b.qw) {
+			return (a.qw ? -1 : +1);
+		}
+		// both (or neither) are quick wins: sort by component title
 		return a.cm.toLocaleLowerCase().localeCompare(b.cm.toLocaleLowerCase());
 	});
 	var lastV = null;
+	var lastQW = null;
 	var count = [];
 	for (i=0; i<matches.length; i++) {
 		var m = matches[i];
-		if (m.v!=lastV) {
+		if (m.v!=lastV || m.qw!=lastQW) {
 			if (snippet!='')
 				snippet+='<br>\n';
-			snippet += '<b>' + H(ThreatAssessment.descr[m.v]) + '</b><br>\n';
+			snippet += '<b>' + H(ThreatAssessment.descr[m.v]) +
+				(m.qw ? ' ' + _("(quick wins)") : '')+
+				'</b><br>\n';
 			lastV = m.v;
+			lastQW = m.qw;
 		}
 		if (count[m.v])
 			count[m.v]++;
 		else
 			count[m.v]=1;
-		snippet += H(m.cm) + ' <span style="color: grey;">' + (m.ccf ? _("and common cause risk") : _("and risk")) + '</span> ' + H(m.ta) + '<br>\n';
+		snippet +=
+			H(m.cm) +
+			' <span style="color: grey;">' +
+			(m.ccf ? _("and common cause risk") : _("and risk")) +
+			'</span> ' +
+			H(m.ta) +
+			'<br>\n';
 	}
 	// Add a line with subtotals and totals to the front of the snippet.
 	var head = '';
