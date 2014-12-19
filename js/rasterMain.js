@@ -4849,7 +4849,7 @@ function showcustomvulns() {
 			if (CompVulns[cm.id] && CompVulns[cm.id].indexOf(VulnTitles[j])==-1) {
 				snippet += '<td class="blankcell"></td>';
 			} else {
-				snippet += '<td class="blankcell">X</td>';
+				snippet += '<td class="blankcell">+</td>';
 			}
 		}
 		snippet += '</tr>\n';

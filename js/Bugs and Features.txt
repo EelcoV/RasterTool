@@ -1,5 +1,6 @@
 
 BUGS
+Better handling with shared/remote projects when the browser uses multiple projectgroups.
 Be consistent: cloud, unknown link, unexplored link.
 When printing CCF, the accordions are not always all expanded.
 SizeDOMElements is not called when browser goes fullscreen. The bottm tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?When opening a project in a browser with different localisation, the remarks/notes on cloud-vulnerabilities become multilingual.
@@ -15,6 +16,8 @@ In a threat report window, edit a field, then cancel with Escape: the window wil
 When accessing the same project under different localisations, the type-remarks on vulns for Unknown links are duplicated. Change type-hints to a title-attribute or some other (localisable) marker.
 
 TODO
+Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
+Sort Single failures by Label.
 Add a function to rename a node class. Currently, renaming a member-node will make it drop out from the class. "Rename all". Single node rename stays as direct manipulation.
 The <select> for frequency and impact are ugly, because of the tablecell layout.
 Sorting of threats is possible within dialogs, but not on the Single Failures list.
@@ -24,7 +27,7 @@ When changing the type of a node: if the name of the node looks like a default o
 Single click to delete connectors?
 Remove the code for upgrading ancient formats to the new format?
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
-Exclude entire vulnerabilities in Failures and Vulnerabilities tab.
+Exclude entire vulnerabilities in Analysis|Failures and Vulnerabilities tab.
 Add Copy option to the popup menu of a selection (difficult?).
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
 Opmerkingen toevoegen aan diagram nodes??
@@ -32,7 +35,7 @@ Add ability to edit/choose the suffix for nodes in a node class, so that a more 
 Reorder the options in the node menu (change properties at the top, operations at the bottom)
 Add a longlist function to the analysis tab: select cut-offs for single vulns, CCFs, and quick wins --> list of threats to include.
 Clean up the code so that UI stuff is more clearly separated from the objects themselves. Also rearrange code between rasterMain.js and the objects. For example, rasterService contains newDiagramTab(). This is confusing.
-When adding a threat to a Unknown node, the type of the new threat is always tEQT. It should be possible to change the type to tWRD or tWLS.
+When adding a threat to a Unknown node, the type of the new threat is always tEQT. It should be possible to change the type to tWRD or tWLS. Have 3 typed add buttons?
 Have separate Paste functions for merging and overwriting?
 Change from accordion widget to the Collapser plugin?
 Filter on Single Failures, including on overall threat score.
