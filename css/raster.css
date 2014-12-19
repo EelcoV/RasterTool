@@ -588,7 +588,7 @@ div.nodeheader input.inplace_field {
 }
 div.nodetitle {
 	position: relative;
-	top: 0em;
+/*	top: 0em;*/
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
@@ -598,12 +598,10 @@ div.nodetitle {
 .marktitleM {
 	color: rgb(153,51,0);
 	position: relative;
-	top: -0.3em !important;
 }
 .marktitleS {
 	color: rgb(153,51,0);
 	position: relative;
-	top: 0em !important;
 }
 div.nodecontent {
 	position: absolute;
@@ -670,10 +668,14 @@ div.tWLS {
 	height: 30px;
 }
 div.tWLSheader {
-	top: 10px;
 	left: 6%;
 	right: 6%;
 	width: 88%;
+	height: 100%;
+}
+div.tWLStitle {
+	top: 50%;
+	transform: translateY(-50%);
 }
 div.WLScontent {
 	position: absolute;
@@ -690,10 +692,14 @@ div.tWRD {
 	height: 29px;
 }
 div.tWRDheader {
-	top: 10px;
 	left: 8%;
 	right: 8%;
 	width: 84%;
+	height: 100%;
+}
+div.tWRDtitle {
+	top: 50%;
+	transform: translateY(-50%);
 }
 div.WRDcontent {
 	position: absolute;
@@ -710,9 +716,13 @@ div.tEQT {
 	height: 29px;
 }
 div.tEQTheader {
-	top: 10px;
 	left: 11%;
 	width: 77%;
+	height: 100%;
+}
+div.tEQTtitle {
+	top: 50%;
+	transform: translateY(-50%);
 }
 div.EQTcontent {
 	position: absolute;
@@ -747,7 +757,6 @@ div.tACTheader {
 	background: #eee;
 }
 div.tACTtitle {
-	top: 0;
 }
 img.tACTD {
 	right: 10%;
@@ -762,12 +771,16 @@ div.tUNK {
 	height: 50px;
 }
 div.tUNKheader {
-	top: 30%;
 	left: 15%;
 	right: 15%;
 	width: 70%;
+	height: 100%;
 }
-.tUNKMagnitude { 
+div.tUNKtitle {
+	top: 50%;
+	transform: translateY(-50%);
+}
+.tUNKMagnitude {
 	top: 2px !important;
 	left: 5px !important;
 }

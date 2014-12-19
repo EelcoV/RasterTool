@@ -21,7 +21,6 @@ Sort Single failures by Label.
 Add a function to rename a node class. Currently, renaming a member-node will make it drop out from the class. "Rename all". Single node rename stays as direct manipulation.
 The <select> for frequency and impact are ugly, because of the tablecell layout.
 Sorting of threats is possible within dialogs, but not on the Single Failures list.
-Look at more efficient placement of text within nodes, when titles span >1 line.
 Make bottom tabs sortable. That is easy, but make sure that deleting one tab in Diagram removes the correct counterpart in Single Failures.
 When changing the type of a node: if the name of the node looks like a default one, then update the name to reflect the new type; otherwise, leave the name untouched.
 Single click to delete connectors?
