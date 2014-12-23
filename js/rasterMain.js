@@ -2315,10 +2315,10 @@ function initTabDiagrams() {
 	});
 	$("#componentthreats").dialog({
 		autoOpen: false,
-		minHeight: 100,
-		minWidth: 785,
-		maxWidth: 785,
-		width: 785,
+		minHeight: 180,
+		minWidth: 775,
+		maxWidth: 779,
+		width: 775,
 		zIndex: 400
 	});
 
@@ -2784,11 +2784,11 @@ function displayThreatsDialog(cid,event) {
 	Component.ThreatsComponent = cid;
 	var snippet = '<div id="dialogthreatlist">\
 		<div class="threat">\
-		<div class="th_name thr_header">_LN_</div>\
-		<div class="th_freq thr_header">_LF_</div>\
-		<div class="th_impact thr_header">_LI_</div>\
-		<div class="th_total thr_header">_LT_</div>\
-		<div class="th_remark thr_header">_LR_</div>\
+		<div class="th_name th_col thr_header">_LN_</div>\
+		<div class="th_freq th_col thr_header">_LF_</div>\
+		<div class="th_impact th_col thr_header">_LI_</div>\
+		<div class="th_total th_col thr_header">_LT_</div>\
+		<div class="th_remark th_col thr_header">_LR_</div>\
 		</div>\
 		<div id="threats_CI_" class="threats"></div>\
 		<input id="dthadddia_CI_" class="addthreatbutton" type="button" value="_BA_">\
@@ -2883,9 +2883,6 @@ function displayThreatsDialog(cid,event) {
 		$("#componentthreats").dialog('close');
 	$("#componentthreats").dialog({
 		'title': _("Vulnerability assessment for '%%'", H(c.title)) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
-		minWidth: 725,
-		minHeight: 180,
-		zIndex: 400,
 		position: [event.clientX, event.clientY],
 		open: function() {
 			var o = $("#componentthreats").dialog("widget").offset();
@@ -3067,11 +3064,11 @@ function paintSingleFailures(s) {
 			<div>\n\
 			 <div id="sfa_SV___ID_">\n\
 			  <div class="threat">\n\
-			   <div class="th_name thr_header">_LN_</div>\n\
-			   <div class="th_freq thr_header">_LF_</div>\n\
-			   <div class="th_impact thr_header">_LI_</div>\n\
-			   <div class="th_total thr_header">_LT_</div>\n\
-			   <div class="th_remark thr_header">_LR_</div>\n\
+			   <div class="th_name th_col thr_header">_LN_</div>\n\
+			   <div class="th_freq th_col thr_header">_LF_</div>\n\
+			   <div class="th_impact th_col thr_header">_LI_</div>\n\
+			   <div class="th_total th_col thr_header">_LT_</div>\n\
+			   <div class="th_remark th_col thr_header">_LR_</div>\n\
 			  </div>\n\
 			 </div>\n\
 		';
@@ -3442,11 +3439,11 @@ function reallyRepaintTDom(elem) {
 
 	var snippet = '<div>\
 		<div class="threat">\
-		<div class="th_name thr_header">_LN_</div>\
-		<div class="th_freq thr_header">_LF_</div>\
-		<div class="th_impact thr_header">_LI_</div>\
-		<div class="th_total thr_header">_LT_</div>\
-		<div class="th_remark thr_header">_LR_</div>\
+		<div class="th_name th_col thr_header">_LN_</div>\
+		<div class="th_freq th_col thr_header">_LF_</div>\
+		<div class="th_impact th_col thr_header">_LI_</div>\
+		<div class="th_total th_col thr_header">_LT_</div>\
+		<div class="th_remark th_col thr_header">_LR_</div>\
 		</div>\
 		<div id="shftable_ID_" class="threats">\
 		</div></div>\n\

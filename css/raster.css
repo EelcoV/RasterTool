@@ -56,6 +56,8 @@ input.inplace_field, textarea.inplace_field {
 	z-index: 1100;
 	background: rgb(255,204,102);
 }
+.th_freq .inplace_form {position: relative; z-index:1100; left: -9px;}
+.th_impact .inplace_form {position: relative; z-index:1100; left: -9px;}
 
 .ui-link { cursor: pointer; text-decoration: underline; }
 
@@ -369,22 +371,28 @@ div.thr_header {
 }
 div.threat {
 	display: table-row;
-	vertical-align: top;
-	padding: 2px;
+}
+.th_col {
+	display: block;
+	float: left;
+	height: 19px;
+	padding: 3px;
+	background: #eee;
 }
 div.th_name {
-	display: table-cell;
 	width: 14em;
-	background: #eee;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 div.th_descr {
-	display: table-cell;
 	width: 46em;
-	padding-bottom: 0.8ex;
-	background: #eee;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
-div.th_del { display: table-cell; width: 4em; }
-div.th_del input { padding: 4px; margin: 1px 0;}
+div.th_del { width: 24px; padding-left: 0; background: white; }
+div.th_del input { padding: 1px; }
 .th_name .inplace_field { width: 14em; }
 .th_descr .inplace_field { width: 46em; }
 
@@ -394,10 +402,15 @@ div.threats { }
 
 /* Dialog: threat evaluation */
 div.componentthreats {}
-div.th_freq { display: table-cell; width: 5em; background: #eee; }
-div.th_impact { display: table-cell; width: 5em; background: #eee; }
-div.th_total { display: table-cell; width: 5em; text-align: center; background: #eee; }
-div.th_remark { display: table-cell; width: 36em; padding-bottom: 0.8ex; background: #eee; }
+div.th_freq { width: 4.5em; }
+div.th_impact { width: 4.5em; }
+div.th_total { width: 5em; text-align: center; }
+div.th_remark {
+	width: 35em;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
 .th_remark .inplace_field { width: 35em; }
 
 .copybutton {margin-left: 20px; }

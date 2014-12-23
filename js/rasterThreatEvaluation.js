@@ -229,13 +229,13 @@ ThreatAssessment.prototype = {
 	addtablerow_textonly: function(prefix,interact) {
 		if (interact==null) interact=true;
 		var snippet = '<div id="dth_PF___TI_" class="threat">\
-			<div id="dth__PF_name_TI_" class="th_name">_TT_</div>\
-			<div id="dth__PF_freq_TI_" class="th_freq">_DF_</div>\
-			<div id="dth__PF_impact_TI_" class="th_impact">_DI_</div>\
-			<div id="dth__PF_total_TI_" class="th_total">_TO_</div>\
-			<div id="dth__PF_remark_TI_" class="th_remark">_DR_</div>';
+			<div id="dth__PF_name_TI_" class="th_name th_col">_TT_</div>\
+			<div id="dth__PF_freq_TI_" class="th_freq th_col">_DF_</div>\
+			<div id="dth__PF_impact_TI_" class="th_impact th_col">_DI_</div>\
+			<div id="dth__PF_total_TI_" class="th_total th_col">_TO_</div>\
+			<div id="dth__PF_remark_TI_" class="th_remark th_col">_DR_</div>';
 		if (interact)
-			snippet += '<div class="th_del"><input id="dth__PF_del_TI_" type="button" value="&minus;"></div>';
+			snippet += '<div class="th_del th_col"><input id="dth__PF_del_TI_" type="button" value="&minus;"></div>';
 		snippet += '</div>\n';
 		snippet = snippet.replace(/_TI_/g, this.id);
 		snippet = snippet.replace(/_TT_/g, H(this.title));
@@ -471,9 +471,9 @@ Threat.prototype = {
 
 	addtablerow: function(oid) {
 		var snippet = '<div id="threat_TI_" class="threat">\
-			<div id="thname_TI_" class="th_name">_TN_</div>\
-			<div id="thdesc_TI_" class="th_descr">_TD_</div>\
-			<div class="th_del"><input id="thdel_TI_" type="button" value="&minus;"></div>\
+			<div id="thname_TI_" class="th_col th_name">_TN_</div>\
+			<div id="thdesc_TI_" class="th_col th_descr">_TD_</div>\
+			<div class="th_col th_del"><input id="thdel_TI_" type="button" value="&minus;"></div>\
 			</div>\n';
 		snippet = snippet.replace(/_TI_/g, this.id);
 		snippet = snippet.replace(/_TT_/g, Rules.nodetypes[this.type]);

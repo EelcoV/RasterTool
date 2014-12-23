@@ -16,10 +16,10 @@ In a threat report window, edit a field, then cancel with Escape: the window wil
 When accessing the same project under different localisations, the type-remarks on vulns for Unknown links are duplicated. Change type-hints to a title-attribute or some other (localisable) marker.
 
 TODO
+Pepper grinder theme does not fit anymore.
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
 Sort Single failures by Label.
 Add a function to rename a node class. Currently, renaming a member-node will make it drop out from the class. "Rename all". Single node rename stays as direct manipulation.
-The <select> for frequency and impact are ugly, because of the tablecell layout.
 Sorting of threats is possible within dialogs, but not on the Single Failures list.
 Make bottom tabs sortable. That is easy, but make sure that deleting one tab in Diagram removes the correct counterpart in Single Failures.
 When changing the type of a node: if the name of the node looks like a default one, then update the name to reflect the new type; otherwise, leave the name untouched.

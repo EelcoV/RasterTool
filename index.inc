@@ -217,7 +217,7 @@
 <div id="componentthreats" class="componentthreats"></div>
 
 <div id="checklist_tWLS" class="checklist">
-	<div class="threat"><div class="th_name thr_header">Name</div><div class="th_descr thr_header">Description</div></div>
+	<div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
 	<div id="tWLSthreats" class="threats">
 	</div>
 	<input id="WLSaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
@@ -225,7 +225,7 @@
 	<input id="WLSpastethreat" class="pastebutton" type="button" value="Paste">
 </div>
 <div id="checklist_tWRD" class="checklist">
-	<div class="threat"><div class="th_name thr_header">Name</div><div class="th_descr thr_header">Description</div></div>
+	<div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
 	<div id="tWRDthreats" class="threats">
 	</div>
 	<input id="WRDaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
@@ -233,7 +233,7 @@
 	<input id="WRDpastethreat" class="pastebutton" type="button" value="Paste">
 </div>
 <div id="checklist_tEQT" class="checklist">
-	<div class="threat"><div class="th_name thr_header">Name</div><div class="th_descr thr_header">Description</div></div>
+	<div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
 	<div id="tEQTthreats" class="threats">
 	</div>
 	<input id="EQTaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
