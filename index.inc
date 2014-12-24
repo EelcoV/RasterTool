@@ -182,7 +182,12 @@
 	  <div id="mi_cttACT" class="popupmenuitem popupsubmenuitem">Actor</div>
 	  <div id="mi_cttUNK" class="popupmenuitem popupsubmenuitem">Unknown link</div>
 	 </div>
-	<div id="mi_sm" class="popupmenuitem">Similar/Identical</div>
+	<div id="mi_cl" class="popupmenuitem"><span>Class</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
+	 <div id="mi_clsm" class="popupsubmenu">
+	  <div id="mi_rc" class="popupmenuitem popupsubmenuitem">Rename class</div>
+	  <div id="mi_sx" class="popupmenuitem popupsubmenuitem">Rename suffix</div>
+	  <div id="mi_sm" class="popupmenuitem popupsubmenuitem">Similar/Identical</div>
+	 </div>
 	<div id="mi_du" class="popupmenuitem">Duplicate</div>
 	<div id="mi_cc" class="popupmenuitem"><div id="mlabel" class="labeltext">Label</div><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
 	 <div id="mi_ccsm" class="popupsubmenu">

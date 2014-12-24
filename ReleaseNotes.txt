@@ -4,21 +4,26 @@ You will need a web server that can handle PHP. Place all files in a directory t
 accessible by the web server. All files require read-permission. The webserver requires
 write-permission on the directory 'public_group'.
 
-To create a separate set of server projects, duplicate the directory 'public group' and
-restrict access to it. A sample '.htaccess' file is provided for reference. Consult the
-manual of your web server for specifics.
+For access control to a separate set of server projects, duplicate the directory
+'public group' under a different name and restrict access to it. A sample '.htaccess'
+file to this effect is provided for reference. Consult the manual of your web server
+for specifics.
 
-The tool is accessible via the URL http://yourwebserver/path/public_group/.
+The tool is accessible via the URL http://yourwebserver/path/public_group/ .
+Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
 December 2014
 =============
 * A new analysis tool is available: Longlist.
+* The popup menu on diagram nodes has a submenu especially for node classes:
+  - rename all nodes in the node class collectively
+  - change the suffix from 'a', 'b', 'c' to something more meaningful.
 
 November 2014
 =============
 The tool is sufficiently stable and usable to drop the 'proto' name. Since proto4, the
 following features were added:
-* Dutch translation added. The language preferences of your web browser will determine
+* Translations were added. The language preferences of your web browser will determine
   which interface language is shown. The default is still English, and currently only
   a Dutch translation is provided.
 * A quick search feature was added. This is of use mainly in large projects.
@@ -73,6 +78,3 @@ Beta 3 improves the Analysis tab with Quick Wins.
 A notable visible change is that Common Cause Failures are once more called Common Cause Failures.
 The themes Sunny and Overcast did not fit visually with the interface, and are now removed.
 Several bugs were fixed.
-
-$Id: ReleaseNotes.txt,v 1.1.2.3.2.2.2.4 2012/09/11 08:47:37 vriezekolke Exp $
-

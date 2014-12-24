@@ -492,6 +492,7 @@ function diagramTabEditStart(event) {
 				var name = $('#field_servicerename');
 				s.settitle(name.val());
 				dialog.dialog("close");
+				transactionCompleted("Service rename");
 			});
 		},
 		close: function(event, ui) {

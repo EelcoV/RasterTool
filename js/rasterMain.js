@@ -27,6 +27,7 @@ Node
 .id				creator(type,n.id)		key raster:<version>:N:<n.id>
 .type			creator(type,n.id)		.t
 .title			various					.l
+.suffix			various					.f
 .service		Service.cid				.s
 .component		setcomponent(ct.id)		.m
 .position.x		setposition(x,y)		.x
@@ -322,7 +323,7 @@ var updateFind = function() {
 			var rn = it.getnode();
 			var s = Service.get(rn.service);
 			if (rn.title.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1
-			 && (rn.suffix=='' || rn.suffix=='a')
+//			 && (rn.suffix=='' || rn.suffix=='a')
 			) {
 				if (rn.type!=currtype) {
 					if (res!='')
@@ -387,7 +388,7 @@ function _(s) {
 	var str = _t[s];
 	if (!str) {
 		// No localisation available. Default to English version
-		if (DEBUG) {console.log("_t[\"" + s + "\"] = \"" + s + "\";");}
+//		if (DEBUG) {console.log("_t[\"" + s + "\"] = \"" + s + "\";");}
 		str=s;
 	}
 	// Replace %1, %2, ... %9 by the first, second, ... ninth argument.
@@ -1369,6 +1370,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		var lrn = lNode[i];
 		var rn = new Node(lrn.t,lrn.id);
 		rn.title = trimwhitespace(lrn.l);
+		if (lrn.f) rn.suffix = trimwhitespace(lrn.f);
 		rn.service = lrn.s;
 		rn.position = {x: lrn.x, y: lrn.y, width: lrn.w, height: lrn.h};
 		rn._normw = lrn.v;
@@ -2247,7 +2249,7 @@ function bottomTabsShowHandlerSFaults(event,ui) {
 
 // Timer to prevent submenus from disappearing too quickly
 //
-var menuTimerct, menuTimercc;
+var menuTimerct, menuTimercl, menuTimercc;
 
 function initTabDiagrams() {
 	$('#WLSaddthreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
@@ -2281,6 +2283,10 @@ function initTabDiagrams() {
 	$("#mi_cttEQT span").html( _("Equipment") );
 	$("#mi_cttACT span").html( _("Actor") );
 	$("#mi_cttUNK span").html( _("Unknown link") );
+	$("#mi_cl span span").html( _("Class") );
+	$("#mi_rc span").html( _("Rename class") );
+	$("#mi_sx span").html( _("Rename suffix") );
+	$("#mi_rc span").html( _("Rename class") );
 	$("#mi_du span").html( _("Duplicate") );
 	$("#mi_de span").html( _("Delete") );
 
@@ -2357,10 +2363,12 @@ function initTabDiagrams() {
 			return;
 		displayThreatsDialog(rn.component,e);
 	});
-//	$('#mi_ct span.ui-icon').hover(function(){
 	$('#mi_ct').hover(function(){
 		clearTimeout(menuTimerct);
-		if (!$('#mi_ct').hasClass("popupmenuitemdisabled")) $('#mi_ctsm').show();
+		if (!$('#mi_ct').hasClass("popupmenuitemdisabled")) {
+			$('#mi_ctsm').show();
+			$('#mi_clsm').hide();
+		}
 	},function(){
 		menuTimerct = setTimeout( function() {$('#mi_ctsm').hide();}, 150);
 	});
@@ -2399,6 +2407,122 @@ function initTabDiagrams() {
 		var rn = Node.get( Node.MenuNode );
 		rn.changetype('tUNK');
 		transactionCompleted("Node change type tUNK");
+	});
+	$('#mi_cl').hover(function(){
+		clearTimeout(menuTimercl);
+		if (!$('#mi_cl').hasClass("popupmenuitemdisabled")) {
+			$('#mi_ctsm').hide();
+			$('#mi_clsm').show();
+		}
+	},function(){
+		menuTimercl = setTimeout( function() {$('#mi_clsm').hide();}, 150);
+	});
+	$('#mi_clsm').hover(function(){
+		clearTimeout(menuTimercl);
+		$('#mi_clsm').show();
+	},function(){
+		menuTimercl = setTimeout( function() {$('#mi_clsm').hide();}, 150);
+	});
+	$('#mi_rc').mouseup(function() {
+		$('#nodemenu').css("display", "none");
+		var rn = Node.get( Node.MenuNode );
+		if (rn.component==null)	// Actors and notes don't have components
+			return;
+		var cm = Component.get(rn.component);
+		var dialog = $('<div></div>');
+		var snippet ='\
+			<form id="form_componentrename">\
+			<input id="field_componentrename" name="fld" type="text" size="55" value="_CN_">\
+			</form>\
+		';
+		snippet = snippet.replace(/_CN_/g, H(cm.title));
+		dialog.append(snippet);
+		var dbuttons = [];
+		dbuttons.push({
+			text: _("Change name"),
+			click: function() {
+					var name = $('#field_componentrename');
+					cm.changetitle(name.val());
+					$(this).dialog("close");
+					transactionCompleted("Component class rename");
+				}
+		});
+		dbuttons.push({
+			text: _("Cancel"),
+			click: function() {
+					$(this).dialog("close");
+				}
+		});
+		dialog.dialog({
+			title: _("Rename class '%%'", H(cm.title)),
+			modal: true,
+			position: ['center','center'],
+			width: 405,
+			height: 130,
+			buttons: dbuttons,
+			open: function() {
+				$('#field_componentrename').focus().select();
+				$('#form_componentrename').submit(function() {
+					var name = $('#field_componentrename');
+					cm.changetitle(name.val());
+					dialog.dialog("close");
+					transactionCompleted("Component class rename");
+				});
+			},
+			close: function(event, ui) {
+				dialog.remove();
+			}
+		});
+	});
+	$('#mi_sx').mouseup(function() {
+		$('#nodemenu').css("display", "none");
+		var rn = Node.get( Node.MenuNode );
+		if (rn.component==null)	// Actors and notes don't have components
+			return;
+		var dialog = $('<div></div>');
+		var snippet ='\
+			<form id="form_suffixrename">\
+			<input id="field_suffixrename" name="fld" type="text" size="55" value="_SX_">\
+			</form>\
+		';
+		snippet = snippet.replace(/_SX_/g, H(rn.suffix));
+		dialog.append(snippet);
+		var dbuttons = [];
+		dbuttons.push({
+			text: _("Change suffix"),
+			click: function() {
+					var name = $('#field_suffixrename');
+					rn.changesuffix(name.val());
+					$(this).dialog("close");
+					transactionCompleted("Node suffix rename");
+				}
+		});
+		dbuttons.push({
+			text: _("Cancel"),
+			click: function() {
+					$(this).dialog("close");
+				}
+		});
+		dialog.dialog({
+			title: _("Rename suffix '%%' for node '%%'", H(rn.suffix), H(rn.title)),
+			modal: true,
+			position: ['center','center'],
+			width: 405,
+			height: 130,
+			buttons: dbuttons,
+			open: function() {
+				$('#field_suffixrename').focus().select();
+				$('#form_suffixrename').submit(function() {
+					var name = $('#field_suffixrename');
+					rn.changesuffix(name.val());
+					dialog.dialog("close");
+					transactionCompleted("Node suffix rename");
+				});
+			},
+			close: function(event, ui) {
+				dialog.remove();
+			}
+		});
 	});
 	$('#mi_sm').mouseup(function() {
 		$('#nodemenu').css("display", "none");
@@ -4969,12 +5093,12 @@ function listSelectedRisks() {
 			}
 		}	
 	}
-	var tit = new NodeClusterIterator({project: Project.cid, isempty: false});
+	tit = new NodeClusterIterator({project: Project.cid, isempty: false});
 	for (tit.first(); tit.notlast(); tit.next()) {
-		var nc = tit.getNodeCluster();
+		nc = tit.getNodeCluster();
 		if (!nc.thrass)
 			continue;
-		var ta = ThreatAssessment.get(nc.thrass);
+		ta = ThreatAssessment.get(nc.thrass);
 		if (
 			(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
 			||

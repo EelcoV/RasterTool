@@ -14,7 +14,7 @@
  * Instance properties:
  *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK', 'tNOT'
  *	title: name of the node
- *	suffix: letter a,b,c... to distiguish nodes with the same title (set by Component)
+ *	suffix: letter a,b,c... or user-set string to distiguish nodes with the same title (set by Component)
  *	id: unique number
  *	component: component object for this node
  *	nid: node ID (id of the DOM element)
@@ -31,7 +31,12 @@
  * Methods:
  *	destroy(): destructor.
  *	setposition(x,y): set the position of the HTML document object to (x,y).
- *	settitle(str): sets the header text to 'str'.
+ *	setcomponent(cm): set the id of the component object to cm.
+ *	autosettitle: give this Node a unique title, and create the corresponding
+ *		Component object.
+ *	changetitle(str): change the header text to 'str' if allowed, and update all components and node classes.
+ *	settitle(str,suff): sets the header text to 'str' and suffix 'suff'.
+ *	changesuffix(str): change the suffix to 'str' if allowed, and update all other nodes in the class.
  *	htmltitle(): returns this title, properly html formatted when the node has a suffix (except for css classes)
  *	edgecount(cn): counts the number of edges to nodes of each type
  *		cn (optional) is the jsPlumb list of all connections.
@@ -56,8 +61,6 @@
  *		not its connections. Fade-in if effect==true.
  *	unpaint: hide and remove the HTML document object for this node, including
  *		all its connections.
- *	autosettitle: give this Node a unique title, and create the corresponding
- *		Component object.
  *	_showpopupmenu(x,y): populate and display the popup menu.
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
@@ -310,7 +313,20 @@ Node.prototype = {
 		} else {
 			// The new name of this node matches an existing Component.
 			// add this node to that component
-			Component.get( n ).addnode(this.id);
+			var cm = Component.get( n );
+			// Not allowed if the component is 'single' and this node's service already contains a member of the component.
+			if (cm.single) {
+				for (i=0; i<cm.nodes.length; i++) {
+					var rn = Node.get(cm.nodes[i]);
+					if (rn.service==this.service) {
+						// do not change the title
+						$(this.jnid).effect("pulsate", { times:2 }, 200);
+						$(rn.jnid).effect("pulsate", { times:2 }, 200);
+						return;
+					}
+				}
+			}
+			cm.addnode(this.id);
 		}
 		this.setmarker();
 		if (prevcomponent) prevcomponent.removenode(this.id);
@@ -330,6 +346,21 @@ Node.prototype = {
 		$('#titlemain'+this.id).html(H(this.title));
 		$('#titlesuffix'+this.id).html(this.suffix=="" ? "" : "&thinsp;<sup>"+this.suffix+"</sup>");
 		this.store();
+	},
+	
+	changesuffix: function(str) {
+		str = trimwhitespace(str);
+		if (str==this.suffix || str=="")
+			return;
+		var cm = Component.get(this.component);
+		for (var i=0; i<cm.nodes.length; i++) {
+			if (cm.nodes[i]==this.id)
+				continue;
+			var nn = Node.get(cm.nodes[i]);
+			if (nn.suffix==str)
+				nn.settitle(nn.title,this.suffix);
+		}
+		this.settitle(this.title,str);
 	},
 	
 	htmltitle: function() {
@@ -865,11 +896,16 @@ Node.prototype = {
 		if (this.type=='tNOT') {
 			$('#mi_th').addClass('popupmenuitemdisabled');
 			$('#mi_ct').addClass('popupmenuitemdisabled');
+			$('#mi_cl').addClass('popupmenuitemdisabled');
 		}
-		if (this.type=='tACT')
+		if (this.type=='tACT') {
 			$('#mi_th').addClass('popupmenuitemdisabled');
+			$('#mi_cl').addClass('popupmenuitemdisabled');
+		}
 		if (cm==null || cm.nodes.length<2)
-			$('#mi_sm').addClass('popupmenuitemdisabled');
+			$('#mi_cl').addClass('popupmenuitemdisabled');
+		if (cm!=null && cm.single)
+			$('#mi_sx').addClass('popupmenuitemdisabled');
 		$('#mi_sm>span').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
 		if (cm!=null && cm.single) {
 			$('#mi_du').addClass('popupmenuitemdisabled');
@@ -900,6 +936,7 @@ Node.prototype = {
 		var data = {};
 		data.t=this.type;
 		data.l=this.title;
+		data.f=this.suffix;
 		data.x=Math.round(this.position.x);
 		data.y=Math.round(this.position.y);
 		data.w=Math.round(this.position.width);
@@ -954,6 +991,9 @@ Node.prototype = {
 		// If this node is member of a singlular component, and it is not the first node of that component,
 		// then this node should not appear in any node cluster
 		var cm = Component.get(this.component);
+		if (cm && cm.title!=this.title) {
+			errors += "Node "+this.id+" has title ("+nc.title+") that differs from its component ("+cm.title+").\n";
+		}
 		if (cm && cm.single && cm.nodes[0]!=this.id) {
 			var it = new NodeClusterIterator({isroot: true});
 			for (it.first(); it.notlast(); it.next()) {

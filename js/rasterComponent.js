@@ -26,6 +26,7 @@
  *	mergeclipboard: paste ThreatAssessment.Clipboard into this. Returns the list of new TA's.
  *  _setalltitles:
  *	settitle(str): sets the header text to 'str'.
+ *	changetitle(str): if permitted, sets the header text to 'str'.
  *	setproject(pid): sets the project to pid (numerical).
  *	addnode(n.id): add a node to this component
  *	removenode(n.id): remove the node from this component
@@ -186,9 +187,60 @@ Component.prototype = {
 		else if (len==1)
 			Node.get(this.nodes[0]).settitle(this.title,"");
 		else {
-		  for (var i=0; i<this.nodes.length; i++)
-			Node.get(this.nodes[i]).settitle(this.title,(this.single?"":String.fromCharCode(String('a').charCodeAt(0)+i)));
+			// Collect all current suffixes for members of this component
+			var i, j;
+			var sfx = [];
+			for (i=0; i<this.nodes.length; i++) {
+				sfx.push(Node.get(this.nodes[i]).suffix);
+			}
+			for (i=0; i<this.nodes.length; i++) {
+				var rn = Node.get(this.nodes[i]);
+				if (this.single) {
+					rn.settitle(this.title,"");
+				} else if (rn.suffix=="") {
+					// Node has no suffix yet. Create one automatically.
+					for (j=0; j<26; j++) {
+						var chr = String.fromCharCode(String('a').charCodeAt(0)+j);
+						if (sfx.indexOf(chr)==-1)
+							break;
+					}
+					if (j==26) {
+						// This is silly. There are more than 26 members in the node class!
+						// Find a random number to fit.
+						for (;;) {
+							chr = '#' + Math.floor(Math.random()*100000);
+							if (sfx.indexOf(chr)==-1)
+								break;
+						}
+					}
+					sfx[i] = chr;
+					rn.settitle(this.title,sfx[i]);
+				} else {
+					// Keep existing suffix
+					rn.settitle(
+						this.title,
+						(this.single ? "" : rn.suffix )
+					);
+				}
+			}
 		}
+	},
+
+	changetitle: function(str) {
+		str = trimwhitespace(str);
+		if (str==this.title)
+			return;
+		if (str=="") {
+			// Blank title is not allowed. Retain current title.
+			return;
+		}
+		var it = new NodeIterator({project: Project.cid});
+		for (it.first(); it.notlast(); it.next()) {
+			var rn = it.getnode();
+			if (rn.title==str)
+				return;
+		}
+		this.settitle(str);
 	},
 
 	settitle: function(str) {
@@ -436,6 +488,20 @@ Component.prototype = {
 			}
 			if (rn.component!=this.id) {
 				errors += offender+"has a member node "+rn.id+" that doesn't refer back.\n";
+				continue;
+			}
+		}
+		var sfx = [];
+		for (i=0; i<this.nodes.length; i++) {
+			sfx.push(Node.get(this.nodes[i]).suffix);
+		}
+		for (i=0; i<this.nodes.length; i++) {
+			if (sfx[i]=="")
+				continue;
+			var rn = Node.get(this.nodes[i]);
+			j = sfx.indexOf(rn.suffix);
+			if (i!=j) {
+				errors += offender+"contains an duplicate suffix '"+sfx[i]+"'.\n";
 				continue;
 			}
 		}

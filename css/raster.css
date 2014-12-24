@@ -391,7 +391,12 @@ div.th_descr {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
-div.th_del { width: 24px; padding-left: 0; background: white; }
+div.th_del {
+	width: 15px;
+	padding-left: 0;
+	padding-right: 0;
+	background: white;
+}
 div.th_del input { padding: 1px; }
 .th_name .inplace_field { width: 14em; }
 .th_descr .inplace_field { width: 46em; }
