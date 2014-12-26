@@ -142,7 +142,7 @@
 	<div id="switcher">
 		<span class="leftlabel">Visual style:</span>
 		<input type="radio" id="smoothness" name="switcher" checked="checked"><label for="smoothness">Smoothness</label>
-		<input type="radio" id="pepper-grinder" name="switcher"><label for="pepper-grinder">Pepper Grinder</label>
+		<input type="radio" id="start" name="switcher"><label for="start">Start</label>
 		<input type="radio" id="redmond" name="switcher"><label for="redmond">Redmond</label>
 	</div>
 	<div id="gridonoff">

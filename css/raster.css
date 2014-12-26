@@ -271,7 +271,7 @@ img.tC {
 #form_projectprops input,textarea,#sh_onoff { margin: 0 0 5px; }
 
 /* Panel for options */
-#optionspanel { width: 435px; left: 175px; border-top-left-radius: 0; }
+#optionspanel { width: 420px; left: 175px; border-top-left-radius: 0; }
 #optionspanel .ui-button .ui-button-text { line-height: 1.0; } /* radio buttons */
 #switcher, #gridonoff, #labelonoff, #emblem_size, #onlineonoff { margin-bottom: 10px; }
 #manual { text-decoration: underline; }

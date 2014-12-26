@@ -15,7 +15,6 @@ Editing the CCF clusters for a large list of nodes is troublesome. Idea: make cl
 In a threat report window, edit a field, then cancel with Escape: the window will close.
 
 TODO
-Pepper grinder theme does not fit anymore.
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
 Sort Single failures by Label.
 Sorting of threats is possible within dialogs, but not on the Single Failures list.
@@ -28,7 +27,6 @@ Exclude entire vulnerabilities in Analysis|Failures and Vulnerabilities tab.
 Add Copy option to the popup menu of a selection (difficult?).
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
 Opmerkingen toevoegen aan diagram nodes??
-Add ability to edit/choose the suffix for nodes in a node class, so that a more descriptive name can be chosen if designed. E.g. "POP (Zwolle)", "POP (Arnhem)".
 Reorder the options in the node menu (change properties at the top, operations at the bottom)
 Add a longlist function to the analysis tab: select cut-offs for single vulns, CCFs, and quick wins --> list of threats to include.
 Clean up the code so that UI stuff is more clearly separated from the objects themselves. Also rearrange code between rasterMain.js and the objects. For example, rasterService contains newDiagramTab(). This is confusing.

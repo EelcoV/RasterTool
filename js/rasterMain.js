@@ -2139,7 +2139,7 @@ function initOptionsPanel() {
 
 	$('#switcher span').first().html( _("Visual style:") );
 	$('[for=smoothness]').click( function() { Preferences.settheme("smoothness"); });
-	$('[for=pepper-grinder]').click( function() { Preferences.settheme("pepper-grinder"); });
+	$('[for=start]').click( function() { Preferences.settheme("start"); });
 	$('[for=redmond]').click( function() { Preferences.settheme("redmond"); });
 	$('#'+Preferences.theme).click();
 
