@@ -68,30 +68,30 @@
 <div id="templates" class="ui-state-default">
 	<div class="template t1">
 		<div id="tWLS" class="templatebg"><img class="templateicon" src="../img/tWLSicon.png"></div>
-		<div class="templatelabel ui-widget">Wireless</div>
+		<div class="ui-widget ui-widget-content ui-state-default templatelabel">Wireless</div>
 		<img id="tC_tWLS" class="tC" src="../img/dropedit.png">
 	</div>
 	<div class="template t2">
 		<div id="tWRD" class="templatebg"><img class="templateicon" src="../img/tWRDicon.png"></div>
-		<div class="templatelabel ui-widget">Wired</div>
+		<div class="ui-widget ui-widget-content ui-state-default templatelabel">Wired</div>
 		<img id="tC_tWRD" class="tC" src="../img/dropedit.png">
 	</div>
 	<div class="template t3">
 		<div id="tEQT" class="templatebg"><img class="templateicon" src="../img/tEQTicon.png"></div>
-		<div class="templatelabel ui-widget">Equipment</div>
+		<div class="ui-widget ui-widget-content ui-state-default templatelabel">Equipment</div>
 		<img id="tC_tEQT" class="tC" src="../img/dropedit.png">
 	</div>
 	<div class="template t4">
 		<div id="tACT" class="templatebg"><img class="templateicon" src="../img/tACTicon.png"></div>
-		<div class="templatelabel ui-widget">Actor</div>
+		<div class="ui-widget ui-widget-content ui-state-default templatelabel">Actor</div>
 	</div>
 	<div class="template t5">
 		<div id="tUNK" class="templatebg"><img class="templateicon" src="../img/tUNKicon.png"></div>
-		<div class="templatelabel ui-widget">Unexplored</div>
+		<div class="ui-widget ui-widget-content ui-state-default templatelabel">Unexplored</div>
 	</div>
 	<div class="template t6">
 		<div id="tNOT" class="templatebgNOT"><img class="templateicon" src="../img/tNOTicon.png"></div>
-		<div class="templatelabel ui-widget">note</div>
+		<div class="ui-widget ui-widget-content ui-state-default templatelabel">note</div>
 	</div>
 </div> <!-- id="templates" -->
 
@@ -109,8 +109,8 @@
 	</div>
 </div>
 
-<div id="libraryactivator" class="activator ui-widget"><span>Library</span><span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
-<div id="optionsactivator" class="activator ui-widget"><span>Options</span><span id="optionsupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
+<div id="libraryactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Library</span><span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
+<div id="optionsactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Options</span><span id="optionsupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
 
 <div id="librarypanel" class="actpanel ui-widget">
   <form id="libform">
@@ -140,34 +140,34 @@
 
 <div id="optionspanel" class="actpanel ui-widget">
 	<div id="switcher">
-		<span class="leftlabel">Visual style:</span>
+		<span class="leftlabel ui-widget ui-state-default">Visual style:</span>
 		<input type="radio" id="smoothness" name="switcher" checked="checked"><label for="smoothness">Smoothness</label>
 		<input type="radio" id="start" name="switcher"><label for="start">Start</label>
 		<input type="radio" id="redmond" name="switcher"><label for="redmond">Redmond</label>
 	</div>
 	<div id="gridonoff">
-		<span class="leftlabel">Move nodes:</span>
+		<span class="leftlabel ui-widget ui-state-default">Move nodes:</span>
 		<input type="radio" id="grid_off" name="gridonoff" checked="checked"><label for="grid_off">Move freely</label>
 		<input type="radio" id="grid_on" name="gridonoff"><label for="grid_on">Snap to grid</label>
 	</div>
 	<div id="emblem_size">
-		<span class="leftlabel">Vulnerability levels:</span>
+		<span class="leftlabel ui-widget ui-state-default">Vulnerability levels:</span>
 		<input type="radio" id="em_small" name="emblem_size" checked="checked"><label for="em_small">Small</label>
 		<input type="radio" id="em_large" name="emblem_size"><label for="em_large">Large</label>
 		<input type="radio" id="em_none" name="emblem_size"><label for="em_none">None</label>
 	</div>
 	<div id="labelonoff">
-		<span class="leftlabel">Labels:</span>
+		<span class="leftlabel ui-widget ui-state-default">Labels:</span>
 		<input type="radio" id="label_off" name="labelonoff"><label for="label_off">Hide color</label>
 		<input type="radio" id="label_on" name="labelonoff" checked="checked"><label for="label_on">Show color</label>
 	</div>
 	<div id="onlineonoff">
-		<span class="leftlabel">Network connection:</span>
+		<span class="leftlabel ui-widget ui-state-default">Network connection:</span>
 		<input type="radio" id="online_off" name="onlineonoff"><label for="online_off">Offline</label>
 		<input type="radio" id="online_on" name="onlineonoff" checked="checked"><label for="online_on">Online</label>
 	</div>
 	<div id="creator_name">
-		<span class="leftlabel">Your name:</span>
+		<span class="leftlabel ui-widget ui-state-default">Your name:</span>
 		<input type="text" id="creator" size="35">
 	</div>
 </div>

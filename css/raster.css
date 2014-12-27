@@ -158,6 +158,8 @@ img.tC {
 	text-align: center;
 	color: #666;
 	cursor: default;
+	background: transparent !important;
+	border: 0 !important;
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
@@ -226,8 +228,6 @@ img.tC {
 	-moz-user-select: none;
 	-webkit-user-select: none;
 }
-.actnormal { background: #999; }
-.acthigh { background: #ccc; }
 .actactive { 
 	height: 30px; 
 	border-radius: 0; 	
@@ -248,7 +248,7 @@ img.tC {
 	top: 38px;
 	border: 1px solid white;
 	border-top: 0px;
-	background: rgba(153,153,153,0.95);
+	background: rgba(190,190,190,0.95);
 	color: white;
 	padding: 5px;
 	border-radius: 4px;
@@ -265,7 +265,7 @@ img.tC {
 .actpanel #libzap  {float: right;}
 
 /* Panel for projects */
-#librarypanel { width: 470px; left: 55px; border-top-left-radius: 0; }
+#librarypanel { width: 415px; left: 55px; border-top-left-radius: 0; }
 #fileElem {visibility: hidden; width: 0; height: 0; }
 
 #form_projectprops input,textarea,#sh_onoff { margin: 0 0 5px; }
@@ -275,7 +275,12 @@ img.tC {
 #optionspanel .ui-button .ui-button-text { line-height: 1.0; } /* radio buttons */
 #switcher, #gridonoff, #labelonoff, #emblem_size, #onlineonoff { margin-bottom: 10px; }
 #manual { text-decoration: underline; }
-.leftlabel { display: inline-block; width: 13em; }
+.leftlabel {
+	display: inline-block;
+	width: 13em;
+	background: transparent !important;
+	border: 0 !important;
+}
 
 /* 
 Dialog windows:

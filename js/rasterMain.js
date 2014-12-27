@@ -177,6 +177,9 @@ $(function() {
 		loadDefaultProject();
 	startAutoSave();
 	
+	// May be necessary to wait and resize
+	window.setTimeout(SizeDOMElements, 1000);
+
 	Preferences.settab(remembertab);
 	$('#tabs').tabs("select",Preferences.tab);
 	forceSelectVerticalTab(Preferences.tab);
@@ -491,7 +494,7 @@ function SizeDOMElements() {
 	// Adjust the workspace height if the row
 	$('.workspace').height(wh-89+27-$('#bottomtabs').height());
 	$('.servplusbutton').height($('#bottomtabs').height()+2);
-	
+
 	var fh = $('.fancyworkspace').height();
 	var fw = $('.fancyworkspace').width();
 	var wsh = wh-89;
@@ -519,7 +522,7 @@ function removetransientwindows(evt) {
 	$('#selectmenu').hide();
 	$('.popupsubmenu').hide();
 	$('.actpanel').hide();
-	$('.activator').removeClass('actactive');
+	$('.activator').removeClass('actactive ui-state-active');
 	$('#libraryupdown').removeClass('ui-icon-triangle-1-n').addClass('ui-icon-triangle-1-s');
 	$('#optionsupdown').removeClass('ui-icon-triangle-1-n').addClass('ui-icon-triangle-1-s');
 }
@@ -2021,14 +2024,14 @@ function initLibraryPanel() {
 
 	// panel activator --------------------
 	$('#libraryactivator').hover( function() {
-		$('#libraryactivator').removeClass('actnormal').addClass('acthigh');
+		$('#libraryactivator').addClass('ui-state-hover');
 		// If one of the other panels was open, then close that panel and open this one,
 		// without requiring a click.
 		if ($('#optionspanel').css('display')!='none') {
 			$('#libraryactivator').click();
 		}
 	}, function() {
-		$('#libraryactivator').removeClass('acthigh').addClass('actnormal');
+		$('#libraryactivator').removeClass('ui-state-hover');
 	});
 	$('#libraryactivator').click( function() {
 		if ($('#librarypanel').css('display')=='none') {
@@ -2045,7 +2048,7 @@ function initLibraryPanel() {
 			Project.updateStubs(refreshProjectList);
 			startPeriodicProjectListRefresh();
 			if ($('#optionspanel').css('display')!='none') $('#optionsactivator').click();
-			$('#libraryactivator').addClass('actactive');
+			$('#libraryactivator').addClass('actactive ui-state-active');
 			$('#libraryupdown').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-n');
 //			$('#librarypanel').click( function(){ return false; });
 		} else {
@@ -2181,12 +2184,12 @@ function initOptionsPanel() {
 	});
 
 	$('#optionsactivator').hover( function() {
-		$('#optionsactivator').removeClass('actnormal').addClass('acthigh');
+		$('#optionsactivator').addClass('ui-state-hover');
 		if ($('#librarypanel').css('display')!='none') {
 			$('#optionsactivator').click();
 		}
 	}, function() {
-		$('#optionsactivator').removeClass('acthigh').addClass('actnormal');
+		$('#optionsactivator').removeClass('ui-state-hover');
 	});
 	$('#optionsactivator').click( function() {
 		if ($('#optionspanel').css('display')=='none') {
@@ -2201,7 +2204,7 @@ function initOptionsPanel() {
 			$('#labelonoff').buttonset("refresh");
 			if ($('#librarypanel').css('display')!='none') $('#libraryactivator').click();
 			$('#optionspanel').show();
-			$('#optionsactivator').addClass('actactive');
+			$('#optionsactivator').addClass('actactive ui-state-active');
 			$('#optionsupdown').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-n');
 			$('#optionspanel').click( function(){ return false; });
 		} else {
