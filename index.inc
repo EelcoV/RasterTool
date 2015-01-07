@@ -260,7 +260,7 @@
 <div id="tab_diagrams" class="workbody workouter">
   <div id="diagrams_body" class="tabs-bottom">
 	<input id="servaddbutton" class="servplusbutton" type="button" value=" + ">
-	<ul id="bottomtabs">
+	<ul id="bottomtabsdia">
 	</ul>
   </div>	
 </div>
@@ -269,7 +269,7 @@
 <div id="tab_singlefs" class="workbody workouter">
   <div id="singlefs_body" class="tabs-bottom">
 	<input id="servaddbuttonsf" class="servplusbutton" type="button" value=" + ">
-	<ul>
+	<ul id="bottomtabssf">
 	</ul>
   </div>	
 </div>

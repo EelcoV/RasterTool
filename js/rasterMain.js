@@ -489,11 +489,14 @@ function SizeDOMElements() {
 	$('.tabs-bottom > .ui-tabs-nav').width(ww-99);
 	$('.tabs-bottom').width(ww-64);
 	$('.tabs-bottom').height(wh-66);
-	// #bottomtabs height is 27px per row. Double rows possible with many services
+	// Adjust the workspace height
+	// #bottomtabsdia or #bottomtabssf height is 27px per row. Double rows possible with many services
 	// and/or a narrow window.
-	// Adjust the workspace height if the row
-	$('.workspace').height(wh-89+27-$('#bottomtabs').height());
-	$('.servplusbutton').height($('#bottomtabs').height()+2);
+	var bh = $('#bottomtabsdia').height();
+	if (bh==0)
+		bh = $('#bottomtabssf').height();
+	$('.workspace').height(wh-89+27-bh);
+	$('.servplusbutton').height(bh+2);
 
 	var fh = $('.fancyworkspace').height();
 	var fw = $('.fancyworkspace').width();
