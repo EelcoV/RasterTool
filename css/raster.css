@@ -265,7 +265,7 @@ img.tC {
 .actpanel #libzap  {float: right;}
 
 /* Panel for projects */
-#librarypanel { width: 415px; left: 55px; border-top-left-radius: 0; }
+#librarypanel { width: 470px; left: 55px; border-top-left-radius: 0; }
 #fileElem {visibility: hidden; width: 0; height: 0; }
 
 #form_projectprops input,textarea,#sh_onoff { margin: 0 0 5px; }
@@ -666,8 +666,8 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 	text-align: center; 
 	position: absolute;
 	color: transparent;
-	top: -3px;
-	left: 2px;
+	top: -9px;
+	left: 0px;
 	z-index: 15;
 	box-shadow: 2px 2px 3px #999;
 }
@@ -754,9 +754,6 @@ div.EQTcontent {
 	width: 100%; 
 	border: 0px;
 }
-.tEQTMagnitude { 
-	left: 5px !important;
-}
 
 /* Mods for Actor nodes */
 div.tACT {
@@ -802,10 +799,6 @@ div.tUNKheader {
 div.tUNKtitle {
 	top: 50%;
 	transform: translateY(-50%);
-}
-.tUNKMagnitude {
-	top: 2px !important;
-	left: 5px !important;
 }
 
 /* Mods for Notes */
