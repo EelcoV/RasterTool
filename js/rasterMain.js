@@ -1,3 +1,8 @@
+/* Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+ * See LICENSE.md
+ */
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Property		setter					fieldname in export/localStorage

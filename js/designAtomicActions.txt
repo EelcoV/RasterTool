@@ -1,3 +1,7 @@
+Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+See LICENSE.md
+
+
 In general, when object A has some B's, then the action will be in A to add a B, not on B to attach it to A. This applies to 
 -Components having Nodes,
 -NodeClusters having Components,

@@ -1,4 +1,7 @@
-AuthUserFile /WebSpace/Db/maics/vriezekolke/public_html/Raster/proto4/AT/.htpasswd
+# Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+# See LICENSE.md
+
+AuthUserFile <<YourPAthName>>/RasterTool/<<GroupName>>/.htpasswd
 AuthGroupFile /dev/null
 AuthName "Restricted access for this group of Raster projects"
 AuthType Basic

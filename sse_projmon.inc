@@ -1,5 +1,10 @@
+/*
+Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+See LICENSE.md
+*/
+
 <?php
-/* $Id: sse_projmon.inc,v 1.1.2.1 2012/09/11 08:47:38 vriezekolke Exp $
+/* 
  *
  * A client can use this URL for Server-Sent Events.
  * https://developer.mozilla.org/en-US/docs/Server-sent_events/Using_server-sent_events

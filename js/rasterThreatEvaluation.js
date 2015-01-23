@@ -1,5 +1,8 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * $Id: rasterThreatEvaluation.js,v 1.1.1.1.4.6.2.3.2.9 2012/09/11 08:47:40 vriezekolke Exp $
+/* Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+ * See LICENSE.md
+ */
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * ThreatAssessment: evaluation of a threat for some component or NodeCluster
  *

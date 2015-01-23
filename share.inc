@@ -1,5 +1,10 @@
+/*
+Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+See LICENSE.md
+*/
+
 <?php
-/* $Id: share.inc,v 1.1.2.1 2012/09/11 08:47:38 vriezekolke Exp $
+/* 
  * 
  * GLOBALS
  * =======

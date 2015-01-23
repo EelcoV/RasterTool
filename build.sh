@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+# See LICENSE.md
+
 distribution=`date +%Y%m%d_%H%M`
 
 files="\

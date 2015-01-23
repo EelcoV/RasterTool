@@ -1,3 +1,6 @@
+Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+See LICENSE.md
+
 
 BUGS
 Better handling with shared/remote projects when the browser uses multiple projectgroups.

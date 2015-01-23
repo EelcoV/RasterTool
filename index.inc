@@ -1,5 +1,8 @@
-<!DOCTYPE html> <!-- HTML 5 is still in draft -->
-<!-- $Id: index.inc,v 1.1.2.2 2013/07/18 19:52:23 vriezekolke Exp $ -->
+<!DOCTYPE html>
+<!-- 
+Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+See LICENSE.md
+ -->
 <html>
 
 <head>

@@ -1,3 +1,7 @@
+/* Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+ * See LICENSE.md
+ */
+
 /* Nederlandse vertalingen */
 
 _t["Check the projects for internal consistency."] = "Controleer de projecten op interne consistentie.";

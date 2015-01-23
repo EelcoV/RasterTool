@@ -1,5 +1,8 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * $Id: rasterService.js,v 1.1.1.1.4.4.2.2.2.9 2013/07/18 19:52:23 vriezekolke Exp $
+/* Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+ * See LICENSE.md
+ */
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Service: object representing one service.
  *

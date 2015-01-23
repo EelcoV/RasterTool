@@ -1,5 +1,8 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * $Id: rasterNodeCluster.js,v 1.1.2.4.2.5.2.8 2013/07/18 19:52:23 vriezekolke Exp $
+/* Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+ * See LICENSE.md
+ */
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * NodeCluster: a group of nodes that share a threat, and form a threat-domain.
  *

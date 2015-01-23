@@ -1,5 +1,8 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * $Id: rasterNode.js,v 1.1.1.1.4.7.2.5.2.11 2013/07/18 19:52:23 vriezekolke Exp $
+/* Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+ * See LICENSE.md
+ */
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Node: an element in a telecom service diagram
  *

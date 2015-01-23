@@ -1,5 +1,8 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * $Id: rasterProject.js,v 1.1.1.1.4.2.2.2.2.6 2013/07/18 19:52:23 vriezekolke Exp $
+/* Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+ * See LICENSE.md
+ */
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Project: object representing a project
  *

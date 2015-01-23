@@ -1,6 +1,4 @@
 /*!
- * $Id: ui.tabs.closable.js,v 1.1.1.1 2011/07/28 10:59:23 vriezekolke Exp $
- *
 * Copyright (c) 2010 Andrew Watts
 *
 * Dual licensed under the MIT (MIT_LICENSE.txt)
