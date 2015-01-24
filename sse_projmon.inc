@@ -1,9 +1,9 @@
+<?php
 /*
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 */
 
-<?php
 /* 
  *
  * A client can use this URL for Server-Sent Events.
