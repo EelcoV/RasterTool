@@ -6,7 +6,7 @@ INSTALLATION
 ============
 You will need a web server that can handle PHP. Place all files in a directory that is
 accessible by the web server. All files require read-permission. The webserver requires
-write-permission on the directory 'public_group'.
+write-permission on the directory 'public_group/SharedProjects'.
 
 For access control to a separate set of server projects, duplicate the directory
 'public group' under a different name and restrict access to it. A sample '.htaccess'

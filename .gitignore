@@ -12,7 +12,7 @@
 *.mode2v3
 
 public_group/SharedProjects/**
-!public_group/SharedProjects/
+!public_group/SharedProjects/README.md
 
 changes to commit
 
