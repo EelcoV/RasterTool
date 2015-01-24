@@ -1,7 +1,11 @@
 # Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 # See LICENSE.md
+#
+# Replace  <<YourPathName>>  by the folder name on the web server.
+# Replace  <<GroupName>>  by the name of the folder and group.
 
-AuthUserFile <<YourPAthName>>/RasterTool/<<GroupName>>/.htpasswd
+
+AuthUserFile <<YourPathName>>/RasterTool/<<GroupName>>/.htpasswd
 AuthGroupFile /dev/null
 AuthName "Restricted access for this group of Raster projects"
 AuthType Basic
