@@ -1,0 +1,16 @@
+# hidden/temp files
+.DS_Store
+*.swp
+
+# Xcode project files except for the project file
+*.xcodeproj/*
+*.xcodeproj/*/
+!*.xcodeproj/project.pbxproj
+
+# User-specific project settings
+*.mode1v3
+*.mode2v3
+
+public_group/SharedProjects/**
+!public_group/SharedProjects/
+
