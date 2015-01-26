@@ -107,11 +107,14 @@ $(function() {
 		timeout: 10000	// Cancel each AJAX request after 10 seconds
 	});
 
-	$('#tabs').tabs();
+	initTabDiagrams();
+	initTabSingleFs();
+	initTabCCFs();
+	initTabAnalysis();
+	
+	$('#tabs').tabs({activate: vertTabSelected});
 	$('#tabs').addClass('ui-tabs-vertical-sw ui-helper-clearfix');
-	$('.ui-tabs-nav').addClass('rot-neg-90');
-
-	$('#tabs').bind("tabsshow", vertTabSelected);
+	$('#tabs > ul').addClass('rot-neg-90');
 
 	$('input[type=button]').button();
 	$('input[type=submit]').button();
@@ -150,11 +153,6 @@ $(function() {
 	initLibraryPanel();
 	initOptionsPanel();
 
-	initTabDiagrams();
-	initTabSingleFs();
-	initTabCCFs();
-	initTabAnalysis();
-	
 	SizeDOMElements();
 
 	/* Loading data from localStorage. Tweaked for perfomance.
@@ -186,8 +184,11 @@ $(function() {
 	window.setTimeout(SizeDOMElements, 1000);
 
 	Preferences.settab(remembertab);
-	$('#tabs').tabs("select",Preferences.tab);
+	$('#tabs').tabs('option','active',Preferences.tab);
 	forceSelectVerticalTab(Preferences.tab);
+
+	$('#diagrams_body').tabs('option','active',0);
+	$('#singlefs_body').tabs('option','active',0);
 
 	$('#helpimg').hover( function() {
 			$('#helpimg').attr("src","../img/qm-hi.png");
@@ -261,11 +262,11 @@ $(function() {
 	});
 
 	var flashTimer;
-	$("#networkactivity").ajaxSend(function(){
+	$(document).ajaxSend(function(){
 		window.clearTimeout(flashTimer);
 		$("#networkactivity").removeClass("activityoff activityno").addClass("activityyes");
 	});
-	$("#networkactivity").ajaxStop(function(){
+	$(document).ajaxStop(function(){
 		// Make sure that the activity light flashes at least some small time
 		flashTimer = window.setTimeout(function(){
 			$("#networkactivity").removeClass("activityoff activityyes").addClass("activityno");
@@ -1645,28 +1646,20 @@ function forceSelectVerticalTab(n) {
  */
 function vertTabSelected(event, ui) {
 	removetransientwindows();
-	/* ui.panel is the DOM object with id tab_projects, tab_active_p, tab_diagrams, tab_singlefs, tab_ccfs
-	 * ui.index is 0, 1, 2, 3, 4 (corresponding with the tab names above).
-	 * Unfortunately, thus event handler is also called for the service diagram tabs,
-	 * so we first check for that (their tabs are called diagram<nn> instead of tab_<ss>).
-	 */
-	if (!ui.panel.id.match(/^tab_/))
-		// A horizontal tab was selected. Let's get out of here.
-		return;
+
 //	$('body').css('cursor','progress'); // this does not seem to be effective, at least not on FF4
 	$('#nodereport').dialog('close');
 	$('#componentthreats').dialog('close');
 	$('#checklist_tWLS').dialog('close');
 	$('#checklist_tWRD').dialog('close');
 	$('#checklist_tEQT').dialog('close');
-	$('#anareport').dialog('close');
 
-	switch (ui.index) {
+	switch ($('#tabs').tabs('option','active')) {
 	case 0:		// tab Services
 		$('#templates').show();
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
-		$('#diagrams_body').tabs('select', '#diagrams'+Service.cid);
+		$('#diagrams_body').tabs('option','active', '#diagrams'+Service.cid);
 		// Paint, if the diagram has not been painted already
 		Service.get(Service.cid).paintall();
 		Preferences.settab(0);
@@ -1674,7 +1667,7 @@ function vertTabSelected(event, ui) {
 	case 1:		// tab Single Failures
 		$('#selectrect').hide();
 		$('#templates').hide();
-		$('#singlefs_body').tabs('select', '#singlefs'+Service.cid);
+		$('#singlefs_body').tabs('option','active', '#singlefs'+Service.cid);
 		// Force repainting of that tab
 		paintSingleFailures( Service.get(Service.cid) );
 		Preferences.settab(1);
@@ -2243,8 +2236,10 @@ function bottomTabsCloseHandler(index,elem) {
 }
 
 function bottomTabsShowHandlerDiagrams(event,ui) {
-	/* ui.tab.hash is the DOM object with id #tabtitle<nn> */
-	var id = nid2id(ui.tab.hash);
+	/* ui.newPanel.selector is the DOM object with id #tabtitle<nn> */
+	if (!ui.newPanel)
+		return;
+	var id = nid2id(ui.newPanel.selector);
 	$('#selectrect').hide();
 	removetransientwindowsanddialogs();
 	Service.get(id).paintall();
@@ -2252,8 +2247,12 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 }
 
 function bottomTabsShowHandlerSFaults(event,ui) {
-	/* ui.tab.hash is the DOM object with id #tabtitle<nn> */
-	var id = nid2id(ui.tab.hash);
+	/* ui.newPanel.selector is the DOM object with id #tabtitle<nn> */
+	if (!ui.newPanel) {
+		// on creation of the tab, select the first tab.
+		return;
+	}
+	var id = nid2id(ui.newPanel.selector);
 	Service.cid = id;
 	paintSingleFailures(Service.get(id));
 }
@@ -2273,9 +2272,14 @@ function initTabDiagrams() {
 	$('#EQTcopythreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#EQTpastethreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 
+	initChecklistsDialog('tWLS');
+	initChecklistsDialog('tWRD');
+	initChecklistsDialog('tEQT');
+
 	$('#diagrams_body').tabs({
 		close: bottomTabsCloseHandler,
-		show: bottomTabsShowHandlerDiagrams 
+		activate: bottomTabsShowHandlerDiagrams,
+		create: bottomTabsShowHandlerDiagrams
 	});
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
@@ -2815,6 +2819,20 @@ function initTabDiagrams() {
 		bugreport('the rules are not internally consistent','initTabDiagrams');
 }
 
+function initChecklistsDialog(type) {
+	// When displaying multiple checklist windows, each will get the same location and size.
+	// Since that is confusing, we prevent obscuration by using a type-specific offset.
+	var offsets = {'tWLS': 0, 'tWRD': 30, 'tEQT': 60};
+	$("#checklist_"+type).dialog({
+		title: _("Default vulnerabilities for new nodes of type '%%'", Rules.nodetypes[type]),
+		minWidth: 725,
+		minHeight: 180,
+		position: [150+offsets[type],100+offsets[type]],
+		zIndex: 400,
+		autoOpen: false
+	});
+}
+
 function populateLabelMenu() {
 	var p = Project.get(Project.cid);
 	$("#mi_ccred .labeltext").html( '"' + H(p.labels[0]) + '"' );
@@ -3055,14 +3073,6 @@ function displayThreatsDialog(cid,event) {
 function displayChecklistsDialog(type) {
 	// When displaying multiple checklist windows, each will get the same location and size.
 	// Since that is confusing, we prevent obscuration by using a type-specific offset.
-	var offsets = {'tWLS': 0, 'tWRD': 30, 'tEQT': 60};
-	$("#checklist_"+type).dialog({
-		title: _("Default vulnerabilities for new nodes of type '%%'", Rules.nodetypes[type]),
-		minWidth: 725,
-		minHeight: 180,
-		position: [150+offsets[type],100+offsets[type]],
-		zIndex: 400
-	});
 	$("#checklist_"+type).dialog("open");
 	$('.checklist input').each( function () { 
 		$(this).blur(); return true; 
@@ -3113,7 +3123,8 @@ function RefreshNodeReportDialog() {
 function initTabSingleFs() {
 	$('#singlefs_body').tabs({
 		close: bottomTabsCloseHandler,
-		show: bottomTabsShowHandlerSFaults 
+		activate: bottomTabsShowHandlerSFaults,
+		create: bottomTabsShowHandlerSFaults
 	});
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 

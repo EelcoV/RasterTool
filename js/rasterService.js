@@ -249,20 +249,26 @@ var NodesBeingDragged = [];
  */
 function newDiagramTab(id,title,tabprefix) {	
 	/* Create a new tab */
-	var snippet = '<span id="'+tabprefix+'tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>';
+	var snippet = '<li>\
+		<a href="#'+tabprefix+id+'">\
+		  <span id="'+tabprefix+'tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
+		</a>\
+		    <span class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
+		</li>\
+		';
 	snippet = snippet.replace(/_T_/g, H(title));
 	snippet = snippet.replace(/_I_/g, id);
-	$('#'+tabprefix+'_body').tabs('add', '#'+tabprefix+id, snippet);
+	$(snippet).appendTo( '#'+tabprefix+'_body .ui-tabs-nav' );
+	$('#'+tabprefix+'_body').tabs('refresh');
+	
 	/* We have bottom tabs, so have to correct the tab corners */
 	$('#'+tabprefix+'_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
 	$("a[href^=#"+tabprefix+id+"]").dblclick( diagramTabEditStart );
 
-	/* Set class on the new workspace */
-	$('#'+tabprefix+id).addClass("workspace");
-
 	/* Add content to the new tab */
 	if (tabprefix=="diagrams") {
 		snippet = '\n\
+			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
 			<div id="scroller_overview_I_" class="scroller_overview">\n\
 				<div id="scroller_region_I_" class="scroller_region"></div>\n\
 			</div>\n\
@@ -275,6 +281,11 @@ function newDiagramTab(id,title,tabprefix) {
 			<div id="'+tabprefix+'_workspace_I_" class="fancyworkspace"></div>\n\
 		';
 	} else {
+		snippet = '\n\
+			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
+		';
+		snippet = snippet.replace(/_I_/g, id);
+		$('#singlefs_body').append(snippet);
 		snippet = '\n\
 			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n\
 			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
@@ -444,8 +455,18 @@ function closeDiagramTab(sid,servicetitle,tabprefix) {
 			return false;
 		}
 	});
-	if (found!=-1)
-		$('#'+tabprefix+'_body').tabs("remove",found);
+	if (found!=-1) {
+		// The 'remove' function is deprecated
+		//$('#'+tabprefix+'_body').tabs('remove',found);
+		// Remove the tab
+		var tab = $('#'+tabprefix+'_body').find( ".ui-tabs-nav li:eq(2)" ).remove();
+		// Find the id of the associated panel
+		var panelId = tab.attr('aria-controls');
+		// Remove the panel
+		$('#'+panelId ).remove();
+		// Refresh the tabs widget
+		$('#'+tabprefix+'_body').tabs('refresh');
+	}
 	if (tabprefix=="diagrams")
 		$('#scroller_overview'+sid).remove();
 }

@@ -40,8 +40,9 @@ body {
 	-webkit-transform-origin: 0 0;
 	-o-transform-origin:  0 0;
 }	
-.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150;}
+.ui-tabs-nav li a { width: 8em; overflow: hidden; z-index: 150;}
 .longlink { width: 12.5em !important; }
+.tabcloseicon {margin-top:0.4em}
 
 /* The content panes to each vertical tab */
 .workouter {position: absolute; left: 40px; top: 42px; margin: 0px; }
@@ -472,7 +473,8 @@ div.th_remark {
 	margin-top: -1px !important; 
 	margin-bottom: 1px !important; 
 	border-top: none; 
-	border-bottom-width: 1px; 
+	border-bottom-width: 1px;
+	width: 12em;
 }
 .tabs-bottom li .inplace_field { /* is this still used? */
 	width: 20em; 
@@ -483,7 +485,7 @@ div.th_remark {
 	background: rgb(255,204,102);
 	z-index: 9999;
 }
-.tabtitle { width: 10em; }
+.tabtitle { width: 9em; }
 #servaddbutton {
 	position: absolute;
 }
