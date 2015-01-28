@@ -1637,8 +1637,8 @@ function exportAll() {
 }
 
 function forceSelectVerticalTab(n) {
-	var ui={panel: {id: "tab_"}, index: n};
-	vertTabSelected({}, ui);
+	$('#tabs').tabs('option','active',n);
+	vertTabSelected();
 }
 
 /* vertTabSelected(event,ui)
@@ -1659,7 +1659,8 @@ function vertTabSelected(event, ui) {
 		$('#templates').show();
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
-		$('#diagrams_body').tabs('option','active', '#diagrams'+Service.cid);
+//		$('#diagrams_body').tabs('option','active', '#diagrams'+Service.cid);
+		$('#diagrams_body').find('li[aria-controls=diagrams'+Service.cid+'] a').click();
 		// Paint, if the diagram has not been painted already
 		Service.get(Service.cid).paintall();
 		Preferences.settab(0);
@@ -1667,7 +1668,8 @@ function vertTabSelected(event, ui) {
 	case 1:		// tab Single Failures
 		$('#selectrect').hide();
 		$('#templates').hide();
-		$('#singlefs_body').tabs('option','active', '#singlefs'+Service.cid);
+//		$('#singlefs_body').tabs('option','active', '#singlefs'+Service.cid);
+		$('#singlefs_body').find('li[aria-controls=singlefs'+Service.cid+'] a').click();
 		// Force repainting of that tab
 		paintSingleFailures( Service.get(Service.cid) );
 		Preferences.settab(1);

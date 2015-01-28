@@ -259,7 +259,6 @@ function newDiagramTab(id,title,tabprefix) {
 	snippet = snippet.replace(/_T_/g, H(title));
 	snippet = snippet.replace(/_I_/g, id);
 	$(snippet).appendTo( '#'+tabprefix+'_body .ui-tabs-nav' );
-	$('#'+tabprefix+'_body').tabs('refresh');
 	
 	/* We have bottom tabs, so have to correct the tab corners */
 	$('#'+tabprefix+'_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
@@ -299,6 +298,7 @@ function newDiagramTab(id,title,tabprefix) {
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Service.get(id).project).title));
 	snippet = snippet.replace(/_PJ_/g, Service.get(id).project);
 	$('#'+tabprefix+id).append(snippet);
+	$('#'+tabprefix+'_body').tabs('refresh');
 
 	// Update the scroll_region when the workspace is scrolled.
 	$('#'+tabprefix+id).scroll( function(event){
@@ -436,37 +436,14 @@ function newDiagramTab(id,title,tabprefix) {
 }
 
 /* closeDiagramTab(serviceid): close the diagramming tab for service with title servicetitle.
- * Problem is that there is no fixed relation between service (or service id) and
- * tab: 1) tabs can be reordered, 2) services can be removed.
  * The tab has the following HTML elements (ss = service id, tt = service title):
- * 
- * <li class="class list">
- *	 <a href="#diagram<ss>">
- *		<span id="tabtitle<ss>"><tt></span>
- *	 </a>
- * </li>
  */
 function closeDiagramTab(sid,servicetitle,tabprefix) {
-	var found=-1;
-	$('#'+tabprefix+'_body ul li').each(function(i){
-		var s = $(this).text();
-		if (s==servicetitle) {
-			found = i;
-			return false;
-		}
-	});
-	if (found!=-1) {
-		// The 'remove' function is deprecated
-		//$('#'+tabprefix+'_body').tabs('remove',found);
-		// Remove the tab
-		var tab = $('#'+tabprefix+'_body').find( ".ui-tabs-nav li:eq(2)" ).remove();
-		// Find the id of the associated panel
-		var panelId = tab.attr('aria-controls');
-		// Remove the panel
-		$('#'+panelId ).remove();
-		// Refresh the tabs widget
-		$('#'+tabprefix+'_body').tabs('refresh');
-	}
+	// Remove the tab contents
+	$('#'+tabprefix+sid).remove();
+	// Remove the bottom tab, the one that controls tabprefix+sid
+	$('#'+tabprefix+'_body').find('li[aria-controls='+tabprefix+sid+']').remove();
+	$('#'+tabprefix+'_body').tabs('refresh');
 	if (tabprefix=="diagrams")
 		$('#scroller_overview'+sid).remove();
 }
