@@ -64,7 +64,6 @@
 		494B6F8618796E9D00400328 /* rasterService.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterService.js; sourceTree = "<group>"; };
 		494B6F8718796E9D00400328 /* rasterThreatEvaluation.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterThreatEvaluation.js; sourceTree = "<group>"; };
 		494B6F8818796E9D00400328 /* Testcase.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Testcase.txt; sourceTree = "<group>"; };
-		494B6F8918796E9D00400328 /* ui.tabs.closable.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = ui.tabs.closable.js; sourceTree = "<group>"; };
 		494B6F8A18796E9D00400328 /* index.inc */ = {isa = PBXFileReference; explicitFileType = text.html.documentation; path = index.inc; sourceTree = "<group>"; };
 		494B6FA118796E9D00400328 /* sse_projmon.inc */ = {isa = PBXFileReference; explicitFileType = text.script.php; path = sse_projmon.inc; sourceTree = "<group>"; };
 		494B6FB518796E9D00400328 /* raster-print.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "raster-print.css"; sourceTree = "<group>"; };
@@ -317,7 +316,6 @@
 				49C780331A76C3120003863C /* jquery-ui-1.11.2.js */,
 				49C780341A76C3120003863C /* jquery-ui-1.11.2.min.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
-				494B6F8918796E9D00400328 /* ui.tabs.closable.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
 				494B6F7018796E9D00400328 /* jquery.json-2.2.min.js */,
 				49B28498187C191A00DCED98 /* jquery.jsPlumb-1.5.5.js */,
