@@ -158,6 +158,8 @@
 		494B702918796E9D00400328 /* share.inc */ = {isa = PBXFileReference; explicitFileType = text.script.php; path = share.inc; sourceTree = "<group>"; };
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.3.js"; sourceTree = "<group>"; };
+		495591E01A7AB6C60016B001 /* jquery-2.1.3.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.3.min.js"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
 		498BB2B91A2626AF00B12844 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-hi.png"; sourceTree = "<group>"; };
@@ -166,8 +168,6 @@
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		49B28498187C191A00DCED98 /* jquery.jsPlumb-1.5.5.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery.jsPlumb-1.5.5.js"; sourceTree = "<group>"; };
 		49BEC98B1A03A6AD00D1E19D /* manual-0.9.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "manual-0.9.1.pdf"; sourceTree = "<group>"; };
-		49C780301A76C3120003863C /* jquery-2.1.1.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.1.js"; sourceTree = "<group>"; };
-		49C780311A76C3120003863C /* jquery-2.1.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.1.min.js"; sourceTree = "<group>"; };
 		49C780321A76C3120003863C /* jquery-migrate-1.2.1.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-migrate-1.2.1.js"; sourceTree = "<group>"; };
 		49C780331A76C3120003863C /* jquery-ui-1.11.2.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.11.2.js"; sourceTree = "<group>"; };
 		49C780341A76C3120003863C /* jquery-ui-1.11.2.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.11.2.min.js"; sourceTree = "<group>"; };
@@ -310,8 +310,8 @@
 				494B6F7A18796E9D00400328 /* layout.odg */,
 				494B6F6918796E9D00400328 /* encodedecode.js */,
 				494B6F6A18796E9D00400328 /* eventsource.js */,
-				49C780301A76C3120003863C /* jquery-2.1.1.js */,
-				49C780311A76C3120003863C /* jquery-2.1.1.min.js */,
+				495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */,
+				495591E01A7AB6C60016B001 /* jquery-2.1.3.min.js */,
 				49C780321A76C3120003863C /* jquery-migrate-1.2.1.js */,
 				49C780331A76C3120003863C /* jquery-ui-1.11.2.js */,
 				49C780341A76C3120003863C /* jquery-ui-1.11.2.min.js */,
