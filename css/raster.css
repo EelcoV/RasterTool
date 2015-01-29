@@ -470,8 +470,8 @@ div.th_remark {
 .tabs-flushleft .ui-tabs-nav { left: 0 !important; } 
 .tabs-bottom .ui-tabs-nav li.ui-tabs-selected { margin-top: -2px !important; }
 .tabs-bottom .ui-tabs-nav li {
-	margin-top: -1px !important; 
-	margin-bottom: 1px !important; 
+	margin-top: 0px !important;
+	margin-bottom: 0px !important;
 	border-top: none; 
 	border-bottom-width: 1px;
 	width: 12em;

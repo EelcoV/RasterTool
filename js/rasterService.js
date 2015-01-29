@@ -300,6 +300,7 @@ function newDiagramTab(id,title,tabprefix) {
 	snippet = snippet.replace(/_PJ_/g, Service.get(id).project);
 	$('#'+tabprefix+id).append(snippet);
 	$('#'+tabprefix+'_body').tabs('refresh');
+	$('#'+tabprefix+'_body ul li').removeClass('ui-corner-top');
 
 	// Update the scroll_region when the workspace is scrolled.
 	$('#'+tabprefix+id).scroll( function(event){

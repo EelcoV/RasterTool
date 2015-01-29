@@ -502,7 +502,7 @@ function SizeDOMElements() {
 	if (bh==0)
 		bh = $('#bottomtabssf').height();
 	$('.workspace').height(wh-89+27-bh);
-	$('.servplusbutton').height(bh+2);
+	$('.servplusbutton').height(bh-4);
 
 	var fh = $('.fancyworkspace').height();
 	var fw = $('.fancyworkspace').width();
