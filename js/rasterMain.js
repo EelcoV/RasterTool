@@ -1817,7 +1817,7 @@ function initLibraryPanel() {
 		dialog.dialog({
 			title: _("Properties for project '%%'", H(p.title)),
 			modal: true,
-			position: [90,130],
+			position: {my: 'left top', at: 'right', of: '#libprops', collision: 'fit'},
 			width: 480,
 			height: 265,
 			buttons: dbuttons,
@@ -2477,7 +2477,7 @@ function initTabDiagrams() {
 		dialog.dialog({
 			title: _("Rename class '%%'", H(cm.title)),
 			modal: true,
-			position: ['center','center'],
+			position: {my: 'center', at: 'center'},
 			width: 405,
 			height: 130,
 			buttons: dbuttons,
@@ -2527,7 +2527,7 @@ function initTabDiagrams() {
 		dialog.dialog({
 			title: _("Rename suffix '%%' for node '%%'", H(rn.suffix), H(rn.title)),
 			modal: true,
-			position: ['center','center'],
+			position: {my: 'center', at: 'center'},
 			width: 405,
 			height: 130,
 			buttons: dbuttons,
@@ -2828,12 +2828,12 @@ function initTabDiagrams() {
 function initChecklistsDialog(type) {
 	// When displaying multiple checklist windows, each will get the same location and size.
 	// Since that is confusing, we prevent obscuration by using a type-specific offset.
-	var offsets = {'tWLS': 0, 'tWRD': 30, 'tEQT': 60};
+	var offsets = {'tWLS': 100, 'tWRD': 130, 'tEQT': 160};
 	$("#checklist_"+type).dialog({
 		title: _("Default vulnerabilities for new nodes of type '%%'", Rules.nodetypes[type]),
 		minWidth: 725,
 		minHeight: 180,
-		position: [150+offsets[type],100+offsets[type]],
+		position: {my: 'left+'+(offsets[type]+50)+' top+'+offsets[type], at: 'left top', of: '#tabs', collision: 'fit'},
 		zIndex: 400,
 		autoOpen: false
 	});
@@ -3042,17 +3042,17 @@ function displayThreatsDialog(cid,event) {
 		$("#componentthreats").dialog('close');
 	$("#componentthreats").dialog({
 		'title': _("Vulnerability assessment for '%%'", H(c.title)) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
-		position: [event.clientX, event.clientY],
+		position: {my: 'left top', at: 'right', of: event, collision: 'fit'},
 		open: function() {
 			var o = $("#componentthreats").dialog("widget").offset();
 			// Fade in the menu, and move it left & down, but only move it if the call to "open" did not adjust the position
 			// of the window. Windows are adjusted to prevent them from sticking out of the viewport.
 			$("#componentthreats").dialog("widget")
-			.css({display: "", opacity: 0})
+			.css({display: "", opacity: 0.3})
 			.animate({
 				opacity: 1,
-				left: o.left+(event.clientX==o.left? 50 : 0),
-				top: o.top+(event.clientY==o.top ? 30 : 0)
+				left: o.left+(event.clientX==o.left? 10 : 0),
+				top: o.top+(event.clientY==o.top ? 10 : 0)
 			}, 250);
 		}
 	});

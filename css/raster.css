@@ -284,7 +284,11 @@ img.tC {
 	border: 0 !important;
 }
 
-/* 
+.ui-dialog {
+	z-index: 1200 !important;
+}
+
+/*
 Dialog windows:
  - popup menu
  - errors in connections for element nodes

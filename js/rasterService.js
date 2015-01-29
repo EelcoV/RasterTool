@@ -485,7 +485,7 @@ function diagramTabEditStart(event) {
 	dialog.dialog({
 		title: _("Rename service '%%'", H(s.title)),
 		modal: true,
-		position: [80,'center'],
+		position: {my: 'center', at: 'center'},
 		width: 405,
 		height: 130,
 		buttons: dbuttons,
