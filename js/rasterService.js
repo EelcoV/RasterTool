@@ -250,14 +250,15 @@ var NodesBeingDragged = [];
 function newDiagramTab(id,title,tabprefix) {	
 	/* Create a new tab */
 	var snippet = '<li>\
-		<a href="#'+tabprefix+id+'">\
-		  <span id="'+tabprefix+'tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
+		<a href="#_PF__I_">\
+		  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
 		</a>\
-		    <span class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
+		    <span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
 		</li>\
 		';
 	snippet = snippet.replace(/_T_/g, H(title));
 	snippet = snippet.replace(/_I_/g, id);
+	snippet = snippet.replace(/_PF_/g, tabprefix);
 	$(snippet).appendTo( '#'+tabprefix+'_body .ui-tabs-nav' );
 	
 	/* We have bottom tabs, so have to correct the tab corners */
@@ -441,7 +442,7 @@ function newDiagramTab(id,title,tabprefix) {
 function closeDiagramTab(sid,servicetitle,tabprefix) {
 	// Remove the tab contents
 	$('#'+tabprefix+sid).remove();
-	// Remove the bottom tab, the one that controls tabprefix+sid
+	// Remove the bottom tab (the one that controls div#tabprefix+sid)
 	$('#'+tabprefix+'_body').find('li[aria-controls='+tabprefix+sid+']').remove();
 	$('#'+tabprefix+'_body').tabs('refresh');
 	if (tabprefix=="diagrams")

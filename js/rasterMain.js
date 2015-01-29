@@ -1659,8 +1659,7 @@ function vertTabSelected(event, ui) {
 		$('#templates').show();
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
-//		$('#diagrams_body').tabs('option','active', '#diagrams'+Service.cid);
-		$('#diagrams_body').find('li[aria-controls=diagrams'+Service.cid+'] a').click();
+		$('#diagramstabtitle'+Service.cid).click();
 		// Paint, if the diagram has not been painted already
 		Service.get(Service.cid).paintall();
 		Preferences.settab(0);
@@ -1668,8 +1667,7 @@ function vertTabSelected(event, ui) {
 	case 1:		// tab Single Failures
 		$('#selectrect').hide();
 		$('#templates').hide();
-//		$('#singlefs_body').tabs('option','active', '#singlefs'+Service.cid);
-		$('#singlefs_body').find('li[aria-controls=singlefs'+Service.cid+'] a').click();
+		$('#singlefstabtitle'+Service.cid).click();
 		// Force repainting of that tab
 		paintSingleFailures( Service.get(Service.cid) );
 		Preferences.settab(1);
@@ -2217,21 +2215,21 @@ function initOptionsPanel() {
 	});
 }
 
-function bottomTabsCloseHandler(index,elem) {
+function bottomTabsCloseHandler(event) {
 	var p = Project.get(Project.cid);
 	if (p.services.length==1) {
 		$(elem).effect("pulsate", { times:2 }, 200);
 		return;
 	}
 	$('#selectrect').hide();
-	var s = Service.get(nid2id(elem));
+	var s = Service.get(nid2id(event.target.id));
 	rasterConfirm(_("Delete service?"),
 		_("Are you sure you want to remove service '%%' from project '%%'?\nThis cannot be undone.", H(s.title), H(p.title)),
 		_("Remove service"),_("Cancel"),
 		function() {
 			p.removeservice( s.id );
-//			if (s.id == Service.cid)
-//				Service.get(p.services[p.services.length-1]).paintall();
+			$('#diagrams_body').tabs('refresh');
+			$('#singlefs_body').tabs('refresh');
 			transactionCompleted("Service delete");
 		}
 	);
@@ -2279,10 +2277,10 @@ function initTabDiagrams() {
 	initChecklistsDialog('tEQT');
 
 	$('#diagrams_body').tabs({
-		close: bottomTabsCloseHandler,
 		activate: bottomTabsShowHandlerDiagrams,
 		create: bottomTabsShowHandlerDiagrams
 	});
+	$('#diagrams_body').delegate('span.ui-icon-close','click',bottomTabsCloseHandler);
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
 	$('.th_name.thr_header').html( _("Name") );
@@ -3124,10 +3122,10 @@ function RefreshNodeReportDialog() {
 
 function initTabSingleFs() {
 	$('#singlefs_body').tabs({
-		close: bottomTabsCloseHandler,
 		activate: bottomTabsShowHandlerSFaults,
 		create: bottomTabsShowHandlerSFaults
 	});
+	$('#singlefs_body').delegate('span.ui-icon-close','click',bottomTabsCloseHandler);
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
 	$('#servaddbuttonsf').click( function() {
