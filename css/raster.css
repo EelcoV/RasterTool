@@ -702,6 +702,7 @@ div.tWLSheader {
 div.tWLStitle {
 	top: 50%;
 	transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
 }
 div.WLScontent {
 	position: absolute;
@@ -726,6 +727,7 @@ div.tWRDheader {
 div.tWRDtitle {
 	top: 50%;
 	transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
 }
 div.WRDcontent {
 	position: absolute;
@@ -749,6 +751,7 @@ div.tEQTheader {
 div.tEQTtitle {
 	top: 50%;
 	transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
 }
 div.EQTcontent {
 	position: absolute;
@@ -802,6 +805,7 @@ div.tUNKheader {
 div.tUNKtitle {
 	top: 50%;
 	transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
 }
 
 /* Mods for Notes */

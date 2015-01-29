@@ -5112,9 +5112,9 @@ function listSelectedRisks() {
 			 && (
 				(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
 				||
-				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
+				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').prop('checked'))
 				||
-				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
+				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').prop('checked'))
 				)
 			) {
 				matches.push({
