@@ -566,12 +566,10 @@ svg path {
 	-moz-user-select: none;
 	-webkit-user-select: none;
 }
-/* Are these two still used? */
-.connbuttonNormal {
-	color: black !important;
-}
-connbuttonHigh {
-	color: red !important;
+
+.ui-resizable-se {
+	bottom: -2px !important;
+	right: -4px !important;
 }
 
 div.node {
