@@ -2280,7 +2280,13 @@ function initTabDiagrams() {
 		activate: bottomTabsShowHandlerDiagrams,
 		create: bottomTabsShowHandlerDiagrams
 	});
-	$('#diagrams_body').delegate('span.ui-icon-close','click',bottomTabsCloseHandler);
+	$('#diagrams_body').delegate('span.tabcloseicon','click',bottomTabsCloseHandler);
+	$('#bottomtabsdia').delegate('li','mouseenter',function(){
+		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
+	});
+	$('#bottomtabsdia').delegate('li','mouseleave',function(){
+		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
+	});
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
 	$('.th_name.thr_header').html( _("Name") );
@@ -3125,7 +3131,13 @@ function initTabSingleFs() {
 		activate: bottomTabsShowHandlerSFaults,
 		create: bottomTabsShowHandlerSFaults
 	});
-	$('#singlefs_body').delegate('span.ui-icon-close','click',bottomTabsCloseHandler);
+	$('#singlefs_body').delegate('span.tabcloseicon','click',bottomTabsCloseHandler);
+	$('#bottomtabssf').delegate('li','mouseenter',function(){
+		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
+	});
+	$('#bottomtabssf').delegate('li','mouseleave',function(){
+		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
+	});
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
 	$('#servaddbuttonsf').click( function() {
