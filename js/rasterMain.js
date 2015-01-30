@@ -489,19 +489,12 @@ function SizeDOMElements() {
 	}
 
 	$('#servaddbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	// special setting for tab "Services"
-	//$('#tab_diagrams').height(wh-90);
 	$('.tabs-bottom > .ui-tabs-nav').width(ww-99);
+	// special setting for tab "Services"
+	$('#analysis_body > .ui-tabs-nav').width(ww-61);
 	$('.tabs-bottom').width(ww-64);
 	$('.tabs-bottom').height(wh-66);
-	// Adjust the workspace height
-	// #bottomtabsdia or #bottomtabssf height is 27px per row. Double rows possible with many services
-	// and/or a narrow window.
-	var bh = $('#bottomtabsdia').height();
-	if (bh==0)
-		bh = $('#bottomtabssf').height();
-	$('.workspace').height(wh-89+27-bh);
-	$('.servplusbutton').height(bh-4);
+	sizeworkspace();
 
 	var fh = $('.fancyworkspace').height();
 	var fw = $('.fancyworkspace').width();
@@ -522,6 +515,20 @@ function SizeDOMElements() {
 	if (o && o.top>0 && o.top>wsh-30) {
 		var t = wsh-30;
 		scroller.css("top", (t<60 ? 60 : t) + "px");
+	}
+}
+
+function sizeworkspace() {
+	// Adjust the workspace height
+	// #bottomtabsdia or #bottomtabssf height is 27px per row. Double rows possible with many services
+	// and/or a narrow window.
+	var wh = $(window).height();
+	var bh = $('#bottomtabsdia').height();
+	if (bh==0)
+		bh = $('#bottomtabssf').height();
+	if (bh>0) {
+		$('.workspace').height(wh-89+27-bh);
+		$('.servplusbutton').height(bh-4);
 	}
 }
 
@@ -1655,6 +1662,7 @@ function vertTabSelected(event, ui) {
 
 	switch ($('#tabs').tabs('option','active')) {
 	case 0:		// tab Services
+		sizeworkspace();
 		$('#templates').show();
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
@@ -1664,6 +1672,7 @@ function vertTabSelected(event, ui) {
 		Preferences.settab(0);
 		break;
 	case 1:		// tab Single Failures
+		sizeworkspace();
 		$('#selectrect').hide();
 		$('#templates').hide();
 		$('#singlefstabtitle'+Service.cid).click();
