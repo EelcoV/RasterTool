@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		491C01871A7C0F6100DB56AB /* jquery.json-2.5.1.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery.json-2.5.1.js"; sourceTree = "<group>"; };
 		491CD6CA187D97B60028B84D /* tNOTicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOTicon.png; sourceTree = "<group>"; };
 		491CD6CB187D97C90028B84D /* tNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOT.png; sourceTree = "<group>"; };
 		491CD6CC187D97D00028B84D /* tNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOT.png; sourceTree = "<group>"; };
@@ -49,7 +50,6 @@
 		494B6F6918796E9D00400328 /* encodedecode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = encodedecode.js; sourceTree = "<group>"; };
 		494B6F6A18796E9D00400328 /* eventsource.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = eventsource.js; sourceTree = "<group>"; };
 		494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.editinplace-2.2.1.js"; sourceTree = "<group>"; };
-		494B6F7018796E9D00400328 /* jquery.json-2.2.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.json-2.2.min.js"; sourceTree = "<group>"; };
 		494B6F7A18796E9D00400328 /* layout.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = layout.odg; sourceTree = "<group>"; };
 		494B6F7C18796E9D00400328 /* checkall.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = checkall.sh; sourceTree = "<group>"; };
 		494B6F7D18796E9D00400328 /* jsl */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = jsl; sourceTree = "<group>"; };
@@ -312,7 +312,7 @@
 				49C780331A76C3120003863C /* jquery-ui-1.11.2.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
-				494B6F7018796E9D00400328 /* jquery.json-2.2.min.js */,
+				491C01871A7C0F6100DB56AB /* jquery.json-2.5.1.js */,
 				49B28498187C191A00DCED98 /* jquery.jsPlumb-1.5.5.js */,
 				494B6F7B18796E9D00400328 /* lint */,
 				494B6F8118796E9D00400328 /* rasterMain.js */,
