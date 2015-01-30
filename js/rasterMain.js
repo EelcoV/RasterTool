@@ -187,9 +187,6 @@ $(function() {
 	$('#tabs').tabs('option','active',Preferences.tab);
 	forceSelectVerticalTab(Preferences.tab);
 
-	$('#diagrams_body').tabs('option','active',0);
-	$('#singlefs_body').tabs('option','active',0);
-
 	$('#helpimg').hover( function() {
 			$('#helpimg').attr("src","../img/qm-hi.png");
 		}, function() {
