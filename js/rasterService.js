@@ -483,7 +483,7 @@ function diagramTabEditStart(event) {
 			}
 	});
 	dialog.dialog({
-		title: _("Rename service '%%'", H(s.title)),
+		title: _("Rename service '%%'", s.title),
 		modal: true,
 		position: {my: 'center', at: 'center'},
 		width: 405,

@@ -1814,7 +1814,7 @@ function initLibraryPanel() {
 				}
 		});
 		dialog.dialog({
-			title: _("Properties for project '%%'", H(p.title)),
+			title: _("Properties for project '%%'", p.title),
 			modal: true,
 			position: {my: 'left top', at: 'right', of: '#libprops', collision: 'fit'},
 			width: 480,
@@ -2474,7 +2474,7 @@ function initTabDiagrams() {
 				}
 		});
 		dialog.dialog({
-			title: _("Rename class '%%'", H(cm.title)),
+			title: _("Rename class '%%'", cm.title),
 			modal: true,
 			position: {my: 'center', at: 'center'},
 			width: 405,
@@ -2524,7 +2524,7 @@ function initTabDiagrams() {
 				}
 		});
 		dialog.dialog({
-			title: _("Rename suffix '%%' for node '%%'", H(rn.suffix), H(rn.title)),
+			title: _("Rename suffix '%%' for node '%%'", rn.suffix, rn.title),
 			modal: true,
 			position: {my: 'center', at: 'center'},
 			width: 405,
@@ -3041,7 +3041,7 @@ function displayThreatsDialog(cid,event) {
 	if ($("#componentthreats").dialog("isOpen"))
 		$("#componentthreats").dialog('close');
 	$("#componentthreats").dialog({
-		'title': _("Vulnerability assessment for '%%'", H(c.title)) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
+		title: _("Vulnerability assessment for '%%'", c.title) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
 		position: {my: 'left top', at: 'right', of: event, collision: 'fit'},
 		closeOnEscape: false,
 		open: function() {
@@ -3113,7 +3113,7 @@ function RefreshNodeReportDialog() {
 	}
 	$("#nodereport").html( s );
 	$("#nodereport").dialog({
-		title: _("Warning report on %%", rn.htmltitle()),
+		title: _("Warning report on %%", rn.title+' '+rn.suffix),
 		zIndex: 400
 	});
 	$("#nodereport").dialog("open");

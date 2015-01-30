@@ -795,7 +795,7 @@ Node.prototype = {
 				$("#nodereport").dialog("close");
 			$("#nodereport").html( s );
 			$("#nodereport").dialog({
-				title: _("Warning report on %%", rn.htmltitle()),
+				title: _("Warning report on %%", rn.title+' '+rn.suffix),
 				position: {my: 'left top', at: 'center', of: e, collision: 'fit'},
 				zIndex: 400,
 				open: function() {
