@@ -347,7 +347,7 @@ Node.prototype = {
 			}
 		}
 		$('#titlemain'+this.id).html(H(this.title));
-		$('#titlesuffix'+this.id).html(this.suffix=="" ? "" : "&thinsp;<sup>"+this.suffix+"</sup>");
+		$('#titlesuffix'+this.id).html(this.suffix=="" ? "" : "&thinsp;<sup>"+H(this.suffix)+"</sup>");
 		this.store();
 	},
 	
@@ -367,7 +367,7 @@ Node.prototype = {
 	},
 	
 	htmltitle: function() {
-		return H(this.title) + (this.suffix!='' ? '<sup>&thinsp;'+this.suffix+'</sup>' : '');
+		return H(this.title) + (this.suffix!='' ? '<sup>&thinsp;'+H(this.suffix)+'</sup>' : '');
 	},
 	
 	edgecount: function (cn) {
@@ -667,7 +667,7 @@ Node.prototype = {
 			}
 		}
 		$('#titlemain'+this.id).html(H(this.title));
-		$('#titlesuffix'+this.id).html(this.suffix=="" ? "" : "&thinsp;<sup>"+this.suffix+"</sup>");
+		$('#titlesuffix'+this.id).html(this.suffix=="" ? "" : "&thinsp;<sup>"+H(this.suffix)+"</sup>");
 		
 		if (effect==undefined || effect==true)
 			$(this.jnid).fadeIn(500);
