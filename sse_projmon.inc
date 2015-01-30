@@ -101,11 +101,15 @@ while (true) {
     }
     $str = sprintf(
 		"{\"name\": \"%s\", \"creator\": \"%s\", \"date\": \"%s\", \"description\": \"%s\", \"contents\": \"%s\"}",
-		addslashes($projName), addslashes($projCreator), addslashes($projDate), addslashes($projDescr), addslashes($contents)
+		slashadd($projName), slashadd($projCreator), slashadd($projDate), slashadd($projDescr), slashadd($contents)
 	);
     send($str);
 } 
 
+// Add slashes to special characters, but NOT to single quotes.
+function slashadd($str) {
+	return str_replace("\\'","'",addslashes($str));
+}
 
 function send($mesg) {
 	global $projFname, $projName;

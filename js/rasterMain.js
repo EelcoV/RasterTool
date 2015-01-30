@@ -107,11 +107,14 @@ $(function() {
 		timeout: 10000	// Cancel each AJAX request after 10 seconds
 	});
 
-	$('#tabs').tabs();
+	initTabDiagrams();
+	initTabSingleFs();
+	initTabCCFs();
+	initTabAnalysis();
+	
+	$('#tabs').tabs({activate: vertTabSelected});
 	$('#tabs').addClass('ui-tabs-vertical-sw ui-helper-clearfix');
-	$('.ui-tabs-nav').addClass('rot-neg-90');
-
-	$('#tabs').bind("tabsshow", vertTabSelected);
+	$('#tabs > ul').addClass('rot-neg-90');
 
 	$('input[type=button]').button();
 	$('input[type=submit]').button();
@@ -150,11 +153,6 @@ $(function() {
 	initLibraryPanel();
 	initOptionsPanel();
 
-	initTabDiagrams();
-	initTabSingleFs();
-	initTabCCFs();
-	initTabAnalysis();
-	
 	SizeDOMElements();
 
 	/* Loading data from localStorage. Tweaked for perfomance.
@@ -186,7 +184,7 @@ $(function() {
 	window.setTimeout(SizeDOMElements, 1000);
 
 	Preferences.settab(remembertab);
-	$('#tabs').tabs("select",Preferences.tab);
+	$('#tabs').tabs('option','active',Preferences.tab);
 	forceSelectVerticalTab(Preferences.tab);
 
 	$('#helpimg').hover( function() {
@@ -202,10 +200,6 @@ $(function() {
 	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
 	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
 	$('#helptabs a').eq(3).attr('href', _("../help/About.html") );
-	$('#helptabs').tabs({
-		cache: true,
-		heightStyle: "fill"
-	});
 	$('#helptabs li:last-of-type').css("margin-left","10px");
 	$('#helppanel').dialog({
 		title: _("Information on using this tool"),
@@ -215,11 +209,17 @@ $(function() {
 		width: 600,
 		minWidth: 470,
 		maxWidth: 800,
+		open: function(event) {
+			$('#helptabs ul').width($('#helppanel').width()-14);
+		},
 		resize: function(event,ui) {
 			$('#helptabs ul').width(ui.size.width-36);
 		}
 	});
 	$('#helppanel').dialog("widget").css("overflow","visible").addClass("donotprint");
+	$('#helptabs').tabs({
+		heightStyle: "content"
+	});
 	$('#helpbutton img').click( function() {
 		$('#helppanel').dialog("open");
 	});
@@ -261,11 +261,11 @@ $(function() {
 	});
 
 	var flashTimer;
-	$("#networkactivity").ajaxSend(function(){
+	$(document).ajaxSend(function(){
 		window.clearTimeout(flashTimer);
 		$("#networkactivity").removeClass("activityoff activityno").addClass("activityyes");
 	});
-	$("#networkactivity").ajaxStop(function(){
+	$(document).ajaxStop(function(){
 		// Make sure that the activity light flashes at least some small time
 		flashTimer = window.setTimeout(function(){
 			$("#networkactivity").removeClass("activityoff activityyes").addClass("activityno");
@@ -489,19 +489,12 @@ function SizeDOMElements() {
 	}
 
 	$('#servaddbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	// special setting for tab "Services"
-	//$('#tab_diagrams').height(wh-90);
 	$('.tabs-bottom > .ui-tabs-nav').width(ww-99);
+	// special setting for tab "Services"
+	$('#analysis_body > .ui-tabs-nav').width(ww-61);
 	$('.tabs-bottom').width(ww-64);
 	$('.tabs-bottom').height(wh-66);
-	// Adjust the workspace height
-	// #bottomtabsdia or #bottomtabssf height is 27px per row. Double rows possible with many services
-	// and/or a narrow window.
-	var bh = $('#bottomtabsdia').height();
-	if (bh==0)
-		bh = $('#bottomtabssf').height();
-	$('.workspace').height(wh-89+27-bh);
-	$('.servplusbutton').height(bh+2);
+	sizeworkspace();
 
 	var fh = $('.fancyworkspace').height();
 	var fw = $('.fancyworkspace').width();
@@ -522,6 +515,20 @@ function SizeDOMElements() {
 	if (o && o.top>0 && o.top>wsh-30) {
 		var t = wsh-30;
 		scroller.css("top", (t<60 ? 60 : t) + "px");
+	}
+}
+
+function sizeworkspace() {
+	// Adjust the workspace height
+	// #bottomtabsdia or #bottomtabssf height is 27px per row. Double rows possible with many services
+	// and/or a narrow window.
+	var wh = $(window).height();
+	var bh = $('#bottomtabsdia').height();
+	if (bh==0)
+		bh = $('#bottomtabssf').height();
+	if (bh>0) {
+		$('.workspace').height(wh-89+27-bh);
+		$('.servplusbutton').height(bh-4);
 	}
 }
 
@@ -1636,8 +1643,8 @@ function exportAll() {
 }
 
 function forceSelectVerticalTab(n) {
-	var ui={panel: {id: "tab_"}, index: n};
-	vertTabSelected({}, ui);
+	$('#tabs').tabs('option','active',n);
+	vertTabSelected();
 }
 
 /* vertTabSelected(event,ui)
@@ -1645,36 +1652,30 @@ function forceSelectVerticalTab(n) {
  */
 function vertTabSelected(event, ui) {
 	removetransientwindows();
-	/* ui.panel is the DOM object with id tab_projects, tab_active_p, tab_diagrams, tab_singlefs, tab_ccfs
-	 * ui.index is 0, 1, 2, 3, 4 (corresponding with the tab names above).
-	 * Unfortunately, thus event handler is also called for the service diagram tabs,
-	 * so we first check for that (their tabs are called diagram<nn> instead of tab_<ss>).
-	 */
-	if (!ui.panel.id.match(/^tab_/))
-		// A horizontal tab was selected. Let's get out of here.
-		return;
+
 //	$('body').css('cursor','progress'); // this does not seem to be effective, at least not on FF4
 	$('#nodereport').dialog('close');
 	$('#componentthreats').dialog('close');
 	$('#checklist_tWLS').dialog('close');
 	$('#checklist_tWRD').dialog('close');
 	$('#checklist_tEQT').dialog('close');
-	$('#anareport').dialog('close');
 
-	switch (ui.index) {
+	switch ($('#tabs').tabs('option','active')) {
 	case 0:		// tab Services
+		sizeworkspace();
 		$('#templates').show();
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
-		$('#diagrams_body').tabs('select', '#diagrams'+Service.cid);
+		$('#diagramstabtitle'+Service.cid).click();
 		// Paint, if the diagram has not been painted already
 		Service.get(Service.cid).paintall();
 		Preferences.settab(0);
 		break;
 	case 1:		// tab Single Failures
+		sizeworkspace();
 		$('#selectrect').hide();
 		$('#templates').hide();
-		$('#singlefs_body').tabs('select', '#singlefs'+Service.cid);
+		$('#singlefstabtitle'+Service.cid).click();
 		// Force repainting of that tab
 		paintSingleFailures( Service.get(Service.cid) );
 		Preferences.settab(1);
@@ -1822,9 +1823,9 @@ function initLibraryPanel() {
 				}
 		});
 		dialog.dialog({
-			title: _("Properties for project '%%'", H(p.title)),
+			title: _("Properties for project '%%'", p.title),
 			modal: true,
-			position: [90,130],
+			position: {my: 'left top', at: 'right', of: '#libprops', collision: 'fit'},
 			width: 480,
 			height: 265,
 			buttons: dbuttons,
@@ -2222,29 +2223,31 @@ function initOptionsPanel() {
 	});
 }
 
-function bottomTabsCloseHandler(index,elem) {
+function bottomTabsCloseHandler(event) {
 	var p = Project.get(Project.cid);
 	if (p.services.length==1) {
 		$(elem).effect("pulsate", { times:2 }, 200);
 		return;
 	}
 	$('#selectrect').hide();
-	var s = Service.get(nid2id(elem));
+	var s = Service.get(nid2id(event.target.id));
 	rasterConfirm(_("Delete service?"),
 		_("Are you sure you want to remove service '%%' from project '%%'?\nThis cannot be undone.", H(s.title), H(p.title)),
 		_("Remove service"),_("Cancel"),
 		function() {
 			p.removeservice( s.id );
-//			if (s.id == Service.cid)
-//				Service.get(p.services[p.services.length-1]).paintall();
+			$('#diagrams_body').tabs('refresh');
+			$('#singlefs_body').tabs('refresh');
 			transactionCompleted("Service delete");
 		}
 	);
 }
 
 function bottomTabsShowHandlerDiagrams(event,ui) {
-	/* ui.tab.hash is the DOM object with id #tabtitle<nn> */
-	var id = nid2id(ui.tab.hash);
+	/* ui.newPanel.selector is the DOM object with id #tabtitle<nn> */
+	if (!ui.newPanel)
+		return;
+	var id = nid2id(ui.newPanel.selector);
 	$('#selectrect').hide();
 	removetransientwindowsanddialogs();
 	Service.get(id).paintall();
@@ -2252,8 +2255,12 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 }
 
 function bottomTabsShowHandlerSFaults(event,ui) {
-	/* ui.tab.hash is the DOM object with id #tabtitle<nn> */
-	var id = nid2id(ui.tab.hash);
+	/* ui.newPanel.selector is the DOM object with id #tabtitle<nn> */
+	if (!ui.newPanel) {
+		// on creation of the tab, select the first tab.
+		return;
+	}
+	var id = nid2id(ui.newPanel.selector);
 	Service.cid = id;
 	paintSingleFailures(Service.get(id));
 }
@@ -2273,9 +2280,20 @@ function initTabDiagrams() {
 	$('#EQTcopythreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#EQTpastethreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 
+	initChecklistsDialog('tWLS');
+	initChecklistsDialog('tWRD');
+	initChecklistsDialog('tEQT');
+
 	$('#diagrams_body').tabs({
-		close: bottomTabsCloseHandler,
-		show: bottomTabsShowHandlerDiagrams 
+		activate: bottomTabsShowHandlerDiagrams,
+		create: bottomTabsShowHandlerDiagrams
+	});
+	$('#diagrams_body').delegate('span.tabcloseicon','click',bottomTabsCloseHandler);
+	$('#bottomtabsdia').delegate('li','mouseenter',function(){
+		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
+	});
+	$('#bottomtabsdia').delegate('li','mouseleave',function(){
+		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
@@ -2465,9 +2483,9 @@ function initTabDiagrams() {
 				}
 		});
 		dialog.dialog({
-			title: _("Rename class '%%'", H(cm.title)),
+			title: _("Rename class '%%'", cm.title),
 			modal: true,
-			position: ['center','center'],
+			position: {my: 'center', at: 'center'},
 			width: 405,
 			height: 130,
 			buttons: dbuttons,
@@ -2515,9 +2533,9 @@ function initTabDiagrams() {
 				}
 		});
 		dialog.dialog({
-			title: _("Rename suffix '%%' for node '%%'", H(rn.suffix), H(rn.title)),
+			title: _("Rename suffix '%%' for node '%%'", rn.suffix, rn.title),
 			modal: true,
-			position: ['center','center'],
+			position: {my: 'center', at: 'center'},
 			width: 405,
 			height: 130,
 			buttons: dbuttons,
@@ -2815,6 +2833,21 @@ function initTabDiagrams() {
 		bugreport('the rules are not internally consistent','initTabDiagrams');
 }
 
+function initChecklistsDialog(type) {
+	// When displaying multiple checklist windows, each will get the same location and size.
+	// Since that is confusing, we prevent obscuration by using a type-specific offset.
+	var offsets = {'tWLS': 100, 'tWRD': 130, 'tEQT': 160};
+	$("#checklist_"+type).dialog({
+		title: _("Default vulnerabilities for new nodes of type '%%'", Rules.nodetypes[type]),
+		closeOnEscape: false,
+		minWidth: 725,
+		minHeight: 180,
+		position: {my: 'left+'+(offsets[type]+50)+' top+'+offsets[type], at: 'left top', of: '#tabs', collision: 'fit'},
+		zIndex: 400,
+		autoOpen: false
+	});
+}
+
 function populateLabelMenu() {
 	var p = Project.get(Project.cid);
 	$("#mi_ccred .labeltext").html( '"' + H(p.labels[0]) + '"' );
@@ -3017,18 +3050,19 @@ function displayThreatsDialog(cid,event) {
 	if ($("#componentthreats").dialog("isOpen"))
 		$("#componentthreats").dialog('close');
 	$("#componentthreats").dialog({
-		'title': _("Vulnerability assessment for '%%'", H(c.title)) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
-		position: [event.clientX, event.clientY],
+		title: _("Vulnerability assessment for '%%'", c.title) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
+		position: {my: 'left top', at: 'right', of: event, collision: 'fit'},
+		closeOnEscape: false,
 		open: function() {
 			var o = $("#componentthreats").dialog("widget").offset();
 			// Fade in the menu, and move it left & down, but only move it if the call to "open" did not adjust the position
 			// of the window. Windows are adjusted to prevent them from sticking out of the viewport.
 			$("#componentthreats").dialog("widget")
-			.css({display: "", opacity: 0})
+			.css({display: "", opacity: 0.3})
 			.animate({
 				opacity: 1,
-				left: o.left+(event.clientX==o.left? 50 : 0),
-				top: o.top+(event.clientY==o.top ? 30 : 0)
+				left: o.left+(event.clientX==o.left? 10 : 0),
+				top: o.top+(event.clientY==o.top ? 10 : 0)
 			}, 250);
 		}
 	});
@@ -3055,14 +3089,6 @@ function displayThreatsDialog(cid,event) {
 function displayChecklistsDialog(type) {
 	// When displaying multiple checklist windows, each will get the same location and size.
 	// Since that is confusing, we prevent obscuration by using a type-specific offset.
-	var offsets = {'tWLS': 0, 'tWRD': 30, 'tEQT': 60};
-	$("#checklist_"+type).dialog({
-		title: _("Default vulnerabilities for new nodes of type '%%'", Rules.nodetypes[type]),
-		minWidth: 725,
-		minHeight: 180,
-		position: [150+offsets[type],100+offsets[type]],
-		zIndex: 400
-	});
 	$("#checklist_"+type).dialog("open");
 	$('.checklist input').each( function () { 
 		$(this).blur(); return true; 
@@ -3096,7 +3122,7 @@ function RefreshNodeReportDialog() {
 	}
 	$("#nodereport").html( s );
 	$("#nodereport").dialog({
-		title: _("Warning report on %%", rn.htmltitle()),
+		title: _("Warning report on %%", rn.title+' '+rn.suffix),
 		zIndex: 400
 	});
 	$("#nodereport").dialog("open");
@@ -3112,8 +3138,15 @@ function RefreshNodeReportDialog() {
 
 function initTabSingleFs() {
 	$('#singlefs_body').tabs({
-		close: bottomTabsCloseHandler,
-		show: bottomTabsShowHandlerSFaults 
+		activate: bottomTabsShowHandlerSFaults,
+		create: bottomTabsShowHandlerSFaults
+	});
+	$('#singlefs_body').delegate('span.tabcloseicon','click',bottomTabsCloseHandler);
+	$('#bottomtabssf').delegate('li','mouseenter',function(){
+		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
+	});
+	$('#bottomtabssf').delegate('li','mouseleave',function(){
+		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
@@ -3379,13 +3412,13 @@ function expandAllSingleF(sid) {
 		}
 		var el = $('#sfaccordion'+sid+'_'+cm.id);
 
-		if (el.accordion("option","active")===false) {
-			el.accordion("option", "active", 0);
+		if (el.accordion('option','active')===false) {
+			el.accordion('option', 'active', 0);
 			// The following is not necessary during normal use, but appears to be required when
 			// expandAllSingleF() is called from window.onBeforePrint, or when stepping through
 			// this loop using a debugger ?!
 			$('#sfaccordion'+sid+'_'+cm.id+' .ui-accordion-content').css('height','').css('overflow','').css('padding-top','').css('padding-bottom','');
-			el.accordion("refresh");
+			el.accordion('refresh');
 		}
 	}
 }
@@ -3398,7 +3431,7 @@ function collapseAllSingleF(sid) {
 			bugreport("Found a component of type actor. That should not exist.", "collapseAllSingleF");
 			continue;
 		}
-		$('#sfaccordion'+sid+'_'+cm.id).accordion("activate",false);
+		$('#sfaccordion'+sid+'_'+cm.id).accordion('option','active',false);
 	}
 }
 
@@ -3532,10 +3565,10 @@ function expandAllCCF() {
 	for (it.first(); it.notlast(); it.next()) {
 		var id = it.getNodeClusterid();
 		var el = $('#shfaccordion'+id);
-		if (el.accordion("option","active")===el)
+		if (el.accordion('option','active')===el)
 			el.click();
-		else if (el.accordion("option","active")===false)
-			el.accordion("activate",0);
+		else if (el.accordion('option','active')===false)
+			el.accordion('option','active',0);
 	}
 }
 
@@ -3543,7 +3576,7 @@ function collapseAllCCF() {
 	var it = new NodeClusterIterator({project: Project.cid});
 	for (it.first(); it.notlast(); it.next()) {
 		var id = it.getNodeClusterid();
-		$('#shfaccordion'+id).accordion("activate",false);
+		$('#shfaccordion'+id).accordion('option','active',false);
 	}
 }
 
@@ -5089,9 +5122,9 @@ function listSelectedRisks() {
 			 && (
 				(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
 				||
-				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
+				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').prop('checked'))
 				||
-				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
+				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').prop('checked'))
 				)
 			) {
 				matches.push({

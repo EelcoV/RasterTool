@@ -8,7 +8,7 @@
 var PreferencesObject = function() {
 	this.settheme = function(theme) {
 		this.theme = theme;
-		var cssLink = $('<link href="../css/'+theme+'/jquery-ui-1.8.21.custom.css" type="text/css" rel="stylesheet" class="ui-theme">');
+		var cssLink = $('<link href="../css/'+theme+'-1.11.2/jquery-ui.min.css" type="text/css" rel="stylesheet" class="ui-theme">');
 		$("head").append(cssLink);
 		$("link.ui-theme:first").remove();
 		$('ul.rot-neg-90 li').css('float','right');

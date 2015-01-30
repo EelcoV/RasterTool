@@ -339,8 +339,9 @@ $.extend(InlineEditor.prototype, {
 				form.find(".inplace_field").blur(cancelEditorAction);
 			
 			// workaround for msie & firefox bug where it won't submit on enter if no button is shown
-			if ($.browser.mozilla || $.browser.msie)
-				this.bindSubmitOnEnterInInput();
+// Eelco: In latest jQuery versions $.browser is deprecated. The bugs do not appear in later versions.
+//			if ($.browser.mozilla || $.browser.msie)
+//				this.bindSubmitOnEnterInInput();
 		}
 		
 		form.keyup(function(anEvent) {
@@ -352,8 +353,9 @@ $.extend(InlineEditor.prototype, {
 		
 		// workaround for webkit nightlies where they won't submit at all on enter
 		// REFACT: find a way to just target the nightlies
-		if ($.browser.safari)
-			this.bindSubmitOnEnterInInput();
+// Eelco: In latest jQuery versions $.browser is deprecated. The bugs do not appear in later versions.
+//		if ($.browser.safari)
+//			this.bindSubmitOnEnterInInput();
 		
 		
 		form.submit(saveEditorAction);

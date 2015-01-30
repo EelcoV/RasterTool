@@ -795,16 +795,17 @@ Node.prototype = {
 				$("#nodereport").dialog("close");
 			$("#nodereport").html( s );
 			$("#nodereport").dialog({
-				title: _("Warning report on %%", rn.htmltitle()),
-				position: [e.clientX, e.clientY],
+				title: _("Warning report on %%", rn.title+' '+rn.suffix),
+				position: {my: 'left top', at: 'center', of: e, collision: 'fit'},
 				zIndex: 400,
 				open: function() {
+					var o = $("#nodereport").dialog("widget").offset();
 					$("#nodereport").dialog("widget")
 					.css({display: "", opacity: 0})
 					.animate({
 						opacity: 1,
-						left: e.clientX+100,
-						top: e.clientY+20
+						left: o.left+(e.clientX==o.left? 20 : 0),
+						top: o.top+(e.clientY==o.top ? 20 : 0)
 					}, 250);
 				}
 			});

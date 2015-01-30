@@ -11,18 +11,16 @@ See LICENSE.md
 <meta charset="UTF-8"> 
 <title>Raster - Risk Assessment of Telecoms Services</title>
 <!-- First stylesheet must be the one that is a custom setting. -->
-<link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.21.custom.css" class="ui-theme">
+<link rel="stylesheet" href="../css/smoothness-1.11.2/jquery-ui.min.css" class="ui-theme">
 <link rel="stylesheet" href="../css/raster.css" type="text/css" id="maincssfile">
 <link rel="stylesheet" href="../css/raster-print.css" type="text/css">
 <link rel="shortcut icon" href="../img/Raster.png">
 <script type="text/javascript" src="../js/eventsource.js"></script>
-<script type="text/javascript" src="../js/jquery-1.7.2.js"></script>
-<script type="text/javascript" src="../js/jquery-ui-1.8.24.js"></script>
+<script type="text/javascript" src="../js/jquery-2.1.3.js"></script>
+<script type="text/javascript" src="../js/jquery-ui-1.11.2.js"></script>
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
-<script type="text/javascript" src="../js/ui.tabs.closable.js"></script>
 <script type="text/javascript" src="../js/jquery.jsPlumb-1.5.5.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>  
-<script type="text/javascript" src="../js/jquery.json-2.2.min.js"></script>  
 <script type="text/javascript" src="../js/encodedecode.js"></script>
 <script type="text/javascript" src="../js/rasterMain.js"></script>  
 <script type="text/javascript">$.localise('../js/translation');</script>
@@ -304,7 +302,6 @@ See LICENSE.md
 
 </div> <!-- id="tabs" -->
 
-<div id="anareport"></div>
 <div id="modaldialog"></div>
 
 <div id="exp_div" style="display: none">

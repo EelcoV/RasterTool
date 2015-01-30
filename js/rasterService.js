@@ -249,20 +249,26 @@ var NodesBeingDragged = [];
  */
 function newDiagramTab(id,title,tabprefix) {	
 	/* Create a new tab */
-	var snippet = '<span id="'+tabprefix+'tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>';
+	var snippet = '<li>\
+		<a href="#_PF__I_">\
+		  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
+		</a>\
+		    <span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
+		</li>\
+		';
 	snippet = snippet.replace(/_T_/g, H(title));
 	snippet = snippet.replace(/_I_/g, id);
-	$('#'+tabprefix+'_body').tabs('add', '#'+tabprefix+id, snippet);
+	snippet = snippet.replace(/_PF_/g, tabprefix);
+	$(snippet).appendTo( '#'+tabprefix+'_body .ui-tabs-nav' );
+	
 	/* We have bottom tabs, so have to correct the tab corners */
 	$('#'+tabprefix+'_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
 	$("a[href^=#"+tabprefix+id+"]").dblclick( diagramTabEditStart );
 
-	/* Set class on the new workspace */
-	$('#'+tabprefix+id).addClass("workspace");
-
 	/* Add content to the new tab */
 	if (tabprefix=="diagrams") {
 		snippet = '\n\
+			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
 			<div id="scroller_overview_I_" class="scroller_overview">\n\
 				<div id="scroller_region_I_" class="scroller_region"></div>\n\
 			</div>\n\
@@ -276,6 +282,11 @@ function newDiagramTab(id,title,tabprefix) {
 		';
 	} else {
 		snippet = '\n\
+			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
+		';
+		snippet = snippet.replace(/_I_/g, id);
+		$('#singlefs_body').append(snippet);
+		snippet = '\n\
 			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n\
 			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
 			<div id="'+tabprefix+'_workspace_I_" class="workspace plainworkspace"></div>\n\
@@ -288,6 +299,8 @@ function newDiagramTab(id,title,tabprefix) {
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Service.get(id).project).title));
 	snippet = snippet.replace(/_PJ_/g, Service.get(id).project);
 	$('#'+tabprefix+id).append(snippet);
+	$('#'+tabprefix+'_body').tabs('refresh');
+	$('#'+tabprefix+'_body ul li').removeClass('ui-corner-top');
 
 	// Update the scroll_region when the workspace is scrolled.
 	$('#'+tabprefix+id).scroll( function(event){
@@ -425,27 +438,14 @@ function newDiagramTab(id,title,tabprefix) {
 }
 
 /* closeDiagramTab(serviceid): close the diagramming tab for service with title servicetitle.
- * Problem is that there is no fixed relation between service (or service id) and
- * tab: 1) tabs can be reordered, 2) services can be removed.
  * The tab has the following HTML elements (ss = service id, tt = service title):
- * 
- * <li class="class list">
- *	 <a href="#diagram<ss>">
- *		<span id="tabtitle<ss>"><tt></span>
- *	 </a>
- * </li>
  */
 function closeDiagramTab(sid,servicetitle,tabprefix) {
-	var found=-1;
-	$('#'+tabprefix+'_body ul li').each(function(i){
-		var s = $(this).text();
-		if (s==servicetitle) {
-			found = i;
-			return false;
-		}
-	});
-	if (found!=-1)
-		$('#'+tabprefix+'_body').tabs("remove",found);
+	// Remove the tab contents
+	$('#'+tabprefix+sid).remove();
+	// Remove the bottom tab (the one that controls div#tabprefix+sid)
+	$('#'+tabprefix+'_body').find('li[aria-controls='+tabprefix+sid+']').remove();
+	$('#'+tabprefix+'_body').tabs('refresh');
 	if (tabprefix=="diagrams")
 		$('#scroller_overview'+sid).remove();
 }
@@ -483,9 +483,9 @@ function diagramTabEditStart(event) {
 			}
 	});
 	dialog.dialog({
-		title: _("Rename service '%%'", H(s.title)),
+		title: _("Rename service '%%'", s.title),
 		modal: true,
-		position: [80,'center'],
+		position: {my: 'center', at: 'center'},
 		width: 405,
 		height: 130,
 		buttons: dbuttons,

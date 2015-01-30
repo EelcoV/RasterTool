@@ -136,7 +136,7 @@ function getSharedProjects() {
 		$r .= ($firstproj ? "\n" : ",\n"); 
 		$r .= sprintf(
 			" {\"name\": \"%s\", \"creator\": \"%s\", \"date\": \"%s\", \"description\": \"%s\"}",
-			addslashes($pName), addslashes($pCreator), addslashes($pDate), addslashes($pDescr)
+			slashadd($pName), slashadd($pCreator), slashadd($pDate), slashadd($pDescr)
 		);
 		$firstproj = false;
 	}
@@ -170,6 +170,11 @@ function getRandomString($length) {
     return $str;
 }
 
+// Add slashes to special characters, but NOT to single quotes.
+function slashadd($str) {
+	return str_replace("\\'","'",addslashes($str));
+}
+
 function doGetProps() {
 	global $projName,$projCreator,$projDate,$projDescr,$projFname;
 	if ($_SERVER["REQUEST_METHOD"] != "GET")
@@ -187,7 +192,7 @@ function doGetProps() {
 		header('Content-type: text/x-raster',true,200);
 		echo sprintf(
 			"{\"name\": \"%s\", \"creator\": \"%s\", \"date\": \"%s\", \"description\": \"%s\"}",
-			addslashes($pName), addslashes($pCreator), addslashes($pDate), addslashes($pDescr)
+			slashadd($pName), slashadd($pCreator), slashadd($pDate), slashadd($pDescr)
 		);
 		exit(0);
 	}
@@ -355,7 +360,7 @@ function sendError($errorMessage) {
  *
  */
 function doReflect() {
-	$name=addslashes($_REQUEST['name']);
+	$name=slashadd($_REQUEST['name']);
 	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
 	if (get_magic_quotes_gpc()) {
 		$content=stripslashes($_REQUEST['contents']);

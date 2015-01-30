@@ -12,6 +12,8 @@ The UI consists of a main window containing three sections: diagrams, single ele
 .ui-widget {font-size:11px !important; 
 }
 
+.ui-state-focus { outline: none; }
+
 body {
 	padding: 0px;
 	border: 0px;
@@ -40,8 +42,9 @@ body {
 	-webkit-transform-origin: 0 0;
 	-o-transform-origin:  0 0;
 }	
-.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150;}
+.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150; outline: none;}
 .longlink { width: 12.5em !important; }
+.tabcloseicon {margin-top:0.4em; cursor: pointer;}
 
 /* The content panes to each vertical tab */
 .workouter {position: absolute; left: 40px; top: 42px; margin: 0px; }
@@ -283,7 +286,11 @@ img.tC {
 	border: 0 !important;
 }
 
-/* 
+.ui-dialog {
+	z-index: 1200 !important;
+}
+
+/*
 Dialog windows:
  - popup menu
  - errors in connections for element nodes
@@ -469,10 +476,12 @@ div.th_remark {
 .tabs-flushleft .ui-tabs-nav { left: 0 !important; } 
 .tabs-bottom .ui-tabs-nav li.ui-tabs-selected { margin-top: -2px !important; }
 .tabs-bottom .ui-tabs-nav li {
-	margin-top: -1px !important; 
-	margin-bottom: 1px !important; 
+	margin-top: 0px !important;
+	margin-bottom: 1px !important;
 	border-top: none; 
-	border-bottom-width: 1px; 
+	border-bottom-width: 1px;
+	width: 13em;
+	padding-bottom: 1px !important;
 }
 .tabs-bottom li .inplace_field { /* is this still used? */
 	width: 20em; 
@@ -483,7 +492,7 @@ div.th_remark {
 	background: rgb(255,204,102);
 	z-index: 9999;
 }
-.tabtitle { width: 10em; }
+.tabtitle { width: 9em; }
 #servaddbutton {
 	position: absolute;
 }
@@ -564,12 +573,10 @@ svg path {
 	-moz-user-select: none;
 	-webkit-user-select: none;
 }
-/* Are these two still used? */
-.connbuttonNormal {
-	color: black !important;
-}
-connbuttonHigh {
-	color: red !important;
+
+.ui-resizable-se {
+	bottom: -2px !important;
+	right: -4px !important;
 }
 
 div.node {
@@ -700,6 +707,7 @@ div.tWLSheader {
 div.tWLStitle {
 	top: 50%;
 	transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
 }
 div.WLScontent {
 	position: absolute;
@@ -724,6 +732,7 @@ div.tWRDheader {
 div.tWRDtitle {
 	top: 50%;
 	transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
 }
 div.WRDcontent {
 	position: absolute;
@@ -747,6 +756,7 @@ div.tEQTheader {
 div.tEQTtitle {
 	top: 50%;
 	transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
 }
 div.EQTcontent {
 	position: absolute;
@@ -800,6 +810,7 @@ div.tUNKheader {
 div.tUNKtitle {
 	top: 50%;
 	transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
 }
 
 /* Mods for Notes */
