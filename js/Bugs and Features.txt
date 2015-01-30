@@ -6,7 +6,8 @@ BUGS
 Better handling with shared/remote projects when the browser uses multiple projectgroups.
 Be consistent: cloud, unknown link, unexplored link.
 When printing CCF, the accordions are not always all expanded.
-SizeDOMElements is not called when browser goes fullscreen. The bottm tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?When opening a project in a browser with different localisation, the remarks/notes on cloud-vulnerabilities become multilingual.
+SizeDOMElements is not called when browser goes fullscreen. The bottm tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?
+When opening a project in a browser with different localisation, the remarks/notes on cloud-vulnerabilities become multilingual.
 Must store current group in Preferences, and make error messages more appropriate when swapping groups.
 Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?
 Create a new project, change its details to Shared, then switch to it: error message about project not being on the server.
@@ -15,7 +16,6 @@ Third party cookies must be enabled for localStorage to function. This is a conc
 Change details of a project on the server but not active: function not implemented.
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 Editing the CCF clusters for a large list of nodes is troublesome. Idea: make clusters collapsable.
-In a threat report window, edit a field, then cancel with Escape: the window will close.
 
 TODO
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.

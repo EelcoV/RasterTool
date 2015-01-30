@@ -2833,6 +2833,7 @@ function initChecklistsDialog(type) {
 	var offsets = {'tWLS': 100, 'tWRD': 130, 'tEQT': 160};
 	$("#checklist_"+type).dialog({
 		title: _("Default vulnerabilities for new nodes of type '%%'", Rules.nodetypes[type]),
+		closeOnEscape: false,
 		minWidth: 725,
 		minHeight: 180,
 		position: {my: 'left+'+(offsets[type]+50)+' top+'+offsets[type], at: 'left top', of: '#tabs', collision: 'fit'},
@@ -3045,6 +3046,7 @@ function displayThreatsDialog(cid,event) {
 	$("#componentthreats").dialog({
 		'title': _("Vulnerability assessment for '%%'", H(c.title)) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
 		position: {my: 'left top', at: 'right', of: event, collision: 'fit'},
+		closeOnEscape: false,
 		open: function() {
 			var o = $("#componentthreats").dialog("widget").offset();
 			// Fade in the menu, and move it left & down, but only move it if the call to "open" did not adjust the position
