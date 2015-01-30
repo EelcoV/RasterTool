@@ -50,7 +50,6 @@
 		494B6F6A18796E9D00400328 /* eventsource.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = eventsource.js; sourceTree = "<group>"; };
 		494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.editinplace-2.2.1.js"; sourceTree = "<group>"; };
 		494B6F7018796E9D00400328 /* jquery.json-2.2.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.json-2.2.min.js"; sourceTree = "<group>"; };
-		494B6F7918796E9D00400328 /* jquery.jsPlumb-1.5.5-min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.jsPlumb-1.5.5-min.js"; sourceTree = "<group>"; };
 		494B6F7A18796E9D00400328 /* layout.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = layout.odg; sourceTree = "<group>"; };
 		494B6F7C18796E9D00400328 /* checkall.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = checkall.sh; sourceTree = "<group>"; };
 		494B6F7D18796E9D00400328 /* jsl */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = jsl; sourceTree = "<group>"; };
@@ -159,7 +158,6 @@
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.3.js"; sourceTree = "<group>"; };
-		495591E01A7AB6C60016B001 /* jquery-2.1.3.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.3.min.js"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
 		498BB2B91A2626AF00B12844 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-hi.png"; sourceTree = "<group>"; };
@@ -170,7 +168,6 @@
 		49BEC98B1A03A6AD00D1E19D /* manual-0.9.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "manual-0.9.1.pdf"; sourceTree = "<group>"; };
 		49C780321A76C3120003863C /* jquery-migrate-1.2.1.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-migrate-1.2.1.js"; sourceTree = "<group>"; };
 		49C780331A76C3120003863C /* jquery-ui-1.11.2.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.11.2.js"; sourceTree = "<group>"; };
-		49C780341A76C3120003863C /* jquery-ui-1.11.2.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.11.2.min.js"; sourceTree = "<group>"; };
 		49CA2DF91A7A54010085252F /* ui-bg_flat_55_999999_40x100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ui-bg_flat_55_999999_40x100.png"; sourceTree = "<group>"; };
 		49CA2DFA1A7A54010085252F /* ui-bg_flat_75_aaaaaa_40x100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ui-bg_flat_75_aaaaaa_40x100.png"; sourceTree = "<group>"; };
 		49CA2DFB1A7A54010085252F /* ui-bg_glass_45_0078ae_1x400.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ui-bg_glass_45_0078ae_1x400.png"; sourceTree = "<group>"; };
@@ -311,15 +308,12 @@
 				494B6F6918796E9D00400328 /* encodedecode.js */,
 				494B6F6A18796E9D00400328 /* eventsource.js */,
 				495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */,
-				495591E01A7AB6C60016B001 /* jquery-2.1.3.min.js */,
 				49C780321A76C3120003863C /* jquery-migrate-1.2.1.js */,
 				49C780331A76C3120003863C /* jquery-ui-1.11.2.js */,
-				49C780341A76C3120003863C /* jquery-ui-1.11.2.min.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
 				494B6F7018796E9D00400328 /* jquery.json-2.2.min.js */,
 				49B28498187C191A00DCED98 /* jquery.jsPlumb-1.5.5.js */,
-				494B6F7918796E9D00400328 /* jquery.jsPlumb-1.5.5-min.js */,
 				494B6F7B18796E9D00400328 /* lint */,
 				494B6F8118796E9D00400328 /* rasterMain.js */,
 				494B6F7F18796E9D00400328 /* rasterComponent.js */,
