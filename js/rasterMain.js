@@ -3404,13 +3404,13 @@ function expandAllSingleF(sid) {
 		}
 		var el = $('#sfaccordion'+sid+'_'+cm.id);
 
-		if (el.accordion("option","active")===false) {
-			el.accordion("option", "active", 0);
+		if (el.accordion('option','active')===false) {
+			el.accordion('option', 'active', 0);
 			// The following is not necessary during normal use, but appears to be required when
 			// expandAllSingleF() is called from window.onBeforePrint, or when stepping through
 			// this loop using a debugger ?!
 			$('#sfaccordion'+sid+'_'+cm.id+' .ui-accordion-content').css('height','').css('overflow','').css('padding-top','').css('padding-bottom','');
-			el.accordion("refresh");
+			el.accordion('refresh');
 		}
 	}
 }
@@ -3423,7 +3423,7 @@ function collapseAllSingleF(sid) {
 			bugreport("Found a component of type actor. That should not exist.", "collapseAllSingleF");
 			continue;
 		}
-		$('#sfaccordion'+sid+'_'+cm.id).accordion("activate",false);
+		$('#sfaccordion'+sid+'_'+cm.id).accordion('option','active',false);
 	}
 }
 
@@ -3557,10 +3557,10 @@ function expandAllCCF() {
 	for (it.first(); it.notlast(); it.next()) {
 		var id = it.getNodeClusterid();
 		var el = $('#shfaccordion'+id);
-		if (el.accordion("option","active")===el)
+		if (el.accordion('option','active')===el)
 			el.click();
-		else if (el.accordion("option","active")===false)
-			el.accordion("activate",0);
+		else if (el.accordion('option','active')===false)
+			el.accordion('option','active',0);
 	}
 }
 
@@ -3568,7 +3568,7 @@ function collapseAllCCF() {
 	var it = new NodeClusterIterator({project: Project.cid});
 	for (it.first(); it.notlast(); it.next()) {
 		var id = it.getNodeClusterid();
-		$('#shfaccordion'+id).accordion("activate",false);
+		$('#shfaccordion'+id).accordion('option','active',false);
 	}
 }
 
