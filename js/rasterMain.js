@@ -203,10 +203,6 @@ $(function() {
 	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
 	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
 	$('#helptabs a').eq(3).attr('href', _("../help/About.html") );
-	$('#helptabs').tabs({
-		cache: true,
-		heightStyle: "fill"
-	});
 	$('#helptabs li:last-of-type').css("margin-left","10px");
 	$('#helppanel').dialog({
 		title: _("Information on using this tool"),
@@ -216,11 +212,17 @@ $(function() {
 		width: 600,
 		minWidth: 470,
 		maxWidth: 800,
+		open: function(event) {
+			$('#helptabs ul').width($('#helppanel').width()-14);
+		},
 		resize: function(event,ui) {
 			$('#helptabs ul').width(ui.size.width-36);
 		}
 	});
 	$('#helppanel').dialog("widget").css("overflow","visible").addClass("donotprint");
+	$('#helptabs').tabs({
+		heightStyle: "content"
+	});
 	$('#helpbutton img').click( function() {
 		$('#helppanel').dialog("open");
 	});

@@ -40,7 +40,7 @@ body {
 	-webkit-transform-origin: 0 0;
 	-o-transform-origin:  0 0;
 }	
-.ui-tabs-nav li a { width: 8em; overflow: hidden; z-index: 150;}
+.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150;}
 .longlink { width: 12.5em !important; }
 .tabcloseicon {margin-top:0.4em; cursor: pointer;}
 
@@ -475,10 +475,11 @@ div.th_remark {
 .tabs-bottom .ui-tabs-nav li.ui-tabs-selected { margin-top: -2px !important; }
 .tabs-bottom .ui-tabs-nav li {
 	margin-top: 0px !important;
-	margin-bottom: 0px !important;
+	margin-bottom: 1px !important;
 	border-top: none; 
 	border-bottom-width: 1px;
-	width: 12em;
+	width: 13em;
+	padding-bottom: 1px !important;
 }
 .tabs-bottom li .inplace_field { /* is this still used? */
 	width: 20em; 
