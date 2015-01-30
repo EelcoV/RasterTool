@@ -17,7 +17,6 @@ See LICENSE.md
 <link rel="shortcut icon" href="../img/Raster.png">
 <script type="text/javascript" src="../js/eventsource.js"></script>
 <script type="text/javascript" src="../js/jquery-2.1.3.js"></script>
-<script type="text/javascript" src="../js/jquery-migrate-1.2.1.js"></script>
 <script type="text/javascript" src="../js/jquery-ui-1.11.2.js"></script>
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
 <script type="text/javascript" src="../js/jquery.jsPlumb-1.5.5.js"></script>

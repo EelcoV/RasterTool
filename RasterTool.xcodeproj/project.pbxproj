@@ -165,7 +165,6 @@
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		49B28498187C191A00DCED98 /* jquery.jsPlumb-1.5.5.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery.jsPlumb-1.5.5.js"; sourceTree = "<group>"; };
 		49BEC98B1A03A6AD00D1E19D /* manual-0.9.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "manual-0.9.1.pdf"; sourceTree = "<group>"; };
-		49C780321A76C3120003863C /* jquery-migrate-1.2.1.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-migrate-1.2.1.js"; sourceTree = "<group>"; };
 		49C780331A76C3120003863C /* jquery-ui-1.11.2.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.11.2.js"; sourceTree = "<group>"; };
 		49CA2DF91A7A54010085252F /* ui-bg_flat_55_999999_40x100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ui-bg_flat_55_999999_40x100.png"; sourceTree = "<group>"; };
 		49CA2DFA1A7A54010085252F /* ui-bg_flat_75_aaaaaa_40x100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ui-bg_flat_75_aaaaaa_40x100.png"; sourceTree = "<group>"; };
@@ -307,7 +306,6 @@
 				494B6F6918796E9D00400328 /* encodedecode.js */,
 				494B6F6A18796E9D00400328 /* eventsource.js */,
 				495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */,
-				49C780321A76C3120003863C /* jquery-migrate-1.2.1.js */,
 				49C780331A76C3120003863C /* jquery-ui-1.11.2.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
