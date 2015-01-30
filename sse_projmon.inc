@@ -20,7 +20,7 @@ See LICENSE.md
 define("RASTERDIR", "SharedProjects/");	// Prefix for location of shared Raster files
 define("INDEXFILE", RASTERDIR . "projectindex.csv");	// Location of Index file
 define("DEBUGINFO", false);		// Show extra info when errors are reported
-define("NOPINTERVAL", 60);	// Interval between successive NOPs (in *seconds*)
+define("NOPINTERVAL", 30);	// Interval between successive NOPs (in *seconds*)
 define("IDLETIME", 200000);	// Interval between checks for file changes (in *microseconds*)
 
 define("NOPROJECT", "NO PROJECT");
