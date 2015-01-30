@@ -12,6 +12,8 @@ The UI consists of a main window containing three sections: diagrams, single ele
 .ui-widget {font-size:11px !important; 
 }
 
+.ui-state-focus { outline: none; }
+
 body {
 	padding: 0px;
 	border: 0px;
@@ -40,7 +42,7 @@ body {
 	-webkit-transform-origin: 0 0;
 	-o-transform-origin:  0 0;
 }	
-.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150;}
+.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150; outline: none;}
 .longlink { width: 12.5em !important; }
 .tabcloseicon {margin-top:0.4em; cursor: pointer;}
 
