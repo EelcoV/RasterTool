@@ -163,6 +163,7 @@ _t["A connection must be added to a node of type %%."] = "Een verbinding naar ee
 _t["Connections must be added to nodes of type %%."] = "Verbindingen naar componenten van type %% moeten worden toegevoegd.";
 _t["A connection must be removed from a node of type %%."] = "Een verbinding naar een component van type %% moet worden verwijderd.";
 _t["Connections must be removed from nodes of type %%."] = "Verbindingen naar componenten van type %% moeten worden verwijderd.";
+_t["Node is OK; there are no warnings."] = "Component is in orde; er zijn geen waarschuwingen.";
 _t["wireless link"] = "draadloos";
 _t["wired link"] = "kabel";
 _t["equipment"] = "apparatuur";

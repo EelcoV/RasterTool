@@ -540,7 +540,6 @@ div.th_remark {
 /* Basic Node templates */
 /* round dot on top of nodes */
 ._jsPlumb_endpoint { 
-	z-index: -1; 
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
@@ -553,6 +552,9 @@ div.th_remark {
 	-ms-user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
+}
+._jsPlumb_hover {
+	visibility: visible !important;
 }
 /*
 Work around a bug in Safari, where the class "_jsPlumb_connector" suddenly changes to

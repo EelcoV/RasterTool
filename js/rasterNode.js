@@ -41,15 +41,7 @@
  *	settitle(str,suff): sets the header text to 'str' and suffix 'suff'.
  *	changesuffix(str): change the suffix to 'str' if allowed, and update all other nodes in the class.
  *	htmltitle(): returns this title, properly html formatted when the node has a suffix (except for css classes)
- *	edgecount(cn): counts the number of edges to nodes of each type
- *		cn (optional) is the jsPlumb list of all connections.
- *	edgeUnderflow(es): determines to which node-types connections can still
- *		be allowed. es (optional) is the result from a preview edgecount
- *	getreport(es): returns a array of strings describing which connection
- *		rules are violated, in normal English. es is optional
- *	connectionsOK(es): returns whether all connection rules are obeyed
- *		es is optional
- *	setmarker(cn): sets or hides the rule violation marker. cn is optional.
+ *	setmarker(): sets or hides the rule violation marker.
  *	hidemarker(): hides the rule violation marker.
  *	showmarker(): shows the rule violation marker.
  *	setlabel(): sets the color.
@@ -64,6 +56,12 @@
  *		not its connections. Fade-in if effect==true.
  *	unpaint: hide and remove the HTML document object for this node, including
  *		all its connections.
+ *	_edgecount(): counts the total number of edges to other nodes, by type.
+ *	_edgeUnderflow(ec): determines to which node-types connections can still
+ *		be allowed; ec is the result from a preview edgecount.
+ *	_getreport(): returns a array of strings describing which connection
+ *		rules are violated, in natural language.
+ *	_connectionsOK(): returns whether all connection rules are obeyed.
  *	_showpopupmenu(x,y): populate and display the popup menu.
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
@@ -136,6 +134,7 @@ Node.destroyselection = function () {
 
 Node.prototype = {
 	destroy: function(effect) {
+		var jsPlumb = Service.get(this.service)._jsPlumb;
 		if (this.centerpoint) jsPlumb.deleteEndpoint(this.centerpoint);
 		if (this.dragpoint) jsPlumb.deleteEndpoint(this.dragpoint);
 		if (this.component!=null) {
@@ -208,6 +207,7 @@ Node.prototype = {
 	},
 	
 	setposition: function(px,py,snaptogrid) {
+		var jsPlumb = Service.get(this.service)._jsPlumb;
 		var r = $('#tab_diagrams').position();
 		var fh = $('.fancyworkspace').height();
 		var fw = $('.fancyworkspace').width();
@@ -235,7 +235,7 @@ Node.prototype = {
 		this.position.y = py;
 		this.store();
 		$(this.jnid).css("left",px+"px").css("top",py+"px");
-		jsPlumb.repaint(this.nid);
+		jsPlumb.revalidate(this.nid);
 		
 		dO.left = (px * ow)/fw;
 		dO.top = (py * oh)/fh;
@@ -370,9 +370,10 @@ Node.prototype = {
 		return H(this.title) + (this.suffix!='' ? '<sup>&thinsp;'+H(this.suffix)+'</sup>' : '');
 	},
 	
-	edgecount: function (cn) {
+	_edgecount: function () {
+		var jsPlumb = Service.get(this.service)._jsPlumb;
 		var C = {'tWLS':0, 'tWRD':0, 'tEQT':0, 'tACT':0, 'tUNK':0, 'TOTAL':0};
-		var conn = (cn ? cn : jsPlumb.getConnections({scope:'center'}));
+		var conn = jsPlumb.getConnections({scope:'center'});
 		for (var i=0; i<conn.length; i++) {
 			/* Use conn[i].xxxx, where xxxx is one of:
 			 * sourceId, targetId, source, target, sourceEndpoint, targetEndpoint, connection
@@ -389,22 +390,22 @@ Node.prototype = {
 		return C;
 	},
 	
-	edgeUnderflow: function(C) {
+	_edgeUnderflow: function(ec) {
 		var opt = [];
 		for (var t in Rules.nodetypes) {
-			if (t!='TOTAL' && C[t]<Rules.edgeMax[this.type][t]) opt.push(Rules.nodetypes[t]);
+			if (t!='TOTAL' && ec[t]<Rules.edgeMax[this.type][t]) opt.push(Rules.nodetypes[t]);
 		}
 		return opt;
 	},
 	
-	getreport: function (es) {
+	_getreport: function () {
 		var report = [];
-		var C = (es ? es : this.edgecount() );
+		var C = this._edgecount();
 		var minhave = Rules.totaledgeMin[this.type];
 		var maxhave = Rules.totaledgeMax[this.type];
 		if (C['TOTAL']<Rules.totaledgeMin[this.type]) {
 			var toolittle = minhave-C['TOTAL'];
-			var options = arrayJoinAsString(this.edgeUnderflow(C), _("or"));
+			var options = arrayJoinAsString(this._edgeUnderflow(C), _("or"));
 			var unlimited = (maxhave==99);
 			var conns = plural(_("connection"),_("connections"),minhave);
 			report.push( 
@@ -451,8 +452,8 @@ Node.prototype = {
 		return report;
 	},
 	
-	connectionsOK: function(es) {
-		var C = (es ? es : this.edgecount() );
+	_connectionsOK: function() {
+		var C = this._edgecount();
 		if (C['TOTAL']<Rules.totaledgeMin[this.type])
 			return false;
 		if (C['TOTAL']>Rules.totaledgeMax[this.type] && Rules.totaledgeMax[this.type]>-1)
@@ -466,11 +467,10 @@ Node.prototype = {
 		return true;
 	},
 	
-	setmarker: function(cn) {
+	setmarker: function() {
 		if (this.type=='tNOT')
 			return;
-		var es = this.edgecount( (cn ? cn : jsPlumb.getConnections({scope:'center'})) );
-		if (!this.connectionsOK(es)) {
+		if (!this._connectionsOK()) {
 			$('#nodeMagnitude'+this.id).hide();
 			this.showmarker();
 		} else {
@@ -510,7 +510,7 @@ Node.prototype = {
 		// can be connected to a node of that same type.
 		if (this.id==dst.id)
 			return;
-		var C = this.edgecount();
+		var C = this._edgecount();
 		/* Node has C['TOTAL'] edges, C[t] per type t; this includes one edge
 		 * to the node of type dst.type.
 		 * Disallow the edge only if either the maximum total number of edges,
@@ -541,6 +541,7 @@ Node.prototype = {
 	},
 	
 	attach_center: function(dst) {
+		var jsPlumb = Service.get(this.service)._jsPlumb;
 		var edge = jsPlumb.connect({
 			sourceEndpoint: this.centerpoint,
 			targetEndpoint: dst.centerpoint,
@@ -585,9 +586,8 @@ Node.prototype = {
 		dst.connect.splice( i,1 );		
 		this.store();
 		dst.store();
-		var getcon = jsPlumb.getConnections({scope:'center'});
-		this.setmarker(getcon);
-		dst.setmarker(getcon);
+		this.setmarker();
+		dst.setmarker();
 		RefreshNodeReportDialog();
 	},
 
@@ -623,6 +623,7 @@ Node.prototype = {
 	},
 	
 	paint: function(effect) {
+		var jsPlumb = Service.get(this.service)._jsPlumb;
 		if (this.position.x<0 || this.position.y<0
 		 || this.position.x>3000 || this.position.y>3000) {
 		 	bugreport("extreme values of node '"+H(this.title)+"' corrected", "Node.paint");
@@ -676,7 +677,6 @@ Node.prototype = {
 			$(this.jnid).css("display", "block");
 		this.setposition(this.position.x, this.position.y, false);
 		var containmentarr = [];
-//		$(this.jnid).draggable({
 		jsPlumb.draggable($(this.jnid), {
 			containment: 'parent',
 			distance: 10,	// prevent drags when clicking the menu activator
@@ -717,27 +717,21 @@ Node.prototype = {
 				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : "TopCenter"),
 				isSource: true,
 				isTarget: false,
-				endpointsOnTop: true,
 				maxConnections: -1,
-				container: this.nid,
-				dragOptions: {opacity: 0.1}  // a ghost appears next to the dragged dot otherwise
-			}); 
+				source: this.nid
+			});
 			$(this.dragpoint.canvas).css({visibility: "hidden"});
 			this.centerpoint = jsPlumb.addEndpoint(this.nid, {
 				anchor: "Center",
 				paintStyle: {fillStyle:"transparent"},
 				isSource: false,
 				isTarget: false,
-				endpointsOnTop: false,
+				enabled: false,
 				maxConnections: -1, // unlimited
 				scope: 'center'
 			});
 			// Drop connections onto the target node, not on the dragpoint of the target node (as in older versions).
 			jsPlumb.makeTarget(this.nid, {
-				// endpoints will be deleted/hidden in rasterNode.js:initTabDiagrams:connfunction
-// Is this still the case?
-// Chaned value from false to true, without any adverse effects?!?
-// In fact, there appear to be no effects at all???
 				deleteEndpointsOnDetach: true
 			});
 		}
@@ -784,7 +778,7 @@ Node.prototype = {
 			// this.id is like "nodeWxxx", where xxx is the node id number
 			var id = nid2id(this.id);
 			var rn = Node.get(id);
-			var report = rn.getreport();
+			var report = rn._getreport();
 			var s;
 			
 			if (report.length==0)
@@ -880,6 +874,7 @@ Node.prototype = {
 	},
 	
 	unpaint: function() {
+		var jsPlumb = Service.get(this.service)._jsPlumb;
 		if (this.centerpoint) jsPlumb.deleteEndpoint(this.centerpoint);
 		if (this.dragpoint) jsPlumb.deleteEndpoint(this.dragpoint);
 		this.centerpoint=null;
@@ -1011,7 +1006,27 @@ Node.prototype = {
 	}
 };
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+function RefreshNodeReportDialog() {
+	if (! $('#nodereport').dialog("isOpen")) return;
+	// Refresh the contents
+	var rn = Node.get(Node.DialogNode);
+	var report = rn._getreport();
+	var s;
+				
+	if (report.length==0)
+		s = _("Connections are OK; no warnings.");
+	else {
+		s = report.join("<p>");
+	}
+	$("#nodereport").html( s );
+	$("#nodereport").dialog({
+		title: _("Warning report on %%", rn.title+' '+rn.suffix),
+		zIndex: 400
+	});
+	$("#nodereport").dialog("open");
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * NodeIterator: iterate over all Node objects
  *
  * opt: object with options to restrict the iteration to specified items only.

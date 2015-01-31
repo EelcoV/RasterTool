@@ -19,7 +19,7 @@ See LICENSE.md
 <script type="text/javascript" src="../js/jquery-2.1.3.js"></script>
 <script type="text/javascript" src="../js/jquery-ui-1.11.2.js"></script>
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
-<script type="text/javascript" src="../js/jquery.jsPlumb-1.5.5.js"></script>
+<script type="text/javascript" src="../js/jquery.jsPlumb-1.7.2.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>  
 <script type="text/javascript" src="../js/encodedecode.js"></script>
 <script type="text/javascript" src="../js/rasterMain.js"></script>  

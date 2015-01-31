@@ -157,13 +157,13 @@
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.3.js"; sourceTree = "<group>"; };
+		498768661A7CD56E00D4FE10 /* jquery.jsPlumb-1.7.2.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery.jsPlumb-1.7.2.js"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
 		498BB2B91A2626AF00B12844 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-hi.png"; sourceTree = "<group>"; };
 		499804E4187F29D10063E8C5 /* qm-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-lo.png"; sourceTree = "<group>"; };
 		499A6B9F1A72D97A0047E182 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
-		49B28498187C191A00DCED98 /* jquery.jsPlumb-1.5.5.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery.jsPlumb-1.5.5.js"; sourceTree = "<group>"; };
 		49BEC98B1A03A6AD00D1E19D /* manual-0.9.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "manual-0.9.1.pdf"; sourceTree = "<group>"; };
 		49C780331A76C3120003863C /* jquery-ui-1.11.2.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.11.2.js"; sourceTree = "<group>"; };
 		49CA2DF91A7A54010085252F /* ui-bg_flat_55_999999_40x100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ui-bg_flat_55_999999_40x100.png"; sourceTree = "<group>"; };
@@ -309,7 +309,7 @@
 				49C780331A76C3120003863C /* jquery-ui-1.11.2.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
-				49B28498187C191A00DCED98 /* jquery.jsPlumb-1.5.5.js */,
+				498768661A7CD56E00D4FE10 /* jquery.jsPlumb-1.7.2.js */,
 				494B6F7B18796E9D00400328 /* lint */,
 				494B6F8118796E9D00400328 /* rasterMain.js */,
 				494B6F7F18796E9D00400328 /* rasterComponent.js */,

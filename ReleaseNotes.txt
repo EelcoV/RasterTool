@@ -16,6 +16,10 @@ for specifics.
 The tool is accessible via the URL http://yourwebserver/path/public_group/ .
 Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
+Februari 2014
+=============
+* Internal changes (library upgrades) and small bug fixes.
+
 December 2014
 =============
 * A new analysis tool is available: Longlist.

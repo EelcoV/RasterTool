@@ -20,6 +20,7 @@
  *		necessary to avoid painting them twice.
  *	_loaded: boolean, indicates whether all DOM elements have been created;
  *		necessary to avoid painting on non-existing DIVs.
+ *	_jsPlumb: instance of jsPlumb for this service and workspace.
  * Methods:
  *	destroy(): destructor for this object.
  *	settitle(t): change the title to 't' (50 chars max). The actual title may receive
@@ -44,6 +45,19 @@ var Service = function(id) {
 	this.title = "";
 	this._painted=false;
 	this._loaded=false;
+	this._jsPlumb = jsPlumb.getInstance({
+		EndpointStyle: {
+			lineWidth: 10,
+			fillStyle: '#aaa'
+		},
+		EndpointHoverStyle: {
+			fillStyle: '#666',
+			strokeStyle: '#000'
+		},
+		DragOptions: { cursor: 'move' },
+		Endpoint: [ "Dot", { radius: 6 } ]
+	});
+	this._jsPlumb.bind('connection', connfunction );
 	
 	this.store();
 	Service._all[this.id]=this;
@@ -121,7 +135,7 @@ Service.prototype = {
 		 */
 		for (it.first(); it.notlast(); it.next()) {
 			var rn = it.getnode();
-			jsPlumb.detachAllConnections(rn.nid);
+			this._jsPlumb.detachAllConnections(rn.nid);
 		}
 		for (it.first(); it.notlast(); it.next()) {
 			rn = it.getnode();
@@ -198,6 +212,10 @@ Service.prototype = {
 		});
 		
 		if (this._painted) return;
+
+		this._jsPlumb.setContainer('diagrams_workspace'+this.id);
+		// Delay all jsPlumb paint operations
+		this._jsPlumb.setSuspendDrawing(true);
 		/* First paint all the nodes, before drawing the connectors */
 		var it = new NodeIterator({service: this.id});
 		for (it.first(); it.notlast(); it.next())
@@ -218,8 +236,8 @@ Service.prototype = {
 					rn.attach_center(dst);
 			}
 		}
+		this._jsPlumb.setSuspendDrawing(false, true);
 		Service.cid = this.id;
-		//$('a[href=#diagram'+this.id+']').next().css('z-index','0');
 		this._painted=true;
 	},
 
@@ -240,6 +258,23 @@ Service.prototype = {
 		localStorage[key] = this._stringify();
 	}
 };
+
+function connfunction(data) {
+	var src = Node.get(nid2id(data.sourceId));
+	var dst = Node.get(nid2id(data.targetId));
+	/* There are two times when this function is called:
+	 * when a dragpoint is dropped on a target, and
+	 * when two center points are connected programmatically.
+	 * We distinguish these cases by the scope
+	 */
+	if (data.sourceEndpoint.scope == 'center') {
+		src.setmarker();
+		dst.setmarker();
+	} else {
+		this.detach(data.connection);
+		src.try_attach_center(dst);
+	}
+}
 
 var RectDragOrigin = {left:0, top:0};
 var ScrollerDragging = false;

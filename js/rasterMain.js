@@ -396,7 +396,7 @@ function _(s) {
 	var str = _t[s];
 	if (!str) {
 		// No localisation available. Default to English version
-//		if (DEBUG) {console.log("_t[\"" + s + "\"] = \"" + s + "\";");}
+		if (DEBUG) {console.log("_t[\"" + s + "\"] = \"" + s + "\";");}
 		str=s;
 	}
 	// Replace %1, %2, ... %9 by the first, second, ... ninth argument.
@@ -1127,6 +1127,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		}
 	}
 	catch (e) {
+		if (DEBUG) console.log("Error: "+e.message);
 		if (!showerrors) return null;
 		errdialog = $('<div></div>');
 		errdialog.append('<p>' + strsource + ' contains an error:</p>\
@@ -2732,39 +2733,7 @@ function initTabDiagrams() {
 	$('#mi_scpurple').mouseup( selcolorfunc('purple') );
 	$('#mi_scgrey').mouseup( selcolorfunc('grey') );
 	$('#mi_scedit').mouseup( showLabelEditForm );
-	jsPlumb.Defaults.EndpointStyle = {
-		lineWidth: 10,
-		fillStyle: '#aaa'
-	};
-	jsPlumb.Defaults.EndpointHoverStyle = {
-		fillStyle: '#666',
-		strokeStyle: '#000'
-	};
-	jsPlumb.Defaults.DragOptions = { cursor: 'move' };
-	jsPlumb.Defaults.Endpoint = [ "Dot", { radius: 6 } ];
-	var connfunction = function(data) {
-			var src = Node.get(nid2id(data.sourceId));
-			var dst = Node.get(nid2id(data.targetId));
-			/* There are two times when this function is called:
-			 * when a dragpoint is dropped on a target, and
-			 * when two center points are connected programmatically.
-			 * We distinguish these cases by the scope
-			 */
-			if (data.sourceEndpoint.scope == 'center') {
-				var getcon = jsPlumb.getConnections({scope:'center'});
-				src.setmarker(getcon);
-				dst.setmarker(getcon);
-			} else {
-				src.try_attach_center(dst);
-				// Delete the temporary eindpoint, and hide the source endpoint
-				jsPlumb.deleteEndpoint(data.targetEndpoint);
-// The following line does not work. In fact, the div is already hidden.
-// Problem is that there are three (!) endpoints within the node at this stage?!
-				$(data.sourceEndpoint.canvas).css({visibility: 'hidden'});
-			}
-		};
-	jsPlumb.bind('connection', connfunction ); 
-
+	
 	var addhandler = function(typ) {
 		return function() {
 			var t = new Threat(typ);
@@ -3106,26 +3075,6 @@ function arrayJoinAsString(a,str) {
 	if (a.length==1) return a[0];
 	var last = a.pop();
 	return a.join(", ")	+ " " + str + " " + last;
-}
-
-function RefreshNodeReportDialog() {
-	if (! $('#nodereport').dialog("isOpen")) return;
-	// Refresh the contents
-	var rn = Node.get(Node.DialogNode);
-	var report = rn.getreport();
-	var s;
-				
-	if (report.length==0)
-		s = _("Connections are OK; no warnings.");
-	else {
-		s = report.join("<p>");
-	}
-	$("#nodereport").html( s );
-	$("#nodereport").dialog({
-		title: _("Warning report on %%", rn.title+' '+rn.suffix),
-		zIndex: 400
-	});
-	$("#nodereport").dialog("open");
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
