@@ -2226,7 +2226,7 @@ function initOptionsPanel() {
 function bottomTabsCloseHandler(event) {
 	var p = Project.get(Project.cid);
 	if (p.services.length==1) {
-		$(elem).effect("pulsate", { times:2 }, 200);
+		$('#diagrams_workspace'+p.services[0]).effect("pulsate", { times:2 }, 400);
 		return;
 	}
 	$('#selectrect').hide();

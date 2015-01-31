@@ -554,6 +554,7 @@ Node.prototype = {
 							var node2 = labelOverlay.component.targetId;
 							jsPlumb.detach(labelOverlay.component);
 							Node.get(nid2id(node1)).detach_center(Node.get(nid2id(node2)));
+							transactionCompleted("Node disconnect");
 						}
 					}
 				}	

@@ -501,7 +501,7 @@ Component.prototype = {
 		for (i=0; i<this.nodes.length; i++) {
 			if (sfx[i]=="")
 				continue;
-			var rn = Node.get(this.nodes[i]);
+			rn = Node.get(this.nodes[i]);
 			j = sfx.indexOf(rn.suffix);
 			if (i!=j) {
 				errors += offender+"contains an duplicate suffix '"+sfx[i]+"'.\n";
