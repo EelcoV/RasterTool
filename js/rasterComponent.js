@@ -432,7 +432,7 @@ Component.prototype = {
 		} else if (this.single != (single===true)) {
 			// Disallow change, flash all visible nodes
 			for (i=0; i<this.nodes.length; i++)
-			  	$("#node"+this.nodes[i]).effect("pulsate", { times:2 }, 200);
+			  	$("#node"+this.nodes[i]).effect("pulsate", { times:2 }, 800);
 			return;
 		} else {
 			// No change

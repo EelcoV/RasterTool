@@ -57,7 +57,7 @@ var Service = function(id) {
 		DragOptions: { cursor: 'move' },
 		Endpoint: [ "Dot", { radius: 6 } ]
 	});
-	this._jsPlumb.bind('connection', connfunction );
+	this._jsPlumb.bind('beforeDrop', dropfunction );
 	
 	this.store();
 	Service._all[this.id]=this;
@@ -154,10 +154,6 @@ Service.prototype = {
 		if (!this._painted) return;
 		if (this.id==Service.cid)
 		$('#nodereport').hide();
-//		jsPlumb.deleteEveryEndpoint();
-//		$('.node').remove();
-//		$('.tinynode').remove();
-// Previous implementation		
 		// Be sure to only remove nedes from this service.
 		var it = new NodeIterator({service: this.id});
 		for (it.first(); it.notlast(); it.next())
@@ -259,21 +255,23 @@ Service.prototype = {
 	}
 };
 
-function connfunction(data) {
+
+/* This function is called before a connection is made when dragging
+ * from the dragpoint of a node onto another node.
+ */
+function dropfunction(data) {
 	var src = Node.get(nid2id(data.sourceId));
 	var dst = Node.get(nid2id(data.targetId));
-	/* There are two times when this function is called:
-	 * when a dragpoint is dropped on a target, and
-	 * when two center points are connected programmatically.
-	 * We distinguish these cases by the scope
-	 */
-	if (data.sourceEndpoint.scope == 'center') {
-		src.setmarker();
-		dst.setmarker();
-	} else {
-		this.detach(data.connection);
-		src.try_attach_center(dst);
-	}
+
+    if (data.scope=="center") {
+        bugreport("Connection in default scope","connfunction");
+        return true;
+    }
+    src.try_attach_center(dst);
+	Service.get(src.service)._jsPlumb.deleteEndpoint(data.dropEndpoint);
+	src.setmarker();
+	dst.setmarker();
+    return false; // prevent creation of DOM elements by jsPlumb.
 }
 
 var RectDragOrigin = {left:0, top:0};

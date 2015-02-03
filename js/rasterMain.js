@@ -2227,7 +2227,7 @@ function initOptionsPanel() {
 function bottomTabsCloseHandler(event) {
 	var p = Project.get(Project.cid);
 	if (p.services.length==1) {
-		$('#diagrams_workspace'+p.services[0]).effect("pulsate", { times:2 }, 400);
+		$('#diagrams_workspace'+p.services[0]).effect("pulsate", { times:2 }, 800);
 		return;
 	}
 	$('#selectrect').hide();
@@ -2575,21 +2575,8 @@ function initTabDiagrams() {
 			}
 		}
 		var nn = new Node(rn.type);
-//		nn.autosettitle(rn.title);
 		nn.changetitle(rn.title);
-/*		if (rn.component!=null) {
-			var rnc = Component.get(rn.component);
-			var nnc= Component.get(nn.component);
-			nnc.setproject(rnc.project);
-			var ts = [].concat(nnc.thrass);
-			for (var i=0; i<ts.length; i++) {
-				var th = ThreatAssessment.get(ts[i]);
-				NodeCluster.removecomponent_threat(nnc.project,nnc.id,th.title,th.type);
-				nnc.removethrass(ts[i]);
-			}
-			nnc.adddefaultthreatevaluations(rnc.id);
-		}
-*/		var fh = $('.fancyworkspace').height();
+		var fh = $('.fancyworkspace').height();
 		var fw = $('.fancyworkspace').width();
 		// Duplicate size and width, but offset the position
 		nn.position.width = rn.position.width;
@@ -2662,7 +2649,7 @@ function initTabDiagrams() {
 		// Start blinking
 		for (var i=0; i<num; i++) {
 			var rn = Node.get(nodes[i]);
-		  	$(rn.jnid).effect("pulsate", { times:10 }, 2000);
+		  	$(rn.jnid).effect("pulsate", { times:10 }, 4000);
 		}
 		rasterConfirm(_("Delete %% %% in selection?", num, plural(_("node"),_("nodes"),num)),
 			_("Are you sure you want to delete all selected nodes?"),

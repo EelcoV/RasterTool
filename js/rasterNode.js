@@ -134,12 +134,13 @@ Node.destroyselection = function () {
 
 Node.prototype = {
 	destroy: function(effect) {
-		var jsPlumb = Service.get(this.service)._jsPlumb;
-		if (this.centerpoint) jsPlumb.deleteEndpoint(this.centerpoint);
-		if (this.dragpoint) jsPlumb.deleteEndpoint(this.dragpoint);
+		var jsP = Service.get(this.service)._jsPlumb;
+//		if (this.centerpoint) jsP.deleteEndpoint(this.centerpoint);
+//		if (this.dragpoint) jsP.deleteEndpoint(this.dragpoint);
 		if (this.component!=null) {
 			var cm = Component.get(this.component);
 			cm.removenode(this.id);
+			this.component = null;
 		}
 
 		if (this.id==Node.DialogNode) 
@@ -162,11 +163,11 @@ Node.prototype = {
 		if (effect==undefined || effect==true) 
 			$(this.jnid).effect("explode", 500, function() {
 				var id = nid2id(this.id);
-				$('#node'+id).remove();
+				jsP.remove('node'+id);
 				Node._all[id]=null;
 			});
 		else {
-			$('#node'+this.id).remove();
+			jsP.remove(this.nid);
 			Node._all[this.id]=null;
 		}
 	},
@@ -190,24 +191,11 @@ Node.prototype = {
 			newn.attach_center(
 				Node._all[this.connect[i]] 
 			);
-//		switch (newn.type) {
-//		case 'tACT':
-//			// Do nothing
-//			break;
-//		case 'tUNK':
-//			// TODO: Try to move threat assessments over
-//		default:
-//			// Only add to node clusters if its component is not 'singular'
-//			var cm = Component.get(newn.component);
-//			if (!cm.single)
-//				newn.addtonodeclusters();
-//		}
 		this.destroy(false);
-//		jsPlumb.repaint(this.nid);
 	},
 	
 	setposition: function(px,py,snaptogrid) {
-		var jsPlumb = Service.get(this.service)._jsPlumb;
+		var jsP = Service.get(this.service)._jsPlumb;
 		var r = $('#tab_diagrams').position();
 		var fh = $('.fancyworkspace').height();
 		var fw = $('.fancyworkspace').width();
@@ -235,7 +223,7 @@ Node.prototype = {
 		this.position.y = py;
 		this.store();
 		$(this.jnid).css("left",px+"px").css("top",py+"px");
-		jsPlumb.revalidate(this.nid);
+		jsP.revalidate(this.nid);
 		
 		dO.left = (px * ow)/fw;
 		dO.top = (py * oh)/fh;
@@ -323,8 +311,8 @@ Node.prototype = {
 					var rn = Node.get(cm.nodes[i]);
 					if (rn.service==this.service) {
 						// do not change the title
-						$(this.jnid).effect("pulsate", { times:2 }, 200);
-						$(rn.jnid).effect("pulsate", { times:2 }, 200);
+						$(this.jnid).effect("pulsate", { times:2 }, 800);
+						$(rn.jnid).effect("pulsate", { times:2 }, 800);
 						return;
 					}
 				}
@@ -371,9 +359,9 @@ Node.prototype = {
 	},
 	
 	_edgecount: function () {
-		var jsPlumb = Service.get(this.service)._jsPlumb;
+		var jsP = Service.get(this.service)._jsPlumb;
 		var C = {'tWLS':0, 'tWRD':0, 'tEQT':0, 'tACT':0, 'tUNK':0, 'TOTAL':0};
-		var conn = jsPlumb.getConnections({scope:'center'});
+		var conn = jsP.getConnections({scope:'center'});
 		for (var i=0; i<conn.length; i++) {
 			/* Use conn[i].xxxx, where xxxx is one of:
 			 * sourceId, targetId, source, target, sourceEndpoint, targetEndpoint, connection
@@ -527,22 +515,18 @@ Node.prototype = {
 		  	/* detach the newly attached connection, and flash the element for
 		  	 * visual feedback.
 		  	 */
-		  	$(this.jnid).effect("pulsate", { times:2 }, 200);
-		  	$(dst.jnid).effect("pulsate", { times:2 }, 200);
-			// Line below no longer necessary for jsPlumb 1.5.5, and causes an error if present
-		  	//this.dragpoint.detachAll();
+		  	$(this.jnid).effect("pulsate", { times:2 }, 800);
+		  	$(dst.jnid).effect("pulsate", { times:2 }, 800);
 		} else {
 		 	/* Move the begin and endpoints to the center points */
-			// Line below no longer necessary for jsPlumb 1.5.5, and causes an error if present
-		  	//this.dragpoint.detachAll();
 		  	this.attach_center(dst);
 			transactionCompleted("Node connect");
 		 }
 	},
 	
 	attach_center: function(dst) {
-		var jsPlumb = Service.get(this.service)._jsPlumb;
-		var edge = jsPlumb.connect({
+		var jsP = Service.get(this.service)._jsPlumb;
+		var edge = jsP.connect({
 			sourceEndpoint: this.centerpoint,
 			targetEndpoint: dst.centerpoint,
 			connector: "Straight",
@@ -553,8 +537,10 @@ Node.prototype = {
 						dblclick: function(labelOverlay, originalEvent) {
 							var node1 = labelOverlay.component.sourceId;
 							var node2 = labelOverlay.component.targetId;
-							jsPlumb.detach(labelOverlay.component);
-							Node.get(nid2id(node1)).detach_center(Node.get(nid2id(node2)));
+							var src = Node.get(nid2id(node1));
+							var dst = Node.get(nid2id(node2));
+							jsP.detach(labelOverlay.component);
+							src.detach_center(dst);
 							transactionCompleted("Node disconnect");
 						}
 					}
@@ -623,7 +609,7 @@ Node.prototype = {
 	},
 	
 	paint: function(effect) {
-		var jsPlumb = Service.get(this.service)._jsPlumb;
+		var jsP = Service.get(this.service)._jsPlumb;
 		if (this.position.x<0 || this.position.y<0
 		 || this.position.x>3000 || this.position.y>3000) {
 		 	bugreport("extreme values of node '"+H(this.title)+"' corrected", "Node.paint");
@@ -645,7 +631,6 @@ Node.prototype = {
 		str = str.replace(/_ID_/g, this.id);
 		str = str.replace(/_TY_/g, this.type);
 		str = str.replace(/_CO_/g, (Preferences.label ? this.color : "none"));
-//		str = str.replace(/_DE_/g, Rules.nodetypes[this.type]);
 		$('#diagrams_workspace'+this.service).append(str);
 		this.setmarker();
 
@@ -677,11 +662,10 @@ Node.prototype = {
 			$(this.jnid).css("display", "block");
 		this.setposition(this.position.x, this.position.y, false);
 		var containmentarr = [];
-		jsPlumb.draggable($(this.jnid), {
+		jsP.draggable($(this.jnid), {
 			containment: 'parent',
 			distance: 10,	// prevent drags when clicking the menu activator
 			opacity: 0.8,
-			//helper: 'clone',
 			stop: function(event,ui) {
 				// Reset the node to the grid, if necessary
 				var rn = Node.get( nid2id(this.id) );
@@ -692,7 +676,6 @@ Node.prototype = {
 			},
 			drag: function(event,ui) {
 				var rn = Node.get( nid2id(this.id) );
-//				var r = $('#diagrams_workspace'+rn.service).position();
 				var r = $('#tab_diagrams').offset();
 				var sl = $('#diagrams'+rn.service).scrollLeft();
 				var st = $('#diagrams'+rn.service).scrollTop();
@@ -712,7 +695,7 @@ Node.prototype = {
 			}
 		});
 		if (this.type!='tNOT') {
-			this.dragpoint = jsPlumb.addEndpoint(this.nid, {
+			this.dragpoint = jsP.addEndpoint(this.nid, {
 				// For clouds, the dragpoint is slightly off-center.
 				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : "TopCenter"),
 				isSource: true,
@@ -721,7 +704,7 @@ Node.prototype = {
 				source: this.nid
 			});
 			$(this.dragpoint.canvas).css({visibility: "hidden"});
-			this.centerpoint = jsPlumb.addEndpoint(this.nid, {
+			this.centerpoint = jsP.addEndpoint(this.nid, {
 				anchor: "Center",
 				paintStyle: {fillStyle:"transparent"},
 				isSource: false,
@@ -731,7 +714,7 @@ Node.prototype = {
 				scope: 'center'
 			});
 			// Drop connections onto the target node, not on the dragpoint of the target node (as in older versions).
-			jsPlumb.makeTarget(this.nid, {
+			jsP.makeTarget(this.nid, {
 				deleteEndpointsOnDetach: true
 			});
 		}
@@ -874,9 +857,9 @@ Node.prototype = {
 	},
 	
 	unpaint: function() {
-		var jsPlumb = Service.get(this.service)._jsPlumb;
-		if (this.centerpoint) jsPlumb.deleteEndpoint(this.centerpoint);
-		if (this.dragpoint) jsPlumb.deleteEndpoint(this.dragpoint);
+		var jsP = Service.get(this.service)._jsPlumb;
+		if (this.centerpoint) jsP.deleteEndpoint(this.centerpoint);
+		if (this.dragpoint) jsP.deleteEndpoint(this.dragpoint);
 		this.centerpoint=null;
 		this.dragpoint=null;
 
@@ -916,9 +899,7 @@ Node.prototype = {
 			s = _("Label");
 		else
 			s = '"' + s + '"';
-//		s += '<span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span>';
 		$('#mi_cc .labeltext').html(s);
-//		$('#nodemenu').attr('style','');
 		$('#nodemenu').css("display", "block");
 		// Remove any previous custom style
 		var limit = $('#diagrams'+Service.cid).offset().top + $('#diagrams'+Service.cid).height();

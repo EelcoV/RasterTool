@@ -556,11 +556,10 @@ div.th_remark {
 ._jsPlumb_hover {
 	visibility: visible !important;
 }
-/*
-Work around a bug in Safari, where the class "_jsPlumb_connector" suddenly changes to
-"[object SVGAnimatedString]" when the mouse moves over the connector.
-._jsPlumb_connector path {
-*/
+._jsPlumb_dragging {
+	/* Dragging connections should be on top */
+	z-index: 200;
+}
 svg path {
 	stroke-width: 3;
 	stroke: #666;
