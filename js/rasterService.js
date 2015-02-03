@@ -232,6 +232,11 @@ Service.prototype = {
 					rn.attach_center(dst);
 			}
 		}
+		for (it.first(); it.notlast(); it.next()) {
+			rn = it.getnode();
+			rn.setmarker();
+		}
+		RefreshNodeReportDialog();
 		this._jsPlumb.setSuspendDrawing(false, true);
 		Service.cid = this.id;
 		this._painted=true;
@@ -269,8 +274,6 @@ function dropfunction(data) {
     }
     src.try_attach_center(dst);
 	Service.get(src.service)._jsPlumb.deleteEndpoint(data.dropEndpoint);
-	src.setmarker();
-	dst.setmarker();
     return false; // prevent creation of DOM elements by jsPlumb.
 }
 

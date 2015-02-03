@@ -135,8 +135,8 @@ Node.destroyselection = function () {
 Node.prototype = {
 	destroy: function(effect) {
 		var jsP = Service.get(this.service)._jsPlumb;
-//		if (this.centerpoint) jsP.deleteEndpoint(this.centerpoint);
-//		if (this.dragpoint) jsP.deleteEndpoint(this.dragpoint);
+		if (this.centerpoint) jsP.deleteEndpoint(this.centerpoint);
+		if (this.dragpoint) jsP.deleteEndpoint(this.dragpoint);
 		if (this.component!=null) {
 			var cm = Component.get(this.component);
 			cm.removenode(this.id);
@@ -151,7 +151,6 @@ Node.prototype = {
 		for (var i=0; i<neighbours.length; i++) {
 			var nb = Node.get(neighbours[i]);
 			this.detach_center( nb );
-			nb.setmarker();
 			if (Node.DialogNode==nb.id) RefreshNodeReportDialog();
 		}
 		
@@ -520,6 +519,9 @@ Node.prototype = {
 		} else {
 		 	/* Move the begin and endpoints to the center points */
 		  	this.attach_center(dst);
+			this.setmarker();
+			dst.setmarker();
+			RefreshNodeReportDialog();
 			transactionCompleted("Node connect");
 		 }
 	},
@@ -557,7 +559,6 @@ Node.prototype = {
 			dst.connect.push(this.id);
 			dst.store();
 		}
-		RefreshNodeReportDialog();
 	},
 	
 	detach_center: function(dst) {
