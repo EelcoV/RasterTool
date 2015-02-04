@@ -190,6 +190,7 @@ Node.prototype = {
 			newn.attach_center(
 				Node._all[this.connect[i]] 
 			);
+		newn.setmarker();
 		this.destroy(false);
 	},
 	
@@ -398,6 +399,7 @@ Node.prototype = {
 			report.push( 
 				(unlimited ? _("Must have at least %% %% ", minhave,conns) : _("Must have %% %% ", minhave,conns))
 				 + (C['TOTAL']>0 ? _(" (you only have %%). ",C['TOTAL']) : _("(you have none)."))
+				 + " "
 				 + _("Add %% %% to a %%.", toolittle, plural(_("connection"),_("connections"),toolittle), options)
 			);
 		}

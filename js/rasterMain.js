@@ -396,7 +396,7 @@ function _(s) {
 	var str = _t[s];
 	if (!str) {
 		// No localisation available. Default to English version
-		if (DEBUG) {console.log("_t[\"" + s + "\"] = \"" + s + "\";");}
+		//if (DEBUG) {console.log("_t[\"" + s + "\"] = \"" + s + "\";");}
 		str=s;
 	}
 	// Replace %1, %2, ... %9 by the first, second, ... ninth argument.
