@@ -3927,8 +3927,13 @@ function nodeClusterReorder(event,ui) {
  * Node dropped onto cluster: only if target is not the node's cluster.
  * Cluster dropped onto node: false.
  * Cluster dropped onto cluster: only if target is not a descendant.
+ *
+ * Note: this callback seems to be called for just about any drag operation. As a quick 
+ * exckusion, return when the current tab is not the CCF tab.
  */
 function allowDrop(elem) {
+	if (Preferences.tab!=2)
+		return false;
 	if (this==elem[0]) return false;
 	// Source and target information
 	var drag_n=null, drag;	// source node and cluster (id)
@@ -3955,6 +3960,7 @@ function allowDrop(elem) {
 	drop_cluster = NodeCluster.get(drop);
 
 	if (drag_cluster==null) return false; // Could have been deleted in drop handler
+	if (drop_cluster==null) return false; // Could have been deleted in drop handler
 	if (drag_cluster.root()!=drop_cluster.root()) return false;
 	
 	if (drag_n!=null) {
