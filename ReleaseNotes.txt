@@ -16,7 +16,7 @@ for specifics.
 The tool is accessible via the URL http://yourwebserver/path/public_group/ .
 Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
-Februari 2014
+February 2014
 =============
 * Internal changes (library upgrades) and small bug fixes.
 

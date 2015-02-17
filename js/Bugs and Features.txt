@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+After upgrade, scrolling within large CCFs is weird. Two competing scroll bars??
 Better handling with shared/remote projects when the browser uses multiple projectgroups.
 Be consistent: cloud, unknown link, unexplored link.
 When printing CCF, the accordions are not always all expanded.
