@@ -3284,13 +3284,12 @@ snippet += "</div>\n";
 		}; };
 		var acc = $('#sfaccordion'+s.id+'_'+cm.id);
 		acc.accordion({
-			changestart: openclose(cm),
-			autoHeight: false,
+			beforeActivate: openclose(cm),
+			heightStyle: 'content',
 			collapsible: true,
-			animated: false,
+			animate: 300,
 			active: (cm.accordionopened ? 0 : false)
 		});
-		acc.accordion("option", "animated", "slide");
 		
 		$(acc.selector + ' .sfa_sortable').sortable({
 			containment: "parent",
@@ -3335,7 +3334,7 @@ snippet += "</div>\n";
  * the accordion is opened or closed.
  */
 function opencloseSFAccordion(cm,sid,event,ui) {
-	cm.setaccordionopened(ui.options.active===0);
+	cm.setaccordionopened(ui.oldPanel.length==0);
 }
 
 function expandAllSingleF(sid) {
@@ -3482,13 +3481,12 @@ function addTDomElements(nc) {
 
 	var acc = $('#shfaccordion'+nc.id);
 	acc.accordion({
-		change: function(event,ui) { nc.setaccordionopened(ui.options.active===0); },
-		autoHeight: false,
+		activate: function(event,ui) { nc.setaccordionopened(ui.oldPanel.length===0); },
+		heightStyle: 'content',
 		collapsible: true,
-		animated: false,
+		animate: 300,
 		active: (nc.accordionopened ? 0 : false)
 	});
-	acc.accordion("option", "animated", "slide");
 	if (nc.childclusters.length + nc.childnodes.length < 2)
 		// Just an empty placeholder for a node cluster that is too small
 		$('#shfaccordion'+nc.id).css("display", "none");
