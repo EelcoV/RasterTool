@@ -538,7 +538,7 @@ Node.prototype = {
 					label: "⊗",
 					cssClass: "connbutton",
 					events: {
-						dblclick: function(labelOverlay, originalEvent) {
+						click: function(labelOverlay, originalEvent) {
 							var node1 = labelOverlay.component.sourceId;
 							var node2 = labelOverlay.component.targetId;
 							var src = Node.get(nid2id(node1));

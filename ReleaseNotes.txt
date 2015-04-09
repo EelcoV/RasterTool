@@ -16,7 +16,12 @@ for specifics.
 The tool is accessible via the URL http://yourwebserver/path/public_group/ .
 Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
-February 2014
+April 2015
+==========
+Connections are now deleted (nodes are disconneted) with a single click on the
+disconnect icon (the circled X). This used to require a double click.
+
+February 2015
 =============
 * Internal changes (library upgrades) and small bug fixes.
 
