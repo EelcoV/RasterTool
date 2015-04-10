@@ -534,6 +534,7 @@ Node.prototype = {
 			sourceEndpoint: this.centerpoint,
 			targetEndpoint: dst.centerpoint,
 			connector: "Straight",
+			scope: 'center',
 			overlays: [[ "Label", {
 					label: "⊗",
 					cssClass: "connbutton",
