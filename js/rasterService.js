@@ -29,8 +29,10 @@
  *		Either settitle() or autosettitle() must be called.
  *	setproject(p): change the project to which this service belongs to the one with id p.
  *	unload(): remove all DOM elements for this service, except nodes.
+ *  removetab(prefix): remove DOM elements for diagrams or single failures
  *	load(): create and set all DOM elements for this service, except nodes.
- *	repaintconnectors: remove and repaint all connections between nodes in this service
+ *  addtabdiagrams(): create and set DOM elements for this service's diagram
+ *  addtabsinglefs(): create and set DOM elements for this service's single failures
  *	unpaintall(): remove all Nodes for this service.
  *	paintall(): create and set all Nodes for this service.
  *	_stringify: create a JSON text string representing this object's data.
@@ -115,49 +117,216 @@ Service.prototype = {
 
 	unload: function() {
 		this.unpaintall();
-		closeDiagramTab(this.id,this.title,'diagrams');
-		closeDiagramTab(this.id,this.title,'singlefs');
+		this.removetab('diagrams');
+		this.removetab('singlefs');
 		this._loaded=false;
 	},
 
+	removetab: function(tabprefix) {
+		// Remove the tab contents
+		$('#'+tabprefix+this.id).remove();
+		// Remove the bottom tab (the one that controls div#tabprefix+sid)
+		$('#'+tabprefix+'_body').find('li[aria-controls='+tabprefix+this.id+']').remove();
+		$('#'+tabprefix+'_body').tabs('refresh');
+		if (tabprefix=='diagrams')
+			$('#scroller_overview'+this.id).remove();
+	},
+
 	load: function() {
-		newDiagramTab(this.id,this.title,'diagrams');
-		newDiagramTab(this.id,this.title,'singlefs');
+		this.addtabdiagrams();
+		this.addtabsinglefs();
+		SizeDOMElements();
 		this._loaded=true;
-//		this.paintall();
 	},
 	
-	repaintconnectors: function() {
-		if (!this._loaded || !this._painted) return;
-		var it = new NodeIterator({service: this.id});	
-		/* First, remove all connectors
-		 * Then, recreate them. This is similar to bottom half of paintall.
-		 */
-		for (it.first(); it.notlast(); it.next()) {
-			var rn = it.getnode();
-			this._jsPlumb.detachAllConnections(rn.nid);
-		}
-		for (it.first(); it.notlast(); it.next()) {
-			rn = it.getnode();
-			for (var j=0; j<rn.connect.length; j++) {
-				var dst = Node.get(rn.connect[j]);
-				if (DEBUG && dst.service!=this.id) 
-					bugreport('inconsistency in connections between nodes','Service.paintall');
-				if (rn.id<dst.id)
-					rn.attach_center(dst);
+	addtabdiagrams: function() {
+		var serviceid = this.id; // For use in event handler functions
+		/* Create a new tab */
+		var snippet = '<li>\
+			<a href="#_PF__I_">\
+			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
+			</a>\
+				<span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
+			</li>\
+			';
+		snippet = snippet.replace(/_T_/g, H(this.title));
+		snippet = snippet.replace(/_I_/g, this.id);
+		snippet = snippet.replace(/_PF_/g, 'diagrams');
+		$(snippet).appendTo( '#diagrams_body .ui-tabs-nav' );
+		
+		/* We have bottom tabs, so have to correct the tab corners */
+		$('#diagrams_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
+		$('a[href^=#diagrams'+this.id+']').dblclick( diagramTabEditStart );
+
+		/* Add content to the new tab */
+		snippet = '\n\
+			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
+			<div id="scroller_overview_I_" class="scroller_overview">\n\
+				<div id="scroller_region_I_" class="scroller_region"></div>\n\
+			</div>\n\
+		';
+		snippet = snippet.replace(/_I_/g, this.id);
+		$('#diagrams_body').append(snippet);
+		snippet = '\n\
+			<h1 class="printonly underlay servicename_I_">_SN_</h1>\n\
+			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
+			<div id="diagrams_workspace_I_" class="fancyworkspace"></div>\n\
+		';
+		snippet = snippet.replace(/_LP_/g, _("Project"));
+		snippet = snippet.replace(/_I_/g, this.id);
+		snippet = snippet.replace(/_SN_/g, H(this.title));
+		snippet = snippet.replace(/_PN_/g, H(Project.get(this.project).title));
+		snippet = snippet.replace(/_PJ_/g, this.project);
+		$('#diagrams'+this.id).append(snippet);
+		$('#diagrams_body').tabs('refresh');
+		$('#diagrams_body ul li').removeClass('ui-corner-top');
+
+		// Update the scroll_region when the workspace is scrolled.
+		$('#diagrams'+this.id).scroll( function(event){
+			if (ScrollerDragging) return;
+			var wst = $('#diagrams'+serviceid).scrollTop();
+			var wsl = $('#diagrams'+serviceid).scrollLeft();
+			var fh = $('.fancyworkspace').height();
+			var fw = $('.fancyworkspace').width();
+			var oh = $('#scroller_overview'+serviceid).height();
+			var ow = $('#scroller_overview'+serviceid).width();
+			$('#scroller_region'+serviceid).css("top",(wst*oh)/fh+"px").css("left",(wsl*ow)/fw+"px");
+		});
+
+		$('#scroller_overview'+this.id).draggable({
+			stop: function(event,ui){
+				var l = $('#scroller_overview'+serviceid).position().left;
+				var w = $('#diagrams'+serviceid).width();
+				$('#scroller_overview'+serviceid).css("right", (w-l) + "px").css("left","");
+			},
+			containment: 'parent',
+			cursor: "move"
+		});
+		$('#diagrams_workspace'+this.id).mousedown( function(evt) {
+			if (evt.button!=0) return; // only do left mousebutton
+			if (evt.eventPhase==Event.BUBBLING_PHASE) return; // Only direct events
+			RectDragOrigin = {left: evt.pageX, top: evt.pageY};
+			$('#selectrect').show().offset({left: evt.pageX, top: evt.pageY}).width(0).height(0);
+			$('#diagrams_workspace'+serviceid).on("mousemove", function(evt) {
+				if (evt.button!=0 || evt.shiftKey || evt.ctrlKey || evt.altKey || evt.metaKey) 
+					return; // only do plain left mousebutton drags
+				// If any text was selected (accidentally, most likely), then deselect it.
+				window.getSelection().removeAllRanges();
+				var w = evt.pageX-RectDragOrigin.left;
+				var h = evt.pageY-RectDragOrigin.top;
+				if (w<0 || h<0) {
+					var o = $('#selectrect').offset();
+					if (w<0) {
+						o.left = RectDragOrigin.left + w;
+						w = -w;
+					}
+					if (h<0) {
+						o.top = RectDragOrigin.top + h;
+						h = -h;
+					}
+					$('#selectrect').offset({left: o.left, top: o.top}).width(w).height(h);
+				} else {
+					$('#selectrect').width(w).height(h);
+				}
+			});
+			removetransientwindows();
+		});
+		$('#diagrams_workspace'+this.id).mouseup( function(evt) {
+			if (evt.button!=0) 
+				return; // only do plain left mousebutton drags
+			if (evt.target.id=="") return; // Only direct events, or drag-stops
+			// Direct click on the workspace, steal the focus from wherever it was.
+			$( document.activeElement ).blur();
+			if (Node.nodesinselection().length==0)
+				$('#selectrect').hide();
+			// If any text was selected (accidentally, most likely), then deselect it.
+			window.getSelection().removeAllRanges();
+			//console.debug("Stole the focus");
+			$('#diagrams_workspace'+serviceid).unbind('mousemove');
+		});
+
+		$('#scroller_region'+this.id).draggable({
+			cursor: 'move',
+			containment: 'parent',
+			drag: function(event, ui) {
+				var rO = $('#scroller_region'+serviceid).position();
+				var fh = $('.fancyworkspace').height();
+				var fw = $('.fancyworkspace').width();
+				var oh = $('#scroller_overview'+serviceid).height();
+				var ow = $('#scroller_overview'+serviceid).width();
+				/* 
+				 */
+				var dtop = (rO.top * fh)/oh;
+				var dleft = (rO.left * fw)/ow;
+				if (dtop<0) dtop=0;
+				if (dleft<0) dleft=0;
+				$('#diagrams'+serviceid).scrollTop(dtop);
+				$('#diagrams'+serviceid).scrollLeft(dleft);
+			},
+			start: function() {
+				ScrollerDragging = true;
+			},
+			stop: function() {
+				ScrollerDragging = false;
 			}
-		}
+		});
+
+		$('.workspace').droppable({
+			accept: '.templatebg,.templatebgNOT',
+			drop: workspacedrophandler
+		});
+	},
+
+	addtabsinglefs: function() {
+		/* Create a new tab */
+		var snippet = '<li>\
+			<a href="#_PF__I_">\
+			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
+			</a>\
+				<span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
+			</li>\
+			';
+		snippet = snippet.replace(/_T_/g, H(this.title));
+		snippet = snippet.replace(/_I_/g, this.id);
+		snippet = snippet.replace(/_PF_/g, 'singlefs');
+		$(snippet).appendTo( '#singlefs_body .ui-tabs-nav' );
+		
+		/* We have bottom tabs, so have to correct the tab corners */
+		$('#singlefs_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
+		$('a[href^=#singlefs'+this.id+']').dblclick( diagramTabEditStart );
+
+		/* Add content to the new tab */
+		snippet = '\n\
+			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
+		';
+		snippet = snippet.replace(/_I_/g, this.id);
+		$('#singlefs_body').append(snippet);
+		snippet = '\n\
+			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n\
+			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
+			<div id="singlefs_workspace_I_" class="workspace plainworkspace"></div>\n\
+		';
+		snippet = snippet.replace(/_LP_/g, _("Project"));
+		snippet = snippet.replace(/_LSF_/g, _("Single failures"));
+		snippet = snippet.replace(/_I_/g, this.id);
+		snippet = snippet.replace(/_SN_/g, H(this.title));
+		snippet = snippet.replace(/_PN_/g, H(Project.get(this.project).title));
+		snippet = snippet.replace(/_PJ_/g, this.project);
+		$('#singlefs'+this.id).append(snippet);
+		$('#singlefs_body').tabs('refresh');
+		$('#singlefs_body ul li').removeClass('ui-corner-top');
 	},
 
 	unpaintall: function() {
 		$('#scroller_overview'+this.id).hide();
 		if (!this._painted) return;
 		if (this.id==Service.cid)
-		$('#nodereport').hide();
-		// Be sure to only remove nedes from this service.
+			$('#nodereport').hide();
+		// Be sure to only remove nodes from this service.
 		var it = new NodeIterator({service: this.id});
 		for (it.first(); it.notlast(); it.next())
 			it.getnode().unpaint();
+		this._jsPlumb.reset();
 		this._painted=false;
 	},
 	
@@ -186,7 +355,6 @@ Service.prototype = {
 			},
 			drag: function(event,ui) {
 				// Drag all nodes in the selection
-//				var nodes = Node.nodesinselection();
 				var dx = (ui.position.left-origpos.left);
 				var dy = (ui.position.top-origpos.top);
 				origpos = ui.position;
@@ -281,218 +449,8 @@ var RectDragOrigin = {left:0, top:0};
 var ScrollerDragging = false;
 var NodesBeingDragged = [];
 
-/* newDiagramTab: draw the HTML DOM elements for service with given id and title
- */
-function newDiagramTab(id,title,tabprefix) {	
-	/* Create a new tab */
-	var snippet = '<li>\
-		<a href="#_PF__I_">\
-		  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
-		</a>\
-		    <span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
-		</li>\
-		';
-	snippet = snippet.replace(/_T_/g, H(title));
-	snippet = snippet.replace(/_I_/g, id);
-	snippet = snippet.replace(/_PF_/g, tabprefix);
-	$(snippet).appendTo( '#'+tabprefix+'_body .ui-tabs-nav' );
-	
-	/* We have bottom tabs, so have to correct the tab corners */
-	$('#'+tabprefix+'_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
-	$("a[href^=#"+tabprefix+id+"]").dblclick( diagramTabEditStart );
-
-	/* Add content to the new tab */
-	if (tabprefix=="diagrams") {
-		snippet = '\n\
-			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
-			<div id="scroller_overview_I_" class="scroller_overview">\n\
-				<div id="scroller_region_I_" class="scroller_region"></div>\n\
-			</div>\n\
-		';
-		snippet = snippet.replace(/_I_/g, id);
-		$('#diagrams_body').append(snippet);
-		snippet = '\n\
-			<h1 class="printonly underlay servicename_I_">_SN_</h1>\n\
-			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
-			<div id="'+tabprefix+'_workspace_I_" class="fancyworkspace"></div>\n\
-		';
-	} else {
-		snippet = '\n\
-			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
-		';
-		snippet = snippet.replace(/_I_/g, id);
-		$('#singlefs_body').append(snippet);
-		snippet = '\n\
-			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n\
-			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
-			<div id="'+tabprefix+'_workspace_I_" class="workspace plainworkspace"></div>\n\
-		';
-	}
-	snippet = snippet.replace(/_LP_/g, _("Project"));
-	snippet = snippet.replace(/_LSF_/g, _("Single failures"));
-	snippet = snippet.replace(/_I_/g, id);
-	snippet = snippet.replace(/_SN_/g, H(title));
-	snippet = snippet.replace(/_PN_/g, H(Project.get(Service.get(id).project).title));
-	snippet = snippet.replace(/_PJ_/g, Service.get(id).project);
-	$('#'+tabprefix+id).append(snippet);
-	$('#'+tabprefix+'_body').tabs('refresh');
-	$('#'+tabprefix+'_body ul li').removeClass('ui-corner-top');
-
-	// Update the scroll_region when the workspace is scrolled.
-	$('#'+tabprefix+id).scroll( function(event){
-		if (ScrollerDragging) return;
-		var wst = $('#diagrams'+id).scrollTop(); 
-		var wsl = $('#diagrams'+id).scrollLeft(); 
-		var fh = $('.fancyworkspace').height();
-		var fw = $('.fancyworkspace').width();
-		var oh = $('#scroller_overview'+id).height();
-		var ow = $('#scroller_overview'+id).width();
-		$('#scroller_region'+id).css("top",(wst*oh)/fh+"px").css("left",(wsl*ow)/fw+"px");
-	});
-
-	if (tabprefix=="diagrams") {
-		$('#scroller_overview'+id).draggable({
-			stop: function(event,ui){
-				var l = $('#scroller_overview'+id).position().left;
-				var w = $('#diagrams'+id).width();
-				$('#scroller_overview'+id).css("right", (w-l) + "px").css("left","");
-			},
-			containment: 'parent',
-			cursor: "move"
-		});
-//		$('#'+tabprefix+'_workspace'+id).click( function(evt){
-//			// This handler is called whenever the fancyworkspace is clicked, or when
-//			// any of the DOM elements within the fancyworkspace is clicked. We only want
-//			// to execute when there was a direct click on the background. Check the
-//			// eventPhase for that.
-//			if (evt.eventPhase==Event.BUBBLING_PHASE) return;
-//			// Direct click on the workspace, steal the focus from wherever it was.
-//			$( document.activeElement ).blur();
-//			// If any text was selected (accidentally, most likely), then deselect it.
-//			window.getSelection().removeAllRanges();
-//			//console.debug("Stole the focus");
-//		});
-		$('#'+tabprefix+'_workspace'+id).mousedown( function(evt) {
-			if (evt.button!=0) return; // only do left mousebutton
-			if (evt.eventPhase==Event.BUBBLING_PHASE) return; // Only direct events
-			RectDragOrigin = {left: evt.pageX, top: evt.pageY};
-			$('#selectrect').show().offset({left: evt.pageX, top: evt.pageY}).width(0).height(0);
-			$('#'+tabprefix+'_workspace'+id).on("mousemove", function(evt) {
-				if (evt.button!=0 || evt.shiftKey || evt.ctrlKey || evt.altKey || evt.metaKey) 
-					return; // only do plain left mousebutton drags
-				// If any text was selected (accidentally, most likely), then deselect it.
-				window.getSelection().removeAllRanges();
-				var w = evt.pageX-RectDragOrigin.left;
-				var h = evt.pageY-RectDragOrigin.top;
-				if (w<0 || h<0) {
-					var o = $('#selectrect').offset();
-					if (w<0) {
-						o.left = RectDragOrigin.left + w;
-						w = -w;
-					}
-					if (h<0) {
-						o.top = RectDragOrigin.top + h;
-						h = -h;
-					}
-					$('#selectrect').offset({left: o.left, top: o.top}).width(w).height(h);
-				} else {
-					$('#selectrect').width(w).height(h);
-				}
-			});
-			removetransientwindows();
-		});
-		$('#'+tabprefix+'_workspace'+id).mouseup( function(evt) {
-			if (evt.button!=0) 
-				return; // only do plain left mousebutton drags
-			if (evt.target.id=="") return; // Only direct events, or drag-stops
-			// Direct click on the workspace, steal the focus from wherever it was.
-			$( document.activeElement ).blur();
-			if (Node.nodesinselection().length==0)
-				$('#selectrect').hide();
-			// If any text was selected (accidentally, most likely), then deselect it.
-			window.getSelection().removeAllRanges();
-			//console.debug("Stole the focus");
-			$('#'+tabprefix+'_workspace'+id).unbind("mousemove");
-		});
-//		$('#'+tabprefix+'_workspace'+id).draggable({
-//			cursor: "move",
-//			drag: function(event, ui) {
-//				var fh = $('.fancyworkspace').height();
-//				var fw = $('.fancyworkspace').width();
-//				var oh = $('#scroller_overview'+id).height();
-//				var ow = $('#scroller_overview'+id).width();
-//				var wh = $('.workspace').height();
-//				var ww = $('.workspace').width();
-// 				var o = ui.position;
-//				if (o.left>0) o.left=0;
-//				if (o.top>0) o.top=0;
-//				if (ww-o.left>fw) o.left=ww-fw;
-//				if (wh-o.top>fh) o.top=wh-fh;
-//				$(this).css('top', o.top+'px'); 
-//				$(this).css('left', o.left+'px');
-//				var or = {};
-//				or.left = -o.left*ow/fw;
-//				or.top = -o.top*oh/fh;
-//				$('#scroller_region'+id).css('top', or.top+'px');
-//				$('#scroller_region'+id).css('left', or.left+'px');
-//			}
-//		});
-	}
-	$("#scroller_region"+id).draggable({
-		cursor: "move",
-		containment: 'parent',
-		drag: function(event, ui) {
-			var rO = $('#scroller_region'+id).position();
-			var fh = $('.fancyworkspace').height();
-			var fw = $('.fancyworkspace').width();
-			var oh = $('#scroller_overview'+id).height();
-			var ow = $('#scroller_overview'+id).width();
-			/* 
-			 */
-			var dtop = (rO.top * fh)/oh;
-			var dleft = (rO.left * fw)/ow;
-			if (dtop<0) dtop=0;
-			if (dleft<0) dleft=0;
-//			$('#diagrams_workspace'+Service.cid).css('top', '-'+dtop+'px'); 
-//			$('#diagrams_workspace'+Service.cid).css('left', '-'+dleft+'px'); 
-			$('#diagrams'+id).scrollTop(dtop); 
-			$('#diagrams'+id).scrollLeft(dleft); 
-		},
-		start: function() {
-			ScrollerDragging = true;
-		},
-		stop: function() {
-			ScrollerDragging = false;
-		}
-	});
-
-	$('.workspace').droppable({
-		accept: '.templatebg,.templatebgNOT',
-		drop: workspacedrophandler
-	});
-	SizeDOMElements();
-}
-
-/* closeDiagramTab(serviceid): close the diagramming tab for service with title servicetitle.
- * The tab has the following HTML elements (ss = service id, tt = service title):
- */
-function closeDiagramTab(sid,servicetitle,tabprefix) {
-	// Remove the tab contents
-	$('#'+tabprefix+sid).remove();
-	// Remove the bottom tab (the one that controls div#tabprefix+sid)
-	$('#'+tabprefix+'_body').find('li[aria-controls='+tabprefix+sid+']').remove();
-	$('#'+tabprefix+'_body').tabs('refresh');
-	if (tabprefix=="diagrams")
-		$('#scroller_overview'+sid).remove();
-}
-
-/* This is ugly, but the callback is called twice and I don't know why?! */
-Service.editinprogress = false;
 
 function diagramTabEditStart(event) {
-	if (Service.editinprogress)
-		return;
-	Service.editinprogress=true;
 	var s = Service.get(nid2id(this.hash));
 	var dialog = $('<div></div>');
 	var snippet ='\
@@ -536,7 +494,6 @@ function diagramTabEditStart(event) {
 		},
 		close: function(event, ui) {
 			dialog.remove();
-			Service.editinprogress=false;
 		}
 	});
 }
@@ -554,7 +511,6 @@ function diagramTabEditStart(event) {
 var ServiceIterator = function(pid) {
 	this.pid = pid;
 	this.index = 0;
-//	this.item = Project.get(pid).services;
 	this.item = [];
 	for (var i=0; i<Service._all.length; i++) {
 		if (Service._all[i]==null) continue;
