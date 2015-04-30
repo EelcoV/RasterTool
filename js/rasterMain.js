@@ -10,6 +10,7 @@ Property		setter					fieldname in export/localStorage
 Project
 .id				creator(p.id)			key raster:<version>:P:<p.id>
 .title			settitle(str)			.l
+.group			create only				.g
 .shared			shared(bool)			.a
 .description	setdescription(str)		.d
 .date			setdate(d)				.w // when = date
@@ -98,6 +99,7 @@ var LS = LS_prefix+":"+LS_version+":";
 
 /* Global preferences */
 var Preferences;
+var ToolGroup;
 
 /* This jQuery function executes when the document is ready, but before all
  * HTML objects have been painted.
@@ -106,6 +108,8 @@ $(function() {
 	$.ajaxSetup({
 		timeout: 10000	// Cancel each AJAX request after 10 seconds
 	});
+
+	ToolGroup = $('meta[name="group"]').attr('content');
 
 	initTabDiagrams();
 	initTabSingleFs();
@@ -1373,9 +1377,9 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	for (i=0; i<lProjectlen; i++) {
 		var lp = lProject[i];
 		var p = new Project(lp.id);
-		// Avoid Project.settitle, as it can modify Preferences.
 		p.settitle(String(lp.l));
 		p.shared = (lp.a===true);
+		if (lp.g) p.group = lp.g;
 		if (lp.d) p.description = lp.d;
 		if (lp.w) p.date = lp.w;
 		for (k=0; k<lp.s.length; k++)
@@ -1792,7 +1796,7 @@ function initLibraryPanel() {
 						// are clicked. It should. Instead, look at the visual state of the labels. Fragile.
 						becomesShared = ($('label[for=sh_on]').attr('aria-pressed')=='true');
 						if (!p.shared && becomesShared) {
-							var it = new ProjectIterator({title: p.title, stubsonly: true});
+							var it = new ProjectIterator({title: p.title, group: ToolGroup, stubsonly: true});
 							if (it.notlast()) {
 								rasterAlert(_("Cannot share this project yet"),
 									_("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
@@ -1828,7 +1832,7 @@ function initLibraryPanel() {
 			modal: true,
 			position: {my: 'left top', at: 'right', of: '#libprops', collision: 'fit'},
 			width: 480,
-			height: 265,
+			height: 280,
 			buttons: dbuttons,
 			open: function() {
 				$('#sh_onoff').buttonset();
@@ -2045,7 +2049,7 @@ function initLibraryPanel() {
 	});
 	$('#libraryactivator').click( function() {
 		if ($('#librarypanel').css('display')=='none') {
-			var it = new ProjectIterator({stubsonly: false});
+			var it = new ProjectIterator({group: ToolGroup, stubsonly: false});
 			var nump = it.number();
 			nump += 4; // Allow space for option group titles.
 			if (nump<8) nump=8;
@@ -2072,8 +2076,9 @@ function populateProjectList() {
 	var snippet = "";
 	var newoptions = "";
 	var p;
-	var it = new ProjectIterator();
+	var it = new ProjectIterator({group: ToolGroup});
 	it.sortByTitle();
+	
 	// First all private projects
 	for (it.first(); it.notlast(); it.next()) {
 		p = it.getproject();
@@ -2086,7 +2091,7 @@ function populateProjectList() {
 	if (snippet!="")
 		snippet += '</optgroup>\n';
 	newoptions += snippet;
-	//	 Then all shared projects
+	//	 Then all shared projects, if they belong to group ToolGroup
 	snippet = "";
 	for (it.first(); it.notlast(); it.next()) {
 		p = it.getproject();
@@ -2125,7 +2130,7 @@ function startPeriodicProjectListRefresh() {
 function refreshProjectList() {
 	var prevselected = $('#libselect option:selected').val();
 	var snippet = "";
-	var it = new ProjectIterator({stubsonly: true});
+	var it = new ProjectIterator({group: ToolGroup, stubsonly: true});
 	it.sortByTitle();
 	for (it.first(); it.notlast(); it.next()) {
 		var p = it.getproject();
