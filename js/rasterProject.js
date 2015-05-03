@@ -19,6 +19,9 @@
  * Instance properties:
  *	id: (integer) unique ID of the project
  *	title: (string) short name of the project
+ *  group: (string) group to which the project belongs (default group is ToolGroup)
+ *		group is only meaningful when the project is shared or a stub.
+ *		Webserver-based access controls may apply per group.
  *  shared: (boolean) true iff the project is shared, and stored on the server.
  *	description: free-form description (max 100 chars).
  *	services[]: list of service IDs of all services belonging to this project. Empty for stubs.
@@ -56,6 +59,7 @@ var Project = function(id,asstub) {
 		bugreport("Project with id "+id+" already exists","Project.constructor");
 	this.id = (id==null ? nextUnusedIndex(Project._all) : id);
 	this.title = "?";
+	this.group = ToolGroup;
 	this.shared = false;
 	this.description = "";
 	this.services = [];
@@ -76,22 +80,34 @@ Project.cid = 0;
 Project._all = [];
 Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Purple"), _("Grey")];
 
+// Check wether there is a project with name 'str' and group ToolGroup
 Project.withTitle = function(str) {
 	var found=false;
 	for (var i=0; !found && i<Project._all.length; i++) {
-		if (Project._all[i]!=null && !Project._all[i].stub)
-			found=(Project._all[i].title==str);
+		var p = Project._all[i];
+		if (p==null || p.stub)
+			continue;
+		found=(p.title==str  && (!p.shared || p.group==ToolGroup));
 	}
 	return (found ? i-1 : null);
 };
 
+// Retrieve first project in ToolGroup
 Project.firstProject = function() {
 	var i=0;
-	while (i<Project._all.length && (Project._all[i]==null || Project._all[i].stub)) i++;
+	var p;
+	while (i<Project._all.length) {
+		p = Project._all[i];
+		i++;
+		if (p==null || p.stub)
+			continue;
+		if (!p.shared || p.group==ToolGroup)
+			break;
+	}
 	if (i==Project._all.length)
 		return 0;
 	else
-		return Project._all[i];
+		return p;
 };
 
 Project.merge = function(intoproject,otherproject) {
@@ -340,9 +356,9 @@ Project.prototype = {
 		var newstatus = (b===true);
 		if (this.shared==newstatus)
 			return;
+		this.group = ToolGroup;
 		if (updateServer==undefined || updateServer==true) {
 			if (newstatus==true) {
-				var thisp = this;
 				// Project was private, now becomes shared.
 				this.storeOnServer(false,exportProject(this.id),{});
 			} else 
@@ -515,6 +531,7 @@ Project.prototype = {
 	_stringify: function() {
 		var data = {};
 		data.l=this.title;
+		data.g=this.group;
 		data.a=this.shared;
 		data.s=this.services;
 		data.d=this.description;
@@ -932,6 +949,7 @@ function askForConflictResolution(proj,details) {
  *		}
  * Options:
  *	title: title matches string
+ *	group: group matches string
  *	shared: only projects with this sharing status. Default: both shared and non-shared.
  *	stubsonly: true: only stubs, false: all projects. Undefined: only non-stubs.
  */
@@ -944,6 +962,9 @@ var ProjectIterator = function(opt) {
 		var ok = true;
 		if (opt && opt.title!=null) {
 			ok = ok && (p.title===opt.title);
+		}
+		if (opt && opt.group!=null) {
+			ok = ok && (!p.shared || p.group===opt.group);
 		}
 		if (opt && opt.shared!=null) {
 			ok = ok && (p.shared===opt.shared);

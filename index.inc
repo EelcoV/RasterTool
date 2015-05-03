@@ -6,7 +6,7 @@ See LICENSE.md
 <html>
 
 <head>
-
+<meta name="group" content="<?= GROUP ?>">
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <meta charset="UTF-8"> 
 <title>Raster - Risk Assessment of Telecoms Services</title>

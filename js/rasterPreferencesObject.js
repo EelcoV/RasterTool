@@ -9,8 +9,8 @@ var PreferencesObject = function() {
 	this.settheme = function(theme) {
 		this.theme = theme;
 		var cssLink = $('<link href="../css/'+theme+'-1.11.2/jquery-ui.min.css" type="text/css" rel="stylesheet" class="ui-theme">');
-		$("head").append(cssLink);
-		$("link.ui-theme:first").remove();
+		$('head').append(cssLink);
+		$('link.ui-theme:first').remove();
 		$('ul.rot-neg-90 li').css('float','right');
 		this.store();
 	};
@@ -23,19 +23,19 @@ var PreferencesObject = function() {
 	this.setlabel = function(labelonoff) {
 		this.label = (labelonoff===true);
 		if (this.label) {
-			$(".nodeheader").removeClass("Chide");
-			$(".contentimg").each(function(index,element){
+			$('.nodeheader').removeClass('Chide');
+			$('.contentimg').each(function(index,element){
 				var rn = Node.get(nid2id(this.parentElement.id));
-				var src=$(this).attr("src");
+				var src=$(this).attr('src');
 				src = src.replace(/\/img\/.+\//, '/img/'+rn.color+'/');
-				$(this).attr("src", src);
+				$(this).attr('src', src);
 			});
 		} else {
-			$(".nodeheader").addClass("Chide");
-			$(".contentimg").each(function(index,element){
-				var src=$(this).attr("src");
+			$('.nodeheader').addClass('Chide');
+			$('.contentimg').each(function(index,element){
+				var src=$(this).attr('src');
 				src = src.replace(/\/img\/.+\//, '/img/none/');
-				$(this).attr("src", src);
+				$(this).attr('src', src);
 			});
 		}
 		if (this.tab==2) {
@@ -47,13 +47,13 @@ var PreferencesObject = function() {
 	
 	this.setemblem = function(emsize) {
 		this.emsize = emsize;
-		/* Find a CSS-rule with the exact name "div.nodeMagnitude", then
+		/* Find a CSS-rule with the exact name 'div.nodeMagnitude', then
 		 * modify that rule on the fly.
 		 */
-		var css=document.getElementById("maincssfile").sheet;
+		var css=document.getElementById('maincssfile').sheet;
 		var rule=null;
 		for (var i=0; i<css.cssRules.length; i++) {
-			if (css.cssRules[i].selectorText=="div.nodeMagnitude") {
+			if (css.cssRules[i].selectorText=='div.nodeMagnitude') {
 				rule = css.cssRules[i];
 				break;
 			}
@@ -62,22 +62,22 @@ var PreferencesObject = function() {
 			bugreport('cannot locate css rule for emblem size','PreferencesObject.setemblem');
 			return;
 		}
-		if (this.emsize=="em_small") {
-			rule.style.visibility="visible";
-			rule.style.width="8px";
-			rule.style.height="8px";
-			rule.style.top="-3px";
-			rule.style.left="1px";
-			rule.style.color="transparent";
-		} else if (this.emsize=="em_large") {
-			rule.style.visibility="visible";
-			rule.style.width="20px";
-			rule.style.height="15px";
-			rule.style.top="-9px";
-			rule.style.left="0px";
-			rule.style.color="black";
-		} else if (this.emsize=="em_none") {
-			rule.style.visibility="hidden";
+		if (this.emsize=='em_small') {
+			rule.style.visibility='visible';
+			rule.style.width='8px';
+			rule.style.height='8px';
+			rule.style.top='-3px';
+			rule.style.left='1px';
+			rule.style.color='transparent';
+		} else if (this.emsize=='em_large') {
+			rule.style.visibility='visible';
+			rule.style.width='20px';
+			rule.style.height='15px';
+			rule.style.top='-9px';
+			rule.style.left='0px';
+			rule.style.color='black';
+		} else if (this.emsize=='em_none') {
+			rule.style.visibility='hidden';
 		}
 		this.store();
 	};
@@ -94,7 +94,7 @@ var PreferencesObject = function() {
 
 	this.setcreator = function(cr) {
 		this.creator = trimwhitespace(String(cr)).substr(0,100);
-		if (this.creator=="")
+		if (this.creator=='')
 			this.creator=_("Anonymous");
 		this.store();
 	};
@@ -105,7 +105,7 @@ var PreferencesObject = function() {
 			return;
 		this.online = newstatus;
 		if (!this.online) {
-			$("#networkactivity").removeClass("activityyes activityno").addClass("activityoff");
+			$('#networkactivity').removeClass('activityyes activityno').addClass('activityoff');
 			// Remove all current stub projects
 			var it = new ProjectIterator({stubsonly: true});
 			for (it.first(); it.notlast(); it.next()) {
@@ -134,11 +134,11 @@ var PreferencesObject = function() {
 	 * Don't try to set the current project yet, because it may not have been
 	 * loaded.
 	 */
-	this.currentproject = "";
-	this.theme = "smoothness";
+	this.currentproject = '';
+	this.theme = 'smoothness';
 	this.grid = true;
 	this.label=true;
-	this.emsize = "small";
+	this.emsize = 'small';
 	this.tab = 0;
 	this.creator = _("Anonymous");
 	this.online = true;
