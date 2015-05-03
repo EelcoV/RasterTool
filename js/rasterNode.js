@@ -159,15 +159,14 @@ Node.prototype = {
 		localStorage.removeItem(LS+'N:'+this.id);
 		this.hidemarker();  // Make it disappear before the animation starts
 		$('#tinynode'+this.id).remove();
-		if (effect==undefined || effect==true) 
+		Node._all[this.id]=null;
+		if (effect==undefined || effect==true)
 			$(this.jnid).effect("explode", 500, function() {
 				var id = nid2id(this.id);
 				jsP.remove('node'+id);
-				Node._all[id]=null;
 			});
 		else {
 			jsP.remove(this.nid);
-			Node._all[this.id]=null;
 		}
 	},
 	

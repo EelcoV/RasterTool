@@ -2633,8 +2633,8 @@ function initTabDiagrams() {
 			_("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
 			_("Delete"),_("Cancel"),
 			function() {
-				transactionCompleted("Node delete");
 				rn.destroy(); 
+				transactionCompleted("Node delete");
 			}
 			);
 	});
