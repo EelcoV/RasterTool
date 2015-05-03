@@ -6,7 +6,7 @@
 distribution=`date +%Y%m%d_%H%M`
 
 files="\
-index.inc share.inc Raster-EN-1.0.pdf Raster-NL-1.0.pdf index.html \
+index.inc share.inc sse_projmon.inc Raster-EN-1.0.pdf Raster-NL-1.0.pdf index.html \
 help/*.html \
 img/*.png img/blue/*.png img/green/*.png img/grey/*.png img/none/*.png img/orange/*.png img/purple/*.png img/red/*.png img/yellow/*.png \
 public_group/htaccess public_group/*.php public_group/SharedProjects/README.md \
