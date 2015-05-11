@@ -540,6 +540,7 @@ div.th_remark {
 /* Basic Node templates */
 /* round dot on top of nodes */
 ._jsPlumb_endpoint { 
+	z-index: 2;
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
