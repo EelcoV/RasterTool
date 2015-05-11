@@ -33,7 +33,8 @@
  *	_normh: normal height (default height)
  * Methods:
  *	destroy(): destructor.
- *	setposition(x,y): set the position of the HTML document object to (x,y).
+ *	setposition(x,y,snap): set the position of the HTML document object to (x,y).
+ *		If snap==false then do not restrict to 20x20 pixel grid positions.
  *	setcomponent(cm): set the id of the component object to cm.
  *	autosettitle: give this Node a unique title, and create the corresponding
  *		Component object.
@@ -202,7 +203,7 @@ Node.prototype = {
 		var ow = $('#scroller_overview'+this.service).width();
 		var dO = {};
 		if (snaptogrid==null)
-			snaptogrid = Preferences.grid;
+			snaptogrid = true;
 		
 		if (px<0) px=0;
 		if (py<10) py=10;
@@ -670,7 +671,7 @@ Node.prototype = {
 			distance: 10,	// prevent drags when clicking the menu activator
 			opacity: 0.8,
 			stop: function(event,ui) {
-				// Reset the node to the grid, if necessary
+				// Reset the node to the grid
 				var rn = Node.get( nid2id(this.id) );
 				rn.setposition(rn.position.x,rn.position.y);
 				// Disallow dragging for 100msec
@@ -851,7 +852,7 @@ Node.prototype = {
 				rn.setposition(rn.position.x,rn.position.y);
 			},
 			stop: function () { 
-				// Reset the node to the grid, if necessary
+				// Reset the node to the grid
 				var rn = Node.get( nid2id(this.id) );
 				rn.setposition(rn.position.x,rn.position.y);
 				transactionCompleted("Node resize");

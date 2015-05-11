@@ -15,11 +15,6 @@ var PreferencesObject = function() {
 		this.store();
 	};
 	
-	this.setgrid = function(gridonoff) {
-		this.grid = (gridonoff===true);
-		this.store();
-	};
-	
 	this.setlabel = function(labelonoff) {
 		this.label = (labelonoff===true);
 		if (this.label) {
@@ -120,7 +115,6 @@ var PreferencesObject = function() {
 	this.store = function() {
 		var data = {};
 		data.theme=this.theme;
-		data.grid=this.grid;
 		data.label=this.label;
 		data.emsize =this.emsize;
 		data.currentproject=this.currentproject;
@@ -136,7 +130,6 @@ var PreferencesObject = function() {
 	 */
 	this.currentproject = '';
 	this.theme = 'smoothness';
-	this.grid = true;
 	this.label=true;
 	this.emsize = 'small';
 	this.tab = 0;
@@ -146,7 +139,6 @@ var PreferencesObject = function() {
 		if (localStorage[LS+'R:0']!=null) {
 			var pr = jQuery.parseJSON(localStorage[LS+'R:0']);
 			if (pr.theme!=null) this.settheme(pr.theme);
-			if (pr.grid!=null) this.setgrid(pr.grid);
 			if (pr.label!=null) this.setlabel(pr.label);
 			if (pr.emsize!=null) this.setemblem(pr.emsize);
 			if (pr.currentproject!=null) this.setcurrentproject(pr.currentproject);

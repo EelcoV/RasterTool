@@ -18,6 +18,8 @@ Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
 May 2015
 ==========
+* The option 'Move freely' or 'Snap to grid' has been removed. Nodes now always
+  line up.
 * When more than one group is used (for access control), then swapping between groups
   now hides shared projects and will not give error messages.
 * Connections are now deleted (nodes are disconneted) with a single click on the
