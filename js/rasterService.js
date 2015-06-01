@@ -135,14 +135,53 @@ Service.prototype = {
 	load: function() {
 		this.addtabdiagrams();
 		this.addtabsinglefs();
+		$('#bottomtabsdia').sortable({
+			axis: 'x',
+			stop: function(evt,ui) {
+				var p = Project.get(Project.cid);
+				// Set the new order of services
+				var arr = $('#bottomtabsdia').sortable('toArray');
+				arr.forEach(function(v,i,a) {a[i] = nid2id(v);});
+				p.services = arr;
+				// Remove all service tabs on Single Failures, and re-create.
+				$('#bottomtabssf').empty();
+				arr.forEach(function(v,i,a) {
+					var s = Service.get(v);
+					s._addtabsinglefs_tabonly();
+				});
+				p.store();
+				$('#diagrams_body').tabs('refresh');
+				$('#singlefs_body').tabs('refresh');
+				transactionCompleted("reordering services");
+			}
+		});
+		$('#bottomtabssf').sortable({
+			axis: 'x',
+			stop: function(evt,ui) {
+				var p = Project.get(Project.cid);
+				// Set the new order of services
+				var arr = $('#bottomtabssf').sortable('toArray');
+				arr.forEach(function(v,i,a) {a[i] = nid2id(v);});
+				p.services = arr;
+				// Remove all service tabs on Diagrams, and re-create.
+				$('#bottomtabsdia').empty();
+				arr.forEach(function(v,i,a) {
+					var s = Service.get(v);
+					s._addtabdiagrams_tabonly();
+				});
+				p.store();
+				$('#diagrams_body').tabs('refresh');
+				$('#singlefs_body').tabs('refresh');
+				transactionCompleted("reordering services");
+			}
+		});
 		SizeDOMElements();
 		this._loaded=true;
 	},
 	
-	addtabdiagrams: function() {
-		var serviceid = this.id; // For use in event handler functions
+	_addtabdiagrams_tabonly: function() {
 		/* Create a new tab */
-		var snippet = '<li>\
+		var snippet = '<li id="diaservicetab_I_">\
 			<a href="#_PF__I_">\
 			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
 			</a>\
@@ -157,9 +196,14 @@ Service.prototype = {
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('#diagrams_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
 		$('a[href^=#diagrams'+this.id+']').dblclick( diagramTabEditStart );
-
+	},
+	
+	addtabdiagrams: function() {
+		var serviceid = this.id; // For use in event handler functions
+		this._addtabdiagrams_tabonly();
+		
 		/* Add content to the new tab */
-		snippet = '\n\
+		var snippet = '\n\
 			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
 			<div id="scroller_overview_I_" class="scroller_overview">\n\
 				<div id="scroller_region_I_" class="scroller_region"></div>\n\
@@ -277,9 +321,9 @@ Service.prototype = {
 		});
 	},
 
-	addtabsinglefs: function() {
+	_addtabsinglefs_tabonly: function() {
 		/* Create a new tab */
-		var snippet = '<li>\
+		var snippet = '<li id="sfservicetab_I_">\
 			<a href="#_PF__I_">\
 			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
 			</a>\
@@ -294,9 +338,13 @@ Service.prototype = {
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('#singlefs_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
 		$('a[href^=#singlefs'+this.id+']').dblclick( diagramTabEditStart );
+	},
+	
+	addtabsinglefs: function() {
+		this._addtabsinglefs_tabonly();
 
 		/* Add content to the new tab */
-		snippet = '\n\
+		var snippet = '\n\
 			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
 		';
 		snippet = snippet.replace(/_I_/g, this.id);
