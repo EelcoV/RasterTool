@@ -410,11 +410,9 @@ Service.prototype = {
 				}
 			},
 			stop: function(event,ui) {
-				if (Preferences.grid) {
-					for (var i=0; i<NodesBeingDragged.length; i++) {
-						var n = Node.get(NodesBeingDragged[i]);
-						n.setposition(n.position.x,n.position.y);
-					}
+				for (var i=0; i<NodesBeingDragged.length; i++) {
+					var n = Node.get(NodesBeingDragged[i]);
+					n.setposition(n.position.x,n.position.y);
 				}
 				transactionCompleted("Node move selection");
 			},

@@ -146,11 +146,6 @@ See LICENSE.md
 		<input type="radio" id="start" name="switcher"><label for="start">Start</label>
 		<input type="radio" id="redmond" name="switcher"><label for="redmond">Redmond</label>
 	</div>
-	<div id="gridonoff">
-		<span class="leftlabel ui-widget ui-state-default">Move nodes:</span>
-		<input type="radio" id="grid_off" name="gridonoff" checked="checked"><label for="grid_off">Move freely</label>
-		<input type="radio" id="grid_on" name="gridonoff"><label for="grid_on">Snap to grid</label>
-	</div>
 	<div id="emblem_size">
 		<span class="leftlabel ui-widget ui-state-default">Vulnerability levels:</span>
 		<input type="radio" id="em_small" name="emblem_size" checked="checked"><label for="em_small">Small</label>

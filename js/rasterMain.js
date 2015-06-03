@@ -2151,7 +2151,6 @@ function initOptionsPanel() {
 
 	$('#switcher').buttonset();
 	$('#emblem_size').buttonset();
-	$('#gridonoff').buttonset();
 	$('#labelonoff').buttonset();
 	$('#onlineonoff').buttonset();
 
@@ -2174,12 +2173,6 @@ function initOptionsPanel() {
 	$('#labelonoff label span').eq(1).html( _("Show color") );
 	$('[for=label_off]').click( function() { Preferences.setlabel(false); });
 	$('[for=label_on]').click( function() { Preferences.setlabel(true); });
-	
-	$('#gridonoff span').first().html( _("Move nodes:") );
-	$('#gridonoff label span').eq(0).html( _("Move freely") );
-	$('#gridonoff label span').eq(1).html( _("Snap to grid") );
-	$('[for=grid_off]').click( function() { Preferences.setgrid(false); });
-	$('[for=grid_on]').click( function() { Preferences.setgrid(true); });
 	
 	$('#onlineonoff span').first().html( _("Network connection:") );
 	$('#onlineonoff label span').eq(0).html( _("Offline") );
@@ -2211,8 +2204,6 @@ function initOptionsPanel() {
 			removetransientwindows();
 			$('#'+Preferences.emsize).prop("checked","checked");
 			$('#emblem_size').buttonset("refresh");
-			$(Preferences.grid?'#grid_on':'#grid_off').prop("checked","checked");
-			$('#gridonoff').buttonset("refresh");
 			$(Preferences.online?'#online_on':'#online_off').prop("checked","checked");
 			$('#onlineonoff').buttonset("refresh");
 			$(Preferences.label?'#label_on':'#label_off').prop("checked","checked");
