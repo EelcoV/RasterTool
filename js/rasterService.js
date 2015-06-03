@@ -136,7 +136,6 @@ Service.prototype = {
 		this.addtabdiagrams();
 		this.addtabsinglefs();
 		$('#bottomtabsdia').sortable({
-			axis: 'x',
 			stop: function(evt,ui) {
 				var p = Project.get(Project.cid);
 				// Set the new order of services
@@ -156,7 +155,6 @@ Service.prototype = {
 			}
 		});
 		$('#bottomtabssf').sortable({
-			axis: 'x',
 			stop: function(evt,ui) {
 				var p = Project.get(Project.cid);
 				// Set the new order of services

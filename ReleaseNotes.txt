@@ -17,12 +17,15 @@ The tool is accessible via the URL http://yourwebserver/path/ .
 Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
 
-May 2015
-==========
-* When more than one group is used (for access control), then swapping between groups
-  now hides shared projects and will not give error messages.
+June 2015
+=============
 * In the Diagrams and Single Failures screens, the service tabs at the bottom can
   now be dragged into the desired order.
+
+May 2015
+=============
+* When more than one group is used (for access control), then swapping between groups
+  now hides shared projects and will not give error messages.
 * Connections are now deleted (nodes are disconnected) with a single click on the
   disconnect icon (the circled X). This used to require a double click.
 * Fixes when simultaneously working on a project from MSIE browsers.
