@@ -21,9 +21,11 @@ June 2015
 =============
 * In the Diagrams and Single Failures screens, the service tabs at the bottom can
   now be dragged into the desired order.
+* The option 'Move freely' or 'Snap to grid' has been removed. Nodes now always
+  line up.
 
 May 2015
-=============
+==========
 * When more than one group is used (for access control), then swapping between groups
   now hides shared projects and will not give error messages.
 * Connections are now deleted (nodes are disconnected) with a single click on the
