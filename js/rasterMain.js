@@ -179,6 +179,15 @@ $(function() {
 		else {
 			p.load();
 			p.dorefresh(false); // Check for update on the server
+			var it = new ServiceIterator(p.id);
+			var found = false;
+			var s;
+			for (it.first(); !found && it.notlast(); it.next()) {
+				s = it.getservice();
+				found = (s.title == Preferences.service);
+			}
+			if (found)
+				Service.cid = s.id;
 		}
 	} else
 		loadDefaultProject();
@@ -563,10 +572,20 @@ function switchToProject(pid,dorefresh) {
 	if (Project.get(Project.cid)!=null)
 		// Project might have been deleted by libdel button
 		Project.get(Project.cid).unload();
-	Project.get(pid).load();
+	var p = Project.get(pid);
+	p.load();
+	var it = new ServiceIterator(pid);
+	var found = false;
+	var s;
+	for (it.first(); !found && it.notlast(); it.next()) {
+		s = it.getservice();
+		found = (s.title == Preferences.service);
+	}
+	if (found)
+		Service.cid = s.id;
 	forceSelectVerticalTab(Preferences.tab);
 	if (dorefresh)
-		Project.get(pid).dorefresh(false);
+		p.dorefresh(false);
 }
 
 /* nid2id: translate a DOM id to a numeric id

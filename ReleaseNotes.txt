@@ -23,6 +23,8 @@ June 2015
   now be dragged into the desired order.
 * The option 'Move freely' or 'Snap to grid' has been removed. Nodes now always
   line up.
+* Maintain current service when reloading the page, or when updating a shared project
+  when it was changed on the server.
 
 May 2015
 ==========

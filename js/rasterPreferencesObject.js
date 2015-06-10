@@ -87,6 +87,11 @@ var PreferencesObject = function() {
 		this.store();
 	};
 
+	this.setservice = function(str) {
+		this.service = str;
+		this.store();
+	};
+
 	this.setcreator = function(cr) {
 		this.creator = trimwhitespace(String(cr)).substr(0,100);
 		if (this.creator=='')
@@ -119,6 +124,7 @@ var PreferencesObject = function() {
 		data.emsize =this.emsize;
 		data.currentproject=this.currentproject;
 		data.tab=this.tab;
+		data.service=this.service;
 		data.creator=this.creator;
 		data.online=this.online;
 		localStorage[LS+'R:0'] = JSON.stringify(data);
@@ -133,6 +139,7 @@ var PreferencesObject = function() {
 	this.label=true;
 	this.emsize = 'small';
 	this.tab = 0;
+	this.service = 0;
 	this.creator = _("Anonymous");
 	this.online = true;
 	try {
@@ -143,6 +150,7 @@ var PreferencesObject = function() {
 			if (pr.emsize!=null) this.setemblem(pr.emsize);
 			if (pr.currentproject!=null) this.setcurrentproject(pr.currentproject);
 			if (pr.tab!=null) this.settab(pr.tab);
+			if (pr.service!=null) this.setservice(pr.service);
 			if (pr.creator!=null) this.setcreator(pr.creator);
 			if (pr.online!=null) this.setonline(pr.online);
 		}
