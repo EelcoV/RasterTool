@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+Sometimes a connector is drawn as a bezier, not a straight line.
 After upgrade, scrolling within large CCFs is weird. Two competing scroll bars??
 Be consistent: cloud, unknown link, unexplored link.
 When printing CCF, the accordions are not always all expanded.
@@ -16,6 +17,8 @@ Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selec
 Editing the CCF clusters for a large list of nodes is troublesome. Idea: make clusters collapsable.
 
 TODO
+New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable.
+Make the labels of actors fit inside their box, or do not show the box.
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
 Sort Single failures by Label.
 Sorting of threats is possible within dialogs, but not on the Single Failures list.

@@ -409,7 +409,7 @@ function _(s) {
 	var str = _t[s];
 	if (!str) {
 		// No localisation available. Default to English version
-		//if (DEBUG) {console.log("_t[\"" + s + "\"] = \"" + s + "\";");}
+		if (DEBUG) {console.log("_t[\"" + s + "\"] = \"" + s + "\";");}
 		str=s;
 	}
 	// Replace %1, %2, ... %9 by the first, second, ... ninth argument.
@@ -1943,15 +1943,13 @@ function initLibraryPanel() {
 			return;
 		}
 		var currentproject = Project.get( Project.cid );
-		rasterConfirm('Merge "'+H(otherproject.title)+'" into "'+H(currentproject.title)+'"?',
-			'Are you sure you want to fold project <i>"'
-				+H(otherproject.title)
-				+'"</i> into the current project?\nThis will copy the diagrams of <i>"'
-				+H(otherproject.title)
-				+'"</i> into <i>"'
-				+H(currentproject.title)
-				+'"</i>.',
-			'Merge','Cancel',
+		rasterConfirm(_("Merge '%%' into '%%'?",otherproject.title,currentproject.title),
+			_("Are you sure you want to fold project '%%' into the current project?",
+				H(otherproject.title))
+			 +'<br>\n'+
+			_("This will copy the diagrams of '%%' into '%%'.",
+				H(otherproject.title),H(currentproject.title)),
+			_("Merge"),_("Cancel"),
 			function() {
 				Project.merge(currentproject,otherproject);
 				$('#libselect').val(Project.cid).focus().change();
