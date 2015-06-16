@@ -780,16 +780,22 @@ div.tACTcontent {
 	height: 100%;
 }
 div.tACTheader {
-	position: relative;
+	position: absolute;
 	top: 100%;
-	left: 5%;
-	right: 5%;
-	width: 90%;
-	border: 1px solid grey;
+	width: auto;
+	min-width: 6em;
+	left: 50%;
+	transform: translateX(-50%);
+	-webkit-transform: translateX(-50%);
+	/*border: 1px solid grey;*/
 	border-radius: 3px;
-	background: #eee;
+	background: rgba(240,240,240,0.8);
+	padding: 2px 2px 0 2px;
 }
 div.tACTtitle {
+	left: 50%;
+	transform: translateX(-50%);
+	-webkit-transform: translateX(-50%);
 }
 img.tACTD {
 	right: 10%;
