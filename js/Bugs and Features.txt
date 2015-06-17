@@ -18,7 +18,6 @@ Editing the CCF clusters for a large list of nodes is troublesome. Idea: make cl
 
 TODO
 New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable.
-Make the labels of actors fit inside their box, or do not show the box.
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
 Sort Single failures by Label.
 Sorting of threats is possible within dialogs, but not on the Single Failures list.

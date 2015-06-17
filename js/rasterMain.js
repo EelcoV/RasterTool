@@ -2594,6 +2594,8 @@ function initTabDiagrams() {
 		// Duplicate size and width, but offset the position
 		nn.position.width = rn.position.width;
 		nn.position.height = rn.position.height;
+		nn._normw = rn._normw;
+		nn._normh = rn._normh;
 		nn.paint();
 		nn.setposition(
 			(rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70),
