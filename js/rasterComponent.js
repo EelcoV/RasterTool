@@ -196,34 +196,49 @@ Component.prototype = {
 			for (i=0; i<this.nodes.length; i++) {
 				sfx.push(Node.get(this.nodes[i]).suffix);
 			}
+			var findNewSuffix = function(prefix) {
+				for (j=0; j<26; j++) {
+					var chr = String.fromCharCode(String('a').charCodeAt(0)+j);
+					if (sfx.indexOf(prefix+chr)==-1)
+						break;
+				}
+				if (j==26) {
+					// This is silly. There are more than 26 members in the node class!
+					// Find a random number to fit.
+					for (;;) {
+						chr = '#' + Math.floor(Math.random()*100000);
+						if (sfx.indexOf(prefix+chr)==-1)
+							break;
+					}
+				}
+				return prefix+chr;
+			};
+			
 			for (i=0; i<this.nodes.length; i++) {
 				var rn = Node.get(this.nodes[i]);
 				if (this.single) {
 					rn.settitle(this.title,"");
 				} else if (rn.suffix=="") {
 					// Node has no suffix yet. Create one automatically.
-					for (j=0; j<26; j++) {
-						var chr = String.fromCharCode(String('a').charCodeAt(0)+j);
-						if (sfx.indexOf(chr)==-1)
-							break;
-					}
-					if (j==26) {
-						// This is silly. There are more than 26 members in the node class!
-						// Find a random number to fit.
-						for (;;) {
-							chr = '#' + Math.floor(Math.random()*100000);
-							if (sfx.indexOf(chr)==-1)
-								break;
-						}
-					}
-					sfx[i] = chr;
+					sfx[i] = findNewSuffix('');
 					rn.settitle(this.title,sfx[i]);
 				} else {
-					// Keep existing suffix
-					rn.settitle(
-						this.title,
-						(this.single ? "" : rn.suffix )
-					);
+					// Check if another node already has this suffix
+					for (j=0; j<i; j++) {
+						if (sfx[j]==sfx[i])
+							break;
+					}
+					if (j==i) {
+						// Keep existing suffix
+						rn.settitle(
+							this.title,
+							(this.single ? "" : rn.suffix )
+						);
+					} else {
+						// Must find a new suffix for this node
+						sfx[i] = findNewSuffix(sfx[i]);
+						rn.settitle(this.title,sfx[i]);
+					}
 				}
 			}
 		}
