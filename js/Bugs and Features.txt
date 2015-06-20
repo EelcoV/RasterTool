@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+Merging when the project contain node classes may result in duplicate suffixes, and/or problems in clusters.
 Sometimes a connector is drawn as a bezier, not a straight line.
 After upgrade, scrolling within large CCFs is weird. Two competing scroll bars??
 Be consistent: cloud, unknown link, unexplored link.

@@ -1797,6 +1797,12 @@ function initLibraryPanel() {
 		dialog.append(snippet);
 		var dbuttons = [];
 		dbuttons.push({
+			text: _("Cancel"),
+			click: function() {
+					$(this).dialog('close');
+				}
+		});
+		dbuttons.push({
 			text: _("Change properties"),
 			click: function() {
 					if (!p.stub) {
@@ -1838,12 +1844,6 @@ function initLibraryPanel() {
 						// Not implemented yet.
 						rasterAlert(_("Cannot change project on server"),_("This function is not implemented yet."));
 					}
-				}
-		});
-		dbuttons.push({
-			text: _("Cancel"),
-			click: function() {
-					$(this).dialog('close');
 				}
 		});
 		dialog.dialog({
@@ -2482,18 +2482,18 @@ function initTabDiagrams() {
 		dialog.append(snippet);
 		var dbuttons = [];
 		dbuttons.push({
+			text: _("Cancel"),
+			click: function() {
+					$(this).dialog("close");
+				}
+		});
+		dbuttons.push({
 			text: _("Change name"),
 			click: function() {
 					var name = $('#field_componentrename');
 					cm.changetitle(name.val());
 					$(this).dialog("close");
 					transactionCompleted("Component class rename");
-				}
-		});
-		dbuttons.push({
-			text: _("Cancel"),
-			click: function() {
-					$(this).dialog("close");
 				}
 		});
 		dialog.dialog({
@@ -2532,18 +2532,18 @@ function initTabDiagrams() {
 		dialog.append(snippet);
 		var dbuttons = [];
 		dbuttons.push({
+			text: _("Cancel"),
+			click: function() {
+					$(this).dialog("close");
+				}
+		});
+		dbuttons.push({
 			text: _("Change suffix"),
 			click: function() {
 					var name = $('#field_suffixrename');
 					rn.changesuffix(name.val());
 					$(this).dialog("close");
 					transactionCompleted("Node suffix rename");
-				}
-		});
-		dbuttons.push({
-			text: _("Cancel"),
-			click: function() {
-					$(this).dialog("close");
 				}
 		});
 		dialog.dialog({

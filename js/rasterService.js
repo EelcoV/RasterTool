@@ -488,8 +488,13 @@ function dropfunction(data) {
 	var src = Node.get(nid2id(data.sourceId));
 	var dst = Node.get(nid2id(data.targetId));
 
+	if (!src || !dst) {
+        bugreport("Incorrect nodes","dropfunction");
+        return true;
+	}
+
     if (data.scope=="center") {
-        bugreport("Connection in default scope","connfunction");
+        bugreport("Connection in default scope","dropfunction");
         return true;
     }
     src.try_attach_center(dst);
@@ -514,18 +519,18 @@ function diagramTabEditStart(event) {
 	dialog.append(snippet);
 	var dbuttons = [];
 	dbuttons.push({
+		text: _("Cancel"),
+		click: function() {
+				$(this).dialog("close");
+			}
+	});
+	dbuttons.push({
 		text: _("Change name"),
 		click: function() {
 				var name = $('#field_servicerename');
 				s.settitle(name.val());
 				$(this).dialog("close");
 				transactionCompleted("Service rename");
-			}
-	});
-	dbuttons.push({
-		text: _("Cancel"),
-		click: function() {
-				$(this).dialog("close");
 			}
 	});
 	dialog.dialog({
