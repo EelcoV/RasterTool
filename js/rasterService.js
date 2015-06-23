@@ -59,7 +59,6 @@ var Service = function(id) {
 		DragOptions: { cursor: 'move' },
 		Endpoint: [ "Dot", { radius: 6 } ]
 	});
-	this._jsPlumb.bind('beforeDrop', dropfunction );
 	
 	this.store();
 	Service._all[this.id]=this;
@@ -133,6 +132,7 @@ Service.prototype = {
 	},
 
 	load: function() {
+		this._jsPlumb.bind('beforeDrop', dropfunction );
 		this.addtabdiagrams();
 		this.addtabsinglefs();
 		$('#bottomtabsdia').sortable({
