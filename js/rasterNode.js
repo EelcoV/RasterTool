@@ -182,6 +182,7 @@ Node.prototype = {
 		newn.position.h = 0;
 		newn.position.v = 0;
 		newn.position.g = 0;
+		newn.color = this.color;
 		newn.service = this.service;
 		newn.changetitle(this.title);
 		newn.store();
