@@ -3210,7 +3210,7 @@ function paintSingleFailures(s) {
 			if (labels.length==0) {
 				snippet = snippet.replace(/_LB_/, '');
 			} else if (labels.length==1) {
-				str = '<div class="sflabelgroup"><div class="smallblock donotprint B'+labels[0]+'"></div><span class="labelind">'+H(p.strToLabel(labels[0]))+'</span></div>';
+				str = '<div class="sflabelgroup"><div class="smallblock B'+labels[0]+'"></div><span class="labelind">'+H(p.strToLabel(labels[0]))+'</span></div>';
 				snippet = snippet.replace(/_LB_/, str);
 			} else {
 				str = '<div class="sflabelgroup">';
