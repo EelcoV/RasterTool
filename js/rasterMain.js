@@ -52,7 +52,7 @@ Component
 .thrass[]		(internal)				.e
 .title			settitle(str)			.l
 .nodes[]		addnode(n.id)			.n
-.single			setsingle				.i
+.single			setsingle				.s
 .accordionopened setaccordionopened(b)	.o
 
 NodeCluster		creator(type,cl.id)		key raster:<version>:L:<ct.id>

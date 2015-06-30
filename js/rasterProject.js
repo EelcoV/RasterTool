@@ -145,8 +145,9 @@ Project.merge = function(intoproject,otherproject) {
 			if (rn.type=='tACT' || rn.type=='tNOT')
 				continue;
 			cm = Component.get(rn.component);
-			// If the node was added to a singular component, it doesn't need to added
-			if (cm.single)
+			// If the node was added to a singular component, it doesn't need to added,
+			// unless it is the first node in the singular class.
+			if (cm.single && cm.nodes[0]!=rn.id)
 				continue;
 			for (var j=0; j<cm.thrass.length; j++) {
 				var ta = ThreatAssessment.get(cm.thrass[j]);
