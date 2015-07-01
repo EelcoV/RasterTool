@@ -17,6 +17,12 @@ The tool is accessible via the URL http://yourwebserver/path/ .
 Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
 
+July 2015
+=============
+* Nodes in CCF view can now be selected, and all selected nodes can be dragged and
+  dropped collectively. Normal click = select/deselect. Cmd click or Ctrl click =
+  add/remove that node from the current selection. Shift click = extend selection.
+
 June 2015
 =============
 * In the Diagrams and Single Failures screens, the service tabs at the bottom can
@@ -25,7 +31,7 @@ June 2015
   line up.
 * Maintain current service when reloading the page, or when updating a shared project
   when it was changed on the server.
-* Fixed: combining projects could results in nodes with duplicate suffixes.
+* Fixed: issues with merging, and other small bug fixes.
 
 May 2015
 ==========

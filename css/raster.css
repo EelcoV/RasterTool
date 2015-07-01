@@ -968,8 +968,7 @@ for checklists and threat evaluations.
 	cursor: ns-resize;
 }
 .li_selected {
-	padding: 0px 4px;
-	border: 2px solid #fcc;
+	border: 1px solid red;
 	background: #fee;
 }
 .tlistroot { /* Identical to .tlistitem */

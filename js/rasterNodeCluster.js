@@ -381,7 +381,7 @@ NodeCluster.prototype = {
 	internalCheck: function() {
 		var errors = "";
 		var offender = "Node cluster '"+H(this.title)+"' ("+this.id+") ";
-		var i;
+		var i, j;
 		for (i=0; i<this.childclusters.length; i++) {
 			var cc = NodeCluster.get(this.childclusters[i]);
 			if (!cc) {
@@ -391,12 +391,22 @@ NodeCluster.prototype = {
 			if (cc.parentcluster != this.id)
 				errors += offender+"contains a child cluster "+this.childclusters[i]+" that does not refer back to it.\n";
 			errors += cc.internalCheck();
+			for (j=0; j<i; j++) {
+				if (this.childclusters[i]==this.childclusters[j]) {
+					errors += offender+"contains duplicate child cluster "+this.childclusters[i]+".\n";
+				}
+			}
 		}
 		for (i=0; i<this.childnodes.length; i++) {
 			var rn = Node.get(this.childnodes[i]);
 			if (!rn) {
 				errors += offender+"contains a non-existing child node "+this.childnodes[i]+".\n";
 				continue;
+			}
+			for (j=0; j<i; j++) {
+				if (this.childnodes[i]==this.childnodes[j]) {
+					errors += offender+"contains duplicate child node "+this.childnodes[i]+".\n";
+				}
 			}
 		}
 		var rc = NodeCluster.get(this.root());

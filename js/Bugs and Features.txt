@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+Editing the CCF clusters for a large list of nodes is troublesome. Idea: make clusters collapsable.
 After upgrade, scrolling within large CCFs is weird. Two competing scroll bars??
 Be consistent: cloud, unknown link, unexplored link.
 When printing CCF, the accordions are not always all expanded.
@@ -13,7 +14,6 @@ When a project is changed from Private to Shared and then a different project is
 Third party cookies must be enabled for localStorage to function. This is a concern, perhaps, when never versions of Firefox disable third party cookies by default.
 Change details of a project on the server but not active: function not implemented.
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
-Editing the CCF clusters for a large list of nodes is troublesome. Idea: make clusters collapsable.
 
 TODO
 New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable.

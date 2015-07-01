@@ -3394,6 +3394,9 @@ function collapseAllSingleF(sid) {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 function initTabCCFs() {
+	$('#ccfs_body').click( function() {
+		$('.li_selected').removeClass('li_selected');
+	});
 }
 
 var CCFSortOpt = "alpha";
@@ -3531,7 +3534,7 @@ function collapseAllCCF() {
 
 /* Repainting shared failures takes a lot of time. When we trigger a repaint, we often
  * lack information on whether the repaint can be batched. Therefore, we schedule the
- * repaint, but delay execution for a short while. This way, we avoind unnecessary
+ * repaint, but delay execution for a short while. This way, we avoid unnecessary
  * repaints.
  */
 var REPAINT_TIMEOUTS=[];
@@ -3545,6 +3548,8 @@ function repaintTDom(elem) {
 
 // To remember the scroll position within a .threatdomain div.
 var ScrollBarPosition;
+// To be able to extend the selection.
+var LastSelectedNode;
 
 function reallyRepaintTDom(elem) {
 	delete REPAINT_TIMEOUTS[elem];
@@ -3605,16 +3610,12 @@ function reallyRepaintTDom(elem) {
 		scrollSpeed: 10,
 		start: function(event,ui) {
 			ScrollBarPosition = $(this).parents('.threatdomain').scrollTop();
+			$('.li_selected').addClass('ui-draggable-dragging');
+			$(this).addClass('li_selected');
+		},
+		stop: function(event,ui) {
+			$('.li_selected').removeClass('ui-draggable-dragging li_selected');
 		}
-//
-//	REMOVED FOR NOW
-//
-//		start: function(event,ui) {
-//			$('.li_selected').addClass('ui-draggable-dragging');
-//		},
-//		stop: function(event,ui) {
-//			$('.tlistitem').removeClass('ui-draggable-dragging li_selected');
-//		}
 	});
 	$('.tlistitem,.tlistroot').droppable({
 		accept: allowDrop,
@@ -3633,25 +3634,62 @@ function reallyRepaintTDom(elem) {
 			return H(nc.title);
 		}
 	});
-//
-//	REMOVED FOR NOW
-//
-//	$('.tlistitem').click(function(ev){
-//		// Select or deselect list items. Extend the selection using
-//		// the shift key.
-//		if ($(this).hasClass('li_selected')) {
-//			if (!ev.shiftKey) {
-//				$('.tlistitem').removeClass('li_selected');
-//				$(this).addClass('li_selected');
-//			} else
-//				$(this).removeClass('li_selected');
-//		} else {
-//			if (!ev.shiftKey)
-//				$('.tlistitem').removeClass('li_selected');
-//			$(this).addClass('li_selected');
-//		}
-//		return true;
-//	});
+	$('#tdom'+nc.id).on('click', '.childnode', function(ev){
+		// Select or deselect list items. Extend the selection using
+		// the shift key.
+		if ($(this).hasClass('li_selected')) {
+			if (!ev.metaKey && !ev.ctrlKey && !ev.shiftKey) {
+				$('.tlistitem').removeClass('li_selected');
+				$(this).addClass('li_selected');
+			} else
+				$(this).removeClass('li_selected');
+		} else {
+			if (!ev.metaKey && !ev.ctrlKey && !ev.shiftKey) {
+				$('.tlistitem').removeClass('li_selected');
+				LastSelectedNode = this.id;
+			}
+			if (ev.shiftKey) {
+				// Check whether the newly clicked node is in the same cluster as the
+				// node laste selected. Else ignore.
+				if (nid2id(this.id)==nid2id(LastSelectedNode)) {
+					// Select all nodes from LastSelectedId to this.id, inclusive.
+					var fromnid = LastSelectedNode.replace(/\d+$/,'');
+					fromnid = nid2id(fromnid.replace(/\D+$/,''));
+					var tonid = this.id.replace(/\d+$/,'');
+					tonid = nid2id(tonid.replace(/\D+$/,''));
+					var cluster = nid2id(this.id);
+					
+					var idlist = [];
+					var jq;
+					jq = $(this).parent();
+					jq = jq.children('.childnode');
+					jq.map(function(){
+						idlist.push(this.id);
+					});
+					// find the from and to nodes
+					var fromi, toi;
+					for (var i=0; i<idlist.length; i++) {
+						var nd = idlist[i].replace(/\d+$/,'');
+						nd = nid2id(nd.replace(/\D+$/,''));
+						if (fromnid==nd) fromi = i;
+						if (tonid==nd) toi = i;
+					}
+					// Swap so that fromi <= toi
+					if (fromi>toi) {
+						i=fromi; fromi=toi; toi=i;
+					}
+					// Select all those nodes
+					for (i=fromi; i<=toi; i++) {
+						$('#'+idlist[i]).addClass('li_selected');
+					}
+				}
+			} else {
+				$(this).addClass('li_selected');
+			}
+		}
+		ev.stopPropagation();
+		return true;
+	});
 }
 
 function listFromCluster(nc) {
@@ -3770,35 +3808,22 @@ function triggerRepaint(elem) {
 }
 
 /* 
-	Drag node onto node, belonging to the same cluster, #childnodes>2:
-	Create a new node cluster, containing those two nodes.
-	If the two nodes have the same label, set the title of the new cluster to that label.
-	Remove the two nodes from the containing cluster.
-	Set the parent cluster to the containing cluster.
+	Drag node onto node, belonging to the same cluster:
+	Create a new node cluster, containing the drop node and all selected nodes.
+	Set the parent cluster to the containing cluster of the drop node.
+	If the drag and drop nodes have the same label, set the title of the new cluster to that label.
+	Remove the selected nodes from their clusters (by removing them from the root cluster).
 	Add the new cluster to the containing cluster, and repaint.
  
-	Drag node onto node, belonging to the same cluster, #childnodes==2:
-	do nothing.
-
 	Drag node onto node, belonging to a different cluster: invalid.
  
-	Drag node onto cluster (not being its containing cluster):
-	Move that node into the cluster.
-	If the node's old containing cluster is not root and now contains only a single
-	node and no child cluster, then move the remaining node into the
-	parent of the containing cluster, and remove the (now empty)
-	containint cluster.
-	If the node's old containing cluster is not root and now contains only a single 
-	child cluster and no child nodes, then move the remaining cluster
-	into the parent of the containing cluster, and remove the (now
-	empty) containing cluster.
-
-	Drag node onto its contaning cluster: do nothing.
-	
+	Drag node onto cluster:
+	Move all selected nodes into the cluster.
+	Normalize all clusters.
+ 
 	Drag a root cluster: invalid.
  
-	Drag cluster onto cluster that is one of its descendants:
-	Invalid.
+	Drag cluster onto cluster that is one of its descendants: invalid.
  
 	Drag cluster onto its parent cluster:
 	Dissolve the cluster, by moving its child nodes and clusters into
@@ -3855,10 +3880,15 @@ function nodeClusterReorder(event,ui) {
 				var p = Project.get(Project.cid);
 				nc.settitle( p.strToLabel(dragNode.color) );
 			}
-			nc.addchildnode(drag_n);
-			nc.addchildnode(drop_n);
-			drag_cluster.removechildnode(drag_n);
-			drag_cluster.removechildnode(drop_n);
+			$(this).addClass('li_selected');
+			$('.li_selected').each(function(){
+				var n = this.id;
+				n = n.replace(/\d+$/,"");
+				n = n.replace(/\D+$/,"");
+				n = nid2id(n);
+				root_cluster.removechildnode(n);
+				nc.addchildnode(n);
+			});
 			nc.setparent(drag);
 			nc.addthrass();
 			drag_cluster.addchildcluster( nc.id );
@@ -3872,27 +3902,14 @@ function nodeClusterReorder(event,ui) {
 			bugreport("Node dropped on its containing cluster","nodeClusterReorder");
 		} else if (drop_n==null && drag!=drop) {
 			// Dropped into a different cluster
-			drop_cluster.addchildnode(drag_n);
-			drag_cluster.removechildnode(drag_n);
-			if (!drag_cluster.isroot() 
-			 && drag_cluster.childnodes.length==1
-			 && drag_cluster.childclusters.length==0
-			) {
-				parent_cluster = NodeCluster.get(drag_cluster.parentcluster);
-				parent_cluster.addchildnode(drag_cluster.childnodes[0]);
-				drag_cluster.removechildnode(drag_cluster.childnodes[0]);
-				parent_cluster.removechildcluster(drag);
-				drag_cluster.destroy();
-			} else if (!drag_cluster.isroot() 
-			 && drag_cluster.childnodes.length==0
-			 && drag_cluster.childclusters.length==1
-			) {
-				parent_cluster = NodeCluster.get(drag_cluster.parentcluster);
-				parent_cluster.addchildcluster(drag_cluster.childclusters[0]);
-				drag_cluster.removechildcluster(drag_cluster.childclusters[0]);
-				parent_cluster.removechildcluster(drag);
-				drag_cluster.destroy();
-			}
+			$('.li_selected').each(function(){
+				var n = this.id;
+				n = n.replace(/\d+$/,"");
+				n = n.replace(/\D+$/,"");
+				n = nid2id(n);
+				root_cluster.removechildnode(n);
+				drop_cluster.addchildnode(n);
+			});
 			root_cluster.normalize();
 			root_cluster.calculatemagnitude();
 			triggerRepaint(root_cluster.id);

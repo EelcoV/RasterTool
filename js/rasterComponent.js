@@ -508,6 +508,11 @@ Component.prototype = {
 				errors += offender+"has a member node "+rn.id+" that doesn't refer back.\n";
 				continue;
 			}
+			for (j=0; j<i; j++) {
+				if (this.nodes[i]==this.nodes[j]) {
+					errors += offender+"contains duplicate node "+this.nodes[i]+".\n";
+				}
+			}
 		}
 		var sfx = [];
 		for (i=0; i<this.nodes.length; i++) {
@@ -524,6 +529,11 @@ Component.prototype = {
 			}
 		}
 		for (i=0; i<this.thrass.length; i++) {
+			for (j=0; j<i; j++) {
+				if (this.thrass[i]==this.thrass[j]) {
+					errors += offender+"contains duplicate vuln assessment "+this.thrass[i]+".\n";
+				}
+			}
 			var ta = ThreatAssessment.get(this.thrass[i]);
 			if (!ta) {
 				errors += offender+"contains an nonexisting vuln assessment "+this.thrass[i]+".\n";
