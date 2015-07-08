@@ -65,6 +65,7 @@ var NodeCluster = function(type, id) {
 	this.thrass = null;
 	this.magnitude = '-';
 	this._markeroid = null;
+	this.accordionopened = true;
 
 	this.store();
 	NodeCluster._all[this.id] = this;

@@ -548,6 +548,7 @@ function sizeworkspace() {
 function removetransientwindows(evt) {
 	$('#nodemenu').hide();
 	$('#selectmenu').hide();
+	$('#ccfmenu').hide();
 	$('.popupsubmenu').hide();
 	$('.actpanel').hide();
 	$('.activator').removeClass('actactive ui-state-active');
@@ -3394,9 +3395,288 @@ function collapseAllSingleF(sid) {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 function initTabCCFs() {
+	// Localise user interface
+	$('#mi_ccfc span').html( _("Create new cluster") );
+	$('#mi_ccfm span span').html( _("Move to") );
+
+	// Event handlers for mouse actions
+	$('#ccfs_body').on('click', '.childnode', clickSelectHandler);
+	$('#ccfs_body').on('click', '.clusternode', clickCollapseHandler);
+	$('#ccfs_body').on('contextmenu', '.tlistitem', contextMenuHandler);
 	$('#ccfs_body').click( function() {
 		$('.li_selected').removeClass('li_selected');
 	});
+	
+	// Event handlers for menu items
+	$('#mi_ccfc').click(createClusterHandler);
+	$('#mi_ccfmsm').on('click', '.ui-button', moveToClusterHandler);
+	
+	// Event handlers for showing/hiding menus
+	$('#mi_ccfm').hover(function(){
+		$('#mi_ccfmsm').show();
+	},function(){
+		$('#mi_ccfmsm').hide();
+	});
+	$('#mi_ccfmsm').hover(function(){
+		populateLabelMenu();
+		$('#mi_ccfmsm').show();
+	},function(){
+		$('#mi_ccfmsm').hide();
+	});
+}
+
+// To be able to extend the selection.
+var LastSelectedNode;
+// To find the NodeCluster id on which the context menu was invoked.
+var MenuCluster;
+
+
+/* In the event handlers 'this.id' is of the form linode123_678 (for nodes)
+ * or linode678 (for cluster headings), where 123 is a Node id and 678 is a NodeCluster id.
+ *
+ * To get the cluster id, just use nid2id().
+ * To get the node id, first strip underscore and digits, then use nid2id().
+ *
+ *	var node_id = nid2id(this.id.replace(/_\d+$/,''));
+ *	var cluster_id = nid2id(this.id);
+ *
+ * If either format is to be handled, then the following may be more useful:
+ *
+ *  var node_id = nid2id(this.id.replace(/\d+$/,'').replace(/_$/,''));
+ *
+ * since it either returns the node id or NaN in case of a cluster heading.
+ */
+
+function clickCollapseHandler(ev) {
+	var ul = $(this).parent();
+	var nid = nid2id(this.id.replace(/\d+$/,'').replace(/_$/,''));
+	var cluster = NodeCluster.get(nid2id(this.id));
+
+	$('#ccfmenu').hide();
+
+	// Ignore when clicking on the text label, as that will start editInPlace
+	if (ev.target.id.match(/^litext/))
+		return;
+	
+	// Do not manually collapse the root item
+	if ($(this).hasClass('tlistroot'))
+		return;
+	
+	if (cluster.accordionopened) {
+		ul.children().slice(1).slideUp('fast',function() {
+			ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e');
+		});
+		cluster.setaccordionopened(false);
+	} else {
+		ul.children().slice(1).slideDown('fast',function() {
+			ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
+		});
+		cluster.setaccordionopened(true);
+	}
+}
+
+function clickSelectHandler(ev) {
+	$('#ccfmenu').hide();
+	// Select or deselect list items. Extend the selection using
+	// the shift key.
+	if ($(this).hasClass('li_selected')) {
+		// Node is already selected. On a 'plain' click, unselect it.
+		// When using modifier keys, select only the clicked node.
+		if (!ev.metaKey && !ev.ctrlKey && !ev.shiftKey) {
+			$('.tlistitem').removeClass('li_selected');
+			$(this).addClass('li_selected');
+		} else
+			$(this).removeClass('li_selected');
+	} else {
+		// Node is not selected. On a 'plain' click, first undo the selection.
+		// Maintain and extend the selection if a modified key is used.
+		if (!ev.metaKey && !ev.ctrlKey && !ev.shiftKey) {
+			$('.tlistitem').removeClass('li_selected');
+			LastSelectedNode = this.id;
+		}
+		if (ev.shiftKey) {
+			// Check whether the newly clicked node is in the same cluster as the
+			// node laste selected. Else ignore.
+			if (LastSelectedNode && nid2id(this.id)==nid2id(LastSelectedNode)) {
+				// Select all nodes from LastSelectedId to this.id, inclusive.
+				var fromnid = nid2id(LastSelectedNode.replace(/_\d+$/,''));
+				var tonid = nid2id(this.id.replace(/_\d+$/,''));
+				var cluster = nid2id(this.id);
+				
+				var idlist = [];
+				var jq;
+				jq = $(this).parent();
+				jq = jq.children('.childnode');
+				jq.map(function(){
+					idlist.push(this.id);
+				});
+				// find the from and to nodes
+				var fromi, toi;
+				for (var i=0; i<idlist.length; i++) {
+					var nd = nid2id(idlist[i].replace(/_\d+$/,''));
+					if (fromnid==nd) fromi = i;
+					if (tonid==nd) toi = i;
+				}
+				// Swap so that fromi <= toi
+				if (fromi>toi) {
+					i=fromi; fromi=toi; toi=i;
+				}
+				// Select all those nodes
+				for (i=fromi; i<=toi; i++) {
+					$('#'+idlist[i]).addClass('li_selected');
+				}
+			}
+		} else {
+			// No modifier key was used: select the current node.
+			// Meta/ctrl key was used: select the current node (to extend the selection)
+			$(this).addClass('li_selected');
+		}
+	}
+	ev.stopPropagation();
+	return true;
+}
+
+function contextMenuHandler(ev) {
+	var nid = nid2id(this.id.replace(/\d+$/,'').replace(/_$/,''));
+	var cluster = NodeCluster.get(nid2id(this.id));
+	var root = NodeCluster.get(cluster.root());
+
+	MenuCluster = cluster.id;
+	$('#ccfmenu').css('left', ev.clientX+2);
+	$('#ccfmenu').css('top', ev.clientY-5);
+	$('.popupsubmenu').hide();
+
+	if (isNaN(nid)) {
+		// Popup menu called on a cluster
+		// Cannot move to the parent (because that's where it is already), nor can it be
+		// moved into any of its own descendants. And it cannot be moved onto itself.
+		populateClusterSubmenu(cluster, cluster.allclusters().concat(cluster.parentcluster));
+		$('#mi_ccfc span').html( _("Remove cluster") );
+		$('#mi_ccfc').removeClass('popupmenuitemdisabled');
+		LastSelectedNode = null;
+	} else {
+		// Popup menu called on node
+		populateClusterSubmenu(cluster,[]);
+		$('#mi_ccfc span').html( _("Create new cluster") );
+		LastSelectedNode = this.id;
+		// Remove the selection unless the current node is also selected
+		if (!$(this).hasClass('li_selected')) {
+			$('.tlistitem').removeClass('li_selected');
+		}
+		$(this).addClass('li_selected');
+
+		if ($('#ccfs_body .li_selected').length<2) {
+			$('#mi_ccfc').addClass('popupmenuitemdisabled');
+		} else {
+			$('#mi_ccfc').removeClass('popupmenuitemdisabled');
+		}
+	}
+
+	$('#ccfmenu').css('display', 'block');
+}
+
+function populateClusterSubmenu(cluster,exceptions) {
+	var allclusters = NodeCluster.get(cluster.root()).allclusters();
+	var snippet = '';
+	/* Add all sub(sub)-clusters as submenuitems */
+	for (var i=0; i<allclusters.length; i++) {
+		var cl = NodeCluster.get(allclusters[i]);
+		snippet += '<div id="ccf_msm_CI_" class="popupmenuitem popupsubmenuitem _DIS_"><span class="labeltextw">_CN_</span></div>\n';
+		snippet = snippet.replace(/_CI_/, cl.id);
+		snippet = snippet.replace(/_DIS_/, (exceptions.indexOf(cl.id)==-1 ? '' : 'popupmenuitemdisabled'));
+		if (i==0) {
+			/* root cluster */
+			snippet = snippet.replace(/_CN_/, cl.title + ' ' + _("(root)"));
+		} else {
+			snippet = snippet.replace(/_CN_/, cl.title);
+		}
+	}
+	$('#mi_ccfmsm').html(snippet);
+	$('#mi_ccfmsm .popupmenuitem').button();
+	$('#mi_ccfmsm .popupmenuitem').removeClass('ui-corner-all');
+}
+
+function createClusterHandler(ev) {
+	var cluster = NodeCluster.get(MenuCluster);
+	
+	$('#ccfmenu').css('display', 'none');
+	if (LastSelectedNode) {
+		// Called on a node: create a new cluster from selection
+		var nc = new NodeCluster(cluster.type);
+		nc.setproject(cluster.project);
+		nc.setparent(cluster.id);
+		cluster.addchildcluster( nc.id );
+		nc.addthrass();
+		moveSelectionToCluster(nc);
+		transactionCompleted("Create cluster from selection");
+	} else {
+		// Called on a cluster; absorbe that cluster into its parent.
+		removeCluster(cluster);
+		transactionCompleted("Remove cluster");
+	}
+}
+
+function removeCluster(cluster) {
+	var parent = NodeCluster.get(cluster.parentcluster);
+	var root = NodeCluster.get(cluster.root());
+	
+	for (var i=0; i<cluster.childnodes.length; i++)
+		parent.addchildnode(cluster.childnodes[i]);
+	for (i=0; i<cluster.childclusters.length; i++)
+		parent.addchildcluster(cluster.childclusters[i]);
+	parent.removechildcluster(cluster.id);
+	cluster.destroy();
+	root.normalize();
+	root.calculatemagnitude();
+	triggerRepaint(root.id);
+}
+
+function moveCluster(from_cluster,to_cluster) {
+	var parent = NodeCluster.get(from_cluster.parentcluster);
+	var root = NodeCluster.get(from_cluster.root());
+	
+	parent.removechildcluster(from_cluster.id);
+	to_cluster.addchildcluster(from_cluster.id);
+	
+//	var opened = to_cluster.accordionopened;
+//	for (var cl=to_cluster; cl.id!=root.id; cl=NodeCluster.get(cl.parentcluster)) {
+//		openend = openend && cl.accordionopened;
+//	}
+//	from_cluster.setaccordionopened(opened);
+	root.normalize();
+	root.calculatemagnitude();
+	triggerRepaint(root.id);
+}
+
+function moveToClusterHandler(ev) {
+	// Cluster indicated by the submenu item
+	var to_cluster = NodeCluster.get(nid2id(this.id));
+
+	$('#ccfmenu').css('display', 'none');
+	if (LastSelectedNode) {
+		// Called on a node: move selection to cluster
+		moveSelectionToCluster(to_cluster);
+		transactionCompleted("Move selection to cluster");
+	} else {
+		var from_cluster = NodeCluster.get(MenuCluster);
+		moveCluster(from_cluster, to_cluster);
+		transactionCompleted("Move cluster");
+	}
+}
+
+/* Each selected node is moved into 'cluster', then the entire set of clusters
+ * is normalized, recalculated, and scheduled for repainting.
+ */
+function moveSelectionToCluster(cluster) {
+	var root = NodeCluster.get(cluster.root());
+	$('.li_selected').each(function(){
+		var n = nid2id(this.id.replace(/_\d+$/,''));
+		root.removechildnode(n);
+		cluster.addchildnode(n);
+	});
+	root.normalize();
+	root.calculatemagnitude();
+	triggerRepaint(root.id);
 }
 
 var CCFSortOpt = "alpha";
@@ -3487,7 +3767,7 @@ function addTDomElements(nc) {
 	  <div id="shfaccordion_ID_" class="shfaccordion">\n\
 		<h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="shfamark_ID_"></span></a></h3>\n\
 		<div id="shfaccordionbody_ID_" class="shfaccordionbody">\n\
-		  <div id="tdom_ID_" class="threatdomain"></div>\n\
+		  <div id="tdom_ID_" class="threatdomain noselect"></div>\n\
 		</div>\n\
 	  </div>\n\
 	';
@@ -3548,8 +3828,6 @@ function repaintTDom(elem) {
 
 // To remember the scroll position within a .threatdomain div.
 var ScrollBarPosition;
-// To be able to extend the selection.
-var LastSelectedNode;
 
 function reallyRepaintTDom(elem) {
 	delete REPAINT_TIMEOUTS[elem];
@@ -3569,7 +3847,7 @@ function reallyRepaintTDom(elem) {
 		</div>\
 		<div id="shftable_ID_" class="threats">\
 		</div></div>\n\
-		<div id="tdom_ID_" class="threatdomain"></div>\n';
+		<div id="tdom_ID_" class="threatdomain noselect"></div>\n';
 	snippet = snippet.replace(/_LN_/g, _("Name"));
 	snippet = snippet.replace(/_LF_/g, _("Freq."));
 	snippet = snippet.replace(/_LI_/g, _("Impact"));
@@ -3634,66 +3912,11 @@ function reallyRepaintTDom(elem) {
 			return H(nc.title);
 		}
 	});
-	$('#tdom'+nc.id).on('click', '.childnode', function(ev){
-		// Select or deselect list items. Extend the selection using
-		// the shift key.
-		if ($(this).hasClass('li_selected')) {
-			if (!ev.metaKey && !ev.ctrlKey && !ev.shiftKey) {
-				$('.tlistitem').removeClass('li_selected');
-				$(this).addClass('li_selected');
-			} else
-				$(this).removeClass('li_selected');
-		} else {
-			if (!ev.metaKey && !ev.ctrlKey && !ev.shiftKey) {
-				$('.tlistitem').removeClass('li_selected');
-				LastSelectedNode = this.id;
-			}
-			if (ev.shiftKey) {
-				// Check whether the newly clicked node is in the same cluster as the
-				// node laste selected. Else ignore.
-				if (nid2id(this.id)==nid2id(LastSelectedNode)) {
-					// Select all nodes from LastSelectedId to this.id, inclusive.
-					var fromnid = LastSelectedNode.replace(/\d+$/,'');
-					fromnid = nid2id(fromnid.replace(/\D+$/,''));
-					var tonid = this.id.replace(/\d+$/,'');
-					tonid = nid2id(tonid.replace(/\D+$/,''));
-					var cluster = nid2id(this.id);
-					
-					var idlist = [];
-					var jq;
-					jq = $(this).parent();
-					jq = jq.children('.childnode');
-					jq.map(function(){
-						idlist.push(this.id);
-					});
-					// find the from and to nodes
-					var fromi, toi;
-					for (var i=0; i<idlist.length; i++) {
-						var nd = idlist[i].replace(/\d+$/,'');
-						nd = nid2id(nd.replace(/\D+$/,''));
-						if (fromnid==nd) fromi = i;
-						if (tonid==nd) toi = i;
-					}
-					// Swap so that fromi <= toi
-					if (fromi>toi) {
-						i=fromi; fromi=toi; toi=i;
-					}
-					// Select all those nodes
-					for (i=fromi; i<=toi; i++) {
-						$('#'+idlist[i]).addClass('li_selected');
-					}
-				}
-			} else {
-				$(this).addClass('li_selected');
-			}
-		}
-		ev.stopPropagation();
-		return true;
-	});
 }
 
 function listFromCluster(nc) {
 	var str;
+	// Cluster heading
 	if (nc.isroot()) {
 		str = '\n\
 			<ul id="tlist_ID_" class="tlist" style="padding-left: 0px;">\n\
@@ -3705,17 +3928,24 @@ function listFromCluster(nc) {
 		str = '\n\
 			<ul id="tlist_ID_" class="tlist">\n\
 			<li id="linode_ID_" class="tlistitem clusternode ui-state-default ui-state-selected">\n\
-			<span id="litext_ID_" class="litext">_TI_</span><span id="shfamark_ID_"></span></a>\n\
+			<span style="float:left; margin-left:-8px;" class="ui-icon ui-icon-triangle-1-_LT_"></span>\
+			<span id="litext_ID_" class="litext">_TI_</span>\
+			<span id="shfamark_ID_"></span></a>\n\
 			</li>\n\
 		';
 	}
 	str = str.replace(/_ID_/g, nc.id);
+	str = str.replace(/_LT_/g, (nc.accordionopened ? 's' : 'e'));
 	str = str.replace(/_TI_/g, H(nc.title));
 	str = str.replace(/_TY_/g, Rules.nodetypes[nc.type]);
 	
+	// Insert all child clusters, recursively
 	for (var i=0; i<nc.childclusters.length; i++) {
 		var cc = NodeCluster.get(nc.childclusters[i]);
-		str += '<li>\n';
+		str += '<li';
+		if (!nc.isroot() && !nc.accordionopened)
+			str += ' style="display: none;"';
+		str += '>\n';
 		str += listFromCluster(cc);
 		str += '</li>\n';
 	}
@@ -3731,7 +3961,7 @@ function listFromCluster(nc) {
 		for (i=0; i<fromarr.length; i++) {
 			var rn = Node.get(nc.childnodes[i]);
 			if (rn==null)
-				bugreport("Child node does not exist","listFromCluster:addnodeswithcolor");
+				bugreport("Child node does not exist","listFromCluster:sortednodeswithcolor");
 			if (rn.color==col)
 				arr.push(rn.id);
 		}
@@ -3756,9 +3986,13 @@ function listFromCluster(nc) {
 	if (node.length!=nc.childnodes.length)
 		bugreport("Invalidly labeled children","listFromCluster");
 	
+	// Finally insert all child nodes
 	for (i=0; i<node.length; i++) {
 		var rn = Node.get(node[i]);
-		str += '<li id="linode'+rn.id+'_'+nc.id+'" class="tlistitem childnode">\n';
+		str += '<li id="linode_NI___CI_" class="tlistitem childnode" style="display: _DI_;">\n';
+		str = str.replace(/_NI_/g, rn.id);
+		str = str.replace(/_CI_/g, nc.id);
+		str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
 		str += rn.htmltitle();
 		if (Preferences.label && rn.color!="none") {
 			var p = Project.get(Project.cid);
@@ -3837,10 +4071,15 @@ function triggerRepaint(elem) {
 	Drop onto self (either node or cluster): invalid.
  */
 function nodeClusterReorder(event,ui) {
+	// dragid is either of the form "linode137" or "linode456_137", where
+	// 137 is a NodeCluster id and 456 is a Node id.
+	// In either case nid2id() will get the cluster id.
+	// First stripping digits, then stripping non-digits, then calling nid2id() will
+	// either result in NaN or the Node id.
 	var dragid = ui.draggable[0].id;
 	var dropid = this.id;
 	// Only valid drops are to be expected.
-	var drag_n=null, drag;	// source node and cluster
+	var drag_n=null, drag; // source node and cluster
 	var drop_n=null, drop; // destination node and cluster
 	var drag_cluster, drop_cluster, parent_cluster, root_cluster;
 	
@@ -3923,24 +4162,11 @@ function nodeClusterReorder(event,ui) {
 			bugreport("Cluster dropped on a node","nodeClusterReorder");
 		} else if (drop_n==null && drop==drag_cluster.parentcluster) {
 			// Cluster dropped on its parent cluster
-			for (var i=0; i<drag_cluster.childnodes.length; i++)
-				drop_cluster.addchildnode(drag_cluster.childnodes[i]);
-			for (i=0; i<drag_cluster.childclusters.length; i++)
-				drop_cluster.addchildcluster(drag_cluster.childclusters[i]);
-			drop_cluster.removechildcluster(drag_cluster.id);
-			drag_cluster.destroy();
-			root_cluster.normalize();
-			root_cluster.calculatemagnitude();
-			triggerRepaint(root_cluster.id);
+			removeCluster(drag_cluster);
 			transactionCompleted("Remove cluster");
 		} else {
 			// Cluster dropped on a different cluster
-			parent_cluster = NodeCluster.get(drag_cluster.parentcluster);
-			parent_cluster.removechildcluster(drag);
-			drop_cluster.addchildcluster(drag);
-			root_cluster.normalize();
-			root_cluster.calculatemagnitude();
-			triggerRepaint(root_cluster.id);
+			moveCluster(drag_cluster,drop_cluster);
 			transactionCompleted("Move cluster");
 		}
 	}

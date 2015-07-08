@@ -341,3 +341,9 @@ _t["Rename suffix"] = "Hernoem suffix";
 _t["Rename class '%%'"] = "Hernoem soort '%%'";
 _t["Change suffix"] = "Wijzig suffix";
 _t["Rename suffix '%%' for node '%%'"] = "Hernoem suffix '%%' voor component '%%'";
+_t["Create new cluster"] = "Maak nieuw cluster";
+_t["Move to"] = "Verplaats naar";
+_t["(root)"] = "(stam)";
+_t["Remove cluster"] = "Verwijder cluster";
+
+

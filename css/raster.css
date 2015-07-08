@@ -27,6 +27,12 @@ body {
 .printonly { display: none; }
 .printonlycell { display: none; }
 .doshow { visibility: visible !important; }
+.noselect {
+	user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
 
 /* Vertical tabs */
 #tabs {padding: 0px; border-left: 0px;}
@@ -365,6 +371,13 @@ div.popupmenuitem {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	width: 115px;
+}
+.labeltextw {
+	display: inline-block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	width: 145px;
 }
 #mlabel {width:95px !important}
 div.popupmenuitemdisabled {

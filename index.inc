@@ -214,6 +214,12 @@ See LICENSE.md
 	  <div id="mi_scedit" class="popupmenuitem popupsubmenuitem labelmenuitem"><span class="plainlabel">Edit labels ...</span></div>
 	 </div>
 </div>
+<div id="ccfmenu" class="popupmenu">
+	<div id="mi_ccfc" class="popupmenuitem">Create new cluster</div>
+	<div id="mi_ccfm" class="popupmenuitem"><span>Move to</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
+	 <div id="mi_ccfmsm" class="popupsubmenu">
+	 </div>
+</div>
 <div id="nodereport" class="nodereport"></div>
 <div id="componentthreats" class="componentthreats"></div>
 
