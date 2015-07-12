@@ -26,6 +26,7 @@ July 2015
   to create a cluster from the selection, or to move nodes between clusters.
 * In CCF view, cluster have a popup menu. Use the menu to delete the cluster, or
   to move it.
+* Clusters can be opened/closed like accordions.
 
 June 2015
 =============
