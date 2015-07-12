@@ -465,6 +465,7 @@ Project.prototype = {
 			if (newlist.length != p.threats.length)
 				bugreport("internal error in sorting default vulnerabilities","Project.load");
 			p.threats = newlist;
+			p.store();
 			transactionCompleted("Project threats reordered "+pid);
 		};
 		$("#tWLSthreats").sortable({

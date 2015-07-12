@@ -3052,6 +3052,7 @@ function displayThreatsDialog(cid,event) {
 			if (newlist.length != c.thrass.length)
 				bugreport("internal error in sorting","displayThreatsDialog");
 			c.thrass = newlist;
+			c.store();
 			transactionCompleted("Reorder thrass of component "+c.id);
 		}
 	});
@@ -3320,6 +3321,7 @@ snippet += "</div>\n";
 				if (cm==null || newlist.length != cm.thrass.length)
 					bugreport("internal error in sorting","paintSingleFailures");
 				cm.thrass = newlist;
+				cm.store();
 				transactionCompleted("Reorder thrass of component "+cm.id);
 			}
 		});
