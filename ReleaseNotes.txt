@@ -22,6 +22,10 @@ July 2015
 * Nodes in CCF view can now be selected, and all selected nodes can be dragged and
   dropped collectively. Normal click = select/deselect. Cmd click or Ctrl click =
   add/remove that node from the current selection. Shift click = extend selection.
+* In CCF view, individual nodes and selected nodes have a popup menu. Use the menu
+  to create a cluster from the selection, or to move nodes between clusters.
+* In CCF view, cluster have a popup menu. Use the menu to delete the cluster, or
+  to move it.
 
 June 2015
 =============
