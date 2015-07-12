@@ -3,7 +3,6 @@ See LICENSE.md
 
 
 BUGS
-Editing the CCF clusters for a large list of nodes is troublesome. Idea: make clusters collapsable.
 After upgrade, scrolling within large CCFs is weird. Two competing scroll bars??
 Be consistent: cloud, unknown link, unexplored link.
 When printing CCF, the accordions are not always all expanded.
@@ -21,7 +20,6 @@ New object: area. Like a selection, but fixed. Like a label, but visually less o
 Create toolbar/buttons for actions in popup menu
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
 Sort Single failures by Label.
-Sorting of threats is possible within dialogs, but not on the Single Failures list.
 When changing the type of a node: if the name of the node looks like a default one, then update the name to reflect the new type; otherwise, leave the name untouched.
 Remove the code for upgrading ancient formats to the new format?
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.

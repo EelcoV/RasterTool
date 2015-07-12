@@ -317,7 +317,7 @@ _t["Cannot continue"] = "Kan niet verder gaan";
 _t["HTML5 local storage is not supported by this browser or configuration. "] = "HTML5 'local storage' is niet beschikbaar in deze webbrowser of met de huidige instellingen. ";
 _t["This app will not work properly. "] = "Dit programma zal niet goed werken. ";
 _t["Try adjusting your cookie or privacy settings."] = "Probeer uw cookie of privacy installingen aan te passen.";
-_t["New node group"] = "Nieuwe componentgroep";
+_t["New cluster"] = "Nieuw cluster";
 _t["Find:"] = "Vind:";
 _t["Results:"] = "Resultaten:";
 _t["Find nodes"] = "Vind componenten";
@@ -341,3 +341,9 @@ _t["Rename suffix"] = "Hernoem suffix";
 _t["Rename class '%%'"] = "Hernoem soort '%%'";
 _t["Change suffix"] = "Wijzig suffix";
 _t["Rename suffix '%%' for node '%%'"] = "Hernoem suffix '%%' voor component '%%'";
+_t["Create new cluster"] = "Maak nieuw cluster";
+_t["Move to"] = "Verplaats naar";
+_t["(root)"] = "(stam)";
+_t["Remove cluster"] = "Verwijder cluster";
+
+
