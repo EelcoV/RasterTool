@@ -15,7 +15,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
-Popup menu on CCF nodes: create new selection (when menu node is selected and #selected>1 ; move into groep {submenu dynamically populated with existing groups plus root menu}).
+The Find textfield has a placeholder attribute; set this also on Remarks.
 New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable.
 Create toolbar/buttons for actions in popup menu
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
