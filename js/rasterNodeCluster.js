@@ -57,7 +57,7 @@ var NodeCluster = function(type, id) {
 		bugreport("NodeCluster with id "+id+" already exists","NodeCluster.constructor");
 	this.id = (id==null ? nextUnusedIndex(NodeCluster._all) : id);
 	this.type = type;
-	this.title = _("New node group")+' '+this.id;
+	this.title = _("New cluster")+' '+this.id;
 	this.project = null;
 	this.parentcluster = null;
 	this.childclusters = [];

@@ -3455,23 +3455,21 @@ function clickCollapseHandler(ev) {
 	$('#ccfmenu').hide();
 
 	// Ignore when clicking on the text label, as that will start editInPlace
-	if (ev.target.id.match(/^litext/))
+	if (ev.target.id.match(/^litext/) || ev.target.id=='')
 		return;
-	
+
 	// Do not manually collapse the root item
 	if ($(this).hasClass('tlistroot'))
 		return;
 	
 	if (cluster.accordionopened) {
-		ul.children().slice(1).slideUp('fast',function() {
-			ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e');
-		});
+		ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e');
 		cluster.setaccordionopened(false);
+		ul.children().slice(1).slideUp('fast');
 	} else {
-		ul.children().slice(1).slideDown('fast',function() {
-			ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
-		});
+		ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
 		cluster.setaccordionopened(true);
+		ul.children().slice(1).slideDown('fast');
 	}
 }
 
