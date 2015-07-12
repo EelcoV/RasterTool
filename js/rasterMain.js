@@ -3413,7 +3413,11 @@ function initTabCCFs() {
 	
 	// Event handlers for showing/hiding menus
 	$('#mi_ccfm').hover(function(){
-		$('#mi_ccfmsm').show();
+		$('#mi_ccfmsm').show().position({
+			my: 'left top',
+			at: 'right center',
+			of: '#mi_ccfm'
+		});
 	},function(){
 		$('#mi_ccfmsm').hide();
 	});
