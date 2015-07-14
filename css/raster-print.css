@@ -68,6 +68,10 @@ body {
 .shfaccordion h3 { page-break-after: avoid; }
 .threat { page-break-after: avoid; }
 
+.ui-accordion-content {
+	margin-bottom: 2px !important;
+}
+
 #ana_ccftable { page-break-inside: avoid; }
 #ana_nodethreattable { page-break-inside: avoid; }
 .SFvulnstable { page-break-inside: avoid; }
