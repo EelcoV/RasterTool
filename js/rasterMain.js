@@ -3396,6 +3396,8 @@ function collapseAllSingleF(sid) {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+var ccfmsm_timer;
+
 function initTabCCFs() {
 	// Localise user interface
 	$('#mi_ccfc span').html( _("Create new cluster") );
@@ -3415,19 +3417,25 @@ function initTabCCFs() {
 	
 	// Event handlers for showing/hiding menus
 	$('#mi_ccfm').hover(function(){
+		clearTimeout(ccfmsm_timer);
 		$('#mi_ccfmsm').show().position({
 			my: 'left top',
 			at: 'right center',
 			of: '#mi_ccfm'
 		});
 	},function(){
-		$('#mi_ccfmsm').hide();
+		ccfmsm_timer = setTimeout(function(){
+			$('#mi_ccfmsm').hide();
+		},150);
 	});
 	$('#mi_ccfmsm').hover(function(){
 		populateLabelMenu();
+		clearTimeout(ccfmsm_timer);
 		$('#mi_ccfmsm').show();
 	},function(){
-		$('#mi_ccfmsm').hide();
+		ccfmsm_timer = setTimeout(function(){
+			$('#mi_ccfmsm').hide();
+		},150);
 	});
 }
 
