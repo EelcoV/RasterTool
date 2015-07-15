@@ -3963,7 +3963,7 @@ function listFromCluster(nc) {
 		str = '\n\
 			<ul id="tlist_ID_" class="tlist">\n\
 			<li id="linode_ID_" class="tlistitem clusternode ui-state-default ui-state-selected">\n\
-			<span style="float:left; margin-left:-8px;" class="ui-icon ui-icon-triangle-1-_LT_"></span>\
+			<span id="cltrgl_ID_" class="ui-icon ui-icon-triangle-1-_LT_ clustericon"></span>\
 			<span id="litext_ID_" class="litext">_TI_</span>\
 			<span id="shfamark_ID_"></span></a>\n\
 			</li>\n\
