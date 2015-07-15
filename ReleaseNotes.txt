@@ -24,9 +24,9 @@ July 2015
   add/remove that node from the current selection. Shift click = extend selection.
 * In CCF view, individual nodes and selected nodes have a popup menu. Use the menu
   to create a cluster from the selection, or to move nodes between clusters.
-* In CCF view, cluster have a popup menu. Use the menu to delete the cluster, or
-  to move it.
+* Clusters also have a popup menu. Use the menu to delete the cluster, or to move it.
 * Clusters can be opened/closed like accordions.
+* Find panel now searches and shows suffixes.
 
 June 2015
 =============

@@ -344,6 +344,7 @@ var updateFind = function() {
 			var rn = it.getnode();
 			var s = Service.get(rn.service);
 			if (rn.title.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1
+			 || (rn.suffix!='' && rn.suffix.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1)
 //			 && (rn.suffix=='' || rn.suffix=='a')
 			) {
 				if (rn.type!=currtype) {
@@ -374,7 +375,7 @@ var updateFind = function() {
 				} else {
 					res += '<div class="tinysquare" style="border: 1px solid white;"></div>';
 				}
-				res += ' ' + H(rn.title)
+				res += ' ' + rn.htmltitle()
 				+ ' <span style="color:grey;">'
 				+ _("in service")
 				+ '</span> '
