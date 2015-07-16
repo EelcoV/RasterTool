@@ -15,6 +15,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
+When renaming a node, split at the ^ sign and treat the latter part as the suffix?
 CCF view: make each vulnerability a bottom tab?
 CCF view: when opening an accordion, scroll so that it appears at the top of the viewport?
 New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable.
@@ -27,7 +28,7 @@ The sort order on the Failures and Vulnerabilities tab should probably be a Pref
 Exclude entire vulnerabilities in Analysis|Failures and Vulnerabilities tab.
 Add Copy option to the popup menu of a selection (difficult?).
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
-Reorder the options in the node menu (change properties at the top, operations at the bottom)
+Reorder the options in the node menu (change properties at the top, operations {Duplicate, Remove} at the bottom)
 Clean up the code so that UI stuff is more clearly separated from the objects themselves. Also rearrange code between rasterMain.js and the objects.
 When adding a threat to a Unknown node, the type of the new threat is always tEQT. It should be possible to change the type to tWRD or tWLS. Have 3 typed add buttons?
 Have separate Paste functions for merging and overwriting?
