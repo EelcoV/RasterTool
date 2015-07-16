@@ -15,9 +15,10 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
-The Find textfield has a placeholder attribute; set this also on Remarks.
+CCF view: make each vulnerability a bottom tab?
+CCF view: when opening an accordion, scroll so that it appears at the top of the viewport?
 New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable.
-Create toolbar/buttons for actions in popup menu
+Create toolbar/buttons for actions in popup menu.
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
 Sort Single failures by Label.
 When changing the type of a node: if the name of the node looks like a default one, then update the name to reflect the new type; otherwise, leave the name untouched.
@@ -55,6 +56,7 @@ Cannot reproduce: allowDrop called when dragging the scroller?! Reproduce: reloa
 You found a bug in this program. ("NodeCluster already contains that child node" in function "NodeCluster.addchildnode"). When renaming a vuln. Cannot reproduce now. Artefact of debugging?
 
 OTHER / WON'T FIX
+The Find textfield has a placeholder attribute; set this also on Remarks. Cannot, because remarks are not an input textfield.
 Make the "Total" column in threat tables couloured? Probably doesn't look too good. Tried it a bit.
 Two sub-clusters on the same level can have the same name. Since it is OK for sub-clusters not sharing the same parent to have the same name, and since it does not break anything, we won't fix this.
 The list in Single Failures cannot be grouped by service, as some components belong to more than one service. They would then be duplicated, which complicates the UI too much (e.g. a single edit may change multiple objects on the screen).

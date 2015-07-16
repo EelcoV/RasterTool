@@ -3545,6 +3545,7 @@ function clickSelectHandler(ev) {
 			// No modifier key was used: select the current node.
 			// Meta/ctrl key was used: select the current node (to extend the selection)
 			$(this).addClass('li_selected');
+			LastSelectedNode = this.id;
 		}
 	}
 	ev.stopPropagation();
