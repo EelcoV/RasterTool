@@ -68,6 +68,9 @@ input.inplace_field, textarea.inplace_field {
 }
 .th_freq .inplace_form {position: relative; z-index:1100; left: -9px;}
 .th_impact .inplace_form {position: relative; z-index:1100; left: -9px;}
+.th_freq select {
+	margin-left: -7em !important;
+}
 
 .ui-link { cursor: pointer; text-decoration: underline; }
 
