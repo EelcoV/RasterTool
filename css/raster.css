@@ -401,6 +401,8 @@ div.thr_header {
 div.threat {
 	display: table-row;
 }
+.sfa_sortable .threat { cursor: ns-resize; }
+.checklist .threat { cursor: ns-resize; }
 .th_col {
 	display: block;
 	float: left;
@@ -427,6 +429,8 @@ div.th_del {
 	background: white;
 }
 div.th_del input { padding: 1px; }
+.th_name span { cursor: text; }
+.th_descr span { cursor: text; }
 .th_name .inplace_field { width: 14em; }
 .th_descr .inplace_field { width: 46em; }
 
@@ -445,6 +449,9 @@ div.th_remark {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
+.th_freq span { cursor: text; }
+.th_impact span { cursor: text; }
+.th_remark span { cursor: text; }
 .th_remark .inplace_field { width: 35em; }
 
 .copybutton {margin-left: 20px; }
