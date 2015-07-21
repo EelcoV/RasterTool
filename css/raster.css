@@ -1026,10 +1026,15 @@ for checklists and threat evaluations.
 	top: 0;
 }
 
+.litext {
+	cursor: text;
+}
+
 .clustericon {
 	float:left;
 	margin-left: -8px;
 	margin-right: 2px;
+	cursor: pointer;
 }
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *|         ANALYSIS        |* * * * * * * * * * * * * * * * */

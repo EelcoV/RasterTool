@@ -4025,9 +4025,11 @@ function listFromCluster(nc) {
 	// Finally insert all child nodes
 	for (i=0; i<node.length; i++) {
 		var rn = Node.get(node[i]);
-		str += '<li id="linode_NI___CI_" class="tlistitem childnode" style="display: _DI_;">\n';
+		var sv = Service.get(rn.service);
+		str += '<li id="linode_NI___CI_" title="_SV_" class="tlistitem childnode" style="display: _DI_;">\n';
 		str = str.replace(/_NI_/g, rn.id);
 		str = str.replace(/_CI_/g, nc.id);
+		str = str.replace(/_SV_/g, H(sv.title));
 		str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
 		str += rn.htmltitle();
 		if (Preferences.label && rn.color!="none") {
