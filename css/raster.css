@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
@@ -9,7 +9,7 @@ The UI consists of a main window containing three sections: diagrams, single ele
 
 */
 
-.ui-widget {font-size:11px !important; 
+.ui-widget {font-size:11px !important;
 }
 
 .ui-state-focus { outline: none; }
@@ -47,7 +47,7 @@ body {
 	-moz-transform-origin: 0 0;
 	-webkit-transform-origin: 0 0;
 	-o-transform-origin:  0 0;
-}	
+}
 .ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150; outline: none;}
 .longlink { width: 12.5em !important; }
 .tabcloseicon {margin-top:0.4em; cursor: pointer;}
@@ -103,7 +103,7 @@ input.inplace_field, textarea.inplace_field {
 
 /* Templates of the 5 node types, for dragging onto the workspace */
 #templates {
-	position: absolute; 
+	position: absolute;
 	left: 400px;
 	top: 8px;
 	width: 398px;
@@ -113,16 +113,16 @@ input.inplace_field, textarea.inplace_field {
 }
 .template {
 	position: absolute;
-	width: 63px; 
-	height: 45px; 
+	width: 63px;
+	height: 45px;
 	z-index: 100;
 }
 .templatebg {
 	position: absolute;
-	width: 50px; 
+	width: 50px;
 	height: 23px;
 	top: 2px;
-	left: 0px; 
+	left: 0px;
 	border: 1px solid #333;
 	border-radius: 3px;
 	background: #ccccff;
@@ -156,7 +156,7 @@ img.tC {
 	position: absolute;
 	top: 0px;
 	right: 7px;
-	width: 16px; 
+	width: 16px;
 	height: 16px;
 	z-index: 105;
 	visibility: hidden;
@@ -241,9 +241,9 @@ img.tC {
 	-moz-user-select: none;
 	-webkit-user-select: none;
 }
-.actactive { 
-	height: 30px; 
-	border-radius: 0; 	
+.actactive {
+	height: 30px;
+	border-radius: 0;
 	border: 1px solid white;
 	border-top: 0px;
 	border-bottom: 0px;
@@ -310,7 +310,7 @@ Dialog windows:
 /* Dialog: popup menu */
 div.popupmenu {
 	display: none;
-	position: absolute; 
+	position: absolute;
 	width: 130px;
 	z-index: 700;
 	box-shadow: 7px 7px 6px #999;
@@ -368,7 +368,7 @@ div.popupmenuitem {
 .Bblue {background: rgb(193,238,255);}
 .Bpurple {background: rgb(239,169,224);}
 .Bgrey {background: rgb(177,177,177);}
-.labeltext { 
+.labeltext {
 	display: inline-block;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -463,9 +463,9 @@ div.th_remark {
 
 /* Main workspace (element nodes described further down) */
 .workspace {
-	position: absolute; 
-	left: 0px; 
-	top: 0px; 
+	position: absolute;
+	left: 0px;
+	top: 0px;
 	right: 0px;
 	padding: 0 !important;
 }
@@ -487,28 +487,28 @@ div.th_remark {
 	margin-left: 15px;
 }
 
-/* Horizontal tabs below the main workspace 
+/* Horizontal tabs below the main workspace
 #diagrams_body {
 	position: relative;
 	top: 0px;
 	bottom: 5px;
-} 
+}
 */
-.tabs-bottom .ui-tabs-panel { height: 140px; overflow: auto; } 
-.tabs-bottom .ui-tabs-nav { position: absolute !important; left: 38px; bottom: -1px; right:0; padding: 0 !important; } 
-.tabs-flushleft .ui-tabs-nav { left: 0 !important; } 
+.tabs-bottom .ui-tabs-panel { height: 140px; overflow: auto; }
+.tabs-bottom .ui-tabs-nav { position: absolute !important; left: 38px; bottom: -1px; right:0; padding: 0 !important; }
+.tabs-flushleft .ui-tabs-nav { left: 0 !important; }
 .tabs-bottom .ui-tabs-nav li.ui-tabs-selected { margin-top: -2px !important; }
 .tabs-bottom .ui-tabs-nav li {
 	margin-top: 0px !important;
 	margin-bottom: 1px !important;
-	border-top: none; 
+	border-top: none;
 	border-bottom-width: 1px;
 	width: 13em;
 	padding-bottom: 1px !important;
 }
 .tabs-bottom li .inplace_field { /* is this still used? */
-	width: 20em; 
-	font-size: 11px; 
+	width: 20em;
+	font-size: 11px;
 	font-weight: bold;
 	border: 0;
 	padding: 0;
@@ -544,7 +544,7 @@ div.th_remark {
 .scroller_region {
 	position: absolute;
 	left: 0px;		/* Recalculated in $(".scroller_region").draggable( ... ) */
-	top: 0px;	
+	top: 0px;
 	width: 54px;	/* Recalculated in SizeDOMElements() */
 	height: 36px;
 	cursor: move;
@@ -562,7 +562,7 @@ div.th_remark {
 
 /* Basic Node templates */
 /* round dot on top of nodes */
-._jsPlumb_endpoint { 
+._jsPlumb_endpoint {
 	z-index: 2;
 	user-select: none;
 	-ms-user-select: none;
@@ -570,8 +570,8 @@ div.th_remark {
 	-webkit-user-select: none;
 }
 /* Lines between nodes */
-._jsPlumb_connector { 
-	z-index: 1; 
+._jsPlumb_connector {
+	z-index: 1;
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
@@ -663,7 +663,7 @@ div.nodecontent {
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	width: 100%; 
+	width: 100%;
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
@@ -673,7 +673,7 @@ img.nodeC {
 	position: absolute;
 	top: -5px;
 	right: 0px;
-	width: 16px; 
+	width: 16px;
 	height: 16px;
 	z-index: 15;
 	cursor: context-menu;
@@ -685,7 +685,7 @@ img.nodeW {
 	position: absolute;
 	top: -5px;
 	left: 0px;
-	width: 15px; 
+	width: 15px;
 	height: 15px;
 	cursor: pointer;
 	z-index: 15;
@@ -694,9 +694,9 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 	display: none;
 	width: 8px;
 	height: 8px;
-	border-radius: 3px; 
-	border: 1px solid grey; 
-	text-align: center; 
+	border-radius: 3px;
+	border: 1px solid grey;
+	text-align: center;
 	position: absolute;
 	color: transparent;
 	top: -9px;
@@ -738,7 +738,7 @@ div.WLScontent {
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	width: 100%; 
+	width: 100%;
 	border: 0px;
 }
 
@@ -763,7 +763,7 @@ div.WRDcontent {
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	width: 100%; 
+	width: 100%;
 	border: 0px;
 }
 
@@ -787,7 +787,7 @@ div.EQTcontent {
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	width: 100%; 
+	width: 100%;
 	border: 0px;
 }
 
@@ -908,11 +908,11 @@ for checklists and threat evaluations.
 	text-transform: uppercase;
 }
 
-.Magnitude { 
-	float: right; 
+.Magnitude {
+	float: right;
 	width: 3em;
 	margin-left: 2em;
-	border: 1px solid grey; 
+	border: 1px solid grey;
 	color: black;
 	text-align: center;
 }
@@ -974,7 +974,7 @@ for checklists and threat evaluations.
 		linear-gradient(to top, rgba(90,0,0,.8), rgba(50,0,0,.2) 2px, rgba(0,0,0,0)) 0 100%;
 	background-repeat: no-repeat;
 	background-size: 100% 40px, 100% 40px, 740px 15px, 740px 15px;
-	
+
 	/* Opera doesn't support this in the shorthand */
 	background-attachment: local, local, scroll, scroll;
 }
@@ -1050,7 +1050,7 @@ for checklists and threat evaluations.
 /* * * * * * * * * * * * * * * * *|         ANALYSIS        |* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
-#analysis_body h3 { 
+#analysis_body h3 {
 	background: #eee;
 	margin: 0 0 5px;
 	padding: 15px 100px 5px;
@@ -1118,8 +1118,8 @@ for checklists and threat evaluations.
 .largetitlecell { font-size: 14px; text-decoration: underline;}
 .nodecell { cursor: pointer; }
 .clustercell { cursor: pointer; }
-.excluded { 
-	background: white !important; 
+.excluded {
+	background: white !important;
 	color: gray !important;
 	text-decoration: line-through;
 	border: 1px solid red;
@@ -1139,7 +1139,7 @@ for checklists and threat evaluations.
 .statsnum {text-align: left !important; padding-left: 14px; }
 
 .statstable {
-	background: #faf8f8; 
+	background: #faf8f8;
 	border-bottom: 1px solid black;
 	border-spacing: 0;
 }

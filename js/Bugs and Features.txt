@@ -3,8 +3,9 @@ See LICENSE.md
 
 
 BUGS
+In the Analysis tab, the Single Failures per level counts node classes multiple times. Only single classes are counted once.
 After upgrade, scrolling within large CCFs is weird. Two competing scroll bars??
-Be consistent: cloud, unknown link, unexplored link.
+Be consistent: cloud, unknown link, unexplored link. Decision: use "unknwon link" as the official term, with "cloud" as a possible informal nickname.
 When printing CCF, the accordions are not always all expanded.
 SizeDOMElements is not called when browser goes fullscreen. The bottom tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?
 Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?
@@ -15,6 +16,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
+Put the name of the project in the title of the HTML page, probably with "Raster - " prefixed.
 When renaming a node, split at the ^ sign and treat the latter part as the suffix?
 CCF view: make each vulnerability a bottom tab?
 CCF view: when opening an accordion, scroll so that it appears at the top of the viewport?

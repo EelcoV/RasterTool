@@ -110,8 +110,6 @@
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.3.js"; sourceTree = "<group>"; };
-		4966C13A1AEE35F7002B5F9A /* Raster-EN-1.0.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Raster-EN-1.0.pdf"; sourceTree = "<group>"; };
-		4966C13B1AEE35F7002B5F9A /* Raster-NL-1.0.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Raster-NL-1.0.pdf"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
 		498BB2B91A2626AF00B12844 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-hi.png"; sourceTree = "<group>"; };
@@ -169,6 +167,8 @@
 		49E0128C1A795DFE007D4303 /* ui-icons_888888_256x240.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ui-icons_888888_256x240.png"; sourceTree = "<group>"; };
 		49E0128D1A795DFE007D4303 /* ui-icons_cd0a0a_256x240.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ui-icons_cd0a0a_256x240.png"; sourceTree = "<group>"; };
 		49E0128E1A795DFE007D4303 /* jquery-ui.min.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "jquery-ui.min.css"; sourceTree = "<group>"; };
+		49F6CFD81C3E5CA0005C96A7 /* Raster-EN-1.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Raster-EN-1.1.pdf"; sourceTree = "<group>"; };
+		49F6CFD91C3E5CA0005C96A7 /* Raster-NL-1.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Raster-NL-1.1.pdf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -210,8 +210,8 @@
 				494B702918796E9D00400328 /* share.inc */,
 				494B6FA118796E9D00400328 /* sse_projmon.inc */,
 				494464AC1A2323990066BDE1 /* help */,
-				4966C13A1AEE35F7002B5F9A /* Raster-EN-1.0.pdf */,
-				4966C13B1AEE35F7002B5F9A /* Raster-NL-1.0.pdf */,
+				49F6CFD81C3E5CA0005C96A7 /* Raster-EN-1.1.pdf */,
+				49F6CFD91C3E5CA0005C96A7 /* Raster-NL-1.1.pdf */,
 				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
 				494B702C18796E9D00400328 /* index.html */,
 			);
@@ -547,7 +547,7 @@
 		494B6F5F18796DD000400328 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0720;
 			};
 			buildConfigurationList = 494B6F6218796DD000400328 /* Build configuration list for PBXProject "RasterTool" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -570,6 +570,7 @@
 		494B6F6318796DD000400328 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_TESTABILITY = YES;
 				ONLY_ACTIVE_ARCH = YES;
 			};
 			name = Debug;
