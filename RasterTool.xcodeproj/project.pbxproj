@@ -110,6 +110,8 @@
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.3.js"; sourceTree = "<group>"; };
+		4961E8B71C415CE60001FAE3 /* Raster-EN-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-EN-1.1.epub"; sourceTree = "<group>"; };
+		4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-NL-1.1.epub"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
 		498BB2B91A2626AF00B12844 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-hi.png"; sourceTree = "<group>"; };
@@ -212,6 +214,8 @@
 				494464AC1A2323990066BDE1 /* help */,
 				49F6CFD81C3E5CA0005C96A7 /* Raster-EN-1.1.pdf */,
 				49F6CFD91C3E5CA0005C96A7 /* Raster-NL-1.1.pdf */,
+				4961E8B71C415CE60001FAE3 /* Raster-EN-1.1.epub */,
+				4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */,
 				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
 				494B702C18796E9D00400328 /* index.html */,
 			);

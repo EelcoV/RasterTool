@@ -16,6 +16,9 @@ for specifics.
 The tool is accessible via the URL http://yourwebserver/path/ .
 Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
+January 2016
+=============
+We now have ePub versions of the English and Dutch manuals.
 
 July 2015
 =============
