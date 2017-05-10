@@ -551,7 +551,7 @@
 		494B6F5F18796DD000400328 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 0820;
 			};
 			buildConfigurationList = 494B6F6218796DD000400328 /* Build configuration list for PBXProject "RasterTool" */;
 			compatibilityVersion = "Xcode 3.2";
