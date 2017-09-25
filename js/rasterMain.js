@@ -240,10 +240,10 @@ $(function() {
 	$('#findbutton img').click( function() {
 		var dialog = $('<div></div>');
 		var snippet ='\
-			<form id="form_find">\n\
+			<!-- form id="form_find" -->\n\
 			_LS_<br><input id="field_find" name="fld" type="text" value="" placeholder="_PH_"><br>\n\
 			_LF_<br><div id="field_found"></div>\n\
-			</form>\
+			<!-- /form -->\
 		';
 		snippet = snippet.replace(/_LS_/g, _("Find:"));
 		snippet = snippet.replace(/_LF_/g, _("Results:"));
