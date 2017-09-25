@@ -967,18 +967,21 @@ Node.prototype = {
 		for (var i=0; i<this.connect.length; i++) {
 			var rn = Node.get(this.connect[i]);
 			if (!rn) {
-				errors += "Node "+this.id+" is connected to node "+rn.id+" which does not exist.\n";
+				errors += "Node "+this.id+" is connected to node "+this.connect[i]+" which does not exist.\n";
 				continue;
 			}
 			if (rn.connect.indexOf(this.id)==-1) {
 				errors += "Node "+this.id+" is connected to node "+rn.id+", but not vice versa.\n";
+			}
+			if (this.service!=rn.service && this.id>rn.id) { // id-check is to avoid duplicate error messages
+				errors += "Node "+this.id+" is connected to node "+rn.id+", which is in another service diagram.\n";
 			}
 		}
 		// If this node is member of a singlular component, and it is not the first node of that component,
 		// then this node should not appear in any node cluster
 		var cm = Component.get(this.component);
 		if (cm && cm.title!=this.title) {
-			errors += "Node "+this.id+" has title ("+nc.title+") that differs from its component ("+cm.title+").\n";
+			errors += "Node "+this.id+" has title ("+this.title+") that differs from its component ("+cm.title+").\n";
 		}
 		if (cm && cm.single && cm.nodes[0]!=this.id) {
 			var it = new NodeClusterIterator({isroot: true});

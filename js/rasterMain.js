@@ -286,8 +286,11 @@ $(function() {
 	});
 
 	$('body').keydown(function(evt){
-		 if (evt.keyCode==8 && evt.eventPhase!=Event.BUBBLING_PHASE) // Backspace, as it bound in the browser to 'Return to previous page'
-		 	return false;	
+		if (evt.keyCode==8) { // Backspace, unfortunately, is bound in the browser to 'Return to previous page'
+			if (!$(evt.target).is("input:not([readonly]):not([type=radio]):not([type=checkbox]), textarea, [contentEditable], [contentEditable=true]"))
+			    // Only when focus is NOT on input or textarea
+				evt.preventDefault();
+		}
 	});
 	$('body').bind('contextmenu', function(e) {
 		e.preventDefault();
@@ -724,6 +727,7 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 }
 
 function bugreport(mess,funcname) {
+	console.log('bugreport: "'+mess+'" in function "'+funcname+'".');
 	if (DEBUG)
 		rasterAlert('Please report this bug','You found a bug in this program.\n("'+mess+'" in function "'+funcname+'").');
 }
