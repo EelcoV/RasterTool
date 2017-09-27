@@ -398,6 +398,24 @@ NodeCluster.prototype = {
 				}
 			}
 		}
+
+		var rc = NodeCluster.get(this.root());
+		if (!rc)
+			errors += offender+"does not have proper root.\n";
+		var ta = ThreatAssessment.get(this.thrass);
+		if (!ta) {
+			errors += offender+"contains an nonexisting vuln assessment "+this.thrass+".\n";
+		} else {
+			if (ta.cluster!=this.id)
+				errors += offender+"has a member vuln assessment "+ta.id+" that doesn't refer back.\n";
+			if (ta.component)
+				errors += offender+"has a member vuln assessment "+ta.id+" that also refers to a component.\n";
+			if (ta.type!=this.type)
+				errors += offender+"has a member vuln assessment "+ta.id+" with a non-matching type.\n";
+			if (ta.title!=this.title)
+				errors += offender+"has a member vuln assessment "+ta.id+" with a different title.\n";
+		}
+
 		for (i=0; i<this.childnodes.length; i++) {
 			var rn = Node.get(this.childnodes[i]);
 			if (!rn) {
@@ -409,22 +427,21 @@ NodeCluster.prototype = {
 					errors += offender+"contains duplicate child node "+this.childnodes[i]+".\n";
 				}
 			}
-		}
-		var rc = NodeCluster.get(this.root());
-		if (!rc)
-			errors += offender+"does not have proper root.\n";
-		var ta = ThreatAssessment.get(this.thrass);
-		if (!ta) {
-			errors += offender+"contains an nonexisting vuln assessment "+this.thrass+".\n";
-		} else {
-			if (ta.cluster!=this.id) 
-				errors += offender+"has a member vuln assessment "+ta.id+" that doesn't refer back.\n";
-			if (ta.component) 
-				errors += offender+"has a member vuln assessment "+ta.id+" that also refers to a component.\n";
-			if (ta.type!=this.type) 
-				errors += offender+"has a member vuln assessment "+ta.id+" with a non-matching type.\n";
-			if (ta.title!=this.title)
-				errors += offender+"has a member vuln assessment "+ta.id+" with a different title.\n";
+			var cm = Component.get(rn.component);
+			if (!rn) {
+				errors += offender+"has a child node "+rn.id+" that does not have a valid component.\n";
+				continue;
+			}
+			// The component of each child node must have a threat assessment that matches this cluster
+			for (j=0; j<cm.thrass.length; j++) {
+				ta = ThreatAssessment.get(cm.thrass[j]);
+				if (ta && ta.title==rc.title && ta.type==rc.type)
+					break;
+			}
+			if (j==cm.thrass.length) {
+				errors += offender+"has a child node "+rn.id+" that does not have vulnerability of this kind.\n";
+				continue;
+			}
 		}
 		return errors;
 	}
