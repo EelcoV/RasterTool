@@ -346,4 +346,10 @@ _t["Move to"] = "Verplaats naar";
 _t["(root)"] = "(stam)";
 _t["Remove cluster"] = "Verwijder cluster";
 
-
+_t["Warning!"] = "Waarschuwing!";
+_t["The tool may already be active in another browser window or tab. If so, then continuing <em>will</em> damage your projects!"] = "Dit programma is misschien al geopend in een ander venster or tab van de browser. Als dat zo is, dan zullen uw projecten <em>zeker</em> beschadigd raken!";
+_t["Continue anyway"] = "Toch doorgaan";
+_t["Are you really sure?"] = "Weet u het echt zeker?";
+_t["If your project is open in another browser window or tab, <em>you will lose all your work</em>."] = "Als uw project wel geopend is in een ander venster of tab van deze browser, <em>dan gaat al uw werk verloren</em>.";
+_t["Yes, I am sure"] = "Ja, ik weet het zeker";
+_t["No, let me check again"] = "Nee, ik wil nog eens controleren";
