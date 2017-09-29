@@ -81,7 +81,7 @@ RasterPreferences						key raster:version:R:0
 .theme			"name of theme preference"
 .emsize			"em_none", "em_small", "em_large"
 .tab			0..3
-.crator			"name of creator"
+.creator		"name of creator"
 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -140,6 +140,11 @@ $(function() {
 	$("a[href^=#tab_singlefs]").html(_("Single failures"));
 	$("a[href^=#tab_ccfs]").html(_("Common cause failures"));
 	$("a[href^=#tab_analysis]").html(_("Analysis"));
+
+	// Make sure that each tool window has a unique name
+	if (!window.name.match(/^RasterTool\d+$/)) {
+		window.name = 'RasterTool'+String(Math.random()).substring(2);
+	}
 
 	if (!testLocalStorage()) {
 		// The splash screen is still visible, and will obscure any interaction.
@@ -298,10 +303,31 @@ $(function() {
 
 	$(window).load(function() {
 		$('#splash').hide();
+		if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
+			rasterConfirm(_("Warning!"), _("The tool may already be active in another browser window or tab. If so, then continuing <em>will</em> damage your projects!"),
+				_("Continue anyway"), _("Cancel"),
+				function() {
+					rasterConfirm(_("Are you really sure?"), _("If your project is open in another browser window or tab, <em>you will lose all your work</em>."),
+						_("Yes, I am sure"), _("No, let me check again"),
+						function() {
+							localStorage.RasterToolIsLoaded = window.name;
+						},
+						function() {
+							window.location = "about:blank";
+						});
+				},
+				function() {
+					window.location = "about:blank";
+				});
+			return;
+		} else
+			localStorage.RasterToolIsLoaded = window.name;
 	});
 	$(window).unload(function() {
 		stopWatching(null);
 		$('#goodbye').show();
+		if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded==window.name)
+			localStorage.removeItem('RasterToolIsLoaded');
 	});
 	$(window).resize(SizeDOMElements);
 
