@@ -37,6 +37,7 @@ $projFname = "";
 
 set_time_limit(0);
 
+header('X-Accel-Buffering: no');
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
@@ -62,11 +63,11 @@ while (true) {
     // Send NOP, if necessary.
     if (time()-$noptime > NOPINTERVAL) {
     	send(NOP);
-    	$noptime = time();
-		if (connection_aborted()) {
-			if (DEBUGINFO) error_log("client disconnected");
-			exit(0);
-		}
+//    	$noptime = time();
+//		if (connection_aborted()) {
+//			if (DEBUGINFO) error_log("client disconnected");
+//			exit(0);
+//		}
     }
     // Check whether the index file was updated, and update project details
     clearstatcache(); // Because mtimes are cached by PHP
@@ -75,7 +76,7 @@ while (true) {
     	lookupDetails($name);
     	if ($projFname=="") {
     		send(DELETED);
-    		exit(0);
+ //   		exit(0);
     	}
 		$indexmtime = $curtime;
     }
@@ -119,11 +120,13 @@ function send($mesg) {
 	$mesg = str_replace("\r", '\r', $mesg);
 //	$mesg = preg_replace('/^/m', "data: ", $mesg);
 	echo "data: $mesg" . PHP_EOL;
+	echo "retry: 100" . PHP_EOL;
 	echo PHP_EOL;
 	ob_flush();
 	flush();
 	$mesg = substr($mesg,0,15);
 	if (DEBUGINFO) error_log("sent [$mesg] for file $projFname, project $projName");
+	exit(0);
 }
 
 /* Read details from the project index file, and set global variables.

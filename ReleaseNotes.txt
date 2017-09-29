@@ -16,6 +16,11 @@ for specifics.
 The tool is accessible via the URL http://yourwebserver/path/ .
 Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
+September 2017
+==============
+* Made tool more robust when trying to import corrupted projects.
+* Updated About tab of help pages.
+
 January 2016
 =============
 We now have ePub versions of the English and Dutch manuals.
