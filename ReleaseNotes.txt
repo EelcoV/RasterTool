@@ -19,6 +19,7 @@ Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 September 2017
 ==============
 * Made tool more robust when trying to import corrupted projects.
+* Added a check whether the tool is already running in another browser tab.
 * Updated About tab of help pages.
 
 January 2016
