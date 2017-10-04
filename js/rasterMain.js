@@ -132,14 +132,14 @@ $(function() {
 	$('#tab_analysis').click(removetransientwindows);
 
 	// tab_diagrams, tab_singlefs, tab_ccfs
-	$("a[href^=#tab_diagrams]").attr('title', _("Draw diagrams for the services."));
-	$("a[href^=#tab_singlefs]").attr('title', _("Assess all single failures."));
-	$("a[href^=#tab_ccfs]").attr('title', _("Assess all common cause failures."));
-	$("a[href^=#tab_analysis]").attr('title', _("Reporting and analysis tools."));
-	$("a[href^=#tab_diagrams]").html(_("Diagrams"));
-	$("a[href^=#tab_singlefs]").html(_("Single failures"));
-	$("a[href^=#tab_ccfs]").html(_("Common cause failures"));
-	$("a[href^=#tab_analysis]").html(_("Analysis"));
+	$("a[href^='#tab_diagrams']").attr('title', _("Draw diagrams for the services."));
+	$("a[href^='#tab_singlefs']").attr('title', _("Assess all single failures."));
+	$("a[href^='#tab_ccfs']").attr('title', _("Assess all common cause failures."));
+	$("a[href^='#tab_analysis']").attr('title', _("Reporting and analysis tools."));
+	$("a[href^='#tab_diagrams']").html(_("Diagrams"));
+	$("a[href^='#tab_singlefs']").html(_("Single failures"));
+	$("a[href^='#tab_ccfs']").html(_("Common cause failures"));
+	$("a[href^='#tab_analysis']").html(_("Analysis"));
 
 	// Make sure that each tool window has a unique name
 	if (!window.name.match(/^RasterTool\d+$/)) {
@@ -4316,11 +4316,11 @@ function allowDrop(elem) {
 
 
 function initTabAnalysis() {
-	$("a[href^=#at1]").html(_("Failures and Vulnerabilities"));
-	$("a[href^=#at2]").html(_("Single failures by level"));
-	$("a[href^=#at3]").html(_("Node counts"));
-	$("a[href^=#at4]").html(_("Checklist reports"));
-	$("a[href^=#at5]").html(_("Longlist"));
+	$("a[href^='#at1']").html(_("Failures and Vulnerabilities"));
+	$("a[href^='#at2']").html(_("Single failures by level"));
+	$("a[href^='#at3']").html(_("Node counts"));
+	$("a[href^='#at4']").html(_("Checklist reports"));
+	$("a[href^='#at5']").html(_("Longlist"));
 
 	$('#analysis_body').tabs();
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');

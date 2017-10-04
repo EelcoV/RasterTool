@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		49196E2B1F85312E00097E97 /* jquery-2.2.4.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.2.4.min.js"; sourceTree = "<group>"; };
+		49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.2.1.min.js"; sourceTree = "<group>"; };
+		49196E2D1F85312F00097E97 /* jquery-migrate-3.0.0.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-migrate-3.0.0.min.js"; sourceTree = "<group>"; };
 		491CD6CA187D97B60028B84D /* tNOTicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOTicon.png; sourceTree = "<group>"; };
 		491CD6CB187D97C90028B84D /* tNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOT.png; sourceTree = "<group>"; };
 		491CD6CC187D97D00028B84D /* tNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOT.png; sourceTree = "<group>"; };
@@ -109,7 +112,6 @@
 		494B702918796E9D00400328 /* share.inc */ = {isa = PBXFileReference; explicitFileType = text.script.php; path = share.inc; sourceTree = "<group>"; };
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
-		495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.1.3.js"; sourceTree = "<group>"; };
 		4961E8B71C415CE60001FAE3 /* Raster-EN-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-EN-1.1.epub"; sourceTree = "<group>"; };
 		4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-NL-1.1.epub"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
@@ -226,6 +228,9 @@
 		494B6F6618796E9D00400328 /* js */ = {
 			isa = PBXGroup;
 			children = (
+				49196E2B1F85312E00097E97 /* jquery-2.2.4.min.js */,
+				49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */,
+				49196E2D1F85312F00097E97 /* jquery-migrate-3.0.0.min.js */,
 				494B6F6718796E9D00400328 /* Bugs and Features.txt */,
 				494B6F6818796E9D00400328 /* designAtomicActions.txt */,
 				494B6F8818796E9D00400328 /* Testcase.txt */,
@@ -234,7 +239,6 @@
 				494B6F6A18796E9D00400328 /* eventsource.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
-				495591DF1A7AB6C60016B001 /* jquery-2.1.3.js */,
 				49C780331A76C3120003863C /* jquery-ui-1.11.2.js */,
 				499BA93D1AD80D22005D20B4 /* jquery.jsPlumb-1.7.5.js */,
 				494B6F7B18796E9D00400328 /* lint */,

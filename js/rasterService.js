@@ -193,8 +193,8 @@ Service.prototype = {
 		
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('#diagrams_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
-		$('a[href^=#diagrams'+this.id+']').dblclick( diagramTabEditStart );
-		$('a[href^=#diagrams'+this.id+']').click( function(evt,ui) {
+		$('a[href^="#diagrams'+this.id+'"]').dblclick( diagramTabEditStart );
+		$('a[href^="#diagrams'+this.id+'"]').click( function(evt,ui) {
 			var s = Service.get(nid2id(this.hash));
 			Preferences.setservice(s.title);
 		} );
@@ -339,8 +339,8 @@ Service.prototype = {
 		
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('#singlefs_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
-		$('a[href^=#singlefs'+this.id+']').dblclick( diagramTabEditStart );
-		$('a[href^=#singlefs'+this.id+']').click( function(evt,ui) {
+		$('a[href^="#singlefs'+this.id+'"]').dblclick( diagramTabEditStart );
+		$('a[href^="#singlefs'+this.id+'"]').click( function(evt,ui) {
 			var s = Service.get(nid2id(this.hash));
 			Preferences.setservice(s.title);
 		} );
