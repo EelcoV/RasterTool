@@ -276,6 +276,11 @@ img.tC {
 .actpanel optgroup {color: #888; font-style: normal; font-weight: normal; margin: 0 0 4px 2px; }
 .actpanel option {background-repeat: no-repeat; padding-left:20px; color: black;}
 .actpanel #libzap  {float: right;}
+fieldset {
+	margin: 0;
+	padding: 0;
+	border: none;
+}
 
 /* Panel for projects */
 #librarypanel { width: 470px; left: 55px; border-top-left-radius: 0; }
@@ -287,7 +292,6 @@ img.tC {
 #optionspanel { width: 420px; left: 175px; border-top-left-radius: 0; }
 #optionspanel .ui-button .ui-button-text { line-height: 1.0; } /* radio buttons */
 #switcher,#labelonoff, #emblem_size, #onlineonoff { margin-bottom: 10px; }
-#manual { text-decoration: underline; }
 .leftlabel {
 	display: inline-block;
 	width: 13em;
@@ -325,13 +329,14 @@ div.popupsubmenu {
 	box-shadow: 7px 7px 6px #999;
 }
 div.popupmenuitem {
-	width: 135px;
-	height: 25px;
+	width: 113px;
+	height: 21px;
 	text-align: left;
 	margin: 0;
+	padding: 5px 11px 0px 11px;
 }
 .popupsubmenuitem {
-	width: 160px !important;
+	width: 148px !important;
 }
 
 .smallblock {

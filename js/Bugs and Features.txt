@@ -17,6 +17,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
+Try IndexDB instead of localStorage. This will benefit concurrent use in multiple tabs, and may ease the implementation of Undo and concurrent use across computers.
 Put the name of the project in the title of the HTML page, probably with "Raster - " prefixed.
 When renaming a node, split at the ^ sign and treat the latter part as the suffix?
 CCF view: make each vulnerability a bottom tab?

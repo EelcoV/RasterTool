@@ -120,6 +120,9 @@ $(function() {
 	$('#tabs').addClass('ui-tabs-vertical-sw ui-helper-clearfix');
 	$('#tabs > ul').addClass('rot-neg-90');
 
+	$('input[type=radio]').checkboxradio({icon: false});
+	$('fieldset').controlgroup();
+
 	$('input[type=button]').button();
 	$('input[type=submit]').button();
 	$('input[type=button]').css("padding","2px 11px");
@@ -1813,8 +1816,10 @@ function initLibraryPanel() {
 			_LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
 			<div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n\
 			_LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
-			<div id="sh_onoff"><input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
-			<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label></div>\n\
+			<fieldset>\n\
+			<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
+			<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n\
+			</fieldset>\n\
 			</form>\
 		';
 		snippet = snippet.replace(/_LT_/g, _("Title:"));
@@ -1848,13 +1853,10 @@ function initLibraryPanel() {
 						}
 						fname = $('#field_projectdescription');
 						p.setdescription(fname.val());
-						// Before changing the sharing status from 'private' to 'shared', first 
-						// check if there already is a project with this name. If so, refuse to rename.
-						var becomesShared; 
-						// This is ugly. The .checked status does not get updated when the radio buttons
-						// are clicked. It should. Instead, look at the visual state of the labels. Fragile.
-						becomesShared = ($('label[for=sh_on]').attr('aria-pressed')=='true');
+						var becomesShared = $('#sh_on:checked').length>0;
 						if (!p.shared && becomesShared) {
+							// Before changing the sharing status from 'private' to 'shared', first
+							// check if there already is a project with this name. If so, refuse to rename.
 							var it = new ProjectIterator({title: p.title, group: ToolGroup, stubsonly: true});
 							if (it.notlast()) {
 								rasterAlert(_("Cannot share this project yet"),
@@ -1888,11 +1890,11 @@ function initLibraryPanel() {
 			height: 280,
 			buttons: dbuttons,
 			open: function() {
-				$('#sh_onoff').buttonset();
-//				$( (p.shared?'#sh_on':'#sh_off')).attr("checked","checked");
+				$('#form_projectprops input[type=radio]').checkboxradio({icon: false});
+				$('#form_projectprops fieldset').controlgroup();
 				$('#sh_off')[0].checked = !p.shared;
 				$('#sh_on')[0].checked = p.shared;
-				$('input[name="sh_onoff"]').button("refresh");
+				$('input[name="sh_onoff"]').checkboxradio("refresh");
 				$('#field_projecttitle').focus().select();
 				$('#form_projectprops').submit(function() {
 					// Ignore, must close with dialog widgets
@@ -2200,15 +2202,10 @@ function refreshProjectList() {
 function initOptionsPanel() {
 	$('#optionsactivator span').first().html(_("Options"));
 
-	$('#switcher').buttonset();
-	$('#emblem_size').buttonset();
-	$('#labelonoff').buttonset();
-	$('#onlineonoff').buttonset();
-
 	$('#switcher span').first().html( _("Visual style:") );
-	$('[for=smoothness]').click( function() { Preferences.settheme("smoothness"); });
-	$('[for=start]').click( function() { Preferences.settheme("start"); });
-	$('[for=redmond]').click( function() { Preferences.settheme("redmond"); });
+	$('[for=smoothness]').click( function() { Preferences.settheme("smoothness"); return true; });
+	$('[for=start]').click( function() { Preferences.settheme("start"); return true; });
+	$('[for=redmond]').click( function() { Preferences.settheme("redmond"); return true; });
 	$('#'+Preferences.theme).click();
 
 	$('#emblem_size span').first().html( _("Vulnerability levels:") );
@@ -2238,10 +2235,6 @@ function initOptionsPanel() {
 	});
 	$('#creator').val(Preferences.creator);
 
-	$('#manual').click( function() {
-		window.open(this.href,this.target);
-	});
-
 	$('#optionsactivator').hover( function() {
 		$('#optionsactivator').addClass('ui-state-hover');
 		if ($('#librarypanel').css('display')!='none') {
@@ -2254,16 +2247,13 @@ function initOptionsPanel() {
 		if ($('#optionspanel').css('display')=='none') {
 			removetransientwindows();
 			$('#'+Preferences.emsize).prop("checked","checked");
-			$('#emblem_size').buttonset("refresh");
 			$(Preferences.online?'#online_on':'#online_off').prop("checked","checked");
-			$('#onlineonoff').buttonset("refresh");
 			$(Preferences.label?'#label_on':'#label_off').prop("checked","checked");
-			$('#labelonoff').buttonset("refresh");
+			$('#optionspanel fieldset').controlgroup('refresh');
 			if ($('#librarypanel').css('display')!='none') $('#libraryactivator').click();
 			$('#optionspanel').show();
 			$('#optionsactivator').addClass('actactive ui-state-active');
 			$('#optionsupdown').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-n');
-			$('#optionspanel').click( function(){ return false; });
 		} else {
 			removetransientwindows();
 		}
