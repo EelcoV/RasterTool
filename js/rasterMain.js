@@ -3953,9 +3953,11 @@ function reallyRepaintTDom(elem) {
 	});
 	$('.tlistitem,.tlistroot').droppable({
 		accept: allowDrop,
-		activeClass: 'tlisthigh',
-		addClasses: false,
-		hoverClass: 'tlisthover',
+    	classes: {
+        	'ui-droppable-active': 'tlisthigh',
+        	'ui-droppable-hover': 'tlisthover'
+  		},
+  		addClasses: false,
 		drop: nodeClusterReorder
 	});
 	$('.litext').editInPlace({
