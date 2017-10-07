@@ -2137,7 +2137,7 @@ function populateProjectList() {
 			continue;
 		if (snippet=="")
 			snippet = '<optgroup class="optgroup" label="'+_("Private projects")+'">\n';
-		snippet += '<option value="'+p.id+'" title="'+p.description+'">'+p.title+'</option>\n';
+		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
 	}
 	if (snippet!="")
 		snippet += '</optgroup>\n';
@@ -2150,7 +2150,7 @@ function populateProjectList() {
 			continue;
 		if (snippet=="")
 			snippet = '<optgroup class="optgroup" label="'+_("Shared projects")+'">\n';
-		snippet += '<option value="'+p.id+'" title="'+p.description+'">'+p.title+'</option>\n';
+		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
 	}
 	if (snippet!="")
 		snippet += '</optgroup>\n';
@@ -2187,7 +2187,7 @@ function refreshProjectList() {
 		var p = it.getproject();
 		if (snippet=="")
 			snippet = '<optgroup id="stubgroup" class="optgroup" label="'+_("Other projects on the server")+'">\n';
-		snippet += '<option value="'+p.id+'" title="'+p.description+'">'+p.title+', by '+p.creator+' on '+prettyDate(p.date)+'</option>\n';
+		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+', by '+H(p.creator)+' on '+prettyDate(p.date)+'</option>\n';
 	}
 	if (snippet!="")
 		snippet += '</optgroup>\n';

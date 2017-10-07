@@ -21,6 +21,8 @@ September 2017
 * Made tool more robust when trying to import corrupted projects.
 * Added a check whether the tool is already running in another browser tab.
 * Updated About tab of help pages.
+* The project name now shows in the page title.
+* Bug fixes.
 
 January 2016
 =============
