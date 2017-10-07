@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		49196E2B1F85312E00097E97 /* jquery-2.2.4.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-2.2.4.min.js"; sourceTree = "<group>"; };
 		49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.2.1.min.js"; sourceTree = "<group>"; };
-		49196E2E1F853BB400097E97 /* jquery-migrate-3.0.1.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-migrate-3.0.1.js"; sourceTree = "<group>"; };
 		49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.12.1.min.js"; sourceTree = "<group>"; };
 		49196E311F85417B00097E97 /* smoothness-1.12.1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "smoothness-1.12.1"; sourceTree = "<group>"; };
 		49196E321F85417B00097E97 /* redmond-1.12.1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "redmond-1.12.1"; sourceTree = "<group>"; };
@@ -190,9 +188,7 @@
 				494B6F7A18796E9D00400328 /* layout.odg */,
 				494B6F6918796E9D00400328 /* encodedecode.js */,
 				494B6F6A18796E9D00400328 /* eventsource.js */,
-				49196E2B1F85312E00097E97 /* jquery-2.2.4.min.js */,
 				49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */,
-				49196E2E1F853BB400097E97 /* jquery-migrate-3.0.1.js */,
 				49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,

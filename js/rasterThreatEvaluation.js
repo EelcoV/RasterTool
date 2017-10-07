@@ -341,7 +341,7 @@ ThreatAssessment.prototype = {
 			}
 		});
 	
-		if (interact) $("#dth_"+prefix+"del"+this.id).click( function() {
+		if (interact) $("#dth_"+prefix+"del"+this.id).on('click',  function() {
 			var th = ThreatAssessment.get(nid2id(this.id));
 			var c;
 			if (th.component!=null) {
@@ -504,7 +504,7 @@ Threat.prototype = {
 				return H(th.description); 
 			}
 		});
-		$('#thdel'+this.id).click( function() {
+		$('#thdel'+this.id).on('click',  function() {
 			var th = Threat.get(nid2id(this.id));
 			newRasterConfirm(_("Delete vulnerability?"),
 				_("Do you want to delete the vulnerability '%%' for '%%' nodes?", H(th.title), Rules.nodetypes[th.type]),

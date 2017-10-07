@@ -193,8 +193,8 @@ Service.prototype = {
 		
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('#diagrams_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
-		$('a[href^="#diagrams'+this.id+'"]').dblclick( diagramTabEditStart );
-		$('a[href^="#diagrams'+this.id+'"]').click( function(evt,ui) {
+		$('a[href^="#diagrams'+this.id+'"]').on('dblclick',  diagramTabEditStart );
+		$('a[href^="#diagrams'+this.id+'"]').on('click',  function(evt,ui) {
 			var s = Service.get(nid2id(this.hash));
 			Preferences.setservice(s.title);
 		} );
@@ -228,7 +228,7 @@ Service.prototype = {
 		$('#diagrams_body ul li').removeClass('ui-corner-top');
 
 		// Update the scroll_region when the workspace is scrolled.
-		$('#diagrams'+this.id).scroll( function(event){
+		$('#diagrams'+this.id).on('scroll', function(event){
 			if (ScrollerDragging) return;
 			var wst = $('#diagrams'+serviceid).scrollTop();
 			var wsl = $('#diagrams'+serviceid).scrollLeft();
@@ -248,7 +248,7 @@ Service.prototype = {
 			containment: 'parent',
 			cursor: "move"
 		});
-		$('#diagrams_workspace'+this.id).mousedown( function(evt) {
+		$('#diagrams_workspace'+this.id).on('mousedown', function(evt) {
 			if (evt.button!=0) return; // only do left mousebutton
 			if (evt.eventPhase==Event.BUBBLING_PHASE) return; // Only direct events
 			RectDragOrigin = {left: evt.pageX, top: evt.pageY};
@@ -277,18 +277,18 @@ Service.prototype = {
 			});
 			removetransientwindows();
 		});
-		$('#diagrams_workspace'+this.id).mouseup( function(evt) {
+		$('#diagrams_workspace'+this.id).on('mouseup',  function(evt) {
 			if (evt.button!=0) 
 				return; // only do plain left mousebutton drags
 			if (evt.target.id=="") return; // Only direct events, or drag-stops
 			// Direct click on the workspace, steal the focus from wherever it was.
-			$( document.activeElement ).blur();
+			$( document.activeElement ).trigger('blur');
 			if (Node.nodesinselection().length==0)
 				$('#selectrect').hide();
 			// If any text was selected (accidentally, most likely), then deselect it.
 			window.getSelection().removeAllRanges();
 			//console.debug("Stole the focus");
-			$('#diagrams_workspace'+serviceid).unbind('mousemove');
+			$('#diagrams_workspace'+serviceid).off('mousemove');
 		});
 
 		$('#scroller_region'+this.id).draggable({
@@ -339,8 +339,8 @@ Service.prototype = {
 		
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('#singlefs_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
-		$('a[href^="#singlefs'+this.id+'"]').dblclick( diagramTabEditStart );
-		$('a[href^="#singlefs'+this.id+'"]').click( function(evt,ui) {
+		$('a[href^="#singlefs'+this.id+'"]').on('dblclick',  diagramTabEditStart );
+		$('a[href^="#singlefs'+this.id+'"]').on('click',  function(evt,ui) {
 			var s = Service.get(nid2id(this.hash));
 			Preferences.setservice(s.title);
 		} );

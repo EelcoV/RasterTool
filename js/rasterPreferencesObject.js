@@ -144,7 +144,7 @@ var PreferencesObject = function() {
 	this.online = true;
 	try {
 		if (localStorage[LS+'R:0']!=null) {
-			var pr = jQuery.parseJSON(localStorage[LS+'R:0']);
+			var pr = JSON.parse(localStorage[LS+'R:0']);
 			if (pr.theme!=null) this.settheme(pr.theme);
 			if (pr.label!=null) this.setlabel(pr.label);
 			if (pr.emsize!=null) this.setemblem(pr.emsize);

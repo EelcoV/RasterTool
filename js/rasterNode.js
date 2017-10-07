@@ -724,7 +724,7 @@ Node.prototype = {
 			});
 		}
 
-		$(this.jnid).hover( function(evt) {
+		$(this.jnid).on('mouseenter', function(evt) {
 			// If a mouse button is down, then Firefox will set .buttons to nonzero.
 			// Google Chrome does not set .buttons, but uses .which; when a mouse button is down
 			// .which will be non-zero.
@@ -740,29 +740,29 @@ Node.prototype = {
 			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: "visible"});
 			if (Preferences.emsize=="em_none")
 				$('#nodeMagnitude'+id).addClass('doshow'); 
-		},function() {
+		}).on('mouseleave',function() {
 			var id = nid2id(this.id);
 			$('#nodeC'+id).css({visibility: "hidden"});
 			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: "hidden"});
 			$('#nodeMagnitude'+id).removeClass('doshow'); 
 		});
 		
-		$(this.jnid).bind('contextmenu', function(e) {
+		$(this.jnid).on('contextmenu', function(e) {
 			e.preventDefault();
 			var rn = Node.get(nid2id(this.id));
 			rn._showpopupmenu(e.clientX+2,e.clientY-5);
 			return false;
 		});
 		
-		$('#nodeC'+this.id).mousedown( function(e){
+		$('#nodeC'+this.id).on('mousedown',  function(e){
 			var rn = Node.get(nid2id(this.id));
 			var offset = $(this).offset();
 			rn._showpopupmenu(offset.left+16,offset.top+5);
 			return false;
 		});
-		$('#nodeC'+this.id).click( function(e){ return false; });
+		$('#nodeC'+this.id).on('click',  function(e){ return false; });
 		
-		$("#nodeW"+this.id).click(function(e) {
+		$("#nodeW"+this.id).on('click', function(e) {
 			// this.id is like "nodeWxxx", where xxx is the node id number
 			var id = nid2id(this.id);
 			var rn = Node.get(id);

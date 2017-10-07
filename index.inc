@@ -16,7 +16,7 @@ See LICENSE.md
 <link rel="stylesheet" href="../css/raster-print.css" type="text/css">
 <link rel="shortcut icon" href="../img/Raster.png">
 <script type="text/javascript" src="../js/eventsource.js"></script>
-<script type="text/javascript" src="../js/jquery-2.2.4.min.js"></script>
+<script type="text/javascript" src="../js/jquery-3.2.1.min.js"></script>
 <script type="text/javascript" src="../js/jquery-ui-1.12.1.min.js"></script>
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
 <script type="text/javascript" src="../js/jquery.jsPlumb-1.7.5.js"></script>

@@ -130,9 +130,9 @@ $(function() {
 
 	$('#modaldialog').dialog({ autoOpen:false, modal:true, width: 400 });
 
-	$('#tab_singlefs').click(removetransientwindows);
-	$('#tab_ccfs').click(removetransientwindows);
-	$('#tab_analysis').click(removetransientwindows);
+	$('#tab_singlefs').on('click', removetransientwindows);
+	$('#tab_ccfs').on('click', removetransientwindows);
+	$('#tab_analysis').on('click', removetransientwindows);
 
 	// tab_diagrams, tab_singlefs, tab_ccfs
 	$("a[href^='#tab_diagrams']").attr('title', _("Draw diagrams for the services."));
@@ -208,10 +208,10 @@ $(function() {
 	$('#tabs').tabs('option','active',Preferences.tab);
 	forceSelectVerticalTab(Preferences.tab);
 
-	$('#helpimg').hover( function() {
-			$('#helpimg').attr("src","../img/qm-hi.png");
-		}, function() {
-			$('#helpimg').attr("src","../img/qm-lo.png");
+	$('#helpimg').on('mouseenter', function() {
+		$('#helpimg').attr("src","../img/qm-hi.png");
+	}).on('mouseleave', function() {
+		$('#helpimg').attr("src","../img/qm-lo.png");
 	});
 	$('#helptabs a').eq(0).html( _("Frequency") );
 	$('#helptabs a').eq(1).html( _("Impact") );
@@ -241,11 +241,11 @@ $(function() {
 	$('#helptabs').tabs({
 		heightStyle: "content"
 	});
-	$('#helpbutton img').click( function() {
+	$('#helpbutton img').on('click',  function() {
 		$('#helppanel').dialog("open");
 	});
 
-	$('#findbutton img').click( function() {
+	$('#findbutton img').on('click',  function() {
 		var dialog = $('<div></div>');
 		var snippet ='\
 			<!-- form id="form_find" -->\n\
@@ -293,18 +293,18 @@ $(function() {
 		},200);
 	});
 
-	$('body').keydown(function(evt){
+	$('body').on('keydown', function(evt){
 		if (evt.keyCode==8) { // Backspace, unfortunately, is bound in the browser to 'Return to previous page'
 			if (!$(evt.target).is("input:not([readonly]):not([type=radio]):not([type=checkbox]), textarea, [contentEditable], [contentEditable=true]"))
 			    // Only when focus is NOT on input or textarea
 				evt.preventDefault();
 		}
 	});
-	$('body').bind('contextmenu', function(e) {
+	$('body').on('contextmenu', function(e) {
 		e.preventDefault();
 	});
 
-	$(window).load(function() {
+	$(window).on('load', (function() {
 		$('#splash').hide();
 		if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
 			rasterConfirm(_("Warning!"), _("The tool may already be active in another browser window or tab. If so, then continuing <em>will</em> damage your projects!"),
@@ -325,14 +325,14 @@ $(function() {
 			return;
 		} else
 			localStorage.RasterToolIsLoaded = window.name;
-	});
-	$(window).unload(function() {
+	}));
+	$(window).on('unload', (function() {
 		stopWatching(null);
 		$('#goodbye').show();
 		if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded==window.name)
 			localStorage.removeItem('RasterToolIsLoaded');
-	});
-	$(window).resize(SizeDOMElements);
+	}));
+	$(window).on('resize', SizeDOMElements);
 
 	// The onbeforeprint handler is supported by IE and Firefox only.
 	window.onbeforeprint = function() {
@@ -866,7 +866,7 @@ function startWatching(p) {
 				'<p><i>Your changes are not shared with others anymore.</i>'
 			);
 		} else {
-			var xdetails = jQuery.parseJSON(msg.data);
+			var xdetails = JSON.parse(msg.data);
 			var p = Project.get(Project.cid);
 			var newpid = loadFromString(xdetails.contents);
 			if (newpid!=null) {
@@ -982,7 +982,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 					throw new Error("The file has version ("+key[1]+"); expected version ("+LS_version+"). You must use a more recent version of the Raster tool.");
 				}
 			}
-			val = jQuery.parseJSON(urlDecode(res[2]));
+			val = JSON.parse(urlDecode(res[2]));
 			val.id = parseInt(key[3],10);
 			switch (key[2]) {
 			case 'P':
@@ -1727,7 +1727,7 @@ function vertTabSelected(event, ui) {
 		$('#templates').show();
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
-		$('#diagramstabtitle'+Service.cid).click();
+		$('#diagramstabtitle'+Service.cid).trigger('click');
 		// Paint, if the diagram has not been painted already
 		Service.get(Service.cid).paintall();
 		Preferences.settab(0);
@@ -1736,7 +1736,7 @@ function vertTabSelected(event, ui) {
 		sizeworkspace();
 		$('#selectrect').hide();
 		$('#templates').hide();
-		$('#singlefstabtitle'+Service.cid).click();
+		$('#singlefstabtitle'+Service.cid).trigger('click');
 		// Force repainting of that tab
 		paintSingleFailures( Service.get(Service.cid) );
 		Preferences.settab(1);
@@ -1786,7 +1786,7 @@ function initLibraryPanel() {
 	$('#libcheck').val(_("?"));
 
 	// Activate --------------------
-	$('#libactivate').click( function() {
+	$('#libactivate').on('click',  function() {
 		var p = Project.get( $('#libselect option:selected').val() );
 		if (!p.stub) {
 			switchToProject(p.id,true);
@@ -1808,7 +1808,7 @@ function initLibraryPanel() {
 		$('#libactivate').removeClass('ui-state-hover');
 	});
 	// Details --------------------
-	$('#libprops').click( function() {
+	$('#libprops').on('click',  function() {
 		var p = Project.get( $('#libselect option:selected').val() );
 		var dialog = $('<div></div>');
 		var snippet ='\
@@ -1908,7 +1908,7 @@ function initLibraryPanel() {
 		});
 	});
 	// Export --------------------
-	$('#libexport').click( function() {
+	$('#libexport').on('click',  function() {
 		var p = Project.get( $('#libselect option:selected').val() );
 		if (!p.stub) {
 			singleProjectExport($('#libselect option:selected').val());
@@ -1929,7 +1929,7 @@ function initLibraryPanel() {
 		$('#libexport').removeClass('ui-state-hover');
 	});
 	// Delete --------------------
-	$('#libdel').click( function(evt){
+	$('#libdel').on('click',  function(evt){
 		var p = Project.get( $('#libselect option:selected').val() );
 		var dokill = function() {
 			$('#libdel').removeClass('ui-state-hover');
@@ -1965,14 +1965,14 @@ function initLibraryPanel() {
 			} else {
 				dokill();
 			}
-			$('#libselect').val(Project.cid).focus().change();
+			$('#libselect').val(Project.cid).focus().trigger('change');
 		})
 		.fail(function () {
 			$('#libselect').focus();
 		});
 	});
 	// Merge --------------------
-	$('#libmerge').click( function() {
+	$('#libmerge').on('click',  function() {
 		var otherproject = Project.get( $('#libselect option:selected').val() );
 		if (otherproject.stub) {
 			rasterAlert(_("Cannot merge a remote project"),_("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
@@ -1988,24 +1988,24 @@ function initLibraryPanel() {
 			_("Merge"),_("Cancel"),
 			function() {
 				Project.merge(currentproject,otherproject);
-				$('#libselect').val(Project.cid).focus().change();
+				$('#libselect').val(Project.cid).focus().trigger('change');
 		});
 	});
 
 	// select --------------------
-	$('#libselect').change( function(){
+	$('#libselect').on('change', function(){
 		var p = Project.get( $('#libselect option:selected').val() );
 		$('#libactivate').button('option','disabled',p.id==Project.cid);
 		$('#libmerge').button('option','disabled',p.id==Project.cid);
 		$('#libselect option').css("background-image","");
 		$('#libselect option[value='+Project.cid+']').css("background-image","url(../img/selected.png)");
 	});
-	$('#libselect').dblclick( function(){
-		$('#libactivate').click();
+	$('#libselect').on('dblclick',  function(){
+		$('#libactivate').trigger('click');
 	});
 	
 	// Add --------------------
-	$('#libadd').click( function(){
+	$('#libadd').on('click',  function(){
 		var p = new Project();
 		var s = new Service();
 		p.adddefaultthreats();
@@ -2013,17 +2013,17 @@ function initLibraryPanel() {
 		s.autosettitle();
 		p.autosettitle();
 		populateProjectList();
-		$('#libselect').val(p.id).focus().change();
+		$('#libselect').val(p.id).focus().trigger('change');
 		transactionCompleted("Project add");
 	});
 	// Import --------------------
-	$('#libimport').click( function() {
+	$('#libimport').on('click',  function() {
 		$('#libimport').removeClass('ui-state-hover');
-		$('#body').unbind('click');
-		$('#fileElem').click();
-		$('#body').click( function(){ return false; });
+		$('#body').off('click');
+		$('#fileElem').trigger('click');
+		$('#body').on('click',  function(){ return false; });
 	});
-	$('#fileElem').change( function(event) {
+	$('#fileElem').on('change',  function(event) {
 		var files = event.target.files;
 		if (files.length==null || files.length==0) return;
 		var reader = new FileReader();
@@ -2041,12 +2041,12 @@ function initLibraryPanel() {
 		reader.readAsText(files[0]);
 	});
 	// Export all --------------------
-	$('#libexportall').click( function() {
+	$('#libexportall').on('click',  function() {
 		$('#libexportall').removeClass('ui-state-hover');
 		exportAll(); 
 	});
 	// Zap! --------------------
-	$('#libzap').click( function(){
+	$('#libzap').on('click',  function(){
 		rasterConfirm('Delete all?',
 			_("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
 			_("Erase everything"),_("Cancel"),
@@ -2065,7 +2065,7 @@ function initLibraryPanel() {
 		);
 	});
 	// Check --------------------
-	$('#libcheck').click( function() {
+	$('#libcheck').on('click',  function() {
 		var errors = "";
 		var n = 0;
 		var it = new ProjectIterator();
@@ -2090,17 +2090,17 @@ function initLibraryPanel() {
 	});
 
 	// panel activator --------------------
-	$('#libraryactivator').hover( function() {
+	$('#libraryactivator').on('mouseenter', function() {
 		$('#libraryactivator').addClass('ui-state-hover');
 		// If one of the other panels was open, then close that panel and open this one,
 		// without requiring a click.
 		if ($('#optionspanel').css('display')!='none') {
-			$('#libraryactivator').click();
+			$('#libraryactivator').trigger('click');
 		}
-	}, function() {
+	}).on('mouseleave', function() {
 		$('#libraryactivator').removeClass('ui-state-hover');
 	});
-	$('#libraryactivator').click( function() {
+	$('#libraryactivator').on('click',  function() {
 		if ($('#librarypanel').css('display')=='none') {
 			var it = new ProjectIterator({group: ToolGroup, stubsonly: false});
 			var nump = it.number();
@@ -2114,10 +2114,10 @@ function initLibraryPanel() {
 			populateProjectList();
 			Project.updateStubs(refreshProjectList);
 			startPeriodicProjectListRefresh();
-			if ($('#optionspanel').css('display')!='none') $('#optionsactivator').click();
+			if ($('#optionspanel').css('display')!='none') $('#optionsactivator').trigger('click');
 			$('#libraryactivator').addClass('actactive ui-state-active');
 			$('#libraryupdown').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-n');
-//			$('#librarypanel').click( function(){ return false; });
+//			$('#librarypanel').on('click',  function(){ return false; });
 		} else {
 			removetransientwindows();
 		}
@@ -2161,7 +2161,7 @@ function populateProjectList() {
 	// Finally all stubs projects
 	refreshProjectList();
 	// Select the current project, and enable/disable the buttons
-	$('#libselect').val(Project.cid).focus().change();
+	$('#libselect').val(Project.cid).focus().trigger('change');
 }
 
 var ProjectListTimer;
@@ -2203,54 +2203,54 @@ function initOptionsPanel() {
 	$('#optionsactivator span').first().html(_("Options"));
 
 	$('#switcher span').first().html( _("Visual style:") );
-	$('[for=smoothness]').click( function() { Preferences.settheme("smoothness"); return true; });
-	$('[for=start]').click( function() { Preferences.settheme("start"); return true; });
-	$('[for=redmond]').click( function() { Preferences.settheme("redmond"); return true; });
-	$('#'+Preferences.theme).click();
+	$('[for=smoothness]').on('click',  function() { Preferences.settheme("smoothness"); return true; });
+	$('[for=start]').on('click',  function() { Preferences.settheme("start"); return true; });
+	$('[for=redmond]').on('click',  function() { Preferences.settheme("redmond"); return true; });
+	$('#'+Preferences.theme).trigger('click');
 
 	$('#emblem_size span').first().html( _("Vulnerability levels:") );
 	$('#emblem_size label span').eq(0).html( _("Small") );
 	$('#emblem_size label span').eq(1).html( _("Large") );
 	$('#emblem_size label span').eq(2).html( _("None") );
-	$('[for=em_small]').click( function() { Preferences.setemblem("em_small"); });
-	$('[for=em_large]').click( function() { Preferences.setemblem("em_large"); });
-	$('[for=em_none]').click( function() { Preferences.setemblem("em_none"); });
+	$('[for=em_small]').on('click',  function() { Preferences.setemblem("em_small"); });
+	$('[for=em_large]').on('click',  function() { Preferences.setemblem("em_large"); });
+	$('[for=em_none]').on('click',  function() { Preferences.setemblem("em_none"); });
 	
 	$('#labelonoff span').first().html( _("Labels:") );
 	$('#labelonoff label span').eq(0).html( _("Hide color") );
 	$('#labelonoff label span').eq(1).html( _("Show color") );
-	$('[for=label_off]').click( function() { Preferences.setlabel(false); });
-	$('[for=label_on]').click( function() { Preferences.setlabel(true); });
+	$('[for=label_off]').on('click',  function() { Preferences.setlabel(false); });
+	$('[for=label_on]').on('click',  function() { Preferences.setlabel(true); });
 	
 	$('#onlineonoff span').first().html( _("Network connection:") );
 	$('#onlineonoff label span').eq(0).html( _("Offline") );
 	$('#onlineonoff label span').eq(1).html( _("Online") );
-	$('[for=online_off]').click( function() { Preferences.setonline(false); });
-	$('[for=online_on]').click( function() { Preferences.setonline(true); });
+	$('[for=online_off]').on('click',  function() { Preferences.setonline(false); });
+	$('[for=online_on]').on('click',  function() { Preferences.setonline(true); });
 
 	$('#creator_name span').first().html( _("Your name:") );
-	$('#creator').change( function(evt){
+	$('#creator').on('change',  function(evt){
 		Preferences.setcreator($('#creator').val());
 		$('#creator').val(Preferences.creator);
 	});
 	$('#creator').val(Preferences.creator);
 
-	$('#optionsactivator').hover( function() {
+	$('#optionsactivator').on('mouseenter', function() {
 		$('#optionsactivator').addClass('ui-state-hover');
 		if ($('#librarypanel').css('display')!='none') {
-			$('#optionsactivator').click();
+			$('#optionsactivator').trigger('click');
 		}
-	}, function() {
+	}).on('mouseleave', function() {
 		$('#optionsactivator').removeClass('ui-state-hover');
 	});
-	$('#optionsactivator').click( function() {
+	$('#optionsactivator').on('click',  function() {
 		if ($('#optionspanel').css('display')=='none') {
 			removetransientwindows();
 			$('#'+Preferences.emsize).prop("checked","checked");
 			$(Preferences.online?'#online_on':'#online_off').prop("checked","checked");
 			$(Preferences.label?'#label_on':'#label_off').prop("checked","checked");
 			$('#optionspanel fieldset').controlgroup('refresh');
-			if ($('#librarypanel').css('display')!='none') $('#libraryactivator').click();
+			if ($('#librarypanel').css('display')!='none') $('#libraryactivator').trigger('click');
 			$('#optionspanel').show();
 			$('#optionsactivator').addClass('actactive ui-state-active');
 			$('#optionsupdown').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-n');
@@ -2285,7 +2285,7 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 	/* ui.newPanel.selector is the DOM object with id #tabtitle<nn> */
 	if (!ui.newPanel)
 		return;
-	var id = nid2id(ui.newPanel.selector);
+	var id = nid2id(ui.newPanel[0].id);
 	$('#selectrect').hide();
 	removetransientwindowsanddialogs();
 	Service.get(id).paintall();
@@ -2298,7 +2298,7 @@ function bottomTabsShowHandlerSFaults(event,ui) {
 		// on creation of the tab, select the first tab.
 		return;
 	}
-	var id = nid2id(ui.newPanel.selector);
+	var id = nid2id(ui.newPanel[0].id);
 	Service.cid = id;
 	paintSingleFailures(Service.get(id));
 }
@@ -2326,11 +2326,11 @@ function initTabDiagrams() {
 		activate: bottomTabsShowHandlerDiagrams,
 		create: bottomTabsShowHandlerDiagrams
 	});
-	$('#diagrams_body').delegate('span.tabcloseicon','click',bottomTabsCloseHandler);
-	$('#bottomtabsdia').delegate('li','mouseenter',function(){
+	$('#diagrams_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
+	$('#bottomtabsdia').on('mouseenter', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
 	});
-	$('#bottomtabsdia').delegate('li','mouseleave',function(){
+	$('#bottomtabsdia').on('mouseleave', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
@@ -2395,13 +2395,13 @@ function initTabDiagrams() {
 		zIndex: 400
 	});
 
-	$('#servaddbutton').click( function() {
+	$('#servaddbutton').on('click', function() {
 		var p = Project.get( Project.cid );
 		var s = new Service();
 		p.addservice(s.id);
 		s.autosettitle();
 		s.load();
-		$('#diagramstabtitle'+s.id).click();
+		$('#diagramstabtitle'+s.id).trigger('click');
 		transactionCompleted("Service add");
 	});
 
@@ -2410,12 +2410,12 @@ function initTabDiagrams() {
 		helper: 'clone'
 	});
 
-	$('.template').hover( function() {
+	$('.template').on('mouseenter', function() {
 		$('#tC_'+this.firstElementChild.id).css({visibility: "visible"});
-	},function() {
+	}).on('mouseleave',function() {
 		$('#tC_'+this.firstElementChild.id).css({visibility: "hidden"});
 	});
-	$('.tC').mousedown( function(e,ui){
+	$('.tC').on('mousedown', function(e,ui){
 		$('#'+this.id).css({visibility: "hidden"});
 		// this.id is of the form "tC_YYY", and we need to know YYY
 		var ctype = this.id.substr(3);
@@ -2423,74 +2423,74 @@ function initTabDiagrams() {
 		return false;
 	});
 	
-	$('#mi_th').mouseup(function(e) {
+	$('#mi_th').on('mouseup', function(e) {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		if (rn.type=='tACT' || rn.type=='tNOT')
 			return;
 		displayThreatsDialog(rn.component,e);
 	});
-	$('#mi_ct').hover(function(){
+	$('#mi_ct').on('mouseenter', function(){
 		clearTimeout(menuTimerct);
 		if (!$('#mi_ct').hasClass("popupmenuitemdisabled")) {
 			$('#mi_ctsm').show();
 			$('#mi_clsm').hide();
 		}
-	},function(){
+	}).on('mouseleave',function(){
 		menuTimerct = setTimeout( function() {$('#mi_ctsm').hide();}, 150);
 	});
-	$('#mi_ctsm').hover(function(){
+	$('#mi_ctsm').on('mouseenter',function(){
 		clearTimeout(menuTimerct);
 		$('#mi_ctsm').show();
-	},function(){
+	}).on('mouseleave',function(){
 		menuTimerct = setTimeout( function() {$('#mi_ctsm').hide();}, 150);
 	});
-	$('#mi_cttWLS').mouseup(function() {
+	$('#mi_cttWLS').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		rn.changetype('tWLS');
 		transactionCompleted("Node change type tWLS");
 	});
-	$('#mi_cttWRD').mouseup(function() {
+	$('#mi_cttWRD').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		rn.changetype('tWRD');
 		transactionCompleted("Node change type tWRD");
 	});
-	$('#mi_cttEQT').mouseup(function() {
+	$('#mi_cttEQT').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		rn.changetype('tEQT');
 		transactionCompleted("Node change type tEQT");
 	});
-	$('#mi_cttACT').mouseup(function() {
+	$('#mi_cttACT').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		rn.changetype('tACT');
 		transactionCompleted("Node change type tACT");
 	});
-	$('#mi_cttUNK').mouseup(function() {
+	$('#mi_cttUNK').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		rn.changetype('tUNK');
 		transactionCompleted("Node change type tUNK");
 	});
-	$('#mi_cl').hover(function(){
+	$('#mi_cl').on('mouseenter',function(){
 		clearTimeout(menuTimercl);
 		if (!$('#mi_cl').hasClass("popupmenuitemdisabled")) {
 			$('#mi_ctsm').hide();
 			$('#mi_clsm').show();
 		}
-	},function(){
+	}).on('mouseleave',function(){
 		menuTimercl = setTimeout( function() {$('#mi_clsm').hide();}, 150);
 	});
-	$('#mi_clsm').hover(function(){
+	$('#mi_clsm').on('mouseenter',function(){
 		clearTimeout(menuTimercl);
 		$('#mi_clsm').show();
-	},function(){
+	}).on('mouseleave',function(){
 		menuTimercl = setTimeout( function() {$('#mi_clsm').hide();}, 150);
 	});
-	$('#mi_rc').mouseup(function() {
+	$('#mi_rc').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		if (rn.component==null)	// Actors and notes don't have components
@@ -2541,7 +2541,7 @@ function initTabDiagrams() {
 			}
 		});
 	});
-	$('#mi_sx').mouseup(function() {
+	$('#mi_sx').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		if (rn.component==null)	// Actors and notes don't have components
@@ -2591,7 +2591,7 @@ function initTabDiagrams() {
 			}
 		});
 	});
-	$('#mi_sm').mouseup(function() {
+	$('#mi_sm').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		if (rn.component==null)	// Actors and notes don't have components
@@ -2600,7 +2600,7 @@ function initTabDiagrams() {
 		cm.setsingle(cm.single==false);
 		transactionCompleted("Component class single/multiple");
 	});
-	$('#mi_du').mouseup(function() {
+	$('#mi_du').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		if (rn.component!=null) {
@@ -2628,7 +2628,7 @@ function initTabDiagrams() {
 		nn.setlabel(rn.color);
 		transactionCompleted("Node duplicate");
 	});
-	$('#mi_cc').hover(function(){
+	$('#mi_cc').on('mouseenter',function(){
 		clearTimeout(menuTimercc);
 		// Remove any previous custom style
 		$('#mi_ccsm').attr('style','');
@@ -2640,13 +2640,13 @@ function initTabDiagrams() {
 			o.top = limit - $('#mi_ccsm').height();
 		 	$('#mi_ccsm').offset(o);
 		} 
-	},function(){
+	}).on('mouseleave',function(){
 		menuTimercc = setTimeout( function() {$('#mi_ccsm').hide();}, 150);
 	});
-	$('#mi_ccsm').hover(function(){
+	$('#mi_ccsm').on('mouseenter',function(){
 		clearTimeout(menuTimercc);
 		$('#mi_ccsm').show();
-	},function(){
+	}).on('mouseleave',function(){
 		menuTimercc = setTimeout( function() {$('#mi_ccsm').hide();}, 150);
 	});
 	function colorfunc(c) { return function() {
@@ -2656,16 +2656,16 @@ function initTabDiagrams() {
 		transactionCompleted("Node change color "+c);
 	  }; 
 	}
-	$('#mi_ccnone').mouseup( colorfunc('none') );
-	$('#mi_ccred').mouseup( colorfunc('red') );
-	$('#mi_ccorange').mouseup( colorfunc('orange') );
-	$('#mi_ccyellow').mouseup( colorfunc('yellow') );
-	$('#mi_ccgreen').mouseup( colorfunc('green') );
-	$('#mi_ccblue').mouseup( colorfunc('blue') );
-	$('#mi_ccpurple').mouseup( colorfunc('purple') );
-	$('#mi_ccgrey').mouseup( colorfunc('grey') );
-	$('#mi_ccedit').mouseup( showLabelEditForm );
-	$('#mi_de').mouseup(function() {
+	$('#mi_ccnone').on('mouseup', colorfunc('none') );
+	$('#mi_ccred').on('mouseup', colorfunc('red') );
+	$('#mi_ccorange').on('mouseup', colorfunc('orange') );
+	$('#mi_ccyellow').on('mouseup', colorfunc('yellow') );
+	$('#mi_ccgreen').on('mouseup', colorfunc('green') );
+	$('#mi_ccblue').on('mouseup', colorfunc('blue') );
+	$('#mi_ccpurple').on('mouseup', colorfunc('purple') );
+	$('#mi_ccgrey').on('mouseup', colorfunc('grey') );
+	$('#mi_ccedit').on('mouseup', showLabelEditForm );
+	$('#mi_de').on('mouseup', function() {
 		$('#nodemenu').css("display", "none");
 		var rn = Node.get( Node.MenuNode );
 		rasterConfirm(_("Delete element node?"),
@@ -2677,7 +2677,7 @@ function initTabDiagrams() {
 			}
 			);
 	});
-	$('#mi_sd').mouseup(function() {
+	$('#mi_sd').on('mouseup', function() {
 		var nodes = Node.nodesinselection();
 		var num = nodes.length;
 		$('#selectmenu').hide();
@@ -2713,7 +2713,7 @@ function initTabDiagrams() {
 				$('#selectrect').hide();
 			});
 	});
-	$('#mi_sc').hover(function(){
+	$('#mi_sc').on('mouseenter',function(){
 		populateLabelMenu();
 		// Remove any previous custom style
 		$('#mi_scsm').attr('style','');
@@ -2725,13 +2725,13 @@ function initTabDiagrams() {
 			o.top = limit - $('#mi_scsm').height();
 		 	$('#mi_scsm').offset(o);
 		} 
-	},function(){
+	}).on('mouseleave',function(){
 		$('#mi_scsm').hide();
 	});
-	$('#mi_scsm').hover(function(){
+	$('#mi_scsm').on('mouseenter',function(){
 		populateLabelMenu();
 		$('#mi_scsm').show();
-	},function(){
+	}).on('mouseleave',function(){
 		$('#mi_scsm').hide();
 	});
 	function selcolorfunc(c) { return function() {
@@ -2750,15 +2750,15 @@ function initTabDiagrams() {
 		transactionCompleted("Node change selection color "+c);
 	  };
 	}
-	$('#mi_scnone').mouseup( selcolorfunc('none') );
-	$('#mi_scred').mouseup( selcolorfunc('red') );
-	$('#mi_scorange').mouseup( selcolorfunc('orange') );
-	$('#mi_scyellow').mouseup( selcolorfunc('yellow') );
-	$('#mi_scgreen').mouseup( selcolorfunc('green') );
-	$('#mi_scblue').mouseup( selcolorfunc('blue') );
-	$('#mi_scpurple').mouseup( selcolorfunc('purple') );
-	$('#mi_scgrey').mouseup( selcolorfunc('grey') );
-	$('#mi_scedit').mouseup( showLabelEditForm );
+	$('#mi_scnone').on('mouseup', selcolorfunc('none') );
+	$('#mi_scred').on('mouseup', selcolorfunc('red') );
+	$('#mi_scorange').on('mouseup', selcolorfunc('orange') );
+	$('#mi_scyellow').on('mouseup', selcolorfunc('yellow') );
+	$('#mi_scgreen').on('mouseup', selcolorfunc('green') );
+	$('#mi_scblue').on('mouseup', selcolorfunc('blue') );
+	$('#mi_scpurple').on('mouseup', selcolorfunc('purple') );
+	$('#mi_scgrey').on('mouseup', selcolorfunc('grey') );
+	$('#mi_scedit').on('mouseup', showLabelEditForm );
 	
 	var addhandler = function(typ) {
 		return function() {
@@ -2812,17 +2812,17 @@ function initTabDiagrams() {
 		};
 	};
 	
-	$('#WLSaddthreat').click(addhandler('tWLS'));
-	$('#WLScopythreat').click(copyhandler('tWLS'));
-	$('#WLSpastethreat').click(pastehandler('tWLS'));
+	$('#WLSaddthreat').on('click', addhandler('tWLS'));
+	$('#WLScopythreat').on('click', copyhandler('tWLS'));
+	$('#WLSpastethreat').on('click', pastehandler('tWLS'));
 
-	$('#WRDaddthreat').click(addhandler('tWRD'));
-	$('#WRDcopythreat').click(copyhandler('tWRD'));
-	$('#WRDpastethreat').click(pastehandler('tWRD'));
+	$('#WRDaddthreat').on('click', addhandler('tWRD'));
+	$('#WRDcopythreat').on('click', copyhandler('tWRD'));
+	$('#WRDpastethreat').on('click', pastehandler('tWRD'));
 
-	$('#EQTaddthreat').click(addhandler('tEQT'));
-	$('#EQTcopythreat').click(copyhandler('tEQT'));
-	$('#EQTpastethreat').click(pastehandler('tEQT'));		
+	$('#EQTaddthreat').on('click', addhandler('tEQT'));
+	$('#EQTcopythreat').on('click', copyhandler('tEQT'));
+	$('#EQTpastethreat').on('click', pastehandler('tEQT'));
 
 	if (DEBUG && !Rules.consistent()) 
 		bugreport('the rules are not internally consistent','initTabDiagrams');
@@ -2981,14 +2981,14 @@ function displayThreatsDialog(cid,event) {
 	$('#dthadddia'+cid).removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#dthcopydia'+cid).removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#dthpastedia'+cid).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthadddia'+cid).click( function() {
+	$('#dthadddia'+cid).on('click',  function() {
 		var c = Component.get(nid2id(this.id));
 		var th = new ThreatAssessment((c.type=='tUNK' ? 'tEQT' : c.type));
 		c.addthrass(th);
 		th.addtablerow('#threats'+c.id,"dia");
 		transactionCompleted("Vuln add");
 	});
-	$('#dthcopydia'+cid).click( function() {
+	$('#dthcopydia'+cid).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
 		ThreatAssessment.Clipboard = [];
 		for (var i=0; i<cm.thrass.length; i++) {
@@ -2996,7 +2996,7 @@ function displayThreatsDialog(cid,event) {
 			ThreatAssessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
 		}
 	});
-	$('#dthpastedia'+cid).click( function() {
+	$('#dthpastedia'+cid).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
 		var newte = cm.mergeclipboard();
 //		for (var j=0; j<ThreatAssessment.Clipboard.length; j++) {
@@ -3063,7 +3063,7 @@ function displayThreatsDialog(cid,event) {
 	});
 	$("#componentthreats").dialog("open");
 	// First delete button gains focus, and is highlighted. Looks ugly.
-	$('#dialogthreatlist input').blur();
+	$('#dialogthreatlist input').trigger('blur');
 	
 	$("#threats"+cid).sortable({
 		containment: "parent",
@@ -3087,7 +3087,7 @@ function displayChecklistsDialog(type) {
 	// Since that is confusing, we prevent obscuration by using a type-specific offset.
 	$("#checklist_"+type).dialog("open");
 	$('.checklist input').each( function () { 
-		$(this).blur(); return true; 
+		$(this).trigger('blur'); return true; 
 	});
 }
 
@@ -3117,22 +3117,22 @@ function initTabSingleFs() {
 		activate: bottomTabsShowHandlerSFaults,
 		create: bottomTabsShowHandlerSFaults
 	});
-	$('#singlefs_body').delegate('span.tabcloseicon','click',bottomTabsCloseHandler);
-	$('#bottomtabssf').delegate('li','mouseenter',function(){
+	$('#singlefs_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
+	$('#bottomtabssf').on('mouseenter', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
 	});
-	$('#bottomtabssf').delegate('li','mouseleave',function(){
+	$('#bottomtabssf').on('mouseleave', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 	$('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
-	$('#servaddbuttonsf').click( function() {
+	$('#servaddbuttonsf').on('click',  function() {
 		var p = Project.get( Project.cid );
 		var s = new Service();
 		p.addservice(s.id);
 		s.autosettitle();
 		s.load();
-		$('#singlefstabtitle'+s.id).click();
+		$('#singlefstabtitle'+s.id).trigger('click');
 		transactionCompleted("Service add");
 	});
 }
@@ -3316,9 +3316,9 @@ snippet += "</div>\n";
 				transactionCompleted("Vuln paste");
 			  };
 		};
-		$('#sfaadd'+s.id+'_'+cm.id).click( addhandler(s,cm) );
-		$('#sfacopy'+s.id+'_'+cm.id).click( copyhandler(s,cm) );
-		$('#sfapaste'+s.id+'_'+cm.id).click( pastehandler(s,cm) );
+		$('#sfaadd'+s.id+'_'+cm.id).on('click',  addhandler(s,cm) );
+		$('#sfacopy'+s.id+'_'+cm.id).on('click',  copyhandler(s,cm) );
+		$('#sfapaste'+s.id+'_'+cm.id).on('click',  pastehandler(s,cm) );
 		var openclose = function(cm){ return function(event,ui) {
 			opencloseSFAccordion(cm,s.id,event,ui);
 		}; };
@@ -3351,14 +3351,14 @@ snippet += "</div>\n";
 		});
 	}
 	
-	$('#expandalls'+s.id).click( function(evt){
+	$('#expandalls'+s.id).on('click',  function(evt){
 		expandAllSingleF(nid2id(evt.target.id));
 	});
-	$('#collapsealls'+s.id).click( function(evt){
+	$('#collapsealls'+s.id).on('click',  function(evt){
 		collapseAllSingleF(nid2id(evt.target.id));
 	});
 	$('#sfselect'+s.id).val(SFSortOpt);
-	$('#sfselect'+s.id).change( function(evt){
+	$('#sfselect'+s.id).on('change',  function(evt){
 		var id = nid2id(evt.target.id);
 		var selected = $('#sfselect'+id+' option:selected').val();
 		SFSortOpt = selected;
@@ -3430,32 +3430,32 @@ function initTabCCFs() {
 	$('#ccfs_body').on('click', '.childnode', clickSelectHandler);
 	$('#ccfs_body').on('click', '.clusternode', clickCollapseHandler);
 	$('#ccfs_body').on('contextmenu', '.tlistitem', contextMenuHandler);
-	$('#ccfs_body').click( function() {
+	$('#ccfs_body').on('click',  function() {
 		$('.li_selected').removeClass('li_selected');
 	});
 	
 	// Event handlers for menu items
-	$('#mi_ccfc').click(createClusterHandler);
+	$('#mi_ccfc').on('click', createClusterHandler);
 	$('#mi_ccfmsm').on('click', '.ui-button', moveToClusterHandler);
 	
 	// Event handlers for showing/hiding menus
-	$('#mi_ccfm').hover(function(){
+	$('#mi_ccfm').on('mouseenter',function(){
 		clearTimeout(ccfmsm_timer);
 		$('#mi_ccfmsm').show().position({
 			my: 'left top',
 			at: 'right center',
 			of: '#mi_ccfm'
 		});
-	},function(){
+	}).on('mouseleave',function(){
 		ccfmsm_timer = setTimeout(function(){
 			$('#mi_ccfmsm').hide();
 		},150);
 	});
-	$('#mi_ccfmsm').hover(function(){
+	$('#mi_ccfmsm').on('mouseenter',function(){
 		populateLabelMenu();
 		clearTimeout(ccfmsm_timer);
 		$('#mi_ccfmsm').show();
-	},function(){
+	}).on('mouseleave',function(){
 		ccfmsm_timer = setTimeout(function(){
 			$('#mi_ccfmsm').hide();
 		},150);
@@ -3777,13 +3777,13 @@ function AddAllClusters() {
 	
 	$('#noshf').css('display', 'none');
 	$('#someshf').css('display', 'block');
-	$('#expandallshf').click( function(evt){
+	$('#expandallshf').on('click',  function(evt){
 		expandAllCCF(nid2id(evt.target.id));
 	});
-	$('#collapseallshf').click( function(evt){
+	$('#collapseallshf').on('click',  function(evt){
 		collapseAllCCF(nid2id(evt.target.id));
 	});
-	$('#ccfselect').change( function(){
+	$('#ccfselect').on('change',  function(){
 		var selected = $('#ccfselect option:selected').val();
 		CCFSortOpt = selected;
 		$('#ccfs_body').empty();
@@ -4372,19 +4372,19 @@ function paintNodeThreatTables() {
 	snippet = snippet.replace(/_Q2_/g, _("clear exclusions"));
 	snippet = snippet.replace(/_Q3_/g, _("Click a coloured cell to include/exclude a failure or CCF"));
 	$('#at1').html(snippet);
-	$('#ana_nodeselect').change( function(){
+	$('#ana_nodeselect').on('change',  function(){
 		var selected = $('#ana_nodeselect option:selected').val();
 		FailureThreatSortOpt.node = selected;
 		paintSFTable();
 		paintCCFTable();
 	});
-	$('#ana_failureselect').change( function(){
+	$('#ana_failureselect').on('change',  function(){
 		var selected = $('#ana_failureselect option:selected').val();
 		FailureThreatSortOpt.threat = selected;
 		paintSFTable();
 		paintCCFTable();
 	});
-	$('#quickwinslink').button().button('option','disabled',false).click( function() {
+	$('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
 		var exclCm = computeComponentQuickWins();
 		var exclCl = computeClusterQuickWins();
 		ComponentExclusions = { };
@@ -4397,7 +4397,7 @@ function paintNodeThreatTables() {
 		paintCCFTable();
 		$('#clearexclusions').button('option','disabled', (exclCm.length==0 && exclCl.length==0));
 	});
-	$('#clearexclusions').button().button('option','disabled',true).click( function() {
+	$('#clearexclusions').button().button('option','disabled',true).on('click',  function() {
 		ComponentExclusions = { };
 		ClusterExclusions = { };
 		paintSFTable();
@@ -4612,7 +4612,7 @@ function paintSFTable() {
 	';
 	$('#ana_nodethreattable').html(snippet);
 
-	$('.nodecell').click( function(evt){
+	$('.nodecell').on('click',  function(evt){
 		var cmid = parseInt($(evt.currentTarget).attr('component'),10);
 		var tid = parseInt($(evt.currentTarget).attr('threat'),10);
 		if (exclusionsContains(ComponentExclusions,cmid,tid)) {
@@ -4714,7 +4714,7 @@ function paintCCFTable() {
 	';
 	$('#ana_ccftable').html(snippet);
 
-	$('.clustercell').click( function(evt){
+	$('.clustercell').on('click',  function(evt){
 		var cid = parseInt($(evt.currentTarget).attr('cluster'),10);
 //		var tid = parseInt($(evt.currentTarget).attr('threat'),10);
 		if (exclusionsContains(ClusterExclusions,cid,0))
@@ -5341,13 +5341,13 @@ function paintLonglist() {
 	$('#at5').html(snippet);
 	$('#minV').html(selectoptions);
 	$('#minV').val(MinValue);
-	$('#incX').change( function() {
+	$('#incX').on('change',  function() {
 		$('#longlist').html(listSelectedRisks());
 	});
-	$('#incA').change( function() {
+	$('#incA').on('change',  function() {
 		$('#longlist').html(listSelectedRisks());
 	});
-	$('#minV').change( function() {
+	$('#minV').on('change',  function() {
 		// Remember the new cut-off point for longlist
 		MinValue = $('#minV option:selected').val();
 		$('#longlist').html(listSelectedRisks());
