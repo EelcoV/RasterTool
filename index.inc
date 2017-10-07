@@ -11,13 +11,13 @@ See LICENSE.md
 <meta charset="UTF-8"> 
 <title>Raster - Risk Assessment of Telecoms Services</title>
 <!-- First stylesheet must be the one that is a custom setting. -->
-<link rel="stylesheet" href="../css/smoothness-1.11.2/jquery-ui.min.css" class="ui-theme">
+<link rel="stylesheet" href="../css/smoothness-1.12.1/jquery-ui.min.css" class="ui-theme">
 <link rel="stylesheet" href="../css/raster.css" type="text/css" id="maincssfile">
 <link rel="stylesheet" href="../css/raster-print.css" type="text/css">
 <link rel="shortcut icon" href="../img/Raster.png">
 <script type="text/javascript" src="../js/eventsource.js"></script>
-<script type="text/javascript" src="../js/jquery-2.1.3.js"></script>
-<script type="text/javascript" src="../js/jquery-ui-1.11.2.js"></script>
+<script type="text/javascript" src="../js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="../js/jquery-ui-1.12.1.min.js"></script>
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
 <script type="text/javascript" src="../js/jquery.jsPlumb-1.7.5.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>  
@@ -140,27 +140,35 @@ See LICENSE.md
 </div>
 
 <div id="optionspanel" class="actpanel ui-widget">
-	<div id="switcher">
+	<div id="switcher" class="controlgroup">
 		<span class="leftlabel ui-widget ui-state-default">Visual style:</span>
-		<input type="radio" id="smoothness" name="switcher" checked="checked"><label for="smoothness">Smoothness</label>
-		<input type="radio" id="start" name="switcher"><label for="start">Start</label>
-		<input type="radio" id="redmond" name="switcher"><label for="redmond">Redmond</label>
+		<fieldset>
+			<input type="radio" name="switcher" id="smoothness" checked="checked"><label for="smoothness">Smoothness</label>
+			<input type="radio" name="switcher" id="start"><label for="start">Start</label>
+			<input type="radio" name="switcher" id="redmond"><label for="redmond">Redmond</label>
+		</fieldset>
 	</div>
 	<div id="emblem_size">
 		<span class="leftlabel ui-widget ui-state-default">Vulnerability levels:</span>
-		<input type="radio" id="em_small" name="emblem_size" checked="checked"><label for="em_small">Small</label>
-		<input type="radio" id="em_large" name="emblem_size"><label for="em_large">Large</label>
-		<input type="radio" id="em_none" name="emblem_size"><label for="em_none">None</label>
+		<fieldset>
+			<input type="radio" id="em_small" name="emblem_size" checked="checked"><label for="em_small">Small</label>
+			<input type="radio" id="em_large" name="emblem_size"><label for="em_large">Large</label>
+			<input type="radio" id="em_none" name="emblem_size"><label for="em_none">None</label>
+		</fieldset>
 	</div>
 	<div id="labelonoff">
 		<span class="leftlabel ui-widget ui-state-default">Labels:</span>
-		<input type="radio" id="label_off" name="labelonoff"><label for="label_off">Hide color</label>
-		<input type="radio" id="label_on" name="labelonoff" checked="checked"><label for="label_on">Show color</label>
+		<fieldset>
+			<input type="radio" id="label_off" name="labelonoff"><label for="label_off">Hide color</label>
+			<input type="radio" id="label_on" name="labelonoff" checked="checked"><label for="label_on">Show color</label>
+		</fieldset>
 	</div>
 	<div id="onlineonoff">
 		<span class="leftlabel ui-widget ui-state-default">Network connection:</span>
-		<input type="radio" id="online_off" name="onlineonoff"><label for="online_off">Offline</label>
-		<input type="radio" id="online_on" name="onlineonoff" checked="checked"><label for="online_on">Online</label>
+		<fieldset>
+			<input type="radio" id="online_off" name="onlineonoff"><label for="online_off">Offline</label>
+			<input type="radio" id="online_on" name="onlineonoff" checked="checked"><label for="online_on">Online</label>
+		</fieldset>
 	</div>
 	<div id="creator_name">
 		<span class="leftlabel ui-widget ui-state-default">Your name:</span>

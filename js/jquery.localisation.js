@@ -81,7 +81,7 @@ $.localise = function(packages, settings, loadBase, path, timeout, async, comple
 		timeout: timeout, async: async, complete: complete});
 	var paths = (!settings.path ? ['', ''] :
 		($.isArray(settings.path) ? settings.path : [settings.path, settings.path]));
-	var opts = {async: settings.async, dataType: 'script', timeout: settings.timeout};
+	var opts = {async: settings.async, dataType: 'text', timeout: settings.timeout};
 	var localisePkg = function(pkg, lang) {
 		var files = [];
 		if (settings.loadBase) {
@@ -93,19 +93,31 @@ $.localise = function(packages, settings, loadBase, path, timeout, async, comple
 		if (lang.length >= 5) {
 			files.push(paths[1] + pkg + '-' + lang.substring(0, 5) + '.js');
 		}
-		var loadFile = function() {
-			$.ajax($.extend(opts, {url: files.shift(), complete: function() {
-				if (files.length == 0) {
-					if ($.isFunction(settings.complete)) {
-						settings.complete.apply(window, [pkg]);
-					}
+		var loadFile = function(flist) {
+			if (flist.length==0)
+				return;
+			var furl = flist.shift();
+			var newopts = $.extend(opts, {
+				url: furl,
+				cache: true,
+				complete: function() {
+			      if ($.isFunction(settings.complete)) {
+					settings.complete.apply(window, [pkg]);
+				  }
+				},
+				// Datatype is 'text' not 'script', so execute the received javascript by attaching it to the document.
+				// This works around an issue in jQuery #3811
+				success: function(code) {
+					// This mimics the DOMeval function from jQuery
+					var script = document.createElement('script');
+					script.text = code;
+					document.head.appendChild(script).parentNode.removeChild(script);
 				}
-				else {
-					loadFile();
-				}
-			}}));
+		    })
+			$.ajax(newopts);
+			loadFile(flist);
 		};
-		loadFile();
+		loadFile(files);
 	};
 	var lang = normaliseLang(settings.language || $.localise.defaultLanguage);
 	packages = ($.isArray(packages) ? packages : [packages]);
