@@ -45,85 +45,85 @@
                      function receives package name as its parameter, 'this' is window -
                      omit this if settings is an object */
 $.localise = function(packages, settings, loadBase, path, timeout, async, complete) {
-	if (typeof settings != 'object' && typeof settings != 'string') {
-		complete = async;
-		async = timeout;
-		timeout = path;
-		path = loadBase;
-		loadBase = settings;
-		settings = '';
-	}
-	if (typeof loadBase != 'boolean') {
-		complete = async;
-		async = timeout;
-		timeout = path;
-		path = loadBase;
-		loadBase = false;
-	}
-	if (typeof path != 'string' && !$.isArray(path)) {
-		complete = async;
-		async = timeout;
-		timeout = path;
-		path = '';
-	}
-	if (typeof timeout != 'number') {
-		complete = async;
-		async = timeout;
-		timeout = 500;
-	}
-	if (typeof async != 'boolean') {
-		complete = async;
-		async = false;
-	}
-	settings = (typeof settings != 'string' ?
-		$.extend({loadBase: false, path: '', timeout: 500, async: false}, settings || {}) :
-		{language: settings, loadBase: loadBase, path: path,
-		timeout: timeout, async: async, complete: complete});
-	var paths = (!settings.path ? ['', ''] :
-		($.isArray(settings.path) ? settings.path : [settings.path, settings.path]));
-	var opts = {async: settings.async, dataType: 'text', timeout: settings.timeout};
-	var localisePkg = function(pkg, lang) {
-		var files = [];
-		if (settings.loadBase) {
-			files.push(paths[0] + pkg + '.js');
-		}
-		if (lang.length >= 2) {
-			files.push(paths[1] + pkg + '-' + lang.substring(0, 2) + '.js');
-		}
-		if (lang.length >= 5) {
-			files.push(paths[1] + pkg + '-' + lang.substring(0, 5) + '.js');
-		}
-		var loadFile = function(flist) {
-			if (flist.length==0)
-				return;
-			var furl = flist.shift();
-			var newopts = $.extend(opts, {
-				url: furl,
-				cache: true,
-				complete: function() {
-			      if ($.isFunction(settings.complete)) {
-					settings.complete.apply(window, [pkg]);
-				  }
-				},
-				// Datatype is 'text' not 'script', so execute the received javascript by attaching it to the document.
-				// This works around an issue in jQuery #3811
-				success: function(code) {
-					// This mimics the DOMeval function from jQuery
-					var script = document.createElement('script');
-					script.text = code;
-					document.head.appendChild(script).parentNode.removeChild(script);
-				}
-		    })
-			$.ajax(newopts);
-			loadFile(flist);
-		};
-		loadFile(files);
-	};
-	var lang = normaliseLang(settings.language || $.localise.defaultLanguage);
-	packages = ($.isArray(packages) ? packages : [packages]);
-	for (var i = 0; i < packages.length; i++) {
-		localisePkg(packages[i], lang);
-	}
+    if (typeof settings != 'object' && typeof settings != 'string') {
+        complete = async;
+        async = timeout;
+        timeout = path;
+        path = loadBase;
+        loadBase = settings;
+        settings = '';
+    }
+    if (typeof loadBase != 'boolean') {
+        complete = async;
+        async = timeout;
+        timeout = path;
+        path = loadBase;
+        loadBase = false;
+    }
+    if (typeof path != 'string' && !$.isArray(path)) {
+        complete = async;
+        async = timeout;
+        timeout = path;
+        path = '';
+    }
+    if (typeof timeout != 'number') {
+        complete = async;
+        async = timeout;
+        timeout = 500;
+    }
+    if (typeof async != 'boolean') {
+        complete = async;
+        async = false;
+    }
+    settings = (typeof settings != 'string' ?
+        $.extend({loadBase: false, path: '', timeout: 500, async: false}, settings || {}) :
+        {language: settings, loadBase: loadBase, path: path,
+        timeout: timeout, async: async, complete: complete});
+    var paths = (!settings.path ? ['', ''] :
+        ($.isArray(settings.path) ? settings.path : [settings.path, settings.path]));
+    var opts = {async: settings.async, dataType: 'text', timeout: settings.timeout};
+    var localisePkg = function(pkg, lang) {
+        var files = [];
+        if (settings.loadBase) {
+            files.push(paths[0] + pkg + '.js');
+        }
+        if (lang.length >= 2) {
+            files.push(paths[1] + pkg + '-' + lang.substring(0, 2) + '.js');
+        }
+        if (lang.length >= 5) {
+            files.push(paths[1] + pkg + '-' + lang.substring(0, 5) + '.js');
+        }
+        var loadFile = function(flist) {
+            if (flist.length==0)
+                return;
+            var furl = flist.shift();
+            var newopts = $.extend(opts, {
+                url: furl,
+                cache: true,
+                complete: function() {
+                  if ($.isFunction(settings.complete)) {
+                    settings.complete.apply(window, [pkg]);
+                  }
+                },
+                // Datatype is 'text' not 'script', so execute the received javascript by attaching it to the document.
+                // This works around an issue in jQuery #3811
+                success: function(code) {
+                    // This mimics the DOMeval function from jQuery
+                    var script = document.createElement('script');
+                    script.text = code;
+                    document.head.appendChild(script).parentNode.removeChild(script);
+                }
+            })
+            $.ajax(newopts);
+            loadFile(flist);
+        };
+        loadFile(files);
+    };
+    var lang = normaliseLang(settings.language || $.localise.defaultLanguage);
+    packages = ($.isArray(packages) ? packages : [packages]);
+    for (var i = 0; i < packages.length; i++) {
+        localisePkg(packages[i], lang);
+    }
 };
 
 // Localise it!
@@ -131,15 +131,15 @@ $.localize = $.localise;
 
 /* Retrieve the default language set for the browser. */
 $.localise.defaultLanguage = normaliseLang(navigator.language /* Mozilla */ ||
-	navigator.userLanguage /* IE */);
+    navigator.userLanguage /* IE */);
 
 /* Ensure language code is in the format aa-AA. */
 function normaliseLang(lang) {
-	lang = lang.replace(/_/, '-').toLowerCase();
-	if (lang.length > 3) {
-		lang = lang.substring(0, 3) + lang.substring(3).toUpperCase();
-	}
-	return lang;
+    lang = lang.replace(/_/, '-').toLowerCase();
+    if (lang.length > 3) {
+        lang = lang.substring(0, 3) + lang.substring(3).toUpperCase();
+    }
+    return lang;
 }
 
 })(jQuery);
