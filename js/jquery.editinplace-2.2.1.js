@@ -437,7 +437,9 @@ $.extend(InlineEditor.prototype, {
 		if (this.settings.callback && this.settings.callback_skip_dom_reset)
 			return;
 		
-		var savingMessage = enteredText;
+		//EELCO BUG: var savingMessage = enteredText;
+		// because enteredText is not HTL-safe!
+		var savingMessage = "...";
 		if (hasContent(this.settings.saving_text))
 			savingMessage = this.settings.saving_text;
 		if(hasContent(this.settings.saving_image))
