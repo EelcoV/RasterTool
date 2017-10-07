@@ -50,7 +50,7 @@ body {
 }
 .ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150; outline: none;}
 .longlink { width: 12.5em !important; }
-.tabcloseicon {margin-top:0.4em; cursor: pointer;}
+.tabcloseicon {margin-top:0.4em !important; cursor: pointer;}
 
 /* The content panes to each vertical tab */
 .workouter {position: absolute; left: 40px; top: 42px; margin: 0px; }
