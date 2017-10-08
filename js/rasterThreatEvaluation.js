@@ -229,10 +229,12 @@ ThreatAssessment.prototype = {
 		this.store();
 	},
 
-	addtablerow_textonly: function(prefix,interact) {
+	addtablerow_textonly: function(prefix,interact,beforestring,afterstring) {
 		if (interact==null) interact=true;
+		if (beforestring==null) beforestring='<span>';
+		if (afterstring==null) afterstring='</span>';
 		var snippet = '<div id="dth_PF___TI_" class="threat">\
-			<div id="dth__PF_name_TI_" class="th_name th_col"><span>_TT_</span></div>\
+			<div id="dth__PF_name_TI_" class="th_name th_col">_BS_<span id="dthE__PF_name_TI_">_TT_</span>_AS_</div>\
 			<div id="dth__PF_freq_TI_" class="th_freq th_col"><span>_DF_</span></div>\
 			<div id="dth__PF_impact_TI_" class="th_impact th_col"><span>_DI_</span></div>\
 			<div id="dth__PF_total_TI_" class="th_total th_col">_TO_</div>\
@@ -241,6 +243,8 @@ ThreatAssessment.prototype = {
 			snippet += '<div class="th_del th_col"><input id="dth__PF_del_TI_" type="button" value="&minus;"></div>';
 		snippet += '</div>\n';
 		snippet = snippet.replace(/_TI_/g, this.id);
+		snippet = snippet.replace(/_BS_/g, beforestring);
+		snippet = snippet.replace(/_AS_/g, afterstring);
 		snippet = snippet.replace(/_TT_/g, H(this.title));
 		snippet = snippet.replace(/_TO_/g, this.total);
 		snippet = snippet.replace(/_PF_/g, prefix);
@@ -250,9 +254,9 @@ ThreatAssessment.prototype = {
 		return snippet;
 	},
 	
-	addtablerow: function(oid,prefix,interact) {
+	addtablerow: function(oid,prefix,interact,beforestring,afterstring) {
 		if (interact==null) interact=true;
-		$(oid).append( this.addtablerow_textonly(prefix,interact) );
+		$(oid).append( this.addtablerow_textonly(prefix,interact,beforestring,afterstring) );
 		this.addtablerow_behavioronly(oid,prefix,interact);
 	},
 	
@@ -290,12 +294,12 @@ ThreatAssessment.prototype = {
 			nc_isroot = c.isroot();
 		}
 		
-		if (!nc_isroot) $("#dth_"+prefix+"name"+this.id).editInPlace({
+		if (!nc_isroot) $("#dthE_"+prefix+"name"+this.id).editInPlace({
 			bg_out: "#eee", bg_over: "rgb(255,204,102)",
 			callback: function(oid, enteredText) {
 				te.settitle(enteredText);
 				te.setdescription(""); // Description from checklist does not apply anymore now.
-				$("#dth_"+prefix+"name"+te.id).attr('title', '');
+				$("#dthE_"+prefix+"name"+te.id).attr('title', '');
 				if (c.parentcluster != undefined) {
 					// c is a nodecluster, not a component
 					c.settitle(te.title);

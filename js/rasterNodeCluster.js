@@ -39,6 +39,7 @@
  *	containsnode(nid): checks whether node 'nid' is contained in this cluster, or any subcluster.
  *	hasdescendant(ncid): checks whether cluster 'ncid' is a descendent of this cluster.
  *	root(): returns the ultimate root-cluster of this cluster.
+ *  depth(): 0 for root, one more for each step removed from root in parent-child relations.
  *	isroot(): true iff this cluster has no parent.
  *  isempty(): true iff this cluster has no parent, child clusters, nor child nodes.
  *	allnodes(): returns a flat array of all nodes in this tree.
@@ -267,7 +268,11 @@ NodeCluster.prototype = {
 	root: function() {
 		return (this.parentcluster==null ? this.id : NodeCluster.get(this.parentcluster).root() );
 	},
-	
+
+	depth: function() {
+		return (this.parentcluster==null ? 0 : NodeCluster.get(this.parentcluster).depth()+1 );
+	},
+
 	normalize: function() {
 		for (var i=0; i<this.childclusters.length; i++) {
 			var cc = NodeCluster.get(this.childclusters[i]);

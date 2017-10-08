@@ -436,7 +436,7 @@ div.th_del {
 div.th_del input { padding: 1px; }
 .th_name span { cursor: text; }
 .th_descr span { cursor: text; }
-.th_name .inplace_field { width: 14em; }
+.th_name .inplace_field { width: 8em; } /* Less than width of column, to account for tree structure lines */
 .th_descr .inplace_field { width: 46em; }
 
 /* Dialog: checklist */
@@ -957,6 +957,19 @@ for checklists and threat evaluations.
 .shfaccordionbody {
     padding-top: 0px !important;
     padding-right: 0px !important;
+}
+
+.linechar {
+	position: relative;
+	left: 1px;
+	top: -3px;
+	overflow: visible;
+	display: inline;
+	vertical-align: top;
+}
+.lineimg {
+	width: 12px;
+	height: 25px;
 }
 
 .threatdomain {

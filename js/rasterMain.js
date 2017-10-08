@@ -3911,7 +3911,7 @@ function reallyRepaintTDom(elem) {
     snippet = snippet.replace(/_LR_/g, _("Remark"));
     snippet = snippet.replace(/_ID_/g, nc.id);
     $('#shfaccordionbody'+nc.id).html( snippet );
-    appendAllThreats(nc,"#shftable"+nc.id,"shf"+nc.id);
+    computeSpacesMakeup(nc,"#shftable"+nc.id,"shf"+nc.id);
     nc.calculatemagnitude();
     nc.setallmarkeroid("#shfamark");
 
@@ -4066,13 +4066,102 @@ function listFromCluster(nc) {
     return str;
 }
 
+/* Each line/row is indented by a number of spaces equal to its depth.
+ * The spaces are of three kinds:
+ *  - blank, empty
+ *  - vertic, a vertical line from top to bottom
+ *  - corner, from top to center to the right
+ * Both kinds can be overlayed, to form a line from top to bottom with a branch to the right.
+ *
+ * The rule to apply for when to have a vertic and/or corner:
+ *  1. The spaces in a row must all be empty, except the rightmost one which must have corner.
+ *  2. In addition to rule #1, all spaces above the rightmost one, as long as they exist, must have vertic.
+ * This rule is implemented in computeRows().
+ *
+ * To make this easier, we make two passes.
+ * First pass calculated the makeup of the spaces.
+ * Second pass uses this to create the actual HTML.
+ *
+ * For the first pass, SpacesMakeup[row][indentlevel] contains:
+ *  0 on blank
+ *  1 on vertical only
+ *  2 on corner only
+ *  3 on both
+ * This can be computer using bitwise OR.
+ */
+var SpacesMakeup;
+var Spaces_row;
+
+function computeSpacesMakeup(nc,domid,prefix) {
+	if (DEBUG && !nc)
+		bugreport("Node cluster is undefined.", "computeSpacesMakeup");
+	if (DEBUG && !nc.isroot())
+		bugreport("Node cluster is not at root.", "computeSpacesMakeup");
+	SpacesMakeup = [];
+
+	Spaces_row = -1; // Gets incremented on each call of computerLine, so will start at zero.
+	computeRows(nc);
+
+	Spaces_row = -1;
+	appendAllThreats(nc,domid,prefix);
+}
+
+function computeRows(nc) {
+	Spaces_row++;
+	SpacesMakeup[Spaces_row] = [];
+	if (nc.childnodes.length>1) {
+		// With <2 child nodes no vuln assessment will be made, no row painted.
+		var d = nc.depth();
+		// Rule #1
+		for (var i=0; i<d-1; i++)
+			SpacesMakeup[Spaces_row][i] = 0;
+		if (d>0)
+			SpacesMakeup[Spaces_row][d-1] |= 2;
+		// Rule #2
+		for (i=Spaces_row-1; i>=0; i--) {
+			if (SpacesMakeup[i][d-1] == undefined)
+				break;
+			SpacesMakeup[i][d-1] |= 1;
+		}
+	}
+	for (i=0; i<nc.childclusters.length; i++) {
+		var cc = NodeCluster.get(nc.childclusters[i]);
+		computeRows(cc);
+	}
+}
+
 function appendAllThreats(nc,domid,prefix) {
     if (DEBUG && nc==null)
         bugreport("nc is null","appendAllThreats");
+	Spaces_row++;
     var th = ThreatAssessment.get(nc.thrass);
-    if (nc.childnodes.length>1) {
-        // Only paint threat assessment if at least two child nodes (clusters don't count)
-        th.addtablerow(domid,prefix,false);
+    // Only paint threat assessment if at least two child nodes (clusters don't count)
+	if (nc.childnodes.length>1) {
+	 	var spaces = "";
+	 	spaces += '<span class="linechar">';
+	 	for (var i=0; i<nc.depth(); i++) {
+			spaces += '<img src="../img/_KIND_.png" class="lineimg">'
+			switch (SpacesMakeup[Spaces_row][i]) {
+			case 0:
+				spaces = spaces.replace(/_KIND_/, 'barB');
+				break;
+			case 1:
+				spaces = spaces.replace(/_KIND_/, 'barV');
+				break;
+			case 2:
+				spaces = spaces.replace(/_KIND_/, 'barC');
+				break;
+			case 3:
+				spaces = spaces.replace(/_KIND_/, 'barCV');
+				break;
+			default:
+				bugreport("Incorrect style for indentation", "appendAllThreats");
+			}
+	 	}
+	 	if (nc.depth()>0)
+			spaces += '&nbsp;'; // spacer between corner line and text
+	 	spaces += '</span>';
+		th.addtablerow(domid,prefix,false, spaces,'');
     } else {
         // If less than two children, then this thrass must not contribute to the cluster total.
         //
@@ -4081,10 +4170,10 @@ function appendAllThreats(nc,domid,prefix) {
         th.setfreq('-');
         th.setimpact('-');
     }
-    for (var i=0; i<nc.childclusters.length; i++) {
+	for (i=0; i<nc.childclusters.length; i++) {
         var cc = NodeCluster.get(nc.childclusters[i]);
-        appendAllThreats(cc,domid,prefix);
-    }
+		appendAllThreats(cc,domid,prefix);
+	}
 }
 
 /* To work around a bug in jQuery UI 

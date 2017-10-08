@@ -118,6 +118,10 @@
 		4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-NL-1.1.epub"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
 		498BB2B91A2626AF00B12844 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
+		4997D9131F8A5DF200E3481A /* barB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barB.png; sourceTree = "<group>"; };
+		4997D9141F8A5DF300E3481A /* barC.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barC.png; sourceTree = "<group>"; };
+		4997D9151F8A5DF300E3481A /* barCV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barCV.png; sourceTree = "<group>"; };
+		4997D9161F8A5DF300E3481A /* barV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barV.png; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-hi.png"; sourceTree = "<group>"; };
 		499804E4187F29D10063E8C5 /* qm-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-lo.png"; sourceTree = "<group>"; };
 		499A6B9F1A72D97A0047E182 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -244,6 +248,10 @@
 		494B6FEB18796E9D00400328 /* img */ = {
 			isa = PBXGroup;
 			children = (
+				4997D9131F8A5DF200E3481A /* barB.png */,
+				4997D9141F8A5DF300E3481A /* barC.png */,
+				4997D9151F8A5DF300E3481A /* barCV.png */,
+				4997D9161F8A5DF300E3481A /* barV.png */,
 				498BB2B31A26231E00B12844 /* find.png */,
 				499804E3187F29D10063E8C5 /* qm-hi.png */,
 				499804E4187F29D10063E8C5 /* qm-lo.png */,
