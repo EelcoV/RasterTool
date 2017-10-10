@@ -172,6 +172,8 @@ $(function() {
     var strArr = [];
     for (var i=0, alen=localStorage.length; i<alen; i++) {  
         var key = localStorage.key(i);
+        if (key=='RasterToolIsLoaded')
+        	continue;
         strArr.push(key+'\t');
         strArr.push(localStorage[key]+'\n');
     } 
