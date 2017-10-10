@@ -965,7 +965,7 @@ for checklists and threat evaluations.
 	top: -3px;
 	overflow: visible;
 	display: inline;
-	vertical-align: top;
+	float: left;
 }
 .lineimg {
 	width: 12px;

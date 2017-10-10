@@ -305,6 +305,10 @@ $(function() {
     });
 
     $(window).on('load', (function() {
+		if ($('#splash').is(':hidden')) {
+			// Emergency trigger wasn't necessary. Ignore.
+			return;
+		}
         $('#splash').hide();
         if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
             rasterConfirm(_("Warning!"), _("The tool may already be active in another browser window or tab. If so, then continuing <em>will</em> damage your projects!"),
@@ -356,6 +360,11 @@ $(function() {
             bugreport("Unknown Preferences.tab", "window.onbeforeprint");
         }
     };
+
+    // Make sure the load event is *always* actioned. The event may have fired before this function attached it to the window.
+    window.setTimeout(function () {
+    	$(window).trigger('load');
+	}, 500);
 });
 
 var findTimer;
