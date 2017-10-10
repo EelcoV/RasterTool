@@ -442,7 +442,8 @@ function _(s) {
     var str = _t[s];
     if (!str) {
         // No localisation available. Default to English version
-        if (DEBUG && $.localise.defaultLanguage!='en') {
+        if (DEBUG && !$.localise.defaultLanguage.match(/^en/)) {
+        	// Suggest additions to translation-XX.js modules (except for English and variants)
             console.log("_t[\"" + s + "\"] = \"" + s + "\";");
         }
         str=s;
