@@ -116,7 +116,7 @@
 		4961E8B71C415CE60001FAE3 /* Raster-EN-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-EN-1.1.epub"; sourceTree = "<group>"; };
 		4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-NL-1.1.epub"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
-		498BB2B91A2626AF00B12844 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
+		498BB2B91A2626AF00B12844 /* build_tgz.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build_tgz.sh; sourceTree = "<group>"; };
 		4997D9131F8A5DF200E3481A /* barB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barB.png; sourceTree = "<group>"; };
 		4997D9141F8A5DF300E3481A /* barC.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barC.png; sourceTree = "<group>"; };
 		4997D9151F8A5DF300E3481A /* barCV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barCV.png; sourceTree = "<group>"; };
@@ -128,6 +128,12 @@
 		4999EB4A1F8FE9F3009BBF18 /* preprocess-standalone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "preprocess-standalone.sh"; sourceTree = "<group>"; };
 		4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "preprocess-server.sh"; sourceTree = "<group>"; };
 		4999EB5F1F9004D0009BBF18 /* clean.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
+		4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "electron-v1.7.9-darwin-x64.zip"; sourceTree = "<group>"; };
+		4999EB651F9007CE009BBF18 /* build-electron-macos.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-electron-macos.sh"; sourceTree = "<group>"; };
+		4999EB6A1F900A9E009BBF18 /* standalone-en.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "standalone-en.html"; sourceTree = "<group>"; };
+		4999EB6B1F900AA9009BBF18 /* standalone-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "standalone-nl.html"; sourceTree = "<group>"; };
+		4999EB6C1F900BB2009BBF18 /* package.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
+		4999EB6D1F900C07009BBF18 /* main.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = main.js; sourceTree = "<group>"; };
 		499A6B9F1A72D97A0047E182 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		499BA93D1AD80D22005D20B4 /* jquery.jsPlumb-1.7.5.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.jsPlumb-1.7.5.js"; sourceTree = "<group>"; };
@@ -164,11 +170,13 @@
 		494B6F5E18796DD000400328 = {
 			isa = PBXGroup;
 			children = (
+				4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */,
 				499A6BA01A72DC080047E182 /* LICENSE.md */,
 				499A6B9F1A72D97A0047E182 /* README.md */,
 				494B6F6518796E9D00400328 /* changes to commit */,
-				498BB2B91A2626AF00B12844 /* build.sh */,
+				498BB2B91A2626AF00B12844 /* build_tgz.sh */,
 				4999EB5F1F9004D0009BBF18 /* clean.sh */,
+				4999EB651F9007CE009BBF18 /* build-electron-macos.sh */,
 				494B6F6618796E9D00400328 /* js */,
 				494B6FA218796E9D00400328 /* css */,
 				494B6FDA18796E9D00400328 /* public_group */,
@@ -183,6 +191,8 @@
 				4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */,
 				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
 				494B702C18796E9D00400328 /* index.html */,
+				4999EB6A1F900A9E009BBF18 /* standalone-en.html */,
+				4999EB6B1F900AA9009BBF18 /* standalone-nl.html */,
 				4999EB431F8F284F009BBF18 /* standalone */,
 			);
 			sourceTree = "<group>";
@@ -391,6 +401,8 @@
 			children = (
 				4999EB441F8F2874009BBF18 /* app-NL.html */,
 				4999EB451F8F28F8009BBF18 /* app-EN.html */,
+				4999EB6C1F900BB2009BBF18 /* package.json */,
+				4999EB6D1F900C07009BBF18 /* main.js */,
 			);
 			path = standalone;
 			sourceTree = "<group>";
@@ -455,13 +467,27 @@
 			passBuildSettingsInEnvironment = 1;
 			productName = Lint;
 		};
+		4999EB661F9007E5009BBF18 /* Build Electron */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = 4999EB671F9007E5009BBF18 /* Build configuration list for PBXLegacyTarget "Build Electron" */;
+			buildPhases = (
+			);
+			buildToolPath = "./build-electron-macos.sh";
+			buildWorkingDirectory = "$(PROJECT_DIR)";
+			dependencies = (
+			);
+			name = "Build Electron";
+			passBuildSettingsInEnvironment = 1;
+			productName = Lint;
+		};
 		49BC2AFD1A262C3400EC5A9A /* CreateDistribution */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "$(ACTION)";
 			buildConfigurationList = 49BC2AFE1A262C3400EC5A9A /* Build configuration list for PBXLegacyTarget "CreateDistribution" */;
 			buildPhases = (
 			);
-			buildToolPath = ./build.sh;
+			buildToolPath = ./build_tgz.sh;
 			buildWorkingDirectory = "$(PROJECT_DIR)";
 			dependencies = (
 			);
@@ -495,6 +521,7 @@
 				4999EB4C1F8FEB35009BBF18 /* Preprocess-standalone */,
 				4999EB521F8FEB7B009BBF18 /* Preprocess-server */,
 				4999EB601F900553009BBF18 /* Clean */,
+				4999EB661F9007E5009BBF18 /* Build Electron */,
 			);
 		};
 /* End PBXProject section */
@@ -742,6 +769,82 @@
 			};
 			name = Release;
 		};
+		4999EB681F9007E5009BBF18 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUGGING_SYMBOLS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		4999EB691F9007E5009BBF18 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 		49BC2AFF1A262C3400EC5A9A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -853,6 +956,15 @@
 			buildConfigurations = (
 				4999EB621F900553009BBF18 /* Debug */,
 				4999EB631F900553009BBF18 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4999EB671F9007E5009BBF18 /* Build configuration list for PBXLegacyTarget "Build Electron" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4999EB681F9007E5009BBF18 /* Debug */,
+				4999EB691F9007E5009BBF18 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
