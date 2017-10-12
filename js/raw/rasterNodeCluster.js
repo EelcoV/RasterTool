@@ -522,4 +522,3 @@ NodeClusterIterator.prototype = {
 		});
 	}	
 };
-

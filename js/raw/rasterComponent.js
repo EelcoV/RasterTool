@@ -654,4 +654,3 @@ ComponentIterator.prototype = {
 		});
 	}	
 };
-

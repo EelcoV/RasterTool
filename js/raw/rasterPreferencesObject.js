@@ -160,4 +160,3 @@ var PreferencesObject = function() {
 	this.store();
 };
 
-

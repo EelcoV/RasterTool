@@ -179,14 +179,14 @@ Service.prototype = {
 	
 	_addtabdiagrams_tabonly: function() {
 		/* Create a new tab */
-		var snippet = '<li id="diaservicetab_I_">			<a href="#_PF__I_">			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>			</a>				<span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>			</li>			';
-		
-
-
-
-
-
-  snippet = snippet.replace(/_T_/g, H(this.title));
+		var snippet = '<li id="diaservicetab_I_">\
+			<a href="#_PF__I_">\
+			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
+			</a>\
+				<span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
+			</li>\
+			';
+		snippet = snippet.replace(/_T_/g, H(this.title));
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_PF_/g, 'diagrams');
 		$(snippet).appendTo( '#diagrams_body .ui-tabs-nav' );
@@ -205,20 +205,20 @@ Service.prototype = {
 		this._addtabdiagrams_tabonly();
 		
 		/* Add content to the new tab */
-		var snippet = '\n			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n			<div id="scroller_overview_I_" class="scroller_overview">\n				<div id="scroller_region_I_" class="scroller_region"></div>\n			</div>\n		';
-		
-
-
-
-
-  snippet = snippet.replace(/_I_/g, this.id);
+		var snippet = '\n\
+			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
+			<div id="scroller_overview_I_" class="scroller_overview">\n\
+				<div id="scroller_region_I_" class="scroller_region"></div>\n\
+			</div>\n\
+		';
+		snippet = snippet.replace(/_I_/g, this.id);
 		$('#diagrams_body').append(snippet);
-		snippet = '\n			<h1 class="printonly underlay servicename_I_">_SN_</h1>\n			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n			<div id="diagrams_workspace_I_" class="fancyworkspace"></div>\n		';
-		
-
-
-
-  snippet = snippet.replace(/_LP_/g, _("Project"));
+		snippet = '\n\
+			<h1 class="printonly underlay servicename_I_">_SN_</h1>\n\
+			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
+			<div id="diagrams_workspace_I_" class="fancyworkspace"></div>\n\
+		';
+		snippet = snippet.replace(/_LP_/g, _("Project"));
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_SN_/g, H(this.title));
 		snippet = snippet.replace(/_PN_/g, H(Project.get(this.project).title));
@@ -325,14 +325,14 @@ Service.prototype = {
 
 	_addtabsinglefs_tabonly: function() {
 		/* Create a new tab */
-		var snippet = '<li id="sfservicetab_I_">			<a href="#_PF__I_">			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>			</a>				<span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>			</li>			';
-		
-
-
-
-
-
-  snippet = snippet.replace(/_T_/g, H(this.title));
+		var snippet = '<li id="sfservicetab_I_">\
+			<a href="#_PF__I_">\
+			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
+			</a>\
+				<span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
+			</li>\
+			';
+		snippet = snippet.replace(/_T_/g, H(this.title));
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_PF_/g, 'singlefs');
 		$(snippet).appendTo( '#singlefs_body .ui-tabs-nav' );
@@ -350,17 +350,17 @@ Service.prototype = {
 		this._addtabsinglefs_tabonly();
 
 		/* Add content to the new tab */
-		var snippet = '\n			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n		';
-		
-
-  snippet = snippet.replace(/_I_/g, this.id);
+		var snippet = '\n\
+			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
+		';
+		snippet = snippet.replace(/_I_/g, this.id);
 		$('#singlefs_body').append(snippet);
-		snippet = '\n			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n			<div id="singlefs_workspace_I_" class="workspace plainworkspace"></div>\n		';
-		
-
-
-
-  snippet = snippet.replace(/_LP_/g, _("Project"));
+		snippet = '\n\
+			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n\
+			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
+			<div id="singlefs_workspace_I_" class="workspace plainworkspace"></div>\n\
+		';
+		snippet = snippet.replace(/_LP_/g, _("Project"));
 		snippet = snippet.replace(/_LSF_/g, _("Single failures"));
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_SN_/g, H(this.title));
@@ -510,12 +510,12 @@ var NodesBeingDragged = [];
 function diagramTabEditStart(event) {
 	var s = Service.get(nid2id(this.hash));
 	var dialog = $('<div></div>');
-	var snippet ='		<form id="form_servicerename">		<input id="field_servicerename" name="fld" type="text" size="55" value="_SN_">		</form>	';
-	
-
-
-
- snippet = snippet.replace(/_SN_/g, H(s.title));
+	var snippet ='\
+		<form id="form_servicerename">\
+		<input id="field_servicerename" name="fld" type="text" size="55" value="_SN_">\
+		</form>\
+	';
+	snippet = snippet.replace(/_SN_/g, H(s.title));
 	dialog.append(snippet);
 	var dbuttons = [];
 	dbuttons.push({
@@ -583,5 +583,4 @@ ServiceIterator.prototype = {
 	getservice: function() {return Service.get( this.item[this.index] );},
 	getserviceid: function() {return this.item[this.index];}
 };
-
 

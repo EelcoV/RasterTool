@@ -622,9 +622,18 @@ Node.prototype = {
 		 	this.position.y = 100;
 		 	this.store();
 		 }
-		var str = '\n			<div id="node_ID_" class="node _TY_">\n				<div id="nodecontents_ID_" class="nodecontent _TY_content"><img src="../img/_CO_/_TY_.png" class="contentimg"></div>\n				<div id="nodeheader_ID_" class="nodeheader _TY_header _CO_">\n				  <div id="nodetitle_ID_" class="nodetitle _TY_title"><span id="titlemain_ID_"></span><span id="titlesuffix_ID_"></span></div>\n				</div>\n				<img id="nodeC_ID_" class="nodeC _TY_D" src="../img/dropdown.png">\n				<img id="nodeW_ID_" class="nodeW _TY_W" src="../img/warn.png">\n				<div id="nodeMagnitude_ID_" class="nodeMagnitude _TY_Magnitude"></div>\n			</div>\n			';
-		
-  str = str.replace(/_ID_/g, this.id);
+		var str = '\n\
+			<div id="node_ID_" class="node _TY_">\n\
+				<div id="nodecontents_ID_" class="nodecontent _TY_content"><img src="../img/_CO_/_TY_.png" class="contentimg"></div>\n\
+				<div id="nodeheader_ID_" class="nodeheader _TY_header _CO_">\n\
+				  <div id="nodetitle_ID_" class="nodetitle _TY_title"><span id="titlemain_ID_"></span><span id="titlesuffix_ID_"></span></div>\n\
+				</div>\n\
+				<img id="nodeC_ID_" class="nodeC _TY_D" src="../img/dropdown.png">\n\
+				<img id="nodeW_ID_" class="nodeW _TY_W" src="../img/warn.png">\n\
+				<div id="nodeMagnitude_ID_" class="nodeMagnitude _TY_Magnitude"></div>\n\
+			</div>\n\
+			';
+		str = str.replace(/_ID_/g, this.id);
 		str = str.replace(/_TY_/g, this.type);
 		str = str.replace(/_CO_/g, (Preferences.label ? this.color : "none"));
 		$('#diagrams_workspace'+this.service).append(str);
@@ -1200,5 +1209,4 @@ var Rules = {
 		return true;	
 	}
 };
-
 

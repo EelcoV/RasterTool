@@ -66,15 +66,15 @@ var Project = function(id,asstub) {
 	this.labels = Project.defaultlabels;
 	this.creator = "";
 	this.date = "";
-
+#ifdef SERVER
 	this.shared = false;
 	if (asstub==null)
 		this.stub = false;
 	else
 		this.stub = (asstub===true);
-
-
-
+#else
+	this.stub = false;
+#endif
 	this.store();
 	Project._all[this.id]=this;
 };
@@ -170,7 +170,7 @@ Project.merge = function(intoproject,otherproject) {
 		bugreport("Failed to resurrect merged project", "Project.Merge");
 };
 
-
+#ifdef SERVER
 // Make sure that at most one request runs at any time
 // This should not be necessary, but may be useful during debugging.
 var updateStubsInProgress=false;
@@ -314,7 +314,7 @@ Project.getProps = function(pname,doWhenReady) {
 		}
 	});
 };
-
+#endif
 
 Project.prototype = {
 	destroy: function() {
@@ -358,7 +358,7 @@ Project.prototype = {
 		this.settitle(_("New project"));
 	},
 
-
+#ifdef SERVER
 	setshared: function(b,updateServer) {
 		var newstatus = (b===true);
 		if (this.shared==newstatus)
@@ -376,7 +376,7 @@ Project.prototype = {
 		this.store();
 		startAutoSave();
 	},
-
+#endif
 
 	setdescription: function(s) {
 		this.description = trimwhitespace(String(s)).substr(0,100);
@@ -563,7 +563,7 @@ Project.prototype = {
 		localStorage[key] = this._stringify();
 	},
 
-
+#ifdef SERVER
 	storeOnServer: function(auto,exportstring,callback) {
 		if (!Preferences.online) return; // No actions when offline
 		var thisp = this;
@@ -816,7 +816,7 @@ Project.prototype = {
 			}
 		});
 	},
-
+#endif
 
 	internalCheck: function() {
 		var errors = "";
@@ -902,7 +902,7 @@ Project.prototype = {
 	}
 };
 
-
+#ifdef SERVER
 function askForConflictResolution(proj,details) {
 	$('#modaldialog').dialog("option", "buttons", [
 	{text: _("Make private"), click: function(){
@@ -947,7 +947,7 @@ function askForConflictResolution(proj,details) {
 	$('#modaldialog').dialog("open");
 	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
 }
-
+#endif
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  * ProjectIterator: iterate over all projects
@@ -1005,5 +1005,4 @@ ProjectIterator.prototype = {
 		});
 	}
 };
-
 

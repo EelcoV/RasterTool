@@ -233,13 +233,13 @@ ThreatAssessment.prototype = {
 		if (interact==null) interact=true;
 		if (beforestring==null) beforestring='<span>';
 		if (afterstring==null) afterstring='</span>';
-		var snippet = '<div id="dth_PF___TI_" class="threat">			<div id="dth__PF_name_TI_" class="th_name th_col">_BS_<span id="dthE__PF_name_TI_">_TT_</span>_AS_</div>			<div id="dth__PF_freq_TI_" class="th_freq th_col"><span>_DF_</span></div>			<div id="dth__PF_impact_TI_" class="th_impact th_col"><span>_DI_</span></div>			<div id="dth__PF_total_TI_" class="th_total th_col">_TO_</div>			<div id="dth__PF_remark_TI_" class="th_remark th_col"><span>_DR_</span></div>';
-		
-
-
-
-
-  if (interact)
+		var snippet = '<div id="dth_PF___TI_" class="threat">\
+			<div id="dth__PF_name_TI_" class="th_name th_col">_BS_<span id="dthE__PF_name_TI_">_TT_</span>_AS_</div>\
+			<div id="dth__PF_freq_TI_" class="th_freq th_col"><span>_DF_</span></div>\
+			<div id="dth__PF_impact_TI_" class="th_impact th_col"><span>_DI_</span></div>\
+			<div id="dth__PF_total_TI_" class="th_total th_col">_TO_</div>\
+			<div id="dth__PF_remark_TI_" class="th_remark th_col"><span>_DR_</span></div>';
+		if (interact)
 			snippet += '<div class="th_del th_col"><input id="dth__PF_del_TI_" type="button" value="&minus;"></div>';
 		snippet += '</div>\n';
 		snippet = snippet.replace(/_TI_/g, this.id);
@@ -477,12 +477,12 @@ Threat.prototype = {
 	},
 
 	addtablerow: function(oid) {
-		var snippet = '<div id="threat_TI_" class="threat">			<div id="thname_TI_" class="th_col th_name"><span>_TN_</span></div>			<div id="thdesc_TI_" class="th_col th_descr"><span>_TD_</span></div>			<div class="th_col th_del"><input id="thdel_TI_" type="button" value="&minus;"></div>			</div>\n';
-		
-
-
-
-  snippet = snippet.replace(/_TI_/g, this.id);
+		var snippet = '<div id="threat_TI_" class="threat">\
+			<div id="thname_TI_" class="th_col th_name"><span>_TN_</span></div>\
+			<div id="thdesc_TI_" class="th_col th_descr"><span>_TD_</span></div>\
+			<div class="th_col th_del"><input id="thdel_TI_" type="button" value="&minus;"></div>\
+			</div>\n';
+		snippet = snippet.replace(/_TI_/g, this.id);
 		snippet = snippet.replace(/_TT_/g, Rules.nodetypes[this.type]);
 		snippet = snippet.replace(/_TN_/g, H(this.title));
 		snippet = snippet.replace(/_TD_/g, H(this.description));
@@ -575,5 +575,4 @@ ThreatIterator.prototype = {
 	getthreat: function() {return Threat.get( this.item[this.index] );},
 	getthreatid: function() {return this.item[this.index];}
 };
-
 
