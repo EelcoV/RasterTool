@@ -160,6 +160,8 @@ $(function() {
     
     // Load preferences
     Preferences = new PreferencesObject();
+    if (ToolGroup=='_standalone_')
+    	Preferences.online = false;
     var remembertab = Preferences.tab;
     
     initLibraryPanel();
@@ -453,7 +455,7 @@ function _(s) {
     var str = _t[s];
     if (!str) {
         // No localisation available. Default to English version
-        if (DEBUG && !$.localise.defaultLanguage.match(/^en/)) {
+        if (DEBUG && ToolGroup && ToolGroup!='_standalone_' && !$.localise.defaultLanguage.match(/^en/)) {
         	// Suggest additions to translation-XX.js modules (except for English and variants)
             console.log("_t[\"" + s + "\"] = \"" + s + "\";");
         }
@@ -531,22 +533,30 @@ function SizeDOMElements() {
     $('.workbody').height(wh-62);
     $('.workouter').css('padding','0px');
     
-    /* Find a CSS-rule with the exact name "div.nodeMagnitude", then
+    /* Find a CSS-rule with the exact name ".threatdomain", then
      * modify that rule on the fly.
      */
-    var css=document.getElementById("maincssfile").sheet;
-    var rule=null;
-    for (var i=0; i<css.cssRules.length; i++) {
-        if (css.cssRules[i].selectorText==".threatdomain") {
-            rule = css.cssRules[i];
-            break;
-        }
-    }
-    if (!rule) {
-        bugreport('cannot locate css rule for .threatdomain width','SizeDOMElements');
-    } else {
-        rule.style.height= (wh-250) + "px";
-    }
+	 try {
+		var css=document.getElementById("maincssfile").sheet;
+		var rule=null;
+		for (var i=0; i<css.cssRules.length; i++) {
+			if (css.cssRules[i].selectorText==".threatdomain") {
+				rule = css.cssRules[i];
+				break;
+			}
+		}
+		if (!rule) {
+			bugreport('cannot locate css rule for .threatdomain width','SizeDOMElements');
+		} else {
+			rule.style.height= (wh-250) + "px";
+		}
+	}
+	catch (e) {
+		// Firefox won't allow access to cssRules when origin is file://
+		if (e.name!='SecurityError') {
+			throw e;
+		}
+	}
 
     $('#servaddbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
     $('.tabs-bottom > .ui-tabs-nav').width(ww-99);
@@ -1829,8 +1839,8 @@ function initLibraryPanel() {
             <div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n\
             _LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
             <fieldset>\n\
-            <input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
-            <input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n\
+            <input type="radio" _DA_ id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
+            <input type="radio" _DA_ id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n\
             </fieldset>\n\
             </form>\
         ';
@@ -1839,6 +1849,8 @@ function initLibraryPanel() {
         snippet = snippet.replace(/_LD_/g, _("Description:"));
         snippet = snippet.replace(/_LP_/g, _("Private"));
         snippet = snippet.replace(/_LS_/g, _("Shared"));
+        if (ToolGroup=='_standalone_')
+        	snippet = snippet.replace(/_DA_/g, 'disabled="true"');
         snippet = snippet.replace(/_STR_/g, _("last stored on"));
         snippet = snippet.replace(/_PN_/g, H(p.title));
         snippet = snippet.replace(/_PD_/g, H(p.description));

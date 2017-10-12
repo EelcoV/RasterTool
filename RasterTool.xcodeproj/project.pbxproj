@@ -124,6 +124,8 @@
 		4997D9161F8A5DF300E3481A /* barV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barV.png; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-hi.png"; sourceTree = "<group>"; };
 		499804E4187F29D10063E8C5 /* qm-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-lo.png"; sourceTree = "<group>"; };
+		4999EB441F8F2874009BBF18 /* app-NL.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "app-NL.html"; sourceTree = "<group>"; };
+		4999EB451F8F28F8009BBF18 /* app-EN.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "app-EN.html"; sourceTree = "<group>"; };
 		499A6B9F1A72D97A0047E182 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		499BA93D1AD80D22005D20B4 /* jquery.jsPlumb-1.7.5.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.jsPlumb-1.7.5.js"; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 				4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */,
 				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
 				494B702C18796E9D00400328 /* index.html */,
+				4999EB431F8F284F009BBF18 /* standalone */,
 			);
 			sourceTree = "<group>";
 			usesTabs = 1;
@@ -384,6 +387,15 @@
 				494B702818796E9D00400328 /* tWRD.png */,
 			);
 			path = yellow;
+			sourceTree = "<group>";
+		};
+		4999EB431F8F284F009BBF18 /* standalone */ = {
+			isa = PBXGroup;
+			children = (
+				4999EB441F8F2874009BBF18 /* app-NL.html */,
+				4999EB451F8F28F8009BBF18 /* app-EN.html */,
+			);
+			path = standalone;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
