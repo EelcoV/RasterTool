@@ -4164,7 +4164,7 @@ function appendAllThreats(nc,domid,prefix) {
 	 	var spaces = "";
 	 	spaces += '<span class="linechar">';
 	 	for (var i=0; i<nc.depth(); i++) {
-			spaces += '<img src="../img/_KIND_.png" class="lineimg">'
+			spaces += '<img src="../img/_KIND_.png" class="lineimg">';
 			switch (SpacesMakeup[Spaces_row][i]) {
 			case 0:
 				spaces = spaces.replace(/_KIND_/, 'barB');
