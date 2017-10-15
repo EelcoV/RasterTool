@@ -12,6 +12,7 @@ const ipc = electron.ipcMain;
 const shell = electron.ipcMain;
 
 const lang = require('./e-translation.js');
+const _ = lang.translate;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -21,83 +22,83 @@ let win, helpwin;
 let FileToBeOpened;
 
 let template = [{
-	label: lang.translate("File"),
+	label: _("File"),
 	submenu: [{
-		label: lang.translate("New"),
+		label: _("New"),
 		accelerator: 'CmdOrCtrl+N',
 		click: function (item, focusedWindow) { doNew() }
 	}, {
-		label: lang.translate("Open..."),
+		label: _("Open..."),
 		accelerator: 'CmdOrCtrl+O',
 		click: function (item, focusedWindow) { doOpen() }
 	}, {
-		label: lang.translate("Save"),
+		label: _("Save"),
 		accelerator: 'CmdOrCtrl+S',
 		click: function (item, focusedWindow) {
 			win.webContents.send('document-start-save')
 		}
 	}, {
-		label: lang.translate("Save as..."),
+		label: _("Save as..."),
 		accelerator: 'Shift+CmdOrCtrl+Z',
 		click: function (item, focusedWindow) {
 			win.webContents.send('document-start-saveas')
 		}
 	}, {
-		label: lang.translate("Save as PDF"),
+		label: _("Save as PDF"),
 		accelerator: 'CmdOrCtrl+P',
 		click: doPrint
 	}, {
 		type: 'separator'
 	}, {
-		label: lang.translate("Quit"),
+		label: _("Quit"),
 		accelerator: 'CmdOrCtrl+W',
 		role: 'close'
 	}]
 }, {
-	label: lang.translate("Edit"),
+	label: _("Edit"),
 	submenu: [{
-		label: lang.translate("Undo"),
+		label: _("Undo"),
 		accelerator: 'CmdOrCtrl+Z',
 		role: 'undo'
 	}, {
-		label: lang.translate("Redo"),
+		label: _("Redo"),
 		accelerator: 'Shift+CmdOrCtrl+Z',
 		role: 'redo'
 	}, {
 		type: 'separator'
 	}, {
-		label: lang.translate("Cut"),
+		label: _("Cut"),
 		accelerator: 'CmdOrCtrl+X',
 		role: 'cut'
 	}, {
-		label: lang.translate("Copy"),
+		label: _("Copy"),
 		accelerator: 'CmdOrCtrl+C',
 		role: 'copy'
 	}, {
-		label: lang.translate("Paste"),
+		label: _("Paste"),
 		accelerator: 'CmdOrCtrl+V',
 		role: 'paste'
 	}, {
-		label: lang.translate("Select all"),
+		label: _("Select all"),
 		accelerator: 'CmdOrCtrl+A',
 		role: 'selectall'
 	}]
 }, {
-	label: lang.translate("View"),
+	label: _("View"),
 	submenu: [{
-		label: lang.translate("Zoom"),
+		label: _("Zoom"),
 		submenu: [{
-			label: lang.translate("Zoom in"),
+			label: _("Zoom in"),
 			role: 'zoomin'
 		}, {
-			label: lang.translate("Zoom out"),
+			label: _("Zoom out"),
 			role: 'zoomout'
 		}, {
-			label: lang.translate("Reset"),
+			label: _("Reset"),
 			role: 'resetzoom'
 		}]
 	}, {
-		label: lang.translate("Full screen"),
+		label: _("Full screen"),
 		accelerator: (function () {
 			if (process.platform === 'darwin') {
 				return 'Ctrl+Command+F'
@@ -113,7 +114,7 @@ let template = [{
 	}, {
 		type: 'separator'
 	}, {
-		label: lang.translate("Developer tools"),
+		label: _("Developer tools"),
 		accelerator: (function () {
 			if (process.platform === 'darwin') {
 				return 'Alt+Command+I'
@@ -128,22 +129,22 @@ let template = [{
 		}
 	}]
 }, {
-	label: lang.translate("Window"),
+	label: _("Window"),
 	role: 'window',
 	submenu: [{
-		label: lang.translate("Minimize"),
+		label: _("Minimize"),
 		accelerator: 'CmdOrCtrl+M',
 		role: 'minimize'
 	}, {
-		label: lang.translate("Close"),
+		label: _("Close"),
 		accelerator: 'CmdOrCtrl+W',
 		role: 'close'
 	}]
 }, {
-	label: lang.translate("Help"),
+	label: _("Help"),
 	role: 'help',
 	submenu: [{
-		label: lang.translate("Show help"),
+		label: _("Show help"),
 		click: function (item, focusedWindow) {	win.webContents.send('help-show') }
 	}]
 }];
@@ -184,7 +185,7 @@ function createWindow() {
 			// Do not start with a blank document
 			ReadFileAndLoad(FileToBeOpened);
 		} else {
-			win.setTitle(lang.translate("Raster - No name"));
+			win.setTitle(_("Raster - No name"));
 			win.documentIsModified = false;
 			win.setDocumentEdited(false);
 		}
@@ -220,21 +221,21 @@ function checkSaveModifiedDocument() {
 		return true;
 
 	let buttonval = dialog.showMessageBox(win, {
-		type: "warning",
-		buttons: [lang.translate("Discard changes"), lang.translate("Cancel")],
+		type: 'warning',
+		buttons: [_("Discard changes"), _("Cancel")],
 		index: 1,
-		title: lang.translate("Discard all changes?"),
-		message: lang.translate("There are unsaved changes. If you continue those will be lost."),
-		detail: "Cancel to save changes."
+		title: _("Discard all changes?"),
+		message: _("There are unsaved changes. If you continue those will be lost."),
+		detail: _("Cancel to save changes.")
 	});
 	return (buttonval != 1);
 }
 
 function doSaveAs(str) {
 	dialog.showSaveDialog(win, {
-			title: lang.translate("Save project"),
+			title: _("Save project"),
 			filters: [{
-				name: lang.translate("Raster project"),
+				name: _("Raster project"),
 				extensions: ['raster']
 			}]
 		},
@@ -250,7 +251,7 @@ function doSaveAs(str) {
 					win.setDocumentEdited(false)
 					win.webContents.send('document-save-success')
 				} catch (e) {
-					dialog.showErrorBox(lang.translate("Project was not saved"), lang.translate("System notification:") +"\n"+e)
+					dialog.showErrorBox(_("Project was not saved"), _("System notification:") +"\n"+e)
 				}
 			}
 		});
@@ -265,7 +266,7 @@ function doSave(str) {
 			win.setDocumentEdited(false);
 			win.webContents.send('document-save-success')
 		} catch (e) {
-			dialog.showErrorBox(lang.translate("Project was not saved"), lang.translate("System notification:") +"\n"+e);
+			dialog.showErrorBox(_("Project was not saved"), _("System notification:") +"\n"+e);
 		}
 	} else {
 		doSaveAs(str);
@@ -278,13 +279,13 @@ function doOpen() {
 	}
 	win.focus();
 	let filenames = dialog.showOpenDialog(win, {
-		title: lang.translate("Open project"),
+		title: _("Open project"),
 		filters: [{
-				name: lang.translate("Raster project"),
+				name: _("Raster project"),
 				extensions: ['raster']
 			},
 			{
-				name: lang.translate("All files"),
+				name: _("All files"),
 				extensions: ['*']
 			}],
 		properties: ['openFile']
@@ -303,7 +304,7 @@ function ReadFileAndLoad(filename) {
 		win.setDocumentEdited(false);
 		win.webContents.send('document-start-open', str);
 	} catch (e) {
-		dialog.showErrorBox(ang.translate("Cannot read the file"), lang.translate("System notification:") +"\n"+e);
+		dialog.showErrorBox(_("Cannot read the file"), _("System notification:") +"\n"+e);
 	}
 }
 
@@ -313,7 +314,7 @@ function doNew() {
 	}
 	win.FileToBeOpened = null
 	win.webContents.once('did-finish-load', () => {
-		win.setTitle(lang.translate("Raster - No name"));
+		win.setTitle(_("Raster - No name"));
 		win.documentIsModified = false;
 		win.setDocumentEdited(false);
 	});
@@ -322,9 +323,9 @@ function doNew() {
 
 function doPrint() {
 	let filename = dialog.showSaveDialog(win, {
-		title: lang.translate("Opslaan als PDF"),
+		title: _("Opslaan als PDF"),
 		filters: [{
-				name: lang.translate("PDF files"),
+				name: _("PDF files"),
 				extensions: ['pdf']
 			}],
 		properties: ['openFile']
@@ -337,14 +338,14 @@ function doPrint() {
 		printBackground: true
 	}, (error, data) => {
 		if (error) {
-			dialog.showErrorBox(lang.translate("File was not saved"), lang.translate("System notification:") +"\n"+error);
+			dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
 			return;
 		}
 		try {
 			fs.writeFileSync(filename, data);
 		}
 		catch (e) {
-			dialog.showErrorBox(lang.translate("File was not saved"), lang.translate("System notification:") +"\n"+error);
+			dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
 		}
 	})
 }
