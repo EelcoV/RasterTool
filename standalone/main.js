@@ -14,39 +14,53 @@ const shell = electron.ipcMain;
 const lang = require('./e-translation.js');
 const _ = lang.translate;
 
+var Options = {
+	// 0 = none, 1 = small, 2 = large
+	vulnlevel: 2,
+	// true = show, false = hide
+	labels: true
+};
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win, helpwin;
+var win, helpwin;
 
 // If the OS does not provide a file, then we will start with a blank, untitled document
-let FileToBeOpened;
+var FileToBeOpened;
 
-let template = [{
+var template = [{
 	label: _("File"),
 	submenu: [{
 		label: _("New"),
 		accelerator: 'CmdOrCtrl+N',
-		click: function (item, focusedWindow) { doNew() }
+		click: function (item, focusedWindow) { doNew(); }
 	}, {
 		label: _("Open..."),
 		accelerator: 'CmdOrCtrl+O',
-		click: function (item, focusedWindow) { doOpen() }
+		click: function (item, focusedWindow) { doOpen(); }
 	}, {
 		label: _("Save"),
 		accelerator: 'CmdOrCtrl+S',
 		click: function (item, focusedWindow) {
-			win.webContents.send('document-start-save')
+			win.webContents.send('document-start-save');
 		}
 	}, {
 		label: _("Save as..."),
 		accelerator: 'Shift+CmdOrCtrl+Z',
 		click: function (item, focusedWindow) {
-			win.webContents.send('document-start-saveas')
+			win.webContents.send('document-start-saveas');
 		}
 	}, {
 		label: _("Save as PDF"),
 		accelerator: 'CmdOrCtrl+P',
 		click: doPrint
+	}, {
+		type: 'separator'
+	}, {
+		label: _("Details..."),
+		click: function (item, focusedWindow) {
+			win.webContents.send('show-details');
+		}
 	}, {
 		type: 'separator'
 	}, {
@@ -86,6 +100,49 @@ let template = [{
 }, {
 	label: _("View"),
 	submenu: [{
+		label: _("Labels"),
+		submenu: [{
+			label: _("Show"),
+			type: 'radio',
+			click: function (item, focusedWindow) {
+				Options.levels = true;
+				win.webContents.send('options', 'labels', true);
+			}
+		}, {
+			label: _("Hide"),
+			type: 'radio',
+			click: function (item, focusedWindow) {
+				Options.levels = false;
+				win.webContents.send('options', 'labels', false);
+			}
+		}]
+	}, {
+		label: _("Vulnerability levels"),
+		submenu: [{
+			label: _("Small"),
+			type: 'radio',
+			click: function (item, focusedWindow) {
+				Options.levels = false;
+				win.webContents.send('options', 'vulnlevel', 1);
+			}
+		}, {
+			label: _("Large"),
+			type: 'radio',
+			click: function (item, focusedWindow) {
+				Options.levels = false;
+				win.webContents.send('options', 'vulnlevel', 2);
+			}
+		}, {
+			label: _("None"),
+			type: 'radio',
+			click: function (item, focusedWindow) {
+				Options.levels = false;
+				win.webContents.send('options', 'vulnlevel', 0);
+			}
+		}]
+	}, {
+		type: 'separator'
+	}, {
 		label: _("Zoom"),
 		submenu: [{
 			label: _("Zoom in"),
@@ -101,14 +158,14 @@ let template = [{
 		label: _("Full screen"),
 		accelerator: (function () {
 			if (process.platform === 'darwin') {
-				return 'Ctrl+Command+F'
+				return 'Ctrl+Command+F';
 			} else {
-				return 'F11'
+				return 'F11';
 			}
 		})(),
 		click: function (item, focusedWindow) {
 			if (focusedWindow) {
-				focusedWindow.setFullScreen(!focusedWindow.isFullScreen())
+				focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
 			}
 		}
 	}, {
@@ -117,14 +174,14 @@ let template = [{
 		label: _("Developer tools"),
 		accelerator: (function () {
 			if (process.platform === 'darwin') {
-				return 'Alt+Command+I'
+				return 'Alt+Command+I';
 			} else {
-				return 'Ctrl+Shift+I'
+				return 'Ctrl+Shift+I';
 			}
 		})(),
 		click: function (item, focusedWindow) {
 			if (focusedWindow) {
-				focusedWindow.toggleDevTools()
+				focusedWindow.toggleDevTools();
 			}
 		}
 	}]
@@ -145,7 +202,7 @@ let template = [{
 	role: 'help',
 	submenu: [{
 		label: _("Show help"),
-		click: function (item, focusedWindow) {	win.webContents.send('help-show') }
+		click: function (item, focusedWindow) {	win.webContents.send('help-show'); }
 	}]
 }];
 
@@ -178,9 +235,10 @@ function createWindow() {
 		pathname: path.join(__dirname, 'app/app.html'),
 		protocol: 'file:',
 		slashes: true
-	}));
+	  })
+	);
 
-	win.once('ready-to-show', () => {
+	win.once('ready-to-show', function()  {
 		if (FileToBeOpened) {
 			// Do not start with a blank document
 			ReadFileAndLoad(FileToBeOpened);
@@ -190,29 +248,29 @@ function createWindow() {
 			win.setDocumentEdited(false);
 		}
 		win.show();
-	})
+	});
 
-	win.on('close', (e) => {
+	win.on('close', function(e)  {
 		if (!checkSaveModifiedDocument())
 			e.preventDefault();
-	})
+	});
 
 	// Emitted when the window is closed.
-	win.on('closed', () => {
+	win.on('closed', function()  {
 		// Dereference the window object, usually you would store windows
 		// in an array if your app supports multi windows, this is the time
 		// when you should delete the corresponding element.
-		win = null
+		win = null;
 	});
 
-	ipc.on('document-modified', () => {
+	ipc.on('document-modified', function()  {
 		win.documentIsModified = true;
 		win.setDocumentEdited(true);
-	})
+	});
 
-	ipc.on('document-save', (event, str) => { doSave(str) });
+	ipc.on('document-save', function(event,str)  { doSave(str); });
 
-	ipc.on('document-saveas', (event, str) => { doSaveAs(str) });
+	ipc.on('document-saveas', function(event,str)  { doSaveAs(str); });
 }
 
 /* Returns false if current document was modified and should be saved. */
@@ -220,7 +278,7 @@ function checkSaveModifiedDocument() {
 	if (!win.documentIsModified)
 		return true;
 
-	let buttonval = dialog.showMessageBox(win, {
+	var buttonval = dialog.showMessageBox(win, {
 		type: 'warning',
 		buttons: [_("Discard changes"), _("Cancel")],
 		index: 1,
@@ -239,19 +297,19 @@ function doSaveAs(str) {
 				extensions: ['raster']
 			}]
 		},
-		(filename) => {
+		function(filename) {
 			if (filename) {
-				let docname = filename.match(/[^\/]+$/)[0]
+				var docname = filename.match(/[^\/]+$/)[0];
 				try {
-					fs.writeFileSync(filename, str)
-					win.setRepresentedFilename(filename)
-					win.loadedFile = filename
-					win.setTitle(docname)
-					win.documentIsModified = false
-					win.setDocumentEdited(false)
-					win.webContents.send('document-save-success')
+					fs.writeFileSync(filename, str);
+					win.setRepresentedFilename(filename);
+					win.loadedFile = filename;
+					win.setTitle(docname);
+					win.documentIsModified = false;
+					win.setDocumentEdited(false);
+					win.webContents.send('document-save-success');
 				} catch (e) {
-					dialog.showErrorBox(_("Project was not saved"), _("System notification:") +"\n"+e)
+					dialog.showErrorBox(_("Project was not saved"), _("System notification:") +"\n"+e);
 				}
 			}
 		});
@@ -259,12 +317,12 @@ function doSaveAs(str) {
 
 function doSave(str) {
 	if (win.loadedFile) {
-		let docname = win.loadedFile.match(/[^\/]+$/)[0];
+		var docname = win.loadedFile.match(/[^\/]+$/)[0];
 		try {
 			fs.writeFileSync(win.loadedFile, str);
 			win.documentIsModified = false;
 			win.setDocumentEdited(false);
-			win.webContents.send('document-save-success')
+			win.webContents.send('document-save-success');
 		} catch (e) {
 			dialog.showErrorBox(_("Project was not saved"), _("System notification:") +"\n"+e);
 		}
@@ -278,7 +336,7 @@ function doOpen() {
 		return;
 	}
 	win.focus();
-	let filenames = dialog.showOpenDialog(win, {
+	var filenames = dialog.showOpenDialog(win, {
 		title: _("Open project"),
 		filters: [{
 				name: _("Raster project"),
@@ -312,8 +370,8 @@ function doNew() {
 	if (!checkSaveModifiedDocument()) {
 		return;
 	}
-	win.FileToBeOpened = null
-	win.webContents.once('did-finish-load', () => {
+	win.FileToBeOpened = null;
+	win.webContents.once('did-finish-load', function()  {
 		win.setTitle(_("Raster - No name"));
 		win.documentIsModified = false;
 		win.setDocumentEdited(false);
@@ -322,7 +380,7 @@ function doNew() {
 }
 
 function doPrint() {
-	let filename = dialog.showSaveDialog(win, {
+	var filename = dialog.showSaveDialog(win, {
 		title: _("Opslaan als PDF"),
 		filters: [{
 				name: _("PDF files"),
@@ -336,7 +394,7 @@ function doPrint() {
 		pageSize: 'A3',
 		landscape: true,
 		printBackground: true
-	}, (error, data) => {
+	}, function(error, data) {
 		if (error) {
 			dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
 			return;
@@ -347,7 +405,7 @@ function doPrint() {
 		catch (e) {
 			dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
 		}
-	})
+	});
 }
 
 function SetUpMenus() {
@@ -356,7 +414,7 @@ function SetUpMenus() {
 		template.unshift({
 			label: name,
 			submenu: [{
-				label: `About ${name}`,
+				label: 'About ' + name,
 				role: 'about'
 			}, {
 				type: 'separator'
@@ -367,7 +425,7 @@ function SetUpMenus() {
 			}, {
 				type: 'separator'
 			}, {
-				label: `Hide ${name}`,
+				label: 'Hide ' + name,
 				accelerator: 'Command+H',
 				role: 'hide'
 			}, {
@@ -383,14 +441,14 @@ function SetUpMenus() {
 				label: 'Quit',
 				accelerator: 'Command+Q',
 				click: function () {
-					app.quit()
+					app.quit();
 				}
 			}]
 		});
 
 		// Window menu.
 		// Remove the Close option (it should be under the File menu)
-		let mi = template[4].submenu.shift();
+		var mi = template[4].submenu.shift();
 		template[4].submenu.shift();
 		template[4].submenu.unshift(mi);
 		// Add one option
@@ -399,7 +457,7 @@ function SetUpMenus() {
 		}, {
 			label: 'Bring All to Front',
 			role: 'front'
-		})
+		});
 
 	}
 }
@@ -430,13 +488,13 @@ SetUpMenus();
 app.on('ready', createWindow);
 
 // Quit when all windows are closed.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', function()  {
 	// On macOS it is common for applications and their menu bar
 	// to stay active until the user quits explicitly with Cmd + Q
 //	if (process.platform !== 'darwin') {
 		app.quit();
 //	}
-})
+});
 
 //app.on('browser-window-created', function () {
 //})
@@ -444,7 +502,7 @@ app.on('window-all-closed', () => {
 /* On Windows, the file to be opened is in argv[1]
  * On the Mac, it is provided through the open-file event
  */
-app.on('open-file', (event,file) => {
+app.on('open-file', function(event,file)  {
 	if (fs.existsSync(file))
 		FileToBeOpened = file;
 });

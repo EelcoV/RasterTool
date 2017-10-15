@@ -49,12 +49,30 @@ if (ElectronRunning) {
 	ipc.on('document-save-success', function() {
 		clearModified();
 	});
+	ipc.on('show-details', function() {
+		var p = Project.get(Project.cid);
+		ShowDetails(p);
+	});
 	ipc.on('document-start-open', function(event,str) {
 		var newp = loadFromString(str,true,false,_("File"));
 		if (newp!=null) {
 			switchToProject(newp);
 		}
 		clearModified();
+	});
+	ipc.on('options', function(event,option,val) {
+		if (option=='labels') {
+			Preferences.setlabel(val);
+		}
+		if (option=='vulnlevel') {
+			if (val==0) {
+				Preferences.setemblem("em_none");
+			} else if (val==1) {
+				Preferences.setemblem("em_small");
+			} else {
+				Preferences.setemblem("em_large");
+			}
+		}
 	});
 	ipc.on('help-show', function() {
         $('#helppanel').dialog("open");
@@ -1877,125 +1895,9 @@ function initLibraryPanel() {
         $('#libactivate').removeClass('ui-state-hover');
     });
     // Details --------------------
-    $('#libprops').on('click',  function() {
-        var p = Project.get( $('#libselect option:selected').val() );
-        var dialog = $('<div></div>');
-#ifdef STANDALONE
-        var snippet ='\
-            <form id="form_projectprops">\n\
-            _LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
-            _LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
-            </form>\
-        ';
-#else
-        var snippet ='\
-            <form id="form_projectprops">\n\
-            _LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
-            <div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n\
-            _LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
-            <fieldset>\n\
-            <input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
-            <input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n\
-            </fieldset>\n\
-            </form>\
-        ';
-#endif
-        snippet = snippet.replace(/_LT_/g, _("Title:"));
-        snippet = snippet.replace(/_LD_/g, _("Description:"));
-        snippet = snippet.replace(/_PN_/g, H(p.title));
-        snippet = snippet.replace(/_PD_/g, H(p.description));
-#ifdef SERVER
-        snippet = snippet.replace(/_LC_/g, _("Creator:"));
-        snippet = snippet.replace(/_LP_/g, _("Private"));
-        snippet = snippet.replace(/_LS_/g, _("Shared"));
-        snippet = snippet.replace(/_STR_/g, _("last stored on"));
-        snippet = snippet.replace(/_CR_/g, (p.shared && !p.stub ? H(Preferences.creator) : H(p.creator)));
-        snippet = snippet.replace(/_DA_/g, H(prettyDate(p.date)));
-        snippet = snippet.replace(/_DI_/g, (p.stub||p.shared ? 'block' : 'none'));
-#endif
-        dialog.append(snippet);
-        var dbuttons = [];
-        dbuttons.push({
-            text: _("Cancel"),
-            click: function() {
-                    $(this).dialog('close');
-                }
-        });
-        dbuttons.push({
-            text: _("Change properties"),
-            click: function() {
-#ifdef SERVER
-                    if (!p.stub) {
-#endif
-                        var fname = $('#field_projecttitle');
-                        p.settitle(fname.val());
-                        if (Project.cid==p.id) {
-                            $('.projectname').html(H(p.title));
-                            Preferences.setcurrentproject(p.title);
-                        }
-                        fname = $('#field_projectdescription');
-                        p.setdescription(fname.val());
-#ifdef SERVER
-                        var becomesShared = $('#sh_on:checked').length>0;
-                        if (!p.shared && becomesShared) {
-                            // Before changing the sharing status from 'private' to 'shared', first
-                            // check if there already is a project with this name. If so, refuse to rename.
-                            var it = new ProjectIterator({title: p.title, group: ToolGroup, stubsonly: true});
-                            if (it.notlast()) {
-                                rasterAlert(_("Cannot share this project yet"),
-                                    _("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
-                                );
-                            } else {
-                                // transactionCompleted() will take care of the server, if project p is the current project.
-                                p.setshared(becomesShared,(p.id!=Project.cid)); 
-//                                if (p.id == Project.cid)
-//                                    startAutoSave();
-                            }
-                        } else if (p.shared && !becomesShared) {
-                            // Stop watching the project, or we will notify ourselves about its deletion
-                            stopWatching(p.id);
-                            p.setshared(becomesShared,true);
-                        }
-#endif
-                        $(this).dialog('close');
-                        populateProjectList();
-                        transactionCompleted("Project props change");
-#ifdef SERVER
-                    } else {
-                        // Not implemented yet.
-                        rasterAlert(_("Cannot change project on server"),_("This function is not implemented yet."));
-                    }
-#endif
-                }
-        });
-        dialog.dialog({
-            title: _("Properties for project '%%'", p.title),
-            modal: true,
-            position: {my: 'left top', at: 'right', of: '#libprops', collision: 'fit'},
-            width: 480,
-#ifdef SERVER
-            height: 280,
-#endif
-            buttons: dbuttons,
-            open: function() {
-#ifdef SERVER
-                $('#form_projectprops input[type=radio]').checkboxradio({icon: false});
-                $('#form_projectprops fieldset').controlgroup();
-                $('#sh_off')[0].checked = !p.shared;
-                $('#sh_on')[0].checked = p.shared;
-                $('input[name="sh_onoff"]').checkboxradio("refresh");
-#endif
-                $('#field_projecttitle').focus().select();
-                $('#form_projectprops').submit(function() {
-                    // Ignore, must close with dialog widgets
-                    return false;
-                });
-            },
-            close: function(event, ui) {
-                dialog.remove();
-                $('#libselect').focus();
-            }
-        });
+    $('#libprops').on('click', function() {
+		var p = Project.get( $('#libselect option:selected').val() );
+		ShowDetails(p);
     });
     // Export --------------------
     $('#libexport').on('click',  function() {
@@ -2225,6 +2127,125 @@ function initLibraryPanel() {
     });
 }
 
+function ShowDetails(p) {
+	var dialog = $('<div></div>');
+#ifdef STANDALONE
+	var snippet ='\
+		<form id="form_projectprops">\n\
+		_LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
+		_LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
+		</form>\
+	';
+#else
+	var snippet ='\
+		<form id="form_projectprops">\n\
+		_LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
+		<div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n\
+		_LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
+		<fieldset>\n\
+		<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
+		<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n\
+		</fieldset>\n\
+		</form>\
+	';
+#endif
+	snippet = snippet.replace(/_LT_/g, _("Title:"));
+	snippet = snippet.replace(/_LD_/g, _("Description:"));
+	snippet = snippet.replace(/_PN_/g, H(p.title));
+	snippet = snippet.replace(/_PD_/g, H(p.description));
+#ifdef SERVER
+	snippet = snippet.replace(/_LC_/g, _("Creator:"));
+	snippet = snippet.replace(/_LP_/g, _("Private"));
+	snippet = snippet.replace(/_LS_/g, _("Shared"));
+	snippet = snippet.replace(/_STR_/g, _("last stored on"));
+	snippet = snippet.replace(/_CR_/g, (p.shared && !p.stub ? H(Preferences.creator) : H(p.creator)));
+	snippet = snippet.replace(/_DA_/g, H(prettyDate(p.date)));
+	snippet = snippet.replace(/_DI_/g, (p.stub||p.shared ? 'block' : 'none'));
+#endif
+	dialog.append(snippet);
+	var dbuttons = [];
+	dbuttons.push({
+		text: _("Cancel"),
+		click: function() {
+				$(this).dialog('close');
+			}
+	});
+	dbuttons.push({
+		text: _("Change properties"),
+		click: function() {
+#ifdef SERVER
+				if (!p.stub) {
+#endif
+					var fname = $('#field_projecttitle');
+					p.settitle(fname.val());
+					if (Project.cid==p.id) {
+						$('.projectname').html(H(p.title));
+						Preferences.setcurrentproject(p.title);
+					}
+					fname = $('#field_projectdescription');
+					p.setdescription(fname.val());
+#ifdef SERVER
+					var becomesShared = $('#sh_on:checked').length>0;
+					if (!p.shared && becomesShared) {
+						// Before changing the sharing status from 'private' to 'shared', first
+						// check if there already is a project with this name. If so, refuse to rename.
+						var it = new ProjectIterator({title: p.title, group: ToolGroup, stubsonly: true});
+						if (it.notlast()) {
+							rasterAlert(_("Cannot share this project yet"),
+								_("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
+							);
+						} else {
+							// transactionCompleted() will take care of the server, if project p is the current project.
+							p.setshared(becomesShared,(p.id!=Project.cid));
+//                                if (p.id == Project.cid)
+//                                    startAutoSave();
+						}
+					} else if (p.shared && !becomesShared) {
+						// Stop watching the project, or we will notify ourselves about its deletion
+						stopWatching(p.id);
+						p.setshared(becomesShared,true);
+					}
+#endif
+					$(this).dialog('close');
+					populateProjectList();
+					transactionCompleted("Project props change");
+#ifdef SERVER
+				} else {
+					// Not implemented yet.
+					rasterAlert(_("Cannot change project on server"),_("This function is not implemented yet."));
+				}
+#endif
+			}
+	});
+	dialog.dialog({
+		title: _("Properties for project '%%'", p.title),
+		modal: true,
+		position: {my: 'left top', at: 'right', of: '#libprops', collision: 'fit'},
+		width: 480,
+#ifdef SERVER
+		height: 280,
+#endif
+		buttons: dbuttons,
+		open: function() {
+#ifdef SERVER
+			$('#form_projectprops input[type=radio]').checkboxradio({icon: false});
+			$('#form_projectprops fieldset').controlgroup();
+			$('#sh_off')[0].checked = !p.shared;
+			$('#sh_on')[0].checked = p.shared;
+			$('input[name="sh_onoff"]').checkboxradio("refresh");
+#endif
+			$('#field_projecttitle').focus().select();
+			$('#form_projectprops').submit(function() {
+				// Ignore, must close with dialog widgets
+				return false;
+			});
+		},
+		close: function(event, ui) {
+			dialog.remove();
+			$('#libselect').focus();
+		}
+	});
+}
 function populateProjectList() {
     var snippet = "";
     var newoptions = "";

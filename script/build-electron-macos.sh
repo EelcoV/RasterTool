@@ -11,6 +11,8 @@ CreateLanguageVersion()
 
 	echo "Building $LANG version for MacOS..."
 
+	script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process standalone/main.js || exit 1
+
 	if [ ! -d $BUILDDIR ]; then
 		echo "Build directory $BUILDDIR does not exist." && exit 1
 	fi
