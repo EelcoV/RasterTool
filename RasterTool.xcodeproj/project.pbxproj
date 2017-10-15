@@ -500,7 +500,7 @@
 			buildPhases = (
 			);
 			buildToolPath = "script/preprocess-server.sh";
-			buildWorkingDirectory = "$(PROJECT_DIR)/src";
+			buildWorkingDirectory = "$(PROJECT_DIR)";
 			dependencies = (
 			);
 			name = "Preprocess-server";
