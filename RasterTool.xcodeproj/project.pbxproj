@@ -31,7 +31,6 @@
 		494464B61A2324D40066BDE1 /* Frequency-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "Frequency-nl.html"; sourceTree = "<group>"; };
 		494464B71A2324D40066BDE1 /* Impact-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "Impact-nl.html"; sourceTree = "<group>"; };
 		494464B81A2324D40066BDE1 /* About-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "About-nl.html"; sourceTree = "<group>"; };
-		494B6F6518796E9D00400328 /* changes to commit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "changes to commit"; sourceTree = "<group>"; };
 		494B6F6718796E9D00400328 /* Bugs and Features.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Bugs and Features.txt"; sourceTree = "<group>"; };
 		494B6F6818796E9D00400328 /* designAtomicActions.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = designAtomicActions.txt; sourceTree = "<group>"; };
 		494B6F6918796E9D00400328 /* encodedecode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = encodedecode.js; sourceTree = "<group>"; };
@@ -41,7 +40,7 @@
 		494B6F7D18796E9D00400328 /* jsl */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = jsl; sourceTree = "<group>"; };
 		494B6F7E18796E9D00400328 /* jsl.default.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = jsl.default.conf; sourceTree = "<group>"; };
 		494B6F7F18796E9D00400328 /* rasterComponent.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterComponent.js; sourceTree = "<group>"; wrapsLines = 0; };
-		494B6F8118796E9D00400328 /* rasterMain.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterMain.js; sourceTree = "<group>"; };
+		494B6F8118796E9D00400328 /* rasterMain.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = rasterMain.js; sourceTree = "<group>"; };
 		494B6F8218796E9D00400328 /* rasterNode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterNode.js; sourceTree = "<group>"; };
 		494B6F8318796E9D00400328 /* rasterNodeCluster.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterNodeCluster.js; sourceTree = "<group>"; };
 		494B6F8418796E9D00400328 /* rasterPreferencesObject.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterPreferencesObject.js; sourceTree = "<group>"; };
@@ -123,20 +122,20 @@
 		4997D9161F8A5DF300E3481A /* barV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barV.png; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-hi.png"; sourceTree = "<group>"; };
 		499804E4187F29D10063E8C5 /* qm-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-lo.png"; sourceTree = "<group>"; };
-		4999EB441F8F2874009BBF18 /* app-NL.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "app-NL.html"; sourceTree = "<group>"; };
-		4999EB451F8F28F8009BBF18 /* app-EN.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "app-EN.html"; sourceTree = "<group>"; };
 		4999EB4A1F8FE9F3009BBF18 /* preprocess-standalone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "preprocess-standalone.sh"; sourceTree = "<group>"; };
 		4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "preprocess-server.sh"; sourceTree = "<group>"; };
 		4999EB5F1F9004D0009BBF18 /* clean.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
 		4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "electron-v1.7.9-darwin-x64.zip"; sourceTree = "<group>"; };
 		4999EB651F9007CE009BBF18 /* build-electron-macos.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-electron-macos.sh"; sourceTree = "<group>"; };
-		4999EB6A1F900A9E009BBF18 /* standalone-en.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "standalone-en.html"; sourceTree = "<group>"; };
-		4999EB6B1F900AA9009BBF18 /* standalone-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "standalone-nl.html"; sourceTree = "<group>"; };
+		4999EB6B1F900AA9009BBF18 /* standalone.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = standalone.html; sourceTree = "<group>"; };
 		4999EB6C1F900BB2009BBF18 /* package.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
-		4999EB6D1F900C07009BBF18 /* main.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = main.js; sourceTree = "<group>"; };
+		4999EB6D1F900C07009BBF18 /* main.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = main.js; sourceTree = "<group>"; };
 		499A6B9F1A72D97A0047E182 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		499BA93D1AD80D22005D20B4 /* jquery.jsPlumb-1.7.5.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.jsPlumb-1.7.5.js"; sourceTree = "<group>"; };
+		49CD587D1F92238E00A9F17F /* e-translation-NL.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "e-translation-NL.js"; sourceTree = "<group>"; };
+		49CD587E1F933CD600A9F17F /* e-translation-EN.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "e-translation-EN.js"; sourceTree = "<group>"; };
+		49CD587F1F93922E00A9F17F /* Object data structure.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Object data structure.txt"; sourceTree = "<group>"; };
 		49D256041A1E87BF00102918 /* jquery.localisation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.localisation.js; sourceTree = "<group>"; };
 		49D256061A1E88A200102918 /* translation-nl.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "translation-nl.js"; sourceTree = "<group>"; };
 		49F6CFD81C3E5CA0005C96A7 /* Raster-EN-1.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Raster-EN-1.1.pdf"; sourceTree = "<group>"; };
@@ -170,29 +169,13 @@
 		494B6F5E18796DD000400328 = {
 			isa = PBXGroup;
 			children = (
+				49F279FE1F91DB3E003F360B /* doc */,
+				49F279FD1F91DB23003F360B /* script */,
+				49F279FC1F91DB17003F360B /* src */,
+				49F279FB1F91DB10003F360B /* server */,
 				4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */,
-				499A6BA01A72DC080047E182 /* LICENSE.md */,
-				499A6B9F1A72D97A0047E182 /* README.md */,
-				494B6F6518796E9D00400328 /* changes to commit */,
-				498BB2B91A2626AF00B12844 /* build_tgz.sh */,
-				4999EB5F1F9004D0009BBF18 /* clean.sh */,
-				4999EB651F9007CE009BBF18 /* build-electron-macos.sh */,
-				494B6F6618796E9D00400328 /* js */,
-				494B6FA218796E9D00400328 /* css */,
 				494B6FDA18796E9D00400328 /* public_group */,
-				494B6FEB18796E9D00400328 /* img */,
-				494B6F8A18796E9D00400328 /* index.inc */,
-				494B702918796E9D00400328 /* share.inc */,
-				494B6FA118796E9D00400328 /* sse_projmon.inc */,
-				494464AC1A2323990066BDE1 /* help */,
-				49F6CFD81C3E5CA0005C96A7 /* Raster-EN-1.1.pdf */,
-				49F6CFD91C3E5CA0005C96A7 /* Raster-NL-1.1.pdf */,
-				4961E8B71C415CE60001FAE3 /* Raster-EN-1.1.epub */,
-				4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */,
-				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
-				494B702C18796E9D00400328 /* index.html */,
-				4999EB6A1F900A9E009BBF18 /* standalone-en.html */,
-				4999EB6B1F900AA9009BBF18 /* standalone-nl.html */,
+				49F279FA1F91DAD4003F360B /* common */,
 				4999EB431F8F284F009BBF18 /* standalone */,
 			);
 			sourceTree = "<group>";
@@ -202,21 +185,12 @@
 		494B6F6618796E9D00400328 /* js */ = {
 			isa = PBXGroup;
 			children = (
-				4999EB4A1F8FE9F3009BBF18 /* preprocess-standalone.sh */,
-				4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */,
-				494B6F6718796E9D00400328 /* Bugs and Features.txt */,
-				494B6F6818796E9D00400328 /* designAtomicActions.txt */,
-				494B6F8818796E9D00400328 /* Testcase.txt */,
-				494B6F7A18796E9D00400328 /* layout.odg */,
 				494B6F6918796E9D00400328 /* encodedecode.js */,
-				494B6F6A18796E9D00400328 /* eventsource.js */,
 				49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */,
 				49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
 				499BA93D1AD80D22005D20B4 /* jquery.jsPlumb-1.7.5.js */,
-				494B6F7B18796E9D00400328 /* lint */,
-				4999EB481F8FE988009BBF18 /* raw */,
 				49D256061A1E88A200102918 /* translation-nl.js */,
 			);
 			path = js;
@@ -399,17 +373,41 @@
 		4999EB431F8F284F009BBF18 /* standalone */ = {
 			isa = PBXGroup;
 			children = (
-				4999EB441F8F2874009BBF18 /* app-NL.html */,
-				4999EB451F8F28F8009BBF18 /* app-EN.html */,
+				4999EB6B1F900AA9009BBF18 /* standalone.html */,
 				4999EB6C1F900BB2009BBF18 /* package.json */,
 				4999EB6D1F900C07009BBF18 /* main.js */,
 			);
 			path = standalone;
 			sourceTree = "<group>";
 		};
-		4999EB481F8FE988009BBF18 /* raw */ = {
+		49F279FA1F91DAD4003F360B /* common */ = {
 			isa = PBXGroup;
 			children = (
+				494B6F6618796E9D00400328 /* js */,
+				494B6FA218796E9D00400328 /* css */,
+				494464AC1A2323990066BDE1 /* help */,
+				494B6FEB18796E9D00400328 /* img */,
+			);
+			path = common;
+			sourceTree = "<group>";
+		};
+		49F279FB1F91DB10003F360B /* server */ = {
+			isa = PBXGroup;
+			children = (
+				49F27A011F91E472003F360B /* js */,
+				494B702918796E9D00400328 /* share.inc */,
+				494B6FA118796E9D00400328 /* sse_projmon.inc */,
+				494B702C18796E9D00400328 /* index.html */,
+			);
+			path = server;
+			sourceTree = "<group>";
+		};
+		49F279FC1F91DB17003F360B /* src */ = {
+			isa = PBXGroup;
+			children = (
+				494B6F8A18796E9D00400328 /* index.inc */,
+				49F27A001F91E15B003F360B /* server */,
+				49F279FF1F91E14A003F360B /* standalone */,
 				494B6F8118796E9D00400328 /* rasterMain.js */,
 				494B6F7F18796E9D00400328 /* rasterComponent.js */,
 				494B6F8218796E9D00400328 /* rasterNode.js */,
@@ -419,7 +417,63 @@
 				494B6F8618796E9D00400328 /* rasterService.js */,
 				494B6F8718796E9D00400328 /* rasterThreatEvaluation.js */,
 			);
-			path = raw;
+			path = src;
+			sourceTree = "<group>";
+		};
+		49F279FD1F91DB23003F360B /* script */ = {
+			isa = PBXGroup;
+			children = (
+				4999EB4A1F8FE9F3009BBF18 /* preprocess-standalone.sh */,
+				4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */,
+				498BB2B91A2626AF00B12844 /* build_tgz.sh */,
+				4999EB5F1F9004D0009BBF18 /* clean.sh */,
+				4999EB651F9007CE009BBF18 /* build-electron-macos.sh */,
+				494B6F7B18796E9D00400328 /* lint */,
+			);
+			path = script;
+			sourceTree = "<group>";
+		};
+		49F279FE1F91DB3E003F360B /* doc */ = {
+			isa = PBXGroup;
+			children = (
+				499A6BA01A72DC080047E182 /* LICENSE.md */,
+				499A6B9F1A72D97A0047E182 /* README.md */,
+				494B6F6718796E9D00400328 /* Bugs and Features.txt */,
+				494B6F6818796E9D00400328 /* designAtomicActions.txt */,
+				494B6F8818796E9D00400328 /* Testcase.txt */,
+				494B6F7A18796E9D00400328 /* layout.odg */,
+				49F6CFD81C3E5CA0005C96A7 /* Raster-EN-1.1.pdf */,
+				49F6CFD91C3E5CA0005C96A7 /* Raster-NL-1.1.pdf */,
+				4961E8B71C415CE60001FAE3 /* Raster-EN-1.1.epub */,
+				4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */,
+				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
+				49CD587F1F93922E00A9F17F /* Object data structure.txt */,
+			);
+			path = doc;
+			sourceTree = "<group>";
+		};
+		49F279FF1F91E14A003F360B /* standalone */ = {
+			isa = PBXGroup;
+			children = (
+				49CD587D1F92238E00A9F17F /* e-translation-NL.js */,
+				49CD587E1F933CD600A9F17F /* e-translation-EN.js */,
+			);
+			path = standalone;
+			sourceTree = "<group>";
+		};
+		49F27A001F91E15B003F360B /* server */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = server;
+			sourceTree = "<group>";
+		};
+		49F27A011F91E472003F360B /* js */ = {
+			isa = PBXGroup;
+			children = (
+				494B6F6A18796E9D00400328 /* eventsource.js */,
+			);
+			path = js;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -431,8 +485,8 @@
 			buildConfigurationList = 4999EB4F1F8FEB35009BBF18 /* Build configuration list for PBXLegacyTarget "Preprocess-standalone" */;
 			buildPhases = (
 			);
-			buildToolPath = "./preprocess-standalone.sh";
-			buildWorkingDirectory = "$(PROJECT_DIR)/js";
+			buildToolPath = "script/preprocess-standalone.sh";
+			buildWorkingDirectory = "$(PROJECT_DIR)";
 			dependencies = (
 			);
 			name = "Preprocess-standalone";
@@ -445,8 +499,8 @@
 			buildConfigurationList = 4999EB551F8FEB7B009BBF18 /* Build configuration list for PBXLegacyTarget "Preprocess-server" */;
 			buildPhases = (
 			);
-			buildToolPath = "./preprocess-server.sh";
-			buildWorkingDirectory = "$(PROJECT_DIR)/js";
+			buildToolPath = "script/preprocess-server.sh";
+			buildWorkingDirectory = "$(PROJECT_DIR)/src";
 			dependencies = (
 			);
 			name = "Preprocess-server";
@@ -459,7 +513,7 @@
 			buildConfigurationList = 4999EB611F900553009BBF18 /* Build configuration list for PBXLegacyTarget "Clean" */;
 			buildPhases = (
 			);
-			buildToolPath = ./clean.sh;
+			buildToolPath = script/clean.sh;
 			buildWorkingDirectory = "$(PROJECT_DIR)";
 			dependencies = (
 			);
@@ -473,7 +527,7 @@
 			buildConfigurationList = 4999EB671F9007E5009BBF18 /* Build configuration list for PBXLegacyTarget "Build Electron" */;
 			buildPhases = (
 			);
-			buildToolPath = "./build-electron-macos.sh";
+			buildToolPath = "script/build-electron-macos.sh";
 			buildWorkingDirectory = "$(PROJECT_DIR)";
 			dependencies = (
 			);
@@ -487,7 +541,7 @@
 			buildConfigurationList = 49BC2AFE1A262C3400EC5A9A /* Build configuration list for PBXLegacyTarget "CreateDistribution" */;
 			buildPhases = (
 			);
-			buildToolPath = ./build_tgz.sh;
+			buildToolPath = script/build_tgz.sh;
 			buildWorkingDirectory = "$(PROJECT_DIR)";
 			dependencies = (
 			);

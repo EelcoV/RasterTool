@@ -3,88 +3,6 @@
  */
 
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-Property        setter                    fieldname in export/localStorage
---------        --------------------    --------------------------------
-Project
-.id                creator(p.id)            key raster:<version>:P:<p.id>
-.title            settitle(str)            .l
-.group            create only                .g
-.shared            shared(bool)            .a
-.description    setdescription(str)        .d
-.date            setdate(d)                .w // when = date
-.services[i]    addservice(s.id,title)    .s
-.threats[i]        (internal)                .t   (careful: also used for 'type')
-
-Threat
-.id                creator(type,th.id)        key raster:<version>:T:<th.id>
-.project        setproject(p.id)        .p
-.type            creator(type,th.id)        .t
-.title            settitle(str)            .l
-.description    setdescription(str)        .d
-
-Service
-.id                creator(s.id)            key raster:<version>:S:<s.id>
-.title            settitle(str)            .l
-.project        setproject(p.id)        .p
-
-Node
-.id                creator(type,n.id)        key raster:<version>:N:<n.id>
-.type            creator(type,n.id)        .t
-.title            various                    .l
-.suffix            various                    .f
-.service        Service.cid                .s
-.component        setcomponent(ct.id)        .m
-.position.x        setposition(x,y)        .x
-.position.y        setposition(x,y)        .y
-.position.width       (internal)            .w
-.position.height   (internal)            .h
-._normw            (internal)                .v // letter just before w
-._normh            (internal)                .g // letter just before h
-.connect[]        (internal)                .c
-.color            setlabel(c)                .o
-
-Component
-.id                creator(type,ct.id)        key raster:<version>:C:<ct.id>
-.type            creator(type,n.id)        .t
-.project        setproject(p.id)        .p
-.thrass[]        (internal)                .e
-.title            settitle(str)            .l
-.nodes[]        addnode(n.id)            .n
-.single            setsingle                .s
-.accordionopened setaccordionopened(b)    .o
-
-NodeCluster        creator(type,cl.id)        key raster:<version>:L:<ct.id>
-.id
-.type                                    .t
-.title                                    .l
-.project                                .p
-.parentcluster                            .u    // u = up
-.childclusters[]                        .c    // c = child
-.childnodes[]                            .n    // n = nodes
-.thrass                                    .e
-.accordionopened setaccordionopened(b)    .o
- 
-ThreatAssessment
-.id                creator(type,te.id)        key raster:<version>:E:<te.id>
-.type            creator(type,te.id)        .t
-.component        setcomponent(n.id)        .m
-.cluster        setcluster(f.id)        .u
-.title            settitle(str)            .l
-.description    setdescription(str)        .d
-.freq            setfreq(str)            .p
-.impact            setimpact(str)            .i
-.remark            setremark(str)            .r
-
-RasterPreferences                        key raster:version:R:0
-.theme            "name of theme preference"
-.emsize            "em_none", "em_small", "em_large"
-.tab            0..3
-.creator        "name of creator"
-
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
 "use strict";
 //const DEBUG = true;  // set to false for production version
 var DEBUG = true;  // set to false for production version
@@ -101,6 +19,78 @@ var LS = LS_prefix+":"+LS_version+":";
 var Preferences;
 var ToolGroup;
 
+#ifdef STANDALONE
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Glue code for Electron
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/* ElectronRunning: true iff the tool is running as an Electron app.
+ * False iff the tool is running as a web page inside a normal web browser.
+ */
+var ElectronRunning = (typeof(process)=='object');
+var ipc, shell, url;
+if (ElectronRunning) {
+	ipc = require('electron').ipcRenderer;
+	shell = require('electron').shell;
+	url = require('url');
+}
+
+var Modified = false;
+
+if (ElectronRunning) {
+	ipc.on('document-start-save', function() {
+		var s = CurrentProjectAsString();
+		ipc.send('document-save',s);
+	});
+	ipc.on('document-start-saveas', function() {
+		var s = CurrentProjectAsString();
+		ipc.send('document-saveas',s);
+	});
+	ipc.on('document-save-success', function() {
+		clearModified();
+	});
+	ipc.on('document-start-open', function(event,str) {
+		var newp = loadFromString(str,true,false,_("File"));
+		if (newp!=null) {
+			switchToProject(newp);
+		}
+		clearModified();
+	});
+	ipc.on('help-show', function() {
+        $('#helppanel').dialog("open");
+	});
+}
+
+function setModified() {
+	Modified = true;
+	if (ElectronRunning) ipc.send('document-modified');
+}
+
+function clearModified() {
+	Modified = false;
+}
+
+function CurrentProjectAsString() {
+    return exportProject(Project.cid);
+}
+
+function lz(n) {
+	return (n<10 ? "0" : "") + n;
+}
+
+function doSave() {
+	clearModified();
+	var s = CurrentProjectAsString();
+	var url = 'data:text/tab-separated-values;,' + encodeURIComponent(s);
+	var d = new Date();
+	var link = document.getElementById('savelink');
+	link.download = 'Diensten '+d.getFullYear()+lz(d.getMonth()+1)+lz(d.getDate())+'-'+lz(d.getHours())+lz(d.getMinutes())+'.tsv';
+	link.href = url;
+	link.click();
+}
+
+#endif
+
 /* This jQuery function executes when the document is ready, but before all
  * HTML objects have been painted.
  */
@@ -109,11 +99,19 @@ $(function() {
         timeout: 10000    // Cancel each AJAX request after 10 seconds
     });
 
-
+#ifdef SERVER
     ToolGroup = $('meta[name="group"]').attr('content');
+#else
+	ToolGroup = '_%standalone%_';
+	// Prevent file drops
+	document.addEventListener('dragover', function(event) {event.preventDefault();} );
+	document.addEventListener('drop', function(event) {event.preventDefault();} );
 
-
-
+	if (ElectronRunning) {
+		$('.activator').hide();
+		$('#helpbutton').hide();
+	}
+#endif
 
     initTabDiagrams();
     initTabSingleFs();
@@ -164,16 +162,25 @@ $(function() {
     
     // Load preferences
     Preferences = new PreferencesObject();
-
-
-
+#ifdef STANDALONE
+  	Preferences.online = false;
+#endif
     var remembertab = Preferences.tab;
-    
-    initLibraryPanel();
-    initOptionsPanel();
+
+#ifdef STANDALONE
+    if (!ElectronRunning) {
+#endif
+	    initLibraryPanel();
+	    initOptionsPanel();
+#ifdef STANDALONE
+    }
+#endif
 
     SizeDOMElements();
 
+#ifdef STANDALONE
+    if (!ElectronRunning) {
+#endif
     /* Loading data from localStorage. Tweaked for perfomance.
      */
     var strArr = [];
@@ -185,7 +192,14 @@ $(function() {
         strArr.push(localStorage[key]+'\n');
     } 
     var str = strArr.join("");
-    if (loadFromString(str,true,true,"Browser local storage")!=null) {
+#ifdef STANDALONE
+    }
+#endif
+    if (
+#ifdef STANDALONE
+    	!ElectronRunning &&
+#endif
+      loadFromString(str,true,true,"Browser local storage")!=null) {
         // Loading from localStorage succeeded. Try to active the project
         // indicated by Preferences.currentproject, or take any one project
         // if that one does not exist.
@@ -195,9 +209,9 @@ $(function() {
             loadDefaultProject();
         else {
             p.load();
-
+#ifdef SERVER
             p.dorefresh(false); // Check for update on the server
-
+#endif
             var it = new ServiceIterator(p.id);
             var found = false;
             var s;
@@ -210,9 +224,9 @@ $(function() {
         }
     } else
         loadDefaultProject();
-
+#ifdef SERVER
     startAutoSave();
-
+#endif
 
     // May be necessary to wait and resize
     window.setTimeout(SizeDOMElements, 1000);
@@ -260,12 +274,12 @@ $(function() {
 
     $('#findbutton img').on('click',  function() {
         var dialog = $('<div></div>');
-        var snippet ='            <!-- form id="form_find" -->\n            _LS_<br><input id="field_find" name="fld" type="text" value="" placeholder="_PH_"><br>\n            _LF_<br><div id="field_found"></div>\n            <!-- /form -->        ';
-        
-
-
-
-
+        var snippet ='\
+            <!-- form id="form_find" -->\n\
+            _LS_<br><input id="field_find" name="fld" type="text" value="" placeholder="_PH_"><br>\n\
+            _LF_<br><div id="field_found"></div>\n\
+            <!-- /form -->\
+        ';
         snippet = snippet.replace(/_LS_/g, _("Find:"));
         snippet = snippet.replace(/_LF_/g, _("Results:"));
         snippet = snippet.replace(/_PH_/g, _("Type here to search nodes"));
@@ -294,7 +308,7 @@ $(function() {
         });
     });
 
-
+#ifdef SERVER
     var flashTimer;
     $(document).ajaxSend(function(){
         window.clearTimeout(flashTimer);
@@ -306,7 +320,7 @@ $(function() {
             $("#networkactivity").removeClass("activityoff activityyes").addClass("activityno");
         },200);
     });
-
+#endif
 
     $('body').on('keydown', function(evt){
         if (evt.keyCode==8) { // Backspace, unfortunately, is bound in the browser to 'Return to previous page'
@@ -325,7 +339,11 @@ $(function() {
 			return;
 		}
         $('#splash').hide();
-        if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
+        if (
+#ifdef STANDALONE
+			!ElectronRunning &&
+#endif
+        	localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
             rasterConfirm(_("Warning!"), _("The tool may already be active in another browser window or tab. If so, then continuing <em>will</em> damage your projects!"),
                 _("Continue anyway"), _("Cancel"),
                 function() {
@@ -346,12 +364,18 @@ $(function() {
             localStorage.RasterToolIsLoaded = window.name;
     }));
     $(window).on('unload', (function() {
-
+#ifdef SERVER
         stopWatching(null);
-
+#else
+		if (ElectronRunning) {
+			if (!Modified) return '';
+			return 'Wijzigingen zijn niet opgeslagen en raken verloren. OK?';
+		}
+#endif
         $('#goodbye').show();
         if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded==window.name)
             localStorage.removeItem('RasterToolIsLoaded');
+		return '';
     }));
     $(window).on('resize', SizeDOMElements);
 
@@ -468,14 +492,14 @@ function _(s) {
     var str = _t[s];
     if (!str) {
         // No localisation available. Default to English version
+#ifdef SERVER
         if (DEBUG
-
         	&& !$.localise.defaultLanguage.match(/^en/)
-
 		) {
         	// Suggest additions to translation-XX.js modules (except for English and variants)
             console.log("_t[\"" + s + "\"] = \"" + s + "\";");
         }
+#endif
         str=s;
     }
     // Replace %1, %2, ... %9 by the first, second, ... ninth argument.
@@ -800,7 +824,7 @@ function bugreport(mess,funcname) {
         rasterAlert('Please report this bug','You found a bug in this program.\n("'+mess+'" in function "'+funcname+'").');
 }
 
-
+#ifdef SERVER
 var AutoSaveTimer = null;
 var SSEClient = null;
 var lastSavedString;
@@ -982,13 +1006,15 @@ function autoSaveFunction() {
 //    }
 //    AutoSaveTimer = window.setTimeout(autoSaveFunction,2000);
 }
-
+#endif
 
 function transactionCompleted(transaction) {
 //console.debug("Transaction [" + transaction + "]");
-
+#ifdef SERVER
     autoSaveFunction();
-
+#else
+	setModified();
+#endif
 }
 
 /* loadFromString(str): with string 'str' containing an entire file, try to
@@ -1073,10 +1099,10 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         var errdialog = $('<div></div>');
         var s = str.substr(0,40);
         s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\s+/g," ");
-        errdialog.append('<p>' + strsource + ' contains an error:</p>            <blockquote>' + e.message + '</blockquote>            <p>The incorrect text is:</p>            <blockquote>' + s + '...</blockquote>');
-        
-
-
+        errdialog.append('<p>' + strsource + ' contains an error:</p>\
+            <blockquote>' + e.message + '</blockquote>\
+            <p>The incorrect text is:</p>\
+            <blockquote>' + s + '...</blockquote>');
         errdialog.dialog({
             title: strsource + " contains an error",
             modal: true,
@@ -1233,8 +1259,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         if (DEBUG) console.log("Error: "+e.message);
         if (!showerrors) return null;
         errdialog = $('<div></div>');
-        errdialog.append('<p>' + strsource + ' contains an error:</p>            <blockquote>' + e.message + '</blockquote>');
-        
+        errdialog.append('<p>' + strsource + ' contains an error:</p>\
+            <blockquote>' + e.message + '</blockquote>');
         errdialog.dialog({
             title: strsource + " is not valid",
             modal: true,
@@ -1854,21 +1880,31 @@ function initLibraryPanel() {
     $('#libprops').on('click',  function() {
         var p = Project.get( $('#libselect option:selected').val() );
         var dialog = $('<div></div>');
-
-
-
-
-
-
-
-
-        var snippet ='            <form id="form_projectprops">\n            _LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n            <div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n            _LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n            <fieldset>\n            <input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n            <input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n            </fieldset>\n            </form>        ';
-
+#ifdef STANDALONE
+        var snippet ='\
+            <form id="form_projectprops">\n\
+            _LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
+            _LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
+            </form>\
+        ';
+#else
+        var snippet ='\
+            <form id="form_projectprops">\n\
+            _LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
+            <div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n\
+            _LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
+            <fieldset>\n\
+            <input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
+            <input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n\
+            </fieldset>\n\
+            </form>\
+        ';
+#endif
         snippet = snippet.replace(/_LT_/g, _("Title:"));
         snippet = snippet.replace(/_LD_/g, _("Description:"));
         snippet = snippet.replace(/_PN_/g, H(p.title));
         snippet = snippet.replace(/_PD_/g, H(p.description));
-
+#ifdef SERVER
         snippet = snippet.replace(/_LC_/g, _("Creator:"));
         snippet = snippet.replace(/_LP_/g, _("Private"));
         snippet = snippet.replace(/_LS_/g, _("Shared"));
@@ -1876,7 +1912,7 @@ function initLibraryPanel() {
         snippet = snippet.replace(/_CR_/g, (p.shared && !p.stub ? H(Preferences.creator) : H(p.creator)));
         snippet = snippet.replace(/_DA_/g, H(prettyDate(p.date)));
         snippet = snippet.replace(/_DI_/g, (p.stub||p.shared ? 'block' : 'none'));
-
+#endif
         dialog.append(snippet);
         var dbuttons = [];
         dbuttons.push({
@@ -1888,9 +1924,9 @@ function initLibraryPanel() {
         dbuttons.push({
             text: _("Change properties"),
             click: function() {
-
+#ifdef SERVER
                     if (!p.stub) {
-
+#endif
                         var fname = $('#field_projecttitle');
                         p.settitle(fname.val());
                         if (Project.cid==p.id) {
@@ -1899,7 +1935,7 @@ function initLibraryPanel() {
                         }
                         fname = $('#field_projectdescription');
                         p.setdescription(fname.val());
-
+#ifdef SERVER
                         var becomesShared = $('#sh_on:checked').length>0;
                         if (!p.shared && becomesShared) {
                             // Before changing the sharing status from 'private' to 'shared', first
@@ -1920,16 +1956,16 @@ function initLibraryPanel() {
                             stopWatching(p.id);
                             p.setshared(becomesShared,true);
                         }
-
+#endif
                         $(this).dialog('close');
                         populateProjectList();
                         transactionCompleted("Project props change");
-
+#ifdef SERVER
                     } else {
                         // Not implemented yet.
                         rasterAlert(_("Cannot change project on server"),_("This function is not implemented yet."));
                     }
-
+#endif
                 }
         });
         dialog.dialog({
@@ -1937,18 +1973,18 @@ function initLibraryPanel() {
             modal: true,
             position: {my: 'left top', at: 'right', of: '#libprops', collision: 'fit'},
             width: 480,
-
+#ifdef SERVER
             height: 280,
-
+#endif
             buttons: dbuttons,
             open: function() {
-
+#ifdef SERVER
                 $('#form_projectprops input[type=radio]').checkboxradio({icon: false});
                 $('#form_projectprops fieldset').controlgroup();
                 $('#sh_off')[0].checked = !p.shared;
                 $('#sh_on')[0].checked = p.shared;
                 $('input[name="sh_onoff"]').checkboxradio("refresh");
-
+#endif
                 $('#field_projecttitle').focus().select();
                 $('#form_projectprops').submit(function() {
                     // Ignore, must close with dialog widgets
@@ -1964,11 +2000,11 @@ function initLibraryPanel() {
     // Export --------------------
     $('#libexport').on('click',  function() {
         var p = Project.get( $('#libselect option:selected').val() );
-
+#ifdef SERVER
         if (!p.stub) {
-
+#endif
             singleProjectExport($('#libselect option:selected').val());
-
+#ifdef SERVER
         } else {
             // First retrieve the project, then start exporting it
             Project.retrieve(p.id,function(newpid){
@@ -1982,7 +2018,7 @@ function initLibraryPanel() {
                 singleProjectExport(newpid);
             });
         }
-
+#endif
         $('#libselect').focus();
         $('#libexport').removeClass('ui-state-hover');
     });
@@ -1991,14 +2027,14 @@ function initLibraryPanel() {
         var p = Project.get( $('#libselect option:selected').val() );
         var dokill = function() {
             $('#libdel').removeClass('ui-state-hover');
-
+#ifdef SERVER
             if (p.shared || p.stub) {
                 // Disable the project watch. Otherwise a notification would be triggered.
                 stopWatching(p.id);
                 // remove from the server
                 p.deleteFromServer();
             }
-
+#endif
             if (p.id==Project.cid) {
                 p.destroy();
                 p = Project.firstProject();
@@ -2034,12 +2070,12 @@ function initLibraryPanel() {
     // Merge --------------------
     $('#libmerge').on('click',  function() {
         var otherproject = Project.get( $('#libselect option:selected').val() );
-
+#ifdef SERVER
         if (otherproject.stub) {
             rasterAlert(_("Cannot merge a remote project"),_("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
             return;
         }
-
+#endif
         var currentproject = Project.get( Project.cid );
         rasterConfirm(_("Merge '%%' into '%%'?",otherproject.title,currentproject.title),
             _("Are you sure you want to fold project '%%' into the current project?",
@@ -2174,10 +2210,10 @@ function initLibraryPanel() {
             $('#librarypanel').show();
             // Show project list using current stubs, but do fire an update
             populateProjectList();
-
+#ifdef SERVER
             Project.updateStubs(refreshProjectList);
             startPeriodicProjectListRefresh();
-
+#endif
             if ($('#optionspanel').css('display')!='none') $('#optionsactivator').trigger('click');
             $('#libraryactivator').addClass('actactive ui-state-active');
             $('#libraryupdown').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-n');
@@ -2208,7 +2244,7 @@ function populateProjectList() {
     if (snippet!="")
         snippet += '</optgroup>\n';
     newoptions += snippet;
-
+#ifdef SERVER
     //     Then all shared projects, if they belong to group ToolGroup
     snippet = "";
     for (it.first(); it.notlast(); it.next()) {
@@ -2222,17 +2258,17 @@ function populateProjectList() {
     if (snippet!="")
         snippet += '</optgroup>\n';
     newoptions += snippet;
-
+#endif
     $('#libselect').html(newoptions);
     // Finally all stubs projects
-
+#ifdef SERVER
     refreshProjectList();
-
+#endif
     // Select the current project, and enable/disable the buttons
     $('#libselect').val(Project.cid).focus().trigger('change');
 }
 
-
+#ifdef SERVER
 var ProjectListTimer;
 
 function startPeriodicProjectListRefresh() {
@@ -2266,7 +2302,7 @@ function refreshProjectList() {
     $('#libselect').append(snippet);
     $('#libselect').val(prevselected);
 }
-
+#endif
 
 function initOptionsPanel() {
     $('#optionsactivator span').first().html(_("Options"));
@@ -2291,7 +2327,7 @@ function initOptionsPanel() {
     $('[for=label_off]').on('click',  function() { Preferences.setlabel(false); });
     $('[for=label_on]').on('click',  function() { Preferences.setlabel(true); });
 
-
+#ifdef SERVER
     $('#onlineonoff span').first().html( _("Network connection:") );
     $('#onlineonoff label span').eq(0).html( _("Offline") );
     $('#onlineonoff label span').eq(1).html( _("Online") );
@@ -2304,7 +2340,7 @@ function initOptionsPanel() {
         $('#creator').val(Preferences.creator);
     });
     $('#creator').val(Preferences.creator);
-
+#endif
 
     $('#optionsactivator').on('mouseenter', function() {
         $('#optionsactivator').addClass('ui-state-hover');
@@ -2568,11 +2604,11 @@ function initTabDiagrams() {
             return;
         var cm = Component.get(rn.component);
         var dialog = $('<div></div>');
-        var snippet ='            <form id="form_componentrename">            <input id="field_componentrename" name="fld" type="text" size="55" value="_CN_">            </form>        ';
-        
-
-
-
+        var snippet ='\
+            <form id="form_componentrename">\
+            <input id="field_componentrename" name="fld" type="text" size="55" value="_CN_">\
+            </form>\
+        ';
         snippet = snippet.replace(/_CN_/g, H(cm.title));
         dialog.append(snippet);
         var dbuttons = [];
@@ -2618,11 +2654,11 @@ function initTabDiagrams() {
         if (rn.component==null)    // Actors and notes don't have components
             return;
         var dialog = $('<div></div>');
-        var snippet ='            <form id="form_suffixrename">            <input id="field_suffixrename" name="fld" type="text" size="55" value="_SX_">            </form>        ';
-        
-
-
-
+        var snippet ='\
+            <form id="form_suffixrename">\
+            <input id="field_suffixrename" name="fld" type="text" size="55" value="_SX_">\
+            </form>\
+        ';
         snippet = snippet.replace(/_SX_/g, H(rn.suffix));
         dialog.append(snippet);
         var dbuttons = [];
@@ -2937,8 +2973,17 @@ function showLabelEditForm() {
     var p = Project.get(Project.cid);
     $('#nodemenu').css("display", "none");
     var dialog = $('<div></div>');
-    var snippet ='        <form id="form_editlabels">        <div class="smallblock Bred"></div><input id="field_red" name="fld_red" type="text" size="30" value="_RED_"><br>        <div class="smallblock Borange"></div><input id="field_orange" name="fld_orange" type="text" size="30" value="_ORANGE_"><br>        <div class="smallblock Byellow"></div><input id="field_yellow" name="fld_yellow" type="text" size="30" value="_YELLOW_"><br>        <div class="smallblock Bgreen"></div><input id="field_green" name="fld_green" type="text" size="30" value="_GREEN_"><br>        <div class="smallblock Bblue"></div><input id="field_blue" name="fld_blue" type="text" size="30" value="_BLUE_"><br>        <div class="smallblock Bpurple"></div><input id="field_purple" name="fld_purple" type="text" size="30" value="_PURPLE_"><br>        <div class="smallblock Bgrey"></div><input id="field_grey" name="fld_grey" type="text" size="30" value="_GREY_"><br>        </form>    ';
-    
+    var snippet ='\
+        <form id="form_editlabels">\
+        <div class="smallblock Bred"></div><input id="field_red" name="fld_red" type="text" size="30" value="_RED_"><br>\
+        <div class="smallblock Borange"></div><input id="field_orange" name="fld_orange" type="text" size="30" value="_ORANGE_"><br>\
+        <div class="smallblock Byellow"></div><input id="field_yellow" name="fld_yellow" type="text" size="30" value="_YELLOW_"><br>\
+        <div class="smallblock Bgreen"></div><input id="field_green" name="fld_green" type="text" size="30" value="_GREEN_"><br>\
+        <div class="smallblock Bblue"></div><input id="field_blue" name="fld_blue" type="text" size="30" value="_BLUE_"><br>\
+        <div class="smallblock Bpurple"></div><input id="field_purple" name="fld_purple" type="text" size="30" value="_PURPLE_"><br>\
+        <div class="smallblock Bgrey"></div><input id="field_grey" name="fld_grey" type="text" size="30" value="_GREY_"><br>\
+        </form>\
+    ';
     snippet = snippet.replace(/_RED_/g, H(p.labels[0]));
     snippet = snippet.replace(/_ORANGE_/g, H(p.labels[1]));
     snippet = snippet.replace(/_YELLOW_/g, H(p.labels[2]));
@@ -3007,8 +3052,19 @@ function workspacedrophandler(event, ui) {
 function displayThreatsDialog(cid,event) {
     var c = Component.get(cid);
     Component.ThreatsComponent = cid;
-    var snippet = '<div id="dialogthreatlist">        <div class="threat">        <div class="th_name th_col thr_header">_LN_</div>        <div class="th_freq th_col thr_header">_LF_</div>        <div class="th_impact th_col thr_header">_LI_</div>        <div class="th_total th_col thr_header">_LT_</div>        <div class="th_remark th_col thr_header">_LR_</div>        </div>        <div id="threats_CI_" class="threats"></div>        <input id="dthadddia_CI_" class="addthreatbutton" type="button" value="_BA_">        <input id="dthcopydia_CI_" class="copybutton" type="button" value="_BC_">        <input id="dthpastedia_CI_" class="pastebutton" type="button" value="_BP_">        </div>';
-    
+    var snippet = '<div id="dialogthreatlist">\
+        <div class="threat">\
+        <div class="th_name th_col thr_header">_LN_</div>\
+        <div class="th_freq th_col thr_header">_LF_</div>\
+        <div class="th_impact th_col thr_header">_LI_</div>\
+        <div class="th_total th_col thr_header">_LT_</div>\
+        <div class="th_remark th_col thr_header">_LR_</div>\
+        </div>\
+        <div id="threats_CI_" class="threats"></div>\
+        <input id="dthadddia_CI_" class="addthreatbutton" type="button" value="_BA_">\
+        <input id="dthcopydia_CI_" class="copybutton" type="button" value="_BC_">\
+        <input id="dthpastedia_CI_" class="pastebutton" type="button" value="_BP_">\
+        </div>';
     snippet = snippet.replace(/_LN_/g, _("Name"));
     snippet = snippet.replace(/_LF_/g, _("Freq."));
     snippet = snippet.replace(/_LI_/g, _("Impact"));
@@ -3225,8 +3281,18 @@ function paintSingleFailures(s) {
     // First collect the bulk of the DOM elements to be appended. Then loop
     // over the components again, adding the vulnerabilities to them, and adding
     // behaviour stuff.
-    snippet = '        <p class="firstp donotprint">        [+] <span id="expandalls_SV_" class="ui-link">_EA_</span>        &nbsp;&nbsp;&nbsp;&nbsp;        [&minus;] <span id="collapsealls_SV_" class="ui-link">_CA_</span>        <span id="sortalls_SV_" class="sortalls">_LS_ <select id="sfselect_SV_">\n            <option value="alpha">_O1_</option>\n            <option value="type">_O2_</option>\n            <option value="threat">_O3_</option>\n        </select></span>\n        </p>    ';
-    
+    snippet = '\
+        <p class="firstp donotprint">\
+        [+] <span id="expandalls_SV_" class="ui-link">_EA_</span>\
+        &nbsp;&nbsp;&nbsp;&nbsp;\
+        [&minus;] <span id="collapsealls_SV_" class="ui-link">_CA_</span>\
+        <span id="sortalls_SV_" class="sortalls">_LS_ <select id="sfselect_SV_">\n\
+            <option value="alpha">_O1_</option>\n\
+            <option value="type">_O2_</option>\n\
+            <option value="threat">_O3_</option>\n\
+        </select></span>\n\
+        </p>\
+    ';
     snippet = snippet.replace(/_EA_/g, _("Expand all"));
     snippet = snippet.replace(/_CA_/g, _("Collapse all"));
     snippet = snippet.replace(/_LS_/g, _("Sort:"));
@@ -3243,8 +3309,20 @@ function paintSingleFailures(s) {
         var i;
         var cm = it.getcomponent();
         //if (cm.type=='tACT') continue;
-        var snippet = '\n          <div id="sfaccordion_SV___ID_" class="sfaccordion">\n            <h3><a href="#">_LSF_ "_TI_" (_TY__AP_) _LB_<span id="sfamark_SV___ID_"></span></a></h3>\n            <div>\n             <div id="sfa_SV___ID_">\n              <div class="threat">\n               <div class="th_name th_col thr_header">_LN_</div>\n               <div class="th_freq th_col thr_header">_LF_</div>\n               <div class="th_impact th_col thr_header">_LI_</div>\n               <div class="th_total th_col thr_header">_LT_</div>\n               <div class="th_remark th_col thr_header">_LR_</div>\n              </div>\n             </div>\n        ';
-        
+        var snippet = '\n\
+          <div id="sfaccordion_SV___ID_" class="sfaccordion">\n\
+            <h3><a href="#">_LSF_ "_TI_" (_TY__AP_) _LB_<span id="sfamark_SV___ID_"></span></a></h3>\n\
+            <div>\n\
+             <div id="sfa_SV___ID_">\n\
+              <div class="threat">\n\
+               <div class="th_name th_col thr_header">_LN_</div>\n\
+               <div class="th_freq th_col thr_header">_LF_</div>\n\
+               <div class="th_impact th_col thr_header">_LI_</div>\n\
+               <div class="th_total th_col thr_header">_LT_</div>\n\
+               <div class="th_remark th_col thr_header">_LR_</div>\n\
+              </div>\n\
+             </div>\n\
+        ';
         snippet = snippet.replace(/_LSF_/g, _("Single failures for"));
         snippet = snippet.replace(/_LN_/g, _("Name"));
         snippet = snippet.replace(/_LF_/g, _("Freq."));
@@ -3284,13 +3362,13 @@ snippet += "<div class='sfa_sortable'>\n";
             snippet += te.addtablerow_textonly("sfa"+s.id+'_'+cm.id);
         }
 snippet += "</div>\n";
-        snippet += '\n             <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="_BA_">\n             <input id="sfacopy_SV___ID_" class="copybutton" type="button" value="_BC_">\n             <input id="sfapaste_SV___ID_" class="pastebutton" type="button" value="_BP_">\n            </div>\n          </div>\n        ';
-        
-
-
-
-
-
+        snippet += '\n\
+             <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="_BA_">\n\
+             <input id="sfacopy_SV___ID_" class="copybutton" type="button" value="_BC_">\n\
+             <input id="sfapaste_SV___ID_" class="pastebutton" type="button" value="_BP_">\n\
+            </div>\n\
+          </div>\n\
+        ';
         snippet = snippet.replace(/_BA_/g, _("+ Add vulnerability"));
         snippet = snippet.replace(/_BC_/g, _("Copy"));
         snippet = snippet.replace(/_BP_/g, _("Paste"));
@@ -3747,8 +3825,23 @@ function moveSelectionToCluster(cluster) {
 var CCFSortOpt = "alpha";
 
 function AddAllClusters() {
-    var snippet = '        <h1 class="printonly underlay">_LCCF_</h1>        <h2 class="printonly underlay projectname">_LP_: _PN_</h2>        <p id="noshf" class="firstp sfaccordion">_N1_        _N2_        _N3_</p>        <p id="someshf" class="firstp donotprint">        [+] <span id="expandallshf" class="ui-link">_EA_</span>        &nbsp;&nbsp;&nbsp;&nbsp;        [&minus;] <span id="collapseallshf" class="ui-link">_CA_</span>        <span id="sortallccf" class="sortalls">_LS_ <select id="ccfselect">\n            <option value="alpha">_O1_</option>\n            <option value="type">_O2_</option>\n            <option value="threat">_O3_</option>\n        </select></span>\n        </p>    ';
-    
+    var snippet = '\
+        <h1 class="printonly underlay">_LCCF_</h1>\
+        <h2 class="printonly underlay projectname">_LP_: _PN_</h2>\
+        <p id="noshf" class="firstp sfaccordion">_N1_\
+        _N2_\
+        _N3_</p>\
+        <p id="someshf" class="firstp donotprint">\
+        [+] <span id="expandallshf" class="ui-link">_EA_</span>\
+        &nbsp;&nbsp;&nbsp;&nbsp;\
+        [&minus;] <span id="collapseallshf" class="ui-link">_CA_</span>\
+        <span id="sortallccf" class="sortalls">_LS_ <select id="ccfselect">\n\
+            <option value="alpha">_O1_</option>\n\
+            <option value="type">_O2_</option>\n\
+            <option value="threat">_O3_</option>\n\
+        </select></span>\n\
+        </p>\
+    ';
     snippet = snippet.replace(/_LP_/g, _("Project"));
     snippet = snippet.replace(/_LCCF_/g, _("Common Cause Failures"));
     snippet = snippet.replace(/_N1_/g, _("This space will show all vulnerabilities domains for the components in this project."));
@@ -3813,14 +3906,14 @@ function AddAllClusters() {
 }
 
 function addTDomElements(nc) {
-    var snippet = '\n      <div id="shfaccordion_ID_" class="shfaccordion">\n        <h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="shfamark_ID_"></span></a></h3>\n        <div id="shfaccordionbody_ID_" class="shfaccordionbody">\n          <div id="tdom_ID_" class="threatdomain noselect"></div>\n        </div>\n      </div>\n    ';
-    
-
-
-
-
-
-
+    var snippet = '\n\
+      <div id="shfaccordion_ID_" class="shfaccordion">\n\
+        <h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="shfamark_ID_"></span></a></h3>\n\
+        <div id="shfaccordionbody_ID_" class="shfaccordionbody">\n\
+          <div id="tdom_ID_" class="threatdomain noselect"></div>\n\
+        </div>\n\
+      </div>\n\
+    ';
     snippet = snippet.replace(/_LCCF_/g, _("Common Cause failures for"));
     snippet = snippet.replace(/_ID_/g, nc.id);
     snippet = snippet.replace(/_TI_/g, H(nc.title));
@@ -3907,8 +4000,17 @@ function reallyRepaintTDom(elem) {
     if (!nc.isroot())
         bugreport("Repainting a non-root cluster","repaintTDom");
 
-    var snippet = '<div>        <div class="threat">        <div class="th_name th_col thr_header">_LN_</div>        <div class="th_freq th_col thr_header">_LF_</div>        <div class="th_impact th_col thr_header">_LI_</div>        <div class="th_total th_col thr_header">_LT_</div>        <div class="th_remark th_col thr_header">_LR_</div>        </div>        <div id="shftable_ID_" class="threats">        </div></div>\n        <div id="tdom_ID_" class="threatdomain noselect"></div>\n';
-    
+    var snippet = '<div>\
+        <div class="threat">\
+        <div class="th_name th_col thr_header">_LN_</div>\
+        <div class="th_freq th_col thr_header">_LF_</div>\
+        <div class="th_impact th_col thr_header">_LI_</div>\
+        <div class="th_total th_col thr_header">_LT_</div>\
+        <div class="th_remark th_col thr_header">_LR_</div>\
+        </div>\
+        <div id="shftable_ID_" class="threats">\
+        </div></div>\n\
+        <div id="tdom_ID_" class="threatdomain noselect"></div>\n';
     snippet = snippet.replace(/_LN_/g, _("Name"));
     snippet = snippet.replace(/_LF_/g, _("Freq."));
     snippet = snippet.replace(/_LI_/g, _("Impact"));
@@ -3981,21 +4083,21 @@ function listFromCluster(nc) {
     var str;
     // Cluster heading
     if (nc.isroot()) {
-        str = '\n            <ul id="tlist_ID_" class="tlist" style="padding-left: 0px;">\n            <li id="linode_ID_" class="tlistroot clusternode ui-state-default ui-state-selected">\n            _TI_ (_TY_)\n            </li>\n        ';
-    
-
-
-
-
+        str = '\n\
+            <ul id="tlist_ID_" class="tlist" style="padding-left: 0px;">\n\
+            <li id="linode_ID_" class="tlistroot clusternode ui-state-default ui-state-selected">\n\
+            _TI_ (_TY_)\n\
+            </li>\n\
+        ';
     } else {
-        str = '\n            <ul id="tlist_ID_" class="tlist">\n            <li id="linode_ID_" class="tlistitem clusternode ui-state-default ui-state-selected">\n            <span id="cltrgl_ID_" class="ui-icon ui-icon-triangle-1-_LT_ clustericon"></span>            <span id="litext_ID_" class="litext">_TI_</span>            <span id="shfamark_ID_"></span></a>\n            </li>\n        ';
-    
-
-
-
-
-
-
+        str = '\n\
+            <ul id="tlist_ID_" class="tlist">\n\
+            <li id="linode_ID_" class="tlistitem clusternode ui-state-default ui-state-selected">\n\
+            <span id="cltrgl_ID_" class="ui-icon ui-icon-triangle-1-_LT_ clustericon"></span>\
+            <span id="litext_ID_" class="litext">_TI_</span>\
+            <span id="shfamark_ID_"></span></a>\n\
+            </li>\n\
+        ';
     }
     str = str.replace(/_ID_/g, nc.id);
     str = str.replace(/_LT_/g, (nc.accordionopened ? 's' : 'e'));
@@ -4427,17 +4529,35 @@ function paintNodeThreatTables() {
     ClusterExclusions = {};
 
     $('#at1').empty();
-    var snippet = '        <h1 class="printonly underlay">_LTT_</h1>        <h2 class="printonly underlay projectname">_LP_ _PN_</h1>        <h2 class="printonly underlay projectname">_L1_</h2>    ';
-    
-
-
-
+    var snippet = '\
+        <h1 class="printonly underlay">_LTT_</h1>\
+        <h2 class="printonly underlay projectname">_LP_ _PN_</h1>\
+        <h2 class="printonly underlay projectname">_L1_</h2>\
+    ';
     snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
     snippet = snippet.replace(/_LP_/g, _("Project:") );
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     
-    snippet += '\n        <table id="ana_nodethreattop" class="donotprint"><tr>\n        <td id="ana_nodesort">_LS1_ <select id="ana_nodeselect">\n            <option value="threat">_O3_</option>\n            <option value="alpha">_O1_</option>\n            <option value="type">_O2_</option>\n        </select></td>\n        <td id="ana_failuresort">_LS2_ <select id="ana_failureselect">\n            <option value="alpha">_O1_</option>\n            <option value="type">_O2_</option>\n            <!--option value="threat">_O3_</option-->\n        </select></td>\n        <td id="ana_exclusions">\n        <input type="button" id="quickwinslink" value="_Q1_">\n        <input type="button" id="clearexclusions" value="_Q2_"><br>\n        <p class="donotprint">_Q3_</p>\n        </td></tr></table>\n        <div id="ana_nodethreattable"></div>\n        <div id="ana_ccftable"></div>\n    ';
-    
+    snippet += '\n\
+        <table id="ana_nodethreattop" class="donotprint"><tr>\n\
+        <td id="ana_nodesort">_LS1_ <select id="ana_nodeselect">\n\
+            <option value="threat">_O3_</option>\n\
+            <option value="alpha">_O1_</option>\n\
+            <option value="type">_O2_</option>\n\
+        </select></td>\n\
+        <td id="ana_failuresort">_LS2_ <select id="ana_failureselect">\n\
+            <option value="alpha">_O1_</option>\n\
+            <option value="type">_O2_</option>\n\
+            <!--option value="threat">_O3_</option-->\n\
+        </select></td>\n\
+        <td id="ana_exclusions">\n\
+        <input type="button" id="quickwinslink" value="_Q1_">\n\
+        <input type="button" id="clearexclusions" value="_Q2_"><br>\n\
+        <p class="donotprint">_Q3_</p>\n\
+        </td></tr></table>\n\
+        <div id="ana_nodethreattable"></div>\n\
+        <div id="ana_ccftable"></div>\n\
+    ';
     snippet = snippet.replace(/_L1_/g, _("Single & Common Cause Failures versus Vulnerabilities"));
     snippet = snippet.replace(/_LS1_/g, _("Sort nodes and clusters:"));
     snippet = snippet.replace(/_LS2_/g, _("Sort vulnerabilities:"));
@@ -4619,14 +4739,14 @@ function paintSFTable() {
     for (cit.first(); cit.notlast(); cit.next()) Nodesum[cit.getcomponentid()] = '-';
 
     // Do the header
-    var snippet = '\n        <table style="width:_TW_em">\n        <colgroup><col span="1" style="width:_WF_em"></colgroup>\n        <colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n        <thead>\n         <tr>\n          <td class="nodetitlecell largetitlecell">_SF_</td>\n    ';
-    
-
-
-
-
-
-
+    var snippet = '\n\
+        <table style="width:_TW_em">\n\
+        <colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
+        <colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
+        <thead>\n\
+         <tr>\n\
+          <td class="nodetitlecell largetitlecell">_SF_</td>\n\
+    ';
     // 20em = width of first column
     // 1.7em = width of threat columns
     // numthreats = number of threat columns
@@ -4639,11 +4759,11 @@ function paintSFTable() {
         var nc = tit.getNodeCluster();
         snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
     }    
-    snippet += '<td class="headercell"><b>_OV_</b></td>\n         </tr>\n        </thead>\n        <tbody>\n    ';
-    
-
-
-
+    snippet += '<td class="headercell"><b>_OV_</b></td>\n\
+         </tr>\n\
+        </thead>\n\
+        <tbody>\n\
+    ';
     snippet = snippet.replace(/_OV_/, _("Overall"));
     // Do each of the table rows
     for (cit.first(); cit.notlast(); cit.next()) {
@@ -4682,10 +4802,10 @@ function paintSFTable() {
             snippet = snippet.replace(/_ZZ_/g, '<span class="reduced">' + _("reduced") + '</span>');
     }
     // Do the ending/closing
-    snippet += '\n        </tbody>\n        </table>\n    ';
-    
-
-
+    snippet += '\n\
+        </tbody>\n\
+        </table>\n\
+    ';
     $('#ana_nodethreattable').html(snippet);
 
     $('.nodecell').on('click',  function(evt){
@@ -4740,14 +4860,14 @@ function paintCCFTable() {
         return;
 
     // Do the header
-    var snippet = '\n    <table style="width:_TW_em">\n    <colgroup><col span="1" style="width:_WF_em"></colgroup>\n    <colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n    <thead>\n    <tr>\n    <td class="nodetitlecell largetitlecell">_CCF_</td>\n    ';
-    
-
-
-
-
-
-
+    var snippet = '\n\
+    <table style="width:_TW_em">\n\
+    <colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
+    <colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
+    <thead>\n\
+    <tr>\n\
+    <td class="nodetitlecell largetitlecell">_CCF_</td>\n\
+    ';
     snippet = snippet.replace(/_CCF_/, _("Common cause failures"));
     // 20em = width of first column
     // 1.7em = width of threat columns
@@ -4760,11 +4880,11 @@ function paintCCFTable() {
         var nc = tit.getNodeCluster();
         snippet += '<td class="printonlycell headercell">'+H(nc.title)+'</td>\n';
     }    
-    snippet += '<td class="printonlycell headercell"><b>_OV_</b></td>\n         </tr>\n        </thead>\n        <tbody>\n    ';
-    
-
-
-
+    snippet += '<td class="printonlycell headercell"><b>_OV_</b></td>\n\
+         </tr>\n\
+        </thead>\n\
+        <tbody>\n\
+    ';
     snippet = snippet.replace(/_OV_/, _("Overall"));
 
     // Do each of the table rows
@@ -4783,11 +4903,11 @@ function paintCCFTable() {
     }    
     
     // Do the ending/closing
-    snippet += '\n    </tbody>\n    </table>\n    <br><br>\n    ';
-    
-
-
-
+    snippet += '\n\
+    </tbody>\n\
+    </table>\n\
+    <br><br>\n\
+    ';
     $('#ana_ccftable').html(snippet);
 
     $('.clustercell').on('click',  function(evt){
@@ -4854,11 +4974,11 @@ function ClusterMagnitudeWithExclusions(cl,list) {
 }
 
 function paintVulnsTable() {
-    var snippet = '        <h1 class="printonly underlay">_LTT_</h1>        <h2 class="printonly underlay projectname">_LP_ _PN_</h2>        <h2 class="printonly underlay projectname">_LD_</h2>    ';
-    
-
-
-
+    var snippet = '\
+        <h1 class="printonly underlay">_LTT_</h1>\
+        <h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
+        <h2 class="printonly underlay projectname">_LD_</h2>\
+    ';
     snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
     snippet = snippet.replace(/_LP_/g, _("Project:") );
     snippet = snippet.replace(/_LD_/g, _("Vulnerability assessment details") );
@@ -4941,9 +5061,39 @@ function paintVulnsTableType(tabletype) {
         return "";
         
     // Do the header
-    var snippet = '\n    <a name="frag__TT_"><br><br>_LJ_</a>&nbsp;<a href="#frag_frequencies">_LF_</a>&nbsp;&nbsp;<a href="#frag_impacts">_LI_</a>&nbsp;&nbsp;<a href="#frag_levels">_LO_</a><br>\n    <table class="SFvulnstable" style="width:57em">\n    <colgroup><col span="1" style="width:30em"></colgroup>\n    <colgroup><col span="9" style="width:3em"></colgroup>\n    <thead>\n    <tr>\n    <td class="nodetitlecell largetitlecell">_SV_ _TT_</td>\n    <td class="headercell">U: _LVU_</td>\n    <td class="headercell">L: _LVL_</td>\n    <td class="headercell">M: _LVM_</td>\n    <td class="headercell">H: _LVH_</td>\n    <td class="headercell">V: _LVV_</td>\n    <td class="headercell">X: _LVX_</td>\n    <td class="headercell">A: _LVA_</td>\n    <td class="headercell">-: _LVN_</td>\n    <td class="headercell"><b>_LT_</b></td>\n    </tr>\n    </thead>\n    <tbody>\n    <tr class="thinrow">\n      <td></td>\n      <td class="M2"></td>\n      <td class="M3"></td>\n      <td class="M4"></td>\n      <td class="M5"></td>\n      <td class="M6"></td>\n      <td class="M7"></td>\n      <td class="M1"></td>\n      <td class="M0" style="border:1px solid grey;"></td>\n    </tr>\n    ';
+    var snippet = '\n\
+    <a name="frag__TT_"><br><br>_LJ_</a>&nbsp;<a href="#frag_frequencies">_LF_</a>&nbsp;&nbsp;<a href="#frag_impacts">_LI_</a>&nbsp;&nbsp;<a href="#frag_levels">_LO_</a><br>\n\
+    <table class="SFvulnstable" style="width:57em">\n\
+    <colgroup><col span="1" style="width:30em"></colgroup>\n\
+    <colgroup><col span="9" style="width:3em"></colgroup>\n\
+    <thead>\n\
+    <tr>\n\
+    <td class="nodetitlecell largetitlecell">_SV_ _TT_</td>\n\
+    <td class="headercell">U: _LVU_</td>\n\
+    <td class="headercell">L: _LVL_</td>\n\
+    <td class="headercell">M: _LVM_</td>\n\
+    <td class="headercell">H: _LVH_</td>\n\
+    <td class="headercell">V: _LVV_</td>\n\
+    <td class="headercell">X: _LVX_</td>\n\
+    <td class="headercell">A: _LVA_</td>\n\
+    <td class="headercell">-: _LVN_</td>\n\
+    <td class="headercell"><b>_LT_</b></td>\n\
+    </tr>\n\
+    </thead>\n\
+    <tbody>\n\
+    <tr class="thinrow">\n\
+      <td></td>\n\
+      <td class="M2"></td>\n\
+      <td class="M3"></td>\n\
+      <td class="M4"></td>\n\
+      <td class="M5"></td>\n\
+      <td class="M6"></td>\n\
+      <td class="M7"></td>\n\
+      <td class="M1"></td>\n\
+      <td class="M0" style="border:1px solid grey;"></td>\n\
+    </tr>\n\
+    ';
 
-    
     snippet = snippet.replace(/_LJ_/g, _("Jump to:"));
     snippet = snippet.replace(/_LF_/g, _("Frequencies"));
     snippet = snippet.replace(/_LI_/g, _("Impacts"));
@@ -5001,8 +5151,22 @@ function paintVulnsTableType(tabletype) {
     snippet += '</tr>\n';
 
     // Do the ending/closing
-    snippet += '\n    <tr class="thinrow">\n      <td></td>\n      <td class="M2"></td>\n      <td class="M3"></td>\n      <td class="M4"></td>\n      <td class="M5"></td>\n      <td class="M6"></td>\n      <td class="M7"></td>\n      <td class="M1"></td>\n      <td class="M0" style="border:1px solid grey;"></td>\n    </tr>\n    </tbody>\n    </table>\n    <br><br>\n    ';
-    
+    snippet += '\n\
+    <tr class="thinrow">\n\
+      <td></td>\n\
+      <td class="M2"></td>\n\
+      <td class="M3"></td>\n\
+      <td class="M4"></td>\n\
+      <td class="M5"></td>\n\
+      <td class="M6"></td>\n\
+      <td class="M7"></td>\n\
+      <td class="M1"></td>\n\
+      <td class="M0" style="border:1px solid grey;"></td>\n\
+    </tr>\n\
+    </tbody>\n\
+    </table>\n\
+    <br><br>\n\
+    ';
     return snippet;
 }
 
@@ -5015,20 +5179,20 @@ function paintNodeTypeStats() {
 
     $('#at3').empty();
 
-    var snippet = '        <h1 class="printonly underlay">_LTT_</h1>        <h2 class="printonly underlay projectname">_LP_ _PN_</h2>        <h2 class="printonly underlay projectname">_LD_</h2>    ';
-    
-
-
-
+    var snippet = '\
+        <h1 class="printonly underlay">_LTT_</h1>\
+        <h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
+        <h2 class="printonly underlay projectname">_LD_</h2>\
+    ';
     snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
     snippet = snippet.replace(/_LP_/g, _("Project:") );
     snippet = snippet.replace(/_LD_/g, _("Node types counted by service") );
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
     for (var typ in Rules.nodetypes) tStats[typ] = 0;
-    snippet +='\n    <table><tr>\n    ';
-    
-
+    snippet +='\n\
+    <table><tr>\n\
+    ';
     for (sit.first(); sit.notlast(); sit.next()) {
         var s = sit.getservice();
         var sStats = {};
@@ -5036,14 +5200,14 @@ function paintNodeTypeStats() {
         var nit = new NodeIterator({service: s.id});
 
         for (typ in Rules.nodetypes) sStats[typ] = 0;
-        snippet += '\n        <td>\n        <div id="servicestats_SI_" class="servicestats">\n        <b>_SN_</b><br>\n        <table class="statstable">\n        <thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n        <tbody>\n        ';
-        
-
-
-
-
-
-
+        snippet += '\n\
+        <td>\n\
+        <div id="servicestats_SI_" class="servicestats">\n\
+        <b>_SN_</b><br>\n\
+        <table class="statstable">\n\
+        <thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n\
+        <tbody>\n\
+        ';
         snippet = snippet.replace(/_LT_/g, _("Type") );
         snippet = snippet.replace(/_LN_/g, _("Num") );
         snippet = snippet.replace(/_SI_/g, s.id);
@@ -5062,45 +5226,45 @@ function paintNodeTypeStats() {
         for (typ in Rules.nodetypes) {
             snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+sStats[typ]+'</td></tr>';
         }
-        snippet += '\n        <tr><td class="statstype">_LT_</td><td class="statsnum">'+sTot+'</td></tr>\n        </tbody></table></div>\n        </td>\n        ';
-        
-
-
-
+        snippet += '\n\
+        <tr><td class="statstype">_LT_</td><td class="statsnum">'+sTot+'</td></tr>\n\
+        </tbody></table></div>\n\
+        </td>\n\
+        ';
         snippet = snippet.replace(/_LT_/g, _("Total") );
         numservice++;
         if (numservice%6==0) {
-            snippet += '\n            </tr>\n            <tr>\n            ';
-        
-
-
+            snippet += '\n\
+            </tr>\n\
+            <tr>\n\
+            ';
         }
     }
     // Project total
-    snippet += '\n    <td>\n    <div id="servicestatsTotal" class="servicestats">\n    <b>_LP_</b><br>\n    <table class="statstable">\n    <thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n    <tbody>\n    ';
-    
-
-
-
-
-
-
+    snippet += '\n\
+    <td>\n\
+    <div id="servicestatsTotal" class="servicestats">\n\
+    <b>_LP_</b><br>\n\
+    <table class="statstable">\n\
+    <thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n\
+    <tbody>\n\
+    ';
     snippet = snippet.replace(/_LP_/g, _("Entire project:") );
     snippet = snippet.replace(/_LT_/g, _("Type") );
     snippet = snippet.replace(/_LN_/g, _("Num") );
     for (typ in Rules.nodetypes) {
         snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+tStats[typ]+'</td></tr>';
     }
-    snippet += '\n    <tr><td class="statstype">_LT_</td><td class="statsnum">'+tTot+'</td></tr>\n    </tbody></table></div>\n    </td>\n    ';
-    
-
-
-
+    snippet += '\n\
+    <tr><td class="statstype">_LT_</td><td class="statsnum">'+tTot+'</td></tr>\n\
+    </tbody></table></div>\n\
+    </td>\n\
+    ';
     snippet = snippet.replace(/_LT_/g, _("Total") );
     // Finishing
-    snippet += '\n    </tr></table>\n    ';
-    
-
+    snippet += '\n\
+    </tr></table>\n\
+    ';
     $('#at3').append(snippet);
 }
 
@@ -5108,11 +5272,11 @@ function paintChecklistReports() {
     $('#at4').empty();
 
 
-    var snippet = '        <h1 class="printonly underlay">_LTT_</h1>        <h2 class="printonly underlay projectname">_LP_ _PN_</h2>        <h2 class="printonly underlay projectname">_LD_</h2>    ';
-    
-
-
-
+    var snippet = '\
+        <h1 class="printonly underlay">_LTT_</h1>\
+        <h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
+        <h2 class="printonly underlay projectname">_LD_</h2>\
+    ';
     snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
     snippet = snippet.replace(/_LP_/g, _("Project:") );
     snippet = snippet.replace(/_LD_/g, _("Checklist usage") );
@@ -5168,14 +5332,14 @@ function showremovedvulns() {
 
     // Now go through the components again, and create the table.
     // Do the header
-    snippet = '\n      <table style="width:_TW_em">\n      <colgroup><col span="1" style="width:_WF_em"></colgroup>\n      <colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n      <thead>\n      <tr>\n      <td class="nodetitlecell largetitlecell"></td>\n    ';
-    
-
-
-
-
-
-
+    snippet = '\n\
+      <table style="width:_TW_em">\n\
+      <colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
+      <colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
+      <thead>\n\
+      <tr>\n\
+      <td class="nodetitlecell largetitlecell"></td>\n\
+    ';
     // 20em = width of first column
     // 1.7em = width of threat columns
     // numthreats = number of threat columns
@@ -5186,11 +5350,11 @@ function showremovedvulns() {
     for (j=0; j<VulnIDs.length; j++) {
         snippet += '<td class="headercell">'+H(Threat.get(VulnIDs[j]).title)+'</td>\n';
     }    
-    snippet += '      </tr>\n      </thead>\n      <tbody>\n    ';
-
-    
-
-
+    snippet += '\
+      </tr>\n\
+      </thead>\n\
+      <tbody>\n\
+    ';
 
     // Do each of the table rows
     for (i=0; i<CompIDs.length; i++) {
@@ -5207,10 +5371,10 @@ function showremovedvulns() {
     }    
     
     // Do the ending/closing
-    snippet += '\n    </tbody>\n    </table>\n    ';
-
-    
-
+    snippet += '\n\
+    </tbody>\n\
+    </table>\n\
+    ';
 
     if (num==0)
         snippet += _("No checklist vulnerabilities have been discarded on components of this project.");
@@ -5272,14 +5436,14 @@ function showcustomvulns() {
 
     // Now go through the components again, and create the table.
     // Do the header
-    snippet = '\n      <table style="width:_TW_em">\n      <colgroup><col span="1" style="width:_WF_em"></colgroup>\n      <colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n      <thead>\n      <tr>\n      <td class="nodetitlecell largetitlecell"></td>\n    ';
-    
-
-
-
-
-
-
+    snippet = '\n\
+      <table style="width:_TW_em">\n\
+      <colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
+      <colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
+      <thead>\n\
+      <tr>\n\
+      <td class="nodetitlecell largetitlecell"></td>\n\
+    ';
     // 20em = width of first column
     // 1.7em = width of threat columns
     // numthreats = number of threat columns
@@ -5290,11 +5454,11 @@ function showcustomvulns() {
     for (j=0; j<VulnTitles.length; j++) {
         snippet += '<td class="headercell">'+H(VulnTitles[j])+'</td>\n';
     }    
-    snippet += '      </tr>\n      </thead>\n      <tbody>\n    ';
-
-    
-
-
+    snippet += '\
+      </tr>\n\
+      </thead>\n\
+      <tbody>\n\
+    ';
 
     // Do each of the table rows
     for (i=0; i<CompIDs.length; i++) {
@@ -5311,10 +5475,10 @@ function showcustomvulns() {
     }    
     
     // Do the ending/closing
-    snippet += '\n    </tbody>\n    </table>\n    ';
-
-    
-
+    snippet += '\n\
+    </tbody>\n\
+    </table>\n\
+    ';
 
     if (num==0)
         snippet += _("No custom vulnerabilities have been added to any of the components in this project.");
@@ -5340,25 +5504,25 @@ function paintLonglist() {
     $('#at5').empty();
 
 
-    var snippet = '        <h1 class="printonly underlay">_LTT_</h1>        <h2 class="printonly underlay projectname">_LP_ _PN_</h2>        <h2 class="printonly underlay projectname">_LD_</h2>    ';
-    
-
-
-
+    var snippet = '\
+        <h1 class="printonly underlay">_LTT_</h1>\
+        <h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
+        <h2 class="printonly underlay projectname">_LD_</h2>\
+    ';
     snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
     snippet = snippet.replace(/_LP_/g, _("Project:") );
     snippet = snippet.replace(/_LD_/g, _("Risk longlist") );
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     
-    snippet += '\n        <div id="lloptions" class="donotprint">\n        <b>_INS_</b><br>\n        <label for="incX">_LU_:</label> <span class="itemll"><input type="checkbox" id="incX" checked></span><br>\n        <label for="incA">_LA_:</label> <span class="itemll"><input type="checkbox" id="incA" checked></span><br>\n        <label for="minV">_LV_:</label> <span class="itemll"><select id="minV"></select></span><br>\n        </div>\n        <div id="longlist"></div>    ';
-    
-
-
-
-
-
-
-
+    snippet += '\n\
+        <div id="lloptions" class="donotprint">\n\
+        <b>_INS_</b><br>\n\
+        <label for="incX">_LU_:</label> <span class="itemll"><input type="checkbox" id="incX" checked></span><br>\n\
+        <label for="incA">_LA_:</label> <span class="itemll"><input type="checkbox" id="incA" checked></span><br>\n\
+        <label for="minV">_LV_:</label> <span class="itemll"><select id="minV"></select></span><br>\n\
+        </div>\n\
+        <div id="longlist"></div>\
+    ';
     snippet = snippet.replace(/_INS_/g, _("Set the criteria for risks on the longlist.") );
     snippet = snippet.replace(/_LU_/g, _("Include Unknown") );
     snippet = snippet.replace(/_LA_/g, _("Include Ambiguous") );
@@ -5584,4 +5748,3 @@ MMMMMMMMMMMMMMMMMMMMZZ7$$$$$III7$777II7IIII?+??+++??$MMMMMMMMMMMMMMMMMMMMMMMM7++
 MMMMMMMMMMMMMMMMMMMMMMZ$$ZZZ$777777$$$$$II???++?I7MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 MMMMMMMMMMMMMMMMMMMMMMMMMMDN8$$$$77$777II????IDMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN$ZD88N888NNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM*/
-

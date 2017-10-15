@@ -1,35 +1,52 @@
 <!DOCTYPE html>
-<!--
+<!-- 
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
  -->
 <html>
 
 <head>
+#ifdef SERVER
+<meta name="group" content="<?= GROUP ?>">
+#endif
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-<meta charset="UTF-8">
+<meta charset="UTF-8"> 
 <title>Raster - Risk Assessment of Telecoms Services</title>
 <!-- First stylesheet must be the one that is a custom setting. -->
 <link rel="stylesheet" href="../css/smoothness-1.12.1/jquery-ui.min.css" class="ui-theme">
 <link rel="stylesheet" href="../css/raster.css" type="text/css" id="maincssfile">
 <link rel="stylesheet" href="../css/raster-print.css" type="text/css">
 <link rel="shortcut icon" href="../img/Raster.png">
-<script type="text/javascript">if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-	<script src="../js/jquery-3.2.1.min.js"></script>
-	<script src="../js/jquery-ui-1.12.1.min.js"></script>
-	<script src="../js/jquery.jsPlumb-1.7.5.js"></script>
-	<script src="../js/jquery.editinplace-2.2.1.js"></script>
-	<script src="../js/encodedecode.js"></script>
-	<script src="rasterMain.js"></script>
-	<script src="../js/translation-nl.js"></script>
-	<script src="rasterProject.js"></script>
-	<script src="rasterService.js"></script>
-	<script src="rasterThreatEvaluation.js"></script>
-	<script src="rasterComponent.js"></script>
-	<script src="rasterNode.js"></script>
-	<script src="rasterNodeCluster.js"></script>
-	<script src="rasterPreferencesObject.js"></script>
-<script type="text/javascript">if (window.module) module = window.module;</script>
+#ifdef STANDALONE
+  <script type="text/javascript">if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+#endif
+<script type="text/javascript" src="../js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="../js/jquery-ui-1.12.1.min.js"></script>
+#ifdef SERVER
+<script type="text/javascript" src="../js/eventsource.js"></script>
+<script type="text/javascript" src="../js/jquery.localisation.js"></script>
+#endif
+<script type="text/javascript" src="../js/jquery.jsPlumb-1.7.5.js"></script>
+<script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>
+<script type="text/javascript" src="../js/encodedecode.js"></script>
+<script type="text/javascript" src="../js/rasterMain.js"></script>
+#ifdef SERVER
+<script type="text/javascript">$.localise('../js/translation');</script>
+#else
+#ifdef LANG_NL
+  <script src="../js/translation-nl.js"></script>
+#endif
+#endif
+<script type="text/javascript" src="../js/rasterProject.js"></script>
+<script type="text/javascript" src="../js/rasterService.js"></script>  
+<script type="text/javascript" src="../js/rasterThreatEvaluation.js"></script>  
+<script type="text/javascript" src="../js/rasterComponent.js"></script>  
+<script type="text/javascript" src="../js/rasterNode.js"></script>  
+<script type="text/javascript" src="../js/rasterNodeCluster.js"></script>  
+<script type="text/javascript" src="../js/rasterPreferencesObject.js"></script>  
+#ifdef STANDALONE
+  <script type="text/javascript">if (window.module) module = window.module;</script>
+#endif
 
 <style type="text/css">
 .fullscreen {
@@ -112,6 +129,13 @@ See LICENSE.md
 <div id="libraryactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Library</span><span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
 <div id="optionsactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Options</span><span id="optionsupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
 
+#ifdef STANDALONE
+<div style="display:none">
+	<a href="" id="savelink"></a>
+	<input id="filepicker" type="file" accept=".raster">
+</div>
+#endif
+
 <div id="librarypanel" class="actpanel ui-widget">
   <form id="libform">
     <table>
@@ -130,7 +154,7 @@ See LICENSE.md
         <input id="libadd" type="button" value="New">
         <input id="libimport" type="button" value="Import">
         <input id="libexportall" type="button" value="Export library">
-        <input id="fileElem" type="file">
+        <input id="fileElem" type="file">    
         <input id="libzap" type="button" value="Zap library">
     </td>
     </tr>
@@ -162,6 +186,19 @@ See LICENSE.md
             <input type="radio" id="label_on" name="labelonoff" checked="checked"><label for="label_on">Show color</label>
         </fieldset>
     </div>
+#ifdef SERVER
+    <div id="onlineonoff">
+        <span class="leftlabel ui-widget ui-state-default">Network connection:</span>
+        <fieldset>
+            <input type="radio" id="online_off" name="onlineonoff"><label for="online_off">Offline</label>
+            <input type="radio" id="online_on" name="onlineonoff" checked="checked"><label for="online_on">Online</label>
+        </fieldset>
+    </div>
+    <div id="creator_name">
+        <span class="leftlabel ui-widget ui-state-default">Your name:</span>
+        <input type="text" id="creator" size="35">
+    </div>
+#endif
 </div>
 
 <div id="nodemenu" class="popupmenu">
@@ -253,14 +290,14 @@ See LICENSE.md
         <li class="longtab"><a href="#tab_ccfs" class="longlink">Common cause failures</a></li>
         <li><a href="#tab_analysis">Analysis</a></li>
     </ul>
-
+    
 
 <div id="tab_diagrams" class="workbody workouter">
   <div id="diagrams_body" class="tabs-bottom">
     <input id="servaddbutton" class="servplusbutton" type="button" value=" + ">
     <ul id="bottomtabsdia">
     </ul>
-  </div>
+  </div>    
 </div>
 
 
@@ -269,7 +306,7 @@ See LICENSE.md
     <input id="servaddbuttonsf" class="servplusbutton" type="button" value=" + ">
     <ul id="bottomtabssf">
     </ul>
-  </div>
+  </div>    
 </div>
 
 
@@ -311,4 +348,3 @@ See LICENSE.md
 
 </body>
 </html>
-
