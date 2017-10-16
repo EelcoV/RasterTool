@@ -113,6 +113,7 @@
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		4954ADED1F954398002A6FBC /* base.EN.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.EN.dmg; sourceTree = "<group>"; };
+		4954ADEE1F954581002A6FBC /* electron-v1.7.9-win32-ia32.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "electron-v1.7.9-win32-ia32.zip"; sourceTree = "<group>"; };
 		4961E8B71C415CE60001FAE3 /* Raster-EN-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-EN-1.1.epub"; sourceTree = "<group>"; };
 		4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-NL-1.1.epub"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
@@ -176,6 +177,7 @@
 				49F279FC1F91DB17003F360B /* src */,
 				49F279FB1F91DB10003F360B /* server */,
 				4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */,
+				4954ADEE1F954581002A6FBC /* electron-v1.7.9-win32-ia32.zip */,
 				494B6FDA18796E9D00400328 /* public_group */,
 				49F279FA1F91DAD4003F360B /* common */,
 				4999EB431F8F284F009BBF18 /* standalone */,
