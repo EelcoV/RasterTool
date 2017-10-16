@@ -36,6 +36,16 @@ CreateLanguageVersion()
 	cp -p standalone/* $APPDIR
 	#mv $APPDIR/standalone.html $APPDIR/index.html
 
+	(
+		cd build
+		cp ../base.EN.dmg temp.dmg
+		hdiutil attach temp.dmg
+		cp -p -R $BASEDIR/Electron.app "/Volumes/Raster EN"
+		hdiutil detach "/Volumes/Raster EN"
+		hdiutil convert temp.dmg -format UDRO -o Raster.$LANG.dmg
+		rm -f temp.dmg
+	)
+
 	echo "...done."
 }
 
