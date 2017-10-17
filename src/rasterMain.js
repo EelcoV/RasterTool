@@ -24,64 +24,56 @@ var ToolGroup;
  * Glue code for Electron
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/* ElectronRunning: true iff the tool is running as an Electron app.
- * False iff the tool is running as a web page inside a normal web browser.
- */
-var ElectronRunning = (typeof(process)=='object');
 var ipc, shell, url;
-if (ElectronRunning) {
-	ipc = require('electron').ipcRenderer;
-	shell = require('electron').shell;
-	url = require('url');
-}
+ipc = require('electron').ipcRenderer;
+shell = require('electron').shell;
+url = require('url');
 
 var Modified = false;
 
-if (ElectronRunning) {
-	ipc.on('document-start-save', function() {
-		var s = CurrentProjectAsString();
-		ipc.send('document-save',s);
-	});
-	ipc.on('document-start-saveas', function() {
-		var s = CurrentProjectAsString();
-		ipc.send('document-saveas',s);
-	});
-	ipc.on('document-save-success', function() {
-		clearModified();
-	});
-	ipc.on('show-details', function() {
-		var p = Project.get(Project.cid);
-		ShowDetails(p);
-	});
-	ipc.on('document-start-open', function(event,str) {
-		var newp = loadFromString(str,true,false,_("File"));
-		if (newp!=null) {
-			switchToProject(newp);
+ipc.on('document-start-save', function() {
+	var s = CurrentProjectAsString();
+	ipc.send('document-save',s);
+});
+ipc.on('document-start-saveas', function() {
+	var s = CurrentProjectAsString();
+	ipc.send('document-saveas',s);
+});
+ipc.on('document-save-success', function() {
+	clearModified();
+});
+ipc.on('show-details', function() {
+	var p = Project.get(Project.cid);
+	ShowDetails(p);
+});
+ipc.on('document-start-open', function(event,str) {
+	var newp = loadFromString(str,true,false,_("File"));
+	if (newp!=null) {
+		switchToProject(newp);
+	}
+	clearModified();
+});
+ipc.on('options', function(event,option,val) {
+	if (option=='labels') {
+		Preferences.setlabel(val);
+	}
+	if (option=='vulnlevel') {
+		if (val==0) {
+			Preferences.setemblem("em_none");
+		} else if (val==1) {
+			Preferences.setemblem("em_small");
+		} else {
+			Preferences.setemblem("em_large");
 		}
-		clearModified();
-	});
-	ipc.on('options', function(event,option,val) {
-		if (option=='labels') {
-			Preferences.setlabel(val);
-		}
-		if (option=='vulnlevel') {
-			if (val==0) {
-				Preferences.setemblem("em_none");
-			} else if (val==1) {
-				Preferences.setemblem("em_small");
-			} else {
-				Preferences.setemblem("em_large");
-			}
-		}
-	});
-	ipc.on('help-show', function() {
-        $('#helppanel').dialog("open");
-	});
-}
+	}
+});
+ipc.on('help-show', function() {
+	$('#helppanel').dialog("open");
+});
 
 function setModified() {
 	Modified = true;
-	if (ElectronRunning) ipc.send('document-modified');
+	ipc.send('document-modified');
 }
 
 function clearModified() {
@@ -125,10 +117,8 @@ $(function() {
 	document.addEventListener('dragover', function(event) {event.preventDefault();} );
 	document.addEventListener('drop', function(event) {event.preventDefault();} );
 
-	if (ElectronRunning) {
-		$('.activator').hide();
-		$('#helpbutton').hide();
-	}
+	$('.activator').hide();
+	$('#helpbutton').hide();
 #endif
 
     initTabDiagrams();
@@ -169,6 +159,7 @@ $(function() {
         window.name = 'RasterTool'+String(Math.random()).substring(2);
     }
 
+#ifdef SERVER
     if (!testLocalStorage()) {
         // The splash screen is still visible, and will obscure any interaction.
         $('#splashstatus').html( _("Error: no local storage available.<br>Adjust cookie or privacy settings?") );
@@ -177,7 +168,8 @@ $(function() {
             + _("This app will not work properly. ")
             + "<p>" + _("Try adjusting your cookie or privacy settings."));
     }
-    
+#endif
+
     // Load preferences
     Preferences = new PreferencesObject();
 #ifdef STANDALONE
@@ -185,20 +177,14 @@ $(function() {
 #endif
     var remembertab = Preferences.tab;
 
-#ifdef STANDALONE
-    if (!ElectronRunning) {
-#endif
-	    initLibraryPanel();
-	    initOptionsPanel();
-#ifdef STANDALONE
-    }
+#ifdef SERVER
+	initLibraryPanel();
+	initOptionsPanel();
 #endif
 
     SizeDOMElements();
 
-#ifdef STANDALONE
-    if (!ElectronRunning) {
-#endif
+#ifdef SERVER
     /* Loading data from localStorage. Tweaked for perfomance.
      */
     var strArr = [];
@@ -210,13 +196,7 @@ $(function() {
         strArr.push(localStorage[key]+'\n');
     } 
     var str = strArr.join("");
-#ifdef STANDALONE
-    }
-#endif
     if (
-#ifdef STANDALONE
-    	!ElectronRunning &&
-#endif
       loadFromString(str,true,true,"Browser local storage")!=null) {
         // Loading from localStorage succeeded. Try to active the project
         // indicated by Preferences.currentproject, or take any one project
@@ -227,9 +207,7 @@ $(function() {
             loadDefaultProject();
         else {
             p.load();
-#ifdef SERVER
             p.dorefresh(false); // Check for update on the server
-#endif
             var it = new ServiceIterator(p.id);
             var found = false;
             var s;
@@ -242,8 +220,9 @@ $(function() {
         }
     } else
         loadDefaultProject();
-#ifdef SERVER
     startAutoSave();
+#else
+	loadDefaultProject();
 #endif
 
     // May be necessary to wait and resize
@@ -357,10 +336,8 @@ $(function() {
 			return;
 		}
         $('#splash').hide();
+#ifdef SERVER
         if (
-#ifdef STANDALONE
-			!ElectronRunning &&
-#endif
         	localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
             rasterConfirm(_("Warning!"), _("The tool may already be active in another browser window or tab. If so, then continuing <em>will</em> damage your projects!"),
                 _("Continue anyway"), _("Cancel"),
@@ -380,20 +357,19 @@ $(function() {
             return;
         } else
             localStorage.RasterToolIsLoaded = window.name;
+#endif
     }));
     $(window).on('unload', (function() {
 #ifdef SERVER
         stopWatching(null);
-#else
-		if (ElectronRunning) {
-			if (!Modified) return '';
-			return 'Wijzigingen zijn niet opgeslagen en raken verloren. OK?';
-		}
-#endif
         $('#goodbye').show();
         if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded==window.name)
             localStorage.removeItem('RasterToolIsLoaded');
 		return '';
+#else
+		if (!Modified) return '';
+		return 'Wijzigingen zijn niet opgeslagen en raken verloren. OK?';
+#endif
     }));
     $(window).on('resize', SizeDOMElements);
 
@@ -598,6 +574,7 @@ function SizeDOMElements() {
 	 try {
 		var css=document.getElementById("maincssfile").sheet;
 		var rule=null;
+#ifdef SERVER
 		for (var i=0; i<css.cssRules.length; i++) {
 			if (css.cssRules[i].selectorText==".threatdomain") {
 				rule = css.cssRules[i];
@@ -609,6 +586,7 @@ function SizeDOMElements() {
 		} else {
 			rule.style.height= (wh-250) + "px";
 		}
+#endif
 	}
 	catch (e) {
 		// Firefox won't allow access to cssRules when origin is file://
