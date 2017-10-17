@@ -2,14 +2,61 @@
 
 VERSION=1.7.9
 
-CreateMacOSLanguageVersion()
+CreateAppVersion()
 {
 	LANG=$1
-	BUILDDIR=build/standalone/$LANG
+	BUILDDIR=build/app-$LANG
+	echo "************************** Building $LANG version for standalone into $BUILDDIR..."
+
+	if [ ! -d $BUILDDIR ]; then
+		mkdir -p $BUILDDIR
+	fi
+
+	# Fixed sources
+	cp -p standalone/* $BUILDDIR
+	cp -R -p common/* $BUILDDIR
+
+	for srcfile in src/raster*.js
+	do
+		destfile=$BUILDDIR/js/`basename $srcfile`
+		if [ $srcfile -nt $destfile ]; then
+			cpp -E -P -C -w -DSTANDALONE $srcfile $destfile
+			# Check whether the sources are correct, and correctly preprocessed
+			script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process "$destfile" || exit 1
+		fi
+	done
+
+#	for srcfile in src/standalone/*
+#	do
+#		destfile=$BUILDDIR/`basename $srcfile .html`-$LANG.html
+#		if [ $srcfile -nt $destfile ]; then
+#			cpp -E -P -C -w -DLANG=$LANG -DSTANDALONE $srcfile $destfile
+#		fi
+#	done
+
+	cp -p src/standalone/e-translation-$LANG.js $BUILDDIR/e-translation.js
+
+	if [ ! -d $BUILDDIR/app ]; then
+		mkdir -p $BUILDDIR/app
+	fi
+	srcfile=src/index.inc
+	destfile=$BUILDDIR/app/app.html
+	if [ $srcfile -nt $destfile ]; then
+		cpp -E -P -C -w -DLANG_$LANG -DSTANDALONE $srcfile $destfile
+	fi
+
+
+	echo "************************** ...done"
+}
+
+CreateMacOSVersion()
+{
+	LANG=$1
+	BUILDDIR=build/app-$LANG
 	BASEDIR=build/electron-v$VERSION-darwin-x64-$LANG
 	APPDIR=$BASEDIR/Electron.app/Contents/Resources/app
 
-	echo "Building $LANG version for MacOS..."
+	echo "************************** Building $LANG version for MacOS..."
 
 	script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process standalone/main.js || exit 1
 
@@ -44,17 +91,17 @@ CreateMacOSLanguageVersion()
 	hdiutil convert build/temp.dmg -format UDRO -o build/Raster.$LANG.dmg
 	rm -f build/temp.dmg
 
-	echo "...done."
+	echo "************************** ...done."
 }
 
-CreateWin32LanguageVersion()
+CreateWin32Version()
 {
 	LANG=$1
-	BUILDDIR=build/standalone/$LANG
+	BUILDDIR=build/app-$LANG
 	BASEDIR=build/electron-v$VERSION-win32-ia32-$LANG
 	APPDIR=$BASEDIR/resources/app
 
-	echo "Building $LANG version for Win32..."
+	echo "************************** Building $LANG version for Win32..."
 
 	script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process standalone/main.js || exit 1
 
@@ -80,12 +127,17 @@ CreateWin32LanguageVersion()
 	cp -p standalone/* $APPDIR
 	#mv $APPDIR/standalone.html $APPDIR/index.html
 
-	echo "...done."
+	echo "************************** ...done."
 }
 
-CreateMacOSLanguageVersion "EN"
-CreateMacOSLanguageVersion "NL"
+CreateAll()
+{
+	LANG=$1
+	CreateAppVersion $LANG
+	CreateMacOSVersion $LANG
+	CreateWin32Version $LANG
+}
 
-CreateWin32LanguageVersion "EN"
-CreateWin32LanguageVersion "NL"
+CreateAll "EN"
+CreateAll "NL"
 
