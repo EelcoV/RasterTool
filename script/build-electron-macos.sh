@@ -86,6 +86,7 @@ CreateMacOSVersion()
 	cp base.$LANG.dmg build/temp.dmg
 	hdiutil attach build/temp.dmg
 	cp -R -p $BASEDIR/Electron.app "/Volumes/Raster $LANG"
+	sync && sync
 	hdiutil detach "/Volumes/Raster $LANG"
 	rm -f build/Raster.$LANG.dmg
 	hdiutil convert build/temp.dmg -format UDRO -o build/Raster.$LANG.dmg
