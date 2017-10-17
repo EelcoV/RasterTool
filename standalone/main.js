@@ -203,6 +203,9 @@ var template = [{
 	submenu: [{
 		label: _("Show help"),
 		click: function (item, focusedWindow) {	win.webContents.send('help-show'); }
+	}, {
+		label: _("Find nodes..."),
+		click: function (item, focusedWindow) {	win.webContents.send('find-show'); }
 	}]
 }];
 

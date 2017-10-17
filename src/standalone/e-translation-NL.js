@@ -71,6 +71,6 @@ _t['Small'] = 'Klein';
 _t['Large'] = 'Groot';
 _t['None'] = 'Geen';
 _t['Details...'] = 'Details...';
-_t[''] = '';
+_t['Find nodes...'] = 'Zoek componenten...';
 _t[''] = '';
 

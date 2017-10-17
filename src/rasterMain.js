@@ -70,6 +70,9 @@ ipc.on('options', function(event,option,val) {
 ipc.on('help-show', function() {
 	$('#helppanel').dialog("open");
 });
+ipc.on('find-show', function() {
+	StartFind();
+});
 
 function setModified() {
 	Modified = true;
@@ -269,43 +272,9 @@ $(function() {
         $('#helppanel').dialog("open");
     });
 
-    $('#findbutton img').on('click',  function() {
-        var dialog = $('<div></div>');
-        var snippet ='\
-            <!-- form id="form_find" -->\n\
-            _LS_<br><input id="field_find" name="fld" type="text" value="" placeholder="_PH_"><br>\n\
-            _LF_<br><div id="field_found"></div>\n\
-            <!-- /form -->\
-        ';
-        snippet = snippet.replace(/_LS_/g, _("Find:"));
-        snippet = snippet.replace(/_LF_/g, _("Results:"));
-        snippet = snippet.replace(/_PH_/g, _("Type here to search nodes"));
-        dialog.append(snippet);
-        
-        dialog.dialog({
-            title: _("Find nodes"),
-            width: 405,
-            resizable: true,
-            buttons: [{ text: _("Done"),
-                click: function() {dialog.dialog("close");}
-            }],
-            open: function(event, ui) {
-                $('#field_find').focus().select();
-                nodeFindString = "";
-                findTimer = window.setTimeout(updateFind,500);
-            },
-            close: function(event, ui) {
-                window.clearTimeout(findTimer);
-                dialog.remove();
-            },
-            resize: function(event,ui) {
-                $('#field_find').width(ui.size.width-32);
-                $('#field_found').width(ui.size.width-28).height(ui.size.height-150);
-            }
-        });
-    });
-
 #ifdef SERVER
+    $('#findbutton img').on('click', StartFind);
+
     var flashTimer;
     $(document).ajaxSend(function(){
         window.clearTimeout(flashTimer);
@@ -464,6 +433,42 @@ var updateFind = function() {
     findTimer = window.setTimeout(updateFind,500);
 };
 
+function StartFind() {
+	var dialog = $('<div></div>');
+	var snippet ='\
+		<!-- form id="form_find" -->\n\
+		_LS_<br><input id="field_find" name="fld" type="text" value="" placeholder="_PH_"><br>\n\
+		_LF_<br><div id="field_found"></div>\n\
+		<!-- /form -->\
+	';
+	snippet = snippet.replace(/_LS_/g, _("Find:"));
+	snippet = snippet.replace(/_LF_/g, _("Results:"));
+	snippet = snippet.replace(/_PH_/g, _("Type here to search nodes"));
+	dialog.append(snippet);
+
+	dialog.dialog({
+		title: _("Find nodes"),
+		width: 405,
+		resizable: true,
+		buttons: [{ text: _("Done"),
+			click: function() {dialog.dialog("close");}
+		}],
+		open: function(event, ui) {
+			$('#field_find').focus().select();
+			nodeFindString = "";
+			findTimer = window.setTimeout(updateFind,500);
+		},
+		close: function(event, ui) {
+			window.clearTimeout(findTimer);
+			dialog.remove();
+		},
+		resize: function(event,ui) {
+			$('#field_find').width(ui.size.width-32);
+			$('#field_found').width(ui.size.width-28).height(ui.size.height-150);
+		}
+	});
+}
+
 /* In the code, use _("blue sky") instead of "blue sky"
  * Use
  *        _("I have %% potatoes!", num)
@@ -548,13 +553,13 @@ function SizeDOMElements() {
     var wh = $(window).height();
     
     // Overall browser window / DOM body
-    $('#tabs').width(ww-19);
-    $('#tabs').height(wh-19);
+    $('#tabs').width(ww-7);
+    $('#tabs').height(wh-7);
     // Vertical navigation tabs
-    $('.ui-tabs-nav').width(wh-23);
+    $('.ui-tabs-nav').width(wh-11);
     var s = "";
     s += 'rotate(-90deg) translateX(-';
-    s += wh-18;
+    s += wh-6;
     s += 'px)';
     $('.rot-neg-90').css("transform",s); 
     $('.rot-neg-90').css("-ms-transform",s); 
@@ -564,49 +569,39 @@ function SizeDOMElements() {
     $('.rot-neg-90').css("border-bottom-left-radius","0px"); 
     $('.rot-neg-90').css("border-bottom-right-radius","0px"); 
 
-    $('.workbody').width(ww-60);
-    $('.workbody').height(wh-62);
+    $('.workbody').width(ww-48);
+    $('.workbody').height(wh-50);
     $('.workouter').css('padding','0px');
     
     /* Find a CSS-rule with the exact name ".threatdomain", then
      * modify that rule on the fly.
      */
-	 try {
-		var css=document.getElementById("maincssfile").sheet;
-		var rule=null;
-#ifdef SERVER
-		for (var i=0; i<css.cssRules.length; i++) {
-			if (css.cssRules[i].selectorText==".threatdomain") {
-				rule = css.cssRules[i];
-				break;
-			}
+	var css=document.getElementById("maincssfile").sheet;
+	var rule=null;
+	for (var i=0; i<css.cssRules.length; i++) {
+		if (css.cssRules[i].selectorText==".threatdomain") {
+			rule = css.cssRules[i];
+			break;
 		}
-		if (!rule) {
-			bugreport('cannot locate css rule for .threatdomain width','SizeDOMElements');
-		} else {
-			rule.style.height= (wh-250) + "px";
-		}
-#endif
 	}
-	catch (e) {
-		// Firefox won't allow access to cssRules when origin is file://
-		if (e.name!='SecurityError') {
-			throw e;
-		}
+	if (!rule) {
+		bugreport('cannot locate css rule for .threatdomain width','SizeDOMElements');
+	} else {
+		rule.style.height= (wh-250) + "px";
 	}
 
     $('#servaddbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-    $('.tabs-bottom > .ui-tabs-nav').width(ww-99);
-    // special setting for tab "Services"
-    $('#analysis_body > .ui-tabs-nav').width(ww-61);
-    $('.tabs-bottom').width(ww-64);
-    $('.tabs-bottom').height(wh-66);
+    $('.tabs-bottom > .ui-tabs-nav').width(ww-87);
+    // special setting for tab "Analysis"
+    $('#analysis_body > .ui-tabs-nav').width(ww-49);
+    $('.tabs-bottom').width(ww-52);
+    $('.tabs-bottom').height(wh-54);
     sizeworkspace();
 
     var fh = $('.fancyworkspace').height();
     var fw = $('.fancyworkspace').width();
-    var wsh = wh-89;
-    var wsw = ww-60;
+    var wsh = wh-77;
+    var wsw = ww-48;
     var scroller_h = $('.scroller_overview').height();
     var scroller_w = $('.scroller_overview').width();
     $('.scroller_region').height( (wsh/fh) * scroller_h );
@@ -634,7 +629,7 @@ function sizeworkspace() {
     if (bh==0)
         bh = $('#bottomtabssf').height();
     if (bh>0) {
-        $('.workspace').height(wh-89+27-bh);
+        $('.workspace').height(wh-77+27-bh);
         $('.servplusbutton').height(bh-4);
     }
 }

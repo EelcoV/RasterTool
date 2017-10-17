@@ -17,7 +17,7 @@ The UI consists of a main window containing three sections: diagrams, single ele
 body {
     padding: 0px;
     border: 0px;
-    margin: 8px 8px 0 8px;
+    margin: 2px 2px 0 2px;
     overflow: hidden;
 }
 .wait {
@@ -79,7 +79,7 @@ input.inplace_field, textarea.inplace_field {
     font-size: 1.3em !important;
     overflow: hidden;
     position: absolute;
-    right: 20px;
+    right: 8px;
     text-align: right;
     top: 10px;
     white-space: nowrap;
@@ -105,7 +105,7 @@ input.inplace_field, textarea.inplace_field {
 #templates {
     position: absolute;
     left: 400px;
-    top: 8px;
+    top: 2px;
     width: 398px;
     height: 40px;
     border-radius: 0 0 5px 5px;
@@ -227,7 +227,7 @@ img.tC {
     position: absolute;
     width: 80px;
     height: 20px;
-    top: 8px;
+    top: 2px;
     border: 0px;
     background: #999;
     color: white;

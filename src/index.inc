@@ -112,7 +112,9 @@ See LICENSE.md
     </div>
 </div> <!-- id="templates" -->
 
+#ifdef SERVER
 <div id="findbutton" class="donotprint"><img id="findimg" src="../img/find.png"></div>
+#endif
 
 <div id="helpbutton" class="donotprint"><img id="helpimg" src="../img/qm-lo.png"></div>
 <div id="helppanel">
