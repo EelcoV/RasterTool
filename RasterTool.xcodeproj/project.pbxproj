@@ -140,6 +140,7 @@
 		49CD587F1F93922E00A9F17F /* Object data structure.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Object data structure.txt"; sourceTree = "<group>"; };
 		49D256041A1E87BF00102918 /* jquery.localisation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.localisation.js; sourceTree = "<group>"; };
 		49D256061A1E88A200102918 /* translation-nl.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "translation-nl.js"; sourceTree = "<group>"; };
+		49E402A61F97E40600978B5C /* electron.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = electron.icns; sourceTree = "<group>"; };
 		49F6CFD81C3E5CA0005C96A7 /* Raster-EN-1.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Raster-EN-1.1.pdf"; sourceTree = "<group>"; };
 		49F6CFD91C3E5CA0005C96A7 /* Raster-NL-1.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Raster-NL-1.1.pdf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -177,6 +178,7 @@
 				49F279FB1F91DB10003F360B /* server */,
 				4954ADED1F954398002A6FBC /* base.EN.dmg */,
 				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
+				49E402A61F97E40600978B5C /* electron.icns */,
 				4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */,
 				4954ADEE1F954581002A6FBC /* electron-v1.7.9-win32-ia32.zip */,
 				494B6FDA18796E9D00400328 /* public_group */,

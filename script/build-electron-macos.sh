@@ -83,6 +83,12 @@ CreateMacOSVersion()
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR
 
+	cp electron.icns $APPDIR/../electron.icns
+	# This is silly, but it works to force an icon refresh onto the Finder
+	mkdir $BASEDIR/Raster.app/junk
+	rmdir $BASEDIR/Raster.app/junk
+
+
 	sed -e 's/Electron/Raster/g' -i "" $BASEDIR/Raster.app/Contents/Info.plist
 	mv $BASEDIR/Raster.app/Contents/MacOS/Electron $BASEDIR/Raster.app/Contents/MacOS/Raster 2> /dev/null || true
 
