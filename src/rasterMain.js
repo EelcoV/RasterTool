@@ -24,36 +24,38 @@ var ToolGroup;
  * Glue code for Electron
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-var ipc, shell, url;
-ipc = require('electron').ipcRenderer;
-shell = require('electron').shell;
-url = require('url');
+var ipc=null, shell=null, url=null;
+if (typeof(process)=='object') {
+	ipc = require('electron').ipcRenderer;
+	shell = require('electron').shell;
+	url = require('url');
+}
 
 var Modified = false;
 
-ipc.on('document-start-save', function() {
+ipc && ipc.on('document-start-save', function() {
 	var s = CurrentProjectAsString();
-	ipc.send('document-save',s);
+	ipc && ipc.send('document-save',s);
 });
-ipc.on('document-start-saveas', function() {
+ipc && ipc.on('document-start-saveas', function() {
 	var s = CurrentProjectAsString();
-	ipc.send('document-saveas',s);
+	ipc && ipc.send('document-saveas',s);
 });
-ipc.on('document-save-success', function() {
+ipc && ipc.on('document-save-success', function() {
 	clearModified();
 });
-ipc.on('show-details', function() {
+ipc && ipc.on('show-details', function() {
 	var p = Project.get(Project.cid);
 	ShowDetails(p);
 });
-ipc.on('document-start-open', function(event,str) {
+ipc && ipc.on('document-start-open', function(event,str) {
 	var newp = loadFromString(str,true,false,_("File"));
 	if (newp!=null) {
 		switchToProject(newp);
 	}
 	clearModified();
 });
-ipc.on('options', function(event,option,val) {
+ipc && ipc.on('options', function(event,option,val) {
 	if (option=='labels') {
 		Preferences.setlabel(val);
 	}
@@ -67,16 +69,16 @@ ipc.on('options', function(event,option,val) {
 		}
 	}
 });
-ipc.on('help-show', function() {
+ipc && ipc.on('help-show', function() {
 	$('#helppanel').dialog("open");
 });
-ipc.on('find-show', function() {
+ipc && ipc.on('find-show', function() {
 	StartFind();
 });
 
 function setModified() {
 	Modified = true;
-	ipc.send('document-modified');
+	ipc && ipc.send('document-modified');
 }
 
 function clearModified() {
@@ -120,8 +122,12 @@ $(function() {
 	document.addEventListener('dragover', function(event) {event.preventDefault();} );
 	document.addEventListener('drop', function(event) {event.preventDefault();} );
 
+	// Some CSS tweaks for the standalone version
 	$('.activator').hide();
+	$('#currentProject').hide();
 	$('#helpbutton').hide();
+	$('.workouter').css('top', '0px');
+	$('#templates').removeClass('ui-state-default').css('background','rgba(200,200,200,0.8)');
 #endif
 
     initTabDiagrams();
@@ -569,8 +575,16 @@ function SizeDOMElements() {
     $('.rot-neg-90').css("border-bottom-left-radius","0px"); 
     $('.rot-neg-90').css("border-bottom-right-radius","0px"); 
 
-    $('.workbody').width(ww-48);
+    $('.workbody').width(ww-43);
+#ifdef SERVER
     $('.workbody').height(wh-50);
+#else
+    $('.workbody').height(wh-8);
+    // Center the templates
+    var tl = ww/2-200;
+    if (tl<60) tl=60;
+    $('#templates').css('left',tl+'px');
+#endif
     $('.workouter').css('padding','0px');
     
     /* Find a CSS-rule with the exact name ".threatdomain", then
@@ -591,16 +605,20 @@ function SizeDOMElements() {
 	}
 
     $('#servaddbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-    $('.tabs-bottom > .ui-tabs-nav').width(ww-87);
+    $('.tabs-bottom > .ui-tabs-nav').width(ww-82);
     // special setting for tab "Analysis"
-    $('#analysis_body > .ui-tabs-nav').width(ww-49);
-    $('.tabs-bottom').width(ww-52);
+    $('#analysis_body > .ui-tabs-nav').width(ww-44);
+    $('.tabs-bottom').width(ww-47);
+#ifdef SERVER
     $('.tabs-bottom').height(wh-54);
+#else
+    $('.tabs-bottom').height(wh-12);
+#endif
     sizeworkspace();
 
     var fh = $('.fancyworkspace').height();
     var fw = $('.fancyworkspace').width();
-    var wsh = wh-77;
+    var wsh = wh-72;
     var wsw = ww-48;
     var scroller_h = $('.scroller_overview').height();
     var scroller_w = $('.scroller_overview').width();
@@ -616,7 +634,7 @@ function SizeDOMElements() {
     }
     if (o && o.top>0 && o.top>wsh-30) {
         var t = wsh-30;
-        scroller.css("top", (t<60 ? 60 : t) + "px");
+        scroller.css("top", (t<15 ? 15 : t) + "px");
     }
 }
 
@@ -629,7 +647,11 @@ function sizeworkspace() {
     if (bh==0)
         bh = $('#bottomtabssf').height();
     if (bh>0) {
+#ifdef SERVER
         $('.workspace').height(wh-77+27-bh);
+#else
+        $('.workspace').height(wh-35+27-bh);
+#endif
         $('.servplusbutton').height(bh-4);
     }
 }

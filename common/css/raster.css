@@ -53,7 +53,7 @@ body {
 .tabcloseicon {margin-top:0.4em !important; cursor: pointer;}
 
 /* The content panes to each vertical tab */
-.workouter {position: absolute; left: 40px; top: 42px; margin: 0px; }
+.workouter {position: absolute; left: 35px; top: 42px; margin: 0px; }
 .workinner {overflow: auto; border-radius: 4px 0 4px 0; }
 .workbody h1 {margin-top: 0;}
 
