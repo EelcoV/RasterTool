@@ -54,7 +54,7 @@ CreateMacOSVersion()
 	LANG=$1
 	BUILDDIR=build/app-$LANG
 	BASEDIR=build/electron-v$VERSION-darwin-x64-$LANG
-	APPDIR=$BASEDIR/Electron.app/Contents/Resources/app
+	APPDIR=$BASEDIR/Raster.app/Contents/Resources/app
 
 	echo "************************** Building $LANG version for MacOS..."
 
@@ -70,7 +70,8 @@ CreateMacOSVersion()
 	else
 		mkdir -p $BASEDIR
 		( cd $BASEDIR && unzip ../../electron-v$VERSION-darwin-x64.zip )
-		xattr -d com.apple.quarantine $BASEDIR/Electron.app
+		mv $BASEDIR/Electron.app $BASEDIR/Raster.app
+		xattr -d com.apple.quarantine $BASEDIR/Raster.app
 	fi
 
 	mkdir $APPDIR
@@ -81,13 +82,23 @@ CreateMacOSVersion()
 
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR
-	#mv $APPDIR/standalone.html $APPDIR/index.html
+
+	sed -e 's/Electron/Raster/g' -i "" $BASEDIR/Raster.app/Contents/Info.plist
+	mv $BASEDIR/Raster.app/Contents/MacOS/Electron $BASEDIR/Raster.app/Contents/MacOS/Raster 2> /dev/null || true
+
+	VOLDIR="/Volumes/Raster $LANG"
 
 	cp base.$LANG.dmg build/temp.dmg
+	# An image may have been mounted during debugging
+	hdiutil detach -quiet "$VOLDIR" || true
+	if [ -d "$VOLDIR" ]; then
+		echo "Mount directory already in use."
+		exit 1
+	fi
 	hdiutil attach build/temp.dmg
-	cp -R -p $BASEDIR/Electron.app "/Volumes/Raster $LANG"
+	cp -R -p $BASEDIR/Raster.app "$VOLDIR"
 	sync && sync
-	hdiutil detach "/Volumes/Raster $LANG"
+	hdiutil detach "$VOLDIR"
 	rm -f build/Raster.$LANG.dmg
 	hdiutil convert build/temp.dmg -format UDRO -o build/Raster.$LANG.dmg
 	rm -f build/temp.dmg
@@ -116,6 +127,7 @@ CreateWin32Version()
 	else
 		mkdir -p $BASEDIR
 		( cd $BASEDIR && unzip ../../electron-v$VERSION-win32-ia32.zip )
+		mv $BASEDIR/electron.exe $BASEDIR/raster.exe 
 	fi
 
 	mkdir $APPDIR
