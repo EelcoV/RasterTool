@@ -24,7 +24,7 @@ const DefaultRasterOptions = {
 	// true = show, false = hide
 	labels: true,
 	// 0 = none, 1 = small, 2 = large
-	vulnlevel: 1
+	vulnlevel: 2
 };
 
 // Keep a global reference of the window objects. Otherwise windows will
@@ -72,23 +72,21 @@ function createWindow(filename) {
 		} else {
 			RecordFilename(win,null);
 		}
+		win.webContents.send('options', 'labels', win.rasteroptions.labels);
+		win.webContents.send('options', 'vulnlevel', win.rasteroptions.vulnlevel);
 		win.show();
 	});
 
 	win.on('focus', function(e)  {
 		// Reset the View menu radio options
 		var viewMenu = menu.items[3].submenu.items;
-		viewMenu[0].checked = (win.rasteroptions.labels==true);
-		viewMenu[1].checked = (win.rasteroptions.labels==false);
-		viewMenu[3].checked = (win.rasteroptions.vulnlevel==1);
-		viewMenu[4].checked = (win.rasteroptions.vulnlevel==2);
-		viewMenu[5].checked = (win.rasteroptions.vulnlevel==0);
-//console.log(win.rasteroptions);
-//console.log(viewMenu[0].label + " = " + viewMenu[0].checked);
-//console.log(viewMenu[1].label + " = " + viewMenu[1].checked);
-//console.log(viewMenu[3].label + " = " + viewMenu[3].checked);
-//console.log(viewMenu[4].label + " = " + viewMenu[4].checked);
-//console.log(viewMenu[5].label + " = " + viewMenu[5].checked);
+		// 0 = Show, 1 = Hide
+		var labels_idx = (win.rasteroptions.labels ? 0 : 1);
+		// 3 = small, 4 = large, 5 = none
+		var vulnlevel_idx = (win.rasteroptions.vulnlevel==0 ? 5 : (win.rasteroptions.vulnlevel==1 ? 3 : 4));
+		viewMenu[ labels_idx ].checked = true;
+		viewMenu[ vulnlevel_idx ].checked = true;
+		Menu.setApplicationMenu(menu);
 	});
 
 	win.on('close', function(e)  {
