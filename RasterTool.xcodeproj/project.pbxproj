@@ -141,6 +141,18 @@
 		49D256041A1E87BF00102918 /* jquery.localisation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.localisation.js; sourceTree = "<group>"; };
 		49D256061A1E88A200102918 /* translation-nl.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "translation-nl.js"; sourceTree = "<group>"; };
 		49E402A61F97E40600978B5C /* electron.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = electron.icns; sourceTree = "<group>"; };
+		49E402A81F99378B00978B5C /* Untitled 1.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Untitled 1.odg"; sourceTree = "<group>"; };
+		49E402A91F99378B00978B5C /* RasterIcon.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = RasterIcon.odg; sourceTree = "<group>"; };
+		49E402B61F99381500978B5C /* icon_256x256.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_256x256.png; sourceTree = "<group>"; };
+		49E402B71F99381600978B5C /* icon_16x16@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_16x16@2x.png"; sourceTree = "<group>"; };
+		49E402B81F99381600978B5C /* icon_32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_32x32.png; sourceTree = "<group>"; };
+		49E402B91F99381600978B5C /* icon_16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_16x16.png; sourceTree = "<group>"; };
+		49E402BA1F99381600978B5C /* icon_32x32@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_32x32@2x.png"; sourceTree = "<group>"; };
+		49E402BB1F99381600978B5C /* icon_128x128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_128x128.png; sourceTree = "<group>"; };
+		49E402BC1F99381700978B5C /* icon_256x256@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_256x256@2x.png"; sourceTree = "<group>"; };
+		49E402BD1F99381700978B5C /* icon_512x512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_512x512.png; sourceTree = "<group>"; };
+		49E402BE1F99381700978B5C /* icon_512x512@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_512x512@2x.png"; sourceTree = "<group>"; };
+		49E402BF1F99381700978B5C /* icon_128x128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_128x128@2x.png"; sourceTree = "<group>"; };
 		49F6CFD81C3E5CA0005C96A7 /* Raster-EN-1.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Raster-EN-1.1.pdf"; sourceTree = "<group>"; };
 		49F6CFD91C3E5CA0005C96A7 /* Raster-NL-1.1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Raster-NL-1.1.pdf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -176,11 +188,6 @@
 				49F279FD1F91DB23003F360B /* script */,
 				49F279FC1F91DB17003F360B /* src */,
 				49F279FB1F91DB10003F360B /* server */,
-				4954ADED1F954398002A6FBC /* base.EN.dmg */,
-				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
-				49E402A61F97E40600978B5C /* electron.icns */,
-				4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */,
-				4954ADEE1F954581002A6FBC /* electron-v1.7.9-win32-ia32.zip */,
 				494B6FDA18796E9D00400328 /* public_group */,
 				49F279FA1F91DAD4003F360B /* common */,
 				4999EB431F8F284F009BBF18 /* standalone */,
@@ -387,6 +394,23 @@
 			path = standalone;
 			sourceTree = "<group>";
 		};
+		49E402C11F99383100978B5C /* electron.iconset */ = {
+			isa = PBXGroup;
+			children = (
+				49E402B91F99381600978B5C /* icon_16x16.png */,
+				49E402B71F99381600978B5C /* icon_16x16@2x.png */,
+				49E402B81F99381600978B5C /* icon_32x32.png */,
+				49E402BA1F99381600978B5C /* icon_32x32@2x.png */,
+				49E402BB1F99381600978B5C /* icon_128x128.png */,
+				49E402BF1F99381700978B5C /* icon_128x128@2x.png */,
+				49E402B61F99381500978B5C /* icon_256x256.png */,
+				49E402BC1F99381700978B5C /* icon_256x256@2x.png */,
+				49E402BD1F99381700978B5C /* icon_512x512.png */,
+				49E402BE1F99381700978B5C /* icon_512x512@2x.png */,
+			);
+			path = electron.iconset;
+			sourceTree = "<group>";
+		};
 		49F279FA1F91DAD4003F360B /* common */ = {
 			isa = PBXGroup;
 			children = (
@@ -430,10 +454,18 @@
 		49F279FD1F91DB23003F360B /* script */ = {
 			isa = PBXGroup;
 			children = (
+				49E402C11F99383100978B5C /* electron.iconset */,
+				49E402A91F99378B00978B5C /* RasterIcon.odg */,
+				49E402A81F99378B00978B5C /* Untitled 1.odg */,
 				4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */,
 				498BB2B91A2626AF00B12844 /* build_tgz.sh */,
 				4999EB5F1F9004D0009BBF18 /* clean.sh */,
 				4999EB651F9007CE009BBF18 /* build-electron-macos.sh */,
+				4954ADED1F954398002A6FBC /* base.EN.dmg */,
+				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
+				49E402A61F97E40600978B5C /* electron.icns */,
+				4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */,
+				4954ADEE1F954581002A6FBC /* electron-v1.7.9-win32-ia32.zip */,
 				494B6F7B18796E9D00400328 /* lint */,
 			);
 			path = script;

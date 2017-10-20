@@ -24,6 +24,10 @@ var ToolGroup;
  * Glue code for Electron
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+var WindowID = null;
+
+localStorage.clear();
+
 var ipc=null, shell=null, url=null;
 if (typeof(process)=='object') {
 	ipc = require('electron').ipcRenderer;
@@ -33,13 +37,16 @@ if (typeof(process)=='object') {
 
 var Modified = false;
 
+ipc && ipc.on('window-id', function(event,id) {
+	WindowID = id;
+});
 ipc && ipc.on('document-start-save', function() {
 	var s = CurrentProjectAsString();
-	ipc && ipc.send('document-save',s);
+	ipc && ipc.send('document-save',WindowID,s);
 });
 ipc && ipc.on('document-start-saveas', function() {
 	var s = CurrentProjectAsString();
-	ipc && ipc.send('document-saveas',s);
+	ipc && ipc.send('document-saveas',WindowID,s);
 });
 ipc && ipc.on('document-save-success', function() {
 	clearModified();
@@ -78,7 +85,7 @@ ipc && ipc.on('find-show', function() {
 
 function setModified() {
 	Modified = true;
-	ipc && ipc.send('document-modified');
+	ipc && ipc.send('document-modified',WindowID);
 }
 
 function clearModified() {
@@ -93,16 +100,16 @@ function lz(n) {
 	return (n<10 ? "0" : "") + n;
 }
 
-function doSave() {
-	clearModified();
-	var s = CurrentProjectAsString();
-	var url = 'data:text/tab-separated-values;,' + encodeURIComponent(s);
-	var d = new Date();
-	var link = document.getElementById('savelink');
-	link.download = 'Diensten '+d.getFullYear()+lz(d.getMonth()+1)+lz(d.getDate())+'-'+lz(d.getHours())+lz(d.getMinutes())+'.tsv';
-	link.href = url;
-	link.click();
-}
+//function doSave() {
+//	clearModified();
+//	var s = CurrentProjectAsString();
+//	var url = 'data:text/raster;,' + encodeURIComponent(s);
+//	var d = new Date();
+//	var link = document.getElementById('savelink');
+//	link.download = 'Diensten '+d.getFullYear()+lz(d.getMonth()+1)+lz(d.getDate())+'-'+lz(d.getHours())+lz(d.getMinutes())+'.tsv';
+//	link.href = url;
+//	link.click();
+//}
 
 #endif
 
@@ -334,18 +341,14 @@ $(function() {
             localStorage.RasterToolIsLoaded = window.name;
 #endif
     }));
-    $(window).on('unload', (function() {
 #ifdef SERVER
+    $(window).on('unload', (function() {
         stopWatching(null);
         $('#goodbye').show();
         if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded==window.name)
             localStorage.removeItem('RasterToolIsLoaded');
-		return '';
-#else
-		if (!Modified) return '';
-		return 'Wijzigingen zijn niet opgeslagen en raken verloren. OK?';
-#endif
     }));
+#endif
     $(window).on('resize', SizeDOMElements);
 
     // The onbeforeprint handler is supported by IE and Firefox only.

@@ -495,7 +495,9 @@ Project.prototype = {
 		});
 
 		$('.projectname').text(this.title);
+#ifdef SERVER
 		document.title = "Raster - " + this.title;
+#endif
 		Project.cid = this.id;
 		Service.cid = this.services[0];
 // Do not paint, because we may want to show a tab other than the diagram

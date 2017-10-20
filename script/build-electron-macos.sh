@@ -69,7 +69,7 @@ CreateMacOSVersion()
 		rm -fr $APPDIR
 	else
 		mkdir -p $BASEDIR
-		( cd $BASEDIR && unzip ../../electron-v$VERSION-darwin-x64.zip )
+		( cd $BASEDIR && unzip ../../script/electron-v$VERSION-darwin-x64.zip )
 		mv $BASEDIR/Electron.app $BASEDIR/Raster.app
 		xattr -d com.apple.quarantine $BASEDIR/Raster.app
 	fi
@@ -83,18 +83,26 @@ CreateMacOSVersion()
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR
 
-	cp electron.icns $APPDIR/../electron.icns
+	if [ script/iconset -nt script/electron.icns ]; then
+		iconutil --convert icns --output script/electron.icns script/iconset
+	fi
+	cp script/electron.icns $APPDIR/../electron.icns
 	# This is silly, but it works to force an icon refresh onto the Finder
 	mkdir $BASEDIR/Raster.app/junk
 	rmdir $BASEDIR/Raster.app/junk
 
 
-	sed -e 's/Electron/Raster/g' -i "" $BASEDIR/Raster.app/Contents/Info.plist
+	INFO=`pwd`/$BASEDIR/Raster.app/Contents/Info.plist
+	defaults write $INFO "CFBundleDisplayName" "Raster"
+	defaults write $INFO "CFBundleName" "Raster"
+	defaults write $INFO "CFBundleExecutable" "Raster"
+	defaults write $INFO "CFBundleShortVersionString" "2.0 beta"
+	defaults write $INFO "CFBundleVersion" "October 2017"
 	mv $BASEDIR/Raster.app/Contents/MacOS/Electron $BASEDIR/Raster.app/Contents/MacOS/Raster 2> /dev/null || true
 
 	VOLDIR="/Volumes/Raster $LANG"
 
-	cp base.$LANG.dmg build/temp.dmg
+	cp script/base.$LANG.dmg build/temp.dmg
 	# An image may have been mounted during debugging
 	hdiutil detach -quiet "$VOLDIR" || true
 	if [ -d "$VOLDIR" ]; then
@@ -132,7 +140,7 @@ CreateWin32Version()
 		rm -fr $APPDIR
 	else
 		mkdir -p $BASEDIR
-		( cd $BASEDIR && unzip ../../electron-v$VERSION-win32-ia32.zip )
+		( cd $BASEDIR && unzip ../../script/electron-v$VERSION-win32-ia32.zip )
 		mv $BASEDIR/electron.exe $BASEDIR/raster.exe 
 	fi
 
