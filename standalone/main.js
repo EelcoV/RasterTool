@@ -84,8 +84,8 @@ function createWindow(filename) {
 		var labels_idx = (win.rasteroptions.labels ? 0 : 1);
 		// 3 = small, 4 = large, 5 = none
 		var vulnlevel_idx = (win.rasteroptions.vulnlevel==0 ? 5 : (win.rasteroptions.vulnlevel==1 ? 3 : 4));
-		viewMenu[ labels_idx ].checked = true;
-		viewMenu[ vulnlevel_idx ].checked = true;
+		if (viewMenu[ labels_idx ]) viewMenu[ labels_idx ].checked = true;
+		if (viewMenu[ vulnlevel_idx ]) viewMenu[ vulnlevel_idx ].checked = true;
 		Menu.setApplicationMenu(menu);
 	});
 
@@ -117,9 +117,17 @@ function ReadFileAndLoad(win,filename) {
 
 function RecordFilename(win,filename) {
 	win.pathname = filename;
-	if (filename)
+	if (filename) {
 		win.setRepresentedFilename(filename);
-	win.setTitle(filename ? filename.match(/[^\/]+$/)[0] : _("Raster - No name"));
+		if (process.platform=="win32") {
+			// Windows uses backslash in path names
+			win.setTitle( filename.match(/[^\\]+$/)[0] + ' - Raster');
+		} else {
+			win.setTitle( filename.match(/[^\/]+$/)[0] );
+		}
+	} else {
+		win.setTitle(_("No name - Raster"));
+	}
 	win.documentIsModified = false;
 	win.setDocumentEdited(false);
 }
@@ -343,37 +351,30 @@ MenuTemplate = [{
 	}, {
 		type: 'separator'
 	}, {
-		label: _("Close"),
-		accelerator: 'CmdOrCtrl+W',
-		role: 'close'
+		label: _("Quit"),
+		role: 'quit'
 	}]
 }, {
 	label: _("Edit"),
 	submenu: [{
 		label: _("Undo"),
-		accelerator: 'CmdOrCtrl+Z',
 		role: 'undo'
 	}, {
 		label: _("Redo"),
-		accelerator: 'Shift+CmdOrCtrl+Z',
 		role: 'redo'
 	}, {
 		type: 'separator'
 	}, {
 		label: _("Cut"),
-		accelerator: 'CmdOrCtrl+X',
 		role: 'cut'
 	}, {
 		label: _("Copy"),
-		accelerator: 'CmdOrCtrl+C',
 		role: 'copy'
 	}, {
 		label: _("Paste"),
-		accelerator: 'CmdOrCtrl+V',
 		role: 'paste'
 	}, {
 		label: _("Select all"),
-		accelerator: 'CmdOrCtrl+A',
 		role: 'selectall'
 	}]
 }, {
@@ -442,18 +443,7 @@ MenuTemplate = [{
 		}]
 	}, {
 		label: _("Full screen"),
-		accelerator: (function () {
-			if (process.platform === 'darwin') {
-				return 'Ctrl+Command+F';
-			} else {
-				return 'F11';
-			}
-		})(),
-		click: function (item, focusedWindow) {
-			if (focusedWindow) {
-				focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
-			}
-		}
+		role: 'togglefullscreen'
 	}, {
 		type: 'separator'
 	}, {
@@ -532,9 +522,9 @@ if (process.platform === 'darwin') {
 
 	// Window menu.
 	// Remove the Close option (it should be under the File menu)
-	var mi = MenuTemplate[4].submenu.shift();
-	MenuTemplate[4].submenu.shift();
-	MenuTemplate[4].submenu.unshift(mi);
+	var mi = MenuTemplate[4].submenu.pop();
+	MenuTemplate[1].submenu.pop();
+	MenuTemplate[1].submenu.push(mi);
 	// Add one option
 	MenuTemplate[4].submenu.push({
 		type: 'separator'
