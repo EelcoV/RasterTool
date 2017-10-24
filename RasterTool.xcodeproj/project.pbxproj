@@ -8,6 +8,8 @@
 
 /* Begin PBXFileReference section */
 		4912CBDE1F966ED700DF081C /* base.NL.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.NL.dmg; sourceTree = "<group>"; };
+		4915A62E1F9E819300B4B205 /* rcedit-x86.exe */ = {isa = PBXFileReference; lastKnownFileType = file; path = "rcedit-x86.exe"; sourceTree = "<group>"; };
+		4915A62F1F9E826200B4B205 /* electron.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = electron.ico; sourceTree = "<group>"; };
 		49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.2.1.min.js"; sourceTree = "<group>"; };
 		49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.12.1.min.js"; sourceTree = "<group>"; };
 		49196E311F85417B00097E97 /* smoothness-1.12.1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "smoothness-1.12.1"; sourceTree = "<group>"; };
@@ -140,7 +142,6 @@
 		49CD587F1F93922E00A9F17F /* Object data structure.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Object data structure.txt"; sourceTree = "<group>"; };
 		49D256041A1E87BF00102918 /* jquery.localisation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.localisation.js; sourceTree = "<group>"; };
 		49D256061A1E88A200102918 /* translation-nl.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "translation-nl.js"; sourceTree = "<group>"; };
-		49E402A61F97E40600978B5C /* electron.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = electron.icns; sourceTree = "<group>"; };
 		49E402A81F99378B00978B5C /* Untitled 1.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Untitled 1.odg"; sourceTree = "<group>"; };
 		49E402A91F99378B00978B5C /* RasterIcon.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = RasterIcon.odg; sourceTree = "<group>"; };
 		49E402B61F99381500978B5C /* icon_256x256.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_256x256.png; sourceTree = "<group>"; };
@@ -463,7 +464,8 @@
 				4999EB651F9007CE009BBF18 /* build-electron-macos.sh */,
 				4954ADED1F954398002A6FBC /* base.EN.dmg */,
 				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
-				49E402A61F97E40600978B5C /* electron.icns */,
+				4915A62F1F9E826200B4B205 /* electron.ico */,
+				4915A62E1F9E819300B4B205 /* rcedit-x86.exe */,
 				4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */,
 				4954ADEE1F954581002A6FBC /* electron-v1.7.9-win32-ia32.zip */,
 				494B6F7B18796E9D00400328 /* lint */,

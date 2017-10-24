@@ -1,6 +1,8 @@
 #!/bin/sh
 
-VERSION=1.7.9
+ELECTRONVERSION=1.7.9
+RASTERVERSION="2.0 beta"
+RASTERSEASON="October 2017"
 
 CreateAppVersion()
 {
@@ -53,7 +55,7 @@ CreateMacOSVersion()
 {
 	LANG=$1
 	BUILDDIR=build/app-$LANG
-	BASEDIR=build/electron-v$VERSION-darwin-x64-$LANG
+	BASEDIR=build/electron-v$ELECTRONVERSION-darwin-x64-$LANG
 	APPDIR=$BASEDIR/Raster.app/Contents/Resources/app
 
 	echo "************************** Building $LANG version for MacOS..."
@@ -69,7 +71,7 @@ CreateMacOSVersion()
 		rm -fr $APPDIR
 	else
 		mkdir -p $BASEDIR
-		( cd $BASEDIR && unzip ../../script/electron-v$VERSION-darwin-x64.zip )
+		( cd $BASEDIR && unzip ../../script/electron-v$ELECTRONVERSION-darwin-x64.zip )
 		mv $BASEDIR/Electron.app $BASEDIR/Raster.app
 		xattr -d com.apple.quarantine $BASEDIR/Raster.app
 	fi
@@ -83,10 +85,10 @@ CreateMacOSVersion()
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR
 
-	if [ script/iconset -nt script/electron.icns ]; then
-		iconutil --convert icns --output script/electron.icns script/iconset
+	if [ script/electron.iconset -nt build/electron.icns ]; then
+		iconutil --convert icns --output build/electron.icns script/electron.iconset
 	fi
-	cp script/electron.icns $APPDIR/../electron.icns
+	cp build/electron.icns $APPDIR/../electron.icns
 	# This is silly, but it works to force an icon refresh onto the Finder
 	mkdir $BASEDIR/Raster.app/junk
 	rmdir $BASEDIR/Raster.app/junk
@@ -96,8 +98,8 @@ CreateMacOSVersion()
 	defaults write $INFO "CFBundleDisplayName" "Raster"
 	defaults write $INFO "CFBundleName" "Raster"
 	defaults write $INFO "CFBundleExecutable" "Raster"
-	defaults write $INFO "CFBundleShortVersionString" "2.0 beta"
-	defaults write $INFO "CFBundleVersion" "October 2017"
+	defaults write $INFO "CFBundleShortVersionString" "$RASTERVERSION"
+	defaults write $INFO "CFBundleVersion" "$RASTERSEASON"
 	mv $BASEDIR/Raster.app/Contents/MacOS/Electron $BASEDIR/Raster.app/Contents/MacOS/Raster 2> /dev/null || true
 
 	VOLDIR="/Volumes/Raster $LANG"
@@ -124,7 +126,7 @@ CreateWin32Version()
 {
 	LANG=$1
 	BUILDDIR=build/app-$LANG
-	BASEDIR=build/electron-v$VERSION-win32-ia32-$LANG
+	BASEDIR=build/electron-v$ELECTRONVERSION-win32-ia32-$LANG
 	APPDIR=$BASEDIR/resources/app
 
 	echo "************************** Building $LANG version for Win32..."
@@ -140,8 +142,20 @@ CreateWin32Version()
 		rm -fr $APPDIR
 	else
 		mkdir -p $BASEDIR
-		( cd $BASEDIR && unzip ../../script/electron-v$VERSION-win32-ia32.zip )
-		mv $BASEDIR/electron.exe $BASEDIR/raster.exe 
+		( cd $BASEDIR && unzip ../../script/electron-v$ELECTRONVERSION-win32-ia32.zip )
+		mv $BASEDIR/electron.exe $BASEDIR/raster.exe
+		# At this stage, it would be cool to convert the icon PNGs into an ICO file
+		PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
+		wine script/rcedit-x86.exe $BASEDIR/raster.exe \
+		 --set-version-string CompanyName "The Raster Method" \
+		 --set-version-string FileDescription Raster \
+		 --set-file-version 2.0 \
+		 --set-version-string InternalName Raster \
+		 --set-version-string OriginalFilename raster.exe \
+		 --set-version-string ProductName Raster \
+		 --set-version-string LegalCopyright "Copyright reserved" \
+		 --set-product-version "$RASTERVERSION ($RASTERSEASON)" \
+		 --set-icon script/electron.ico
 	fi
 
 	mkdir $APPDIR
