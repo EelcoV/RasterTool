@@ -1,6 +1,7 @@
 #!/bin/sh
 
 ELECTRONVERSION=1.7.9
+RASTERNUMVERSION="2.0"
 RASTERVERSION="2.0 beta"
 RASTERSEASON="October 2017"
 
@@ -85,10 +86,11 @@ CreateMacOSVersion()
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR
 
-	if [ script/electron.iconset -nt build/electron.icns ]; then
-		iconutil --convert icns --output build/electron.icns script/electron.iconset
+	if [ script/electron.iconset -nt build/raster.icns ]; then
+		iconutil --convert icns --output build/raster.icns script/electron.iconset
 	fi
-	cp build/electron.icns $APPDIR/../electron.icns
+	rm -f $APPDIR/../electron.icns
+	cp build/raster.icns $APPDIR/../raster.icns
 	# This is silly, but it works to force an icon refresh onto the Finder
 	mkdir $BASEDIR/Raster.app/junk
 	rmdir $BASEDIR/Raster.app/junk
@@ -100,6 +102,7 @@ CreateMacOSVersion()
 	defaults write $INFO "CFBundleExecutable" "Raster"
 	defaults write $INFO "CFBundleShortVersionString" "$RASTERVERSION"
 	defaults write $INFO "CFBundleVersion" "$RASTERSEASON"
+	defaults write $INFO "CFBundleIconFile" "raster.icns"
 	mv $BASEDIR/Raster.app/Contents/MacOS/Electron $BASEDIR/Raster.app/Contents/MacOS/Raster 2> /dev/null || true
 
 	VOLDIR="/Volumes/Raster $LANG"
@@ -144,18 +147,19 @@ CreateWin32Version()
 		mkdir -p $BASEDIR
 		( cd $BASEDIR && unzip ../../script/electron-v$ELECTRONVERSION-win32-ia32.zip )
 		mv $BASEDIR/electron.exe $BASEDIR/raster.exe
+		cp script/raster.ico $BASEDIR
 		# At this stage, it would be cool to convert the icon PNGs into an ICO file
 		PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
 		wine script/rcedit-x86.exe $BASEDIR/raster.exe \
 		 --set-version-string CompanyName "The Raster Method" \
 		 --set-version-string FileDescription Raster \
-		 --set-file-version 2.0 \
+		 --set-file-version $RASTERNUMVERSION \
 		 --set-version-string InternalName Raster \
 		 --set-version-string OriginalFilename raster.exe \
 		 --set-version-string ProductName Raster \
 		 --set-version-string LegalCopyright "Copyright reserved" \
 		 --set-product-version "$RASTERVERSION ($RASTERSEASON)" \
-		 --set-icon script/electron.ico
+		 --set-icon $BASEDIR/raster.ico
 	fi
 
 	mkdir $APPDIR
@@ -167,6 +171,8 @@ CreateWin32Version()
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR
 	#mv $APPDIR/standalone.html $APPDIR/index.html
+
+	find -f $BASEDIR -name .DS_Store -delete
 
 	echo "************************** ...done."
 }

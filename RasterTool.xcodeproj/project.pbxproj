@@ -9,7 +9,10 @@
 /* Begin PBXFileReference section */
 		4912CBDE1F966ED700DF081C /* base.NL.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.NL.dmg; sourceTree = "<group>"; };
 		4915A62E1F9E819300B4B205 /* rcedit-x86.exe */ = {isa = PBXFileReference; lastKnownFileType = file; path = "rcedit-x86.exe"; sourceTree = "<group>"; };
-		4915A62F1F9E826200B4B205 /* electron.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = electron.ico; sourceTree = "<group>"; };
+		4915A6301FA0482800B4B205 /* raster.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = raster.ico; sourceTree = "<group>"; };
+		4915A6311FA049DD00B4B205 /* Raster.EN.nsis */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Raster.EN.nsis; sourceTree = "<group>"; };
+		4915A6321FA113D900B4B205 /* FileAssociation.nsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = FileAssociation.nsh; path = script/FileAssociation.nsh; sourceTree = SOURCE_ROOT; };
+		4915A6331FA113D900B4B205 /* Raster.NL.nsis */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Raster.NL.nsis; path = script/Raster.NL.nsis; sourceTree = SOURCE_ROOT; };
 		49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.2.1.min.js"; sourceTree = "<group>"; };
 		49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.12.1.min.js"; sourceTree = "<group>"; };
 		49196E311F85417B00097E97 /* smoothness-1.12.1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "smoothness-1.12.1"; sourceTree = "<group>"; };
@@ -159,6 +162,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		4915A6341FA1141600B4B205 /* css */ = {
+			isa = PBXGroup;
+			children = (
+				49196E331F86BE6B00097E97 /* start-1.12.1 */,
+				49196E321F85417B00097E97 /* redmond-1.12.1 */,
+			);
+			path = css;
+			sourceTree = "<group>";
+		};
 		493AA22E1A7419A9005DDFFB /* SharedProjects */ = {
 			isa = PBXGroup;
 			children = (
@@ -223,8 +235,6 @@
 		494B6FA218796E9D00400328 /* css */ = {
 			isa = PBXGroup;
 			children = (
-				49196E331F86BE6B00097E97 /* start-1.12.1 */,
-				49196E321F85417B00097E97 /* redmond-1.12.1 */,
 				49196E311F85417B00097E97 /* smoothness-1.12.1 */,
 				494B6FB518796E9D00400328 /* raster-print.css */,
 				494B6FB618796E9D00400328 /* raster.css */,
@@ -426,6 +436,7 @@
 		49F279FB1F91DB10003F360B /* server */ = {
 			isa = PBXGroup;
 			children = (
+				4915A6341FA1141600B4B205 /* css */,
 				49F27A011F91E472003F360B /* js */,
 				494B702918796E9D00400328 /* share.inc */,
 				494B6FA118796E9D00400328 /* sse_projmon.inc */,
@@ -464,7 +475,10 @@
 				4999EB651F9007CE009BBF18 /* build-electron-macos.sh */,
 				4954ADED1F954398002A6FBC /* base.EN.dmg */,
 				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
-				4915A62F1F9E826200B4B205 /* electron.ico */,
+				4915A6301FA0482800B4B205 /* raster.ico */,
+				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
+				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,
+				4915A6321FA113D900B4B205 /* FileAssociation.nsh */,
 				4915A62E1F9E819300B4B205 /* rcedit-x86.exe */,
 				4999EB641F90074E009BBF18 /* electron-v1.7.9-darwin-x64.zip */,
 				4954ADEE1F954581002A6FBC /* electron-v1.7.9-win32-ia32.zip */,
