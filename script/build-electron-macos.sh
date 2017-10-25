@@ -1,9 +1,6 @@
 #!/bin/sh
 
-ELECTRONVERSION=1.7.9
-RASTERNUMVERSION="2.0"
-RASTERVERSION="2.0 beta"
-RASTERSEASON="October 2017"
+. script/Versions.sh
 
 CreateAppVersion()
 {
@@ -72,7 +69,7 @@ CreateMacOSVersion()
 		rm -fr $APPDIR
 	else
 		mkdir -p $BASEDIR
-		( cd $BASEDIR && unzip ../../script/electron-v$ELECTRONVERSION-darwin-x64.zip )
+		( cd $BASEDIR && unzip ../../cache/electron-v$ELECTRONVERSION-darwin-x64.zip )
 		mv $BASEDIR/Electron.app $BASEDIR/Raster.app
 		xattr -d com.apple.quarantine $BASEDIR/Raster.app
 	fi
@@ -145,21 +142,23 @@ CreateWin32Version()
 		rm -fr $APPDIR
 	else
 		mkdir -p $BASEDIR
-		( cd $BASEDIR && unzip ../../script/electron-v$ELECTRONVERSION-win32-ia32.zip )
+		( cd $BASEDIR && unzip ../../cache/electron-v$ELECTRONVERSION-win32-ia32.zip )
 		mv $BASEDIR/electron.exe $BASEDIR/raster.exe
 		cp script/raster.ico $BASEDIR
 		# At this stage, it would be cool to convert the icon PNGs into an ICO file
-		PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
-		wine script/rcedit-x86.exe $BASEDIR/raster.exe \
-		 --set-version-string CompanyName "The Raster Method" \
-		 --set-version-string FileDescription Raster \
-		 --set-file-version $RASTERNUMVERSION \
-		 --set-version-string InternalName Raster \
-		 --set-version-string OriginalFilename raster.exe \
-		 --set-version-string ProductName Raster \
-		 --set-version-string LegalCopyright "Copyright reserved" \
-		 --set-product-version "$RASTERVERSION ($RASTERSEASON)" \
-		 --set-icon $BASEDIR/raster.ico
+		(
+		 PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
+		 wine script/rcedit-x86.exe $BASEDIR/raster.exe \
+		  --set-version-string CompanyName "The Raster Method" \
+		  --set-version-string FileDescription Raster \
+		  --set-file-version $RASTERNUMVERSION \
+		  --set-version-string InternalName Raster \
+		  --set-version-string OriginalFilename raster.exe \
+		  --set-version-string ProductName Raster \
+		  --set-version-string LegalCopyright "Copyright reserved" \
+		  --set-product-version "$RASTERVERSION ($RASTERSEASON)" \
+		  --set-icon $BASEDIR/raster.ico
+		 )
 	fi
 
 	mkdir $APPDIR
@@ -172,7 +171,21 @@ CreateWin32Version()
 	cp -p standalone/* $APPDIR
 	#mv $APPDIR/standalone.html $APPDIR/index.html
 
-	find -f $BASEDIR -name .DS_Store -delete
+	find "$BASEDIR" -name .DS_Store -delete
+
+	(
+	 cd $BASEDIR
+	 PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
+	 wine ../../cache/nsis/makensis.exe /nocd ../../script/Raster.$LANG.nsis
+	)
+
+	(
+	 cd build
+	 ln -s electron-v$ELECTRONVERSION-win32-ia32-$LANG Raster
+	 rm -f Raster-ia32-$LANG.zip
+	 zip -r Raster-ia32-$LANG.zip Raster
+	 rm Raster
+	)
 
 	echo "************************** ...done."
 }

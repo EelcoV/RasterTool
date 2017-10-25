@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. script/Versions.sh
+
 BUILDDIR=build/server
 echo "Building server version $BUILDDIR..."
 
