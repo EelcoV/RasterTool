@@ -2469,22 +2469,22 @@ function initTabDiagrams() {
     
     $('.popupmenuitem').button();
     $('.popupmenuitem').removeClass('ui-corner-all');
-    $("#mi_th span").html( _("Vulnerabilities") );
-    $("#mi_ct span span").html( _("Change type") );
-    $("#mi_cttWLS span").html( _("Wireless link") );
-    $("#mi_cttWRD span").html( _("Wired link") );
-    $("#mi_cttEQT span").html( _("Equipment") );
-    $("#mi_cttACT span").html( _("Actor") );
-    $("#mi_cttUNK span").html( _("Unknown link") );
-    $("#mi_cl span span").html( _("Class") );
-    $("#mi_rc span").html( _("Rename class") );
-    $("#mi_sx span").html( _("Rename suffix") );
-    $("#mi_rc span").html( _("Rename class") );
-    $("#mi_du span").html( _("Duplicate") );
-    $("#mi_de span").html( _("Delete") );
+    $("#mi_th").html( _("Vulnerabilities") );
+    $("#mi_ct span").html( _("Change type") );
+    $("#mi_cttWLS").html( _("Wireless link") );
+    $("#mi_cttWRD").html( _("Wired link") );
+    $("#mi_cttEQT").html( _("Equipment") );
+    $("#mi_cttACT").html( _("Actor") );
+    $("#mi_cttUNK").html( _("Unknown link") );
+    $("#mi_cl span").html( _("Class") );
+    $("#mi_rc").html( _("Rename class") );
+    $("#mi_sx").html( _("Rename suffix") );
+    $("#mi_rc").html( _("Rename class") );
+    $("#mi_du").html( _("Duplicate") );
+    $("#mi_de").html( _("Delete") );
 
-    $("#mi_sd span").html( _("Delete selection") );
-    $("#mi_sc span span").html( _("Label") );
+    $("#mi_sd").html( _("Delete selection") );
+    $("#mi_sc span").html( _("Label") );
     
     $('#templates .t1 .templatelabel').html( _("Wireless") );
     $('#templates .t2 .templatelabel').html( _("Wired") );
@@ -3549,8 +3549,8 @@ var ccfmsm_timer;
 
 function initTabCCFs() {
     // Localise user interface
-    $('#mi_ccfc span').html( _("Create new cluster") );
-    $('#mi_ccfm span span').html( _("Move to") );
+    $('#mi_ccfc').html( _("Create new cluster") );
+    $('#mi_ccfm span').html( _("Move to") );
 
     // Event handlers for mouse actions
     $('#ccfs_body').on('click', '.childnode', clickSelectHandler);
@@ -3713,13 +3713,13 @@ function contextMenuHandler(ev) {
         // Cannot move to the parent (because that's where it is already), nor can it be
         // moved into any of its own descendants. And it cannot be moved onto itself.
         populateClusterSubmenu(cluster, cluster.allclusters().concat(cluster.parentcluster));
-        $('#mi_ccfc span').html( _("Remove cluster") );
+        $('#mi_ccfc').html( _("Remove cluster") );
         $('#mi_ccfc').removeClass('popupmenuitemdisabled');
         LastSelectedNode = null;
     } else {
         // Popup menu called on node
         populateClusterSubmenu(cluster,[]);
-        $('#mi_ccfc span').html( _("Create new cluster") );
+        $('#mi_ccfc').html( _("Create new cluster") );
         LastSelectedNode = this.id;
         // Remove the selection unless the current node is also selected
         if (!$(this).hasClass('li_selected')) {
