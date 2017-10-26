@@ -42,8 +42,27 @@ function createWindow(filename) {
 	const menu = Menu.buildFromTemplate(MenuTemplate);
 	Menu.setApplicationMenu(menu);
 
+	// Find a position that does not overlap an existing window.
+	// Otherwise the File|New operation, for example, will be confusing to the user.
+	var pos = {x: 100, y:100};
+	var allwins = BrowserWindow.getAllWindows();
+	var i=0;
+	// In all reasonable circumstances this loop will end in finite time :-)
+	while (i<allwins.length) {
+		var p = allwins[i].getPosition();
+		if (p[0]==pos.x || p[1]==pos.y) {
+			pos.x+=20;
+			pos.y+=15;
+			i=0;
+			continue; // redo from start
+		}
+		i++;
+	}
+
 	// Create the browser window.
 	var win = new BrowserWindow({
+		x: pos.x,
+		y: pos.y,
 		width: 1082,
 		height: 600,
 		show: false
