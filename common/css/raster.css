@@ -90,7 +90,7 @@ input.inplace_field, textarea.inplace_field {
 #networkactivity {
     position: absolute;
     left: 59px;
-    top: 12px;
+    top: 6px;
     width: 6px;
     height: 6px;
     z-index: 9999;
@@ -181,7 +181,7 @@ img.tC {
 
 #helpbutton {
     position: absolute;
-    top: 12px;
+    top: 6px;
     left: 820px;
     z-index: 100;
 }
@@ -199,7 +199,7 @@ img.tC {
 
 #findbutton {
     position: absolute;
-    top: 12px;
+    top: 6px;
     left: 350px;
     z-index: 100;
 }
@@ -258,7 +258,7 @@ img.tC {
 .actpanel {
     display: none;
     position: absolute;
-    top: 38px;
+    top: 32px;
     border: 1px solid white;
     border-top: 0px;
     background: rgba(190,190,190,0.95);
