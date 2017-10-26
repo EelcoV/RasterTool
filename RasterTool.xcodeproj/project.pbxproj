@@ -15,7 +15,7 @@
 		4915A6331FA113D900B4B205 /* Raster.NL.nsis */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Raster.NL.nsis; path = script/Raster.NL.nsis; sourceTree = SOURCE_ROOT; };
 		4915A6361FA116CF00B4B205 /* fillcache.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = fillcache.sh; sourceTree = "<group>"; };
 		4915A6371FA1178D00B4B205 /* Versions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Versions.sh; sourceTree = "<group>"; };
-		4915A63D1FA126E600B4B205 /* NSIS.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = NSIS.zip; sourceTree = "<group>"; };
+		4915A63D1FA126E600B4B205 /* nsis.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = nsis.zip; sourceTree = "<group>"; };
 		49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.2.1.min.js"; sourceTree = "<group>"; };
 		49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.12.1.min.js"; sourceTree = "<group>"; };
 		49196E311F85417B00097E97 /* smoothness-1.12.1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "smoothness-1.12.1"; sourceTree = "<group>"; };
@@ -487,7 +487,7 @@
 				4954ADED1F954398002A6FBC /* base.EN.dmg */,
 				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
 				4915A6301FA0482800B4B205 /* raster.ico */,
-				4915A63D1FA126E600B4B205 /* NSIS.zip */,
+				4915A63D1FA126E600B4B205 /* nsis.zip */,
 				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
 				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,
 				4915A6321FA113D900B4B205 /* FileAssociation.nsh */,

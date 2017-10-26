@@ -12,6 +12,6 @@ if [ ! -f electron-v$ELECTRONVERSION-win32-ia32.zip ]; then
 fi
 
 if [ ! -d nsis ]; then
-	unzip ../script/NSIS.zip
+	unzip ../script/nsis.zip
 fi
 
