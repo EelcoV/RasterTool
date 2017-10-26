@@ -318,8 +318,13 @@ app.on('window-all-closed', function()  {
 		viewMenu[5].enabled = false;
 		viewMenu[7].enabled = false;
 		viewMenu[8].enabled = false;
-		viewMenu[9].enabled = false;
-		viewMenu[11].enabled = false;
+		viewMenu[9].submenu.items[0].enabled = false;
+		viewMenu[9].submenu.items[1].enabled = false;
+		viewMenu[9].submenu.items[2].enabled = false;
+		viewMenu[10].enabled = false;
+		viewMenu[12].enabled = false;
+		var helpMenu = menuitems[5].submenu.items;
+		helpMenu[0].enabled = false;
 	}
 });
 
