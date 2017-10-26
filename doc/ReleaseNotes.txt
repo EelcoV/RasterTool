@@ -16,8 +16,11 @@ for specifics.
 The tool is accessible via the URL http://yourwebserver/path/ .
 Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
-September 2017
+October 2017
 ==============
+* Preparing for a major change: a standalone app for MacOS and Windows, separate
+  from a server-based version. The standalone versions operate on local files,
+  and do not support project sharing.
 * The tree structure is now shown using lines in Common Cause Failure View.
 * Made tool more robust when trying to import corrupted projects.
 * Added a check whether the tool is already running in another browser tab.

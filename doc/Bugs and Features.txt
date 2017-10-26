@@ -48,20 +48,11 @@ Allow for icons to be added to nodes (from a fixed library?)
 Add functionality for graph expansion? Expand a cloud into subcomponents?
 
 CANNOT REPRODUCE
-Editing labels failed again!?
-Sometimes problem with editing node titles: click+paste, click+paste, click+paste, then sometimes a title becomes inoperative. Only a page reload will reactive the edit-in-place for that title.
-Cannot repeat: When wathcing the prpoject for remote updates, on update the previous project is not deleted?! Project._all is growing.
-After deleting a node (or a selection), cannot drop new nodes on the diagram. The 'ghost' remains visible, and the new node is positioned top left. No interaction possible.
-Dragging a connector sometimes leaves painting artefacts. Is this an issue of FFox 17?
-The initial Service canvas is drawn incorrectly: connectors are offset. Dunno, appears sometimes??
-In Failures and Vulnerabilities clusters show as reduced when there is only a single score, without exclusions. Cannot reproduce?
-Cannot reproduce: Cloud-node as a node class: only one of the clouds appeared in a CCF. Would have expected both to be listed. That threat does not even exist on that cloud (but used to, it was deleted).
-Cannot reproduce: allowDrop called when dragging the scroller?! Reproduce: reload, open a node cluster, go to Diagrams tab, move the scroller: bang!
-You found a bug in this program. ("NodeCluster already contains that child node" in function "NodeCluster.addchildnode"). When renaming a vuln. Cannot reproduce now. Artefact of debugging?
+(no recent bugs)
 
 OTHER / WON'T FIX
 The Find textfield has a placeholder attribute; set this also on Remarks. Cannot, because remarks are not an input textfield.
-Make the "Total" column in threat tables couloured? Probably doesn't look too good. Tried it a bit.
+Make the "Total" column in threat tables couloured? Doesn't look good. Tried it.
 Two sub-clusters on the same level can have the same name. Since it is OK for sub-clusters not sharing the same parent to have the same name, and since it does not break anything, we won't fix this.
 The list in Single Failures cannot be grouped by service, as some components belong to more than one service. They would then be duplicated, which complicates the UI too much (e.g. a single edit may change multiple objects on the screen).
 Drag to create may create rnode somewhat outside canvas --> won't fix, will be corrected on first drag/move
@@ -69,19 +60,19 @@ Adding a shadow to nodes as they are dragged is not good; the shadow will follow
 It would be nice if hover over edit-in place would not be a orange rectangle but had rounded corners. Tried it, won't work (as node titles can wrap, a linebreak in a <span> with rounded corners looks odd).
 
 
-PROPOSAL FOR SHARED PROJECTS
+SHARED PROJECTS
 By default, projects are stored locally only (private).
 When a project is marked 'shared', it will also be stored remotely.
 Remotely stored projects that are not also stored locally are called 'remote'.
 The Library panel will show local (private and public) as well as remote projects.
 Private projects will be grouped separately from shared projects (both local and remote).
-If a shared project is active, it will be saved to the server periodically (after a fixed time, after each transaction, or both).
-If, when saving, the project was saved by another browser, a warning will be presented and the project will be made private.
-This way, it is enforced that only one browser can edit a public project at any time.
-Private projects must have a locally unique name. Public projects must have a globally unique name.
+If a shared project is active, it will be saved to the server after each transaction.
+If, when saving, the project was saved by another browser, a popup will be presented. The user can the choose to either overwrite the server version or make the project private.
+Private projects must have a locally unique name. Public projects must have a group-wide unique name.
 When a project is made public a unique name must be chosen, if necessary.
 Projects have metadata: name, description, last saved timestamp, last saved by.
 Browsers have an option for name of creator (Options panel). There is no check whether that name is unique. This is a feature: one person can use two browsers, and two people can work as a team (but not simultaneously).
+When editing a shared project, whenever an update is detected to the remote copy, that copy will be downloaded and used instead.
 
 Actions on private projects:
 - activate: nothing special.
@@ -111,31 +102,3 @@ When (re)loading the tool:
 - private projects: no action
 - public projects: reload from server, if the server is newer
 - remote project: nothing.
-
-
-ALTERNATIVE PROPOSAL FOR SHARED PROJECTS
-All documents should be stored remotely, transparently.
-Interactions with the UI will be combined into atomic actions.
-Actions will be pushed to the server, and the server will push actions to the browser.
-Conflicts will be resolved: conflicting actions pushed to the server will be reverted, and actions received from the server will always be executed.
-The list of recent actions acts as an Undo queue.
-
-
-YET ANOTHER ALTERNATIVE PROPOSAL FOR SHARED PROJECTS
-There will be a central repository of projects. A project in the repository is called a remote project.
-Each remote project has a name and datetime stamp, and is marked with the name of its creator and optional free-form remarks.
-Remote projects can be listed, and one can be selected for downloading. A downloaded remote project becomes a local project. Remote projects cannot be edited.
-Local projects are stored in LocalStorage only, and are tied to one particular web browser. Local projects can be edited, imported/exported, merged, and deleted.
-Empty local projects can be created. There is no built-in function to duplicate a project, but it can be exported and then imported.
-Local projects can be uploaded into the central repository.
->>Local projects can be marked for automatic uploading. If so, each update will replace the latest project with the same name by the same creator. When marking a project for automatic uploading, the first copy will be uploaded first.
-All local projects are collectively called the Library.
-The upload/download functions are very similar to the export/import function.
-
-Since there is no strong access control, we drop all pretense and do away with access control. Users set their desired creator ID, and will take care among themselves to choose names that are tied to a single person.
-There is no access control. Any user can download any project in the repository, and delete any project from the repository.
-Users must take care not to choose the same name for two different projects.
-There is no concept of a group of users or project-versions.
-A meaningful authentication scheme can be added later.
-
-
