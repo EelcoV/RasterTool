@@ -40,6 +40,7 @@
 		494464B61A2324D40066BDE1 /* Frequency-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "Frequency-nl.html"; sourceTree = "<group>"; };
 		494464B71A2324D40066BDE1 /* Impact-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "Impact-nl.html"; sourceTree = "<group>"; };
 		494464B81A2324D40066BDE1 /* About-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "About-nl.html"; sourceTree = "<group>"; };
+		494AF84D1FA3BCBF00356A28 /* 7z.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = 7z.zip; sourceTree = "<group>"; };
 		494B6F6718796E9D00400328 /* Bugs and Features.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Bugs and Features.txt"; sourceTree = "<group>"; };
 		494B6F6818796E9D00400328 /* designAtomicActions.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = designAtomicActions.txt; sourceTree = "<group>"; };
 		494B6F6918796E9D00400328 /* encodedecode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = encodedecode.js; sourceTree = "<group>"; };
@@ -491,6 +492,7 @@
 				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
 				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,
 				4915A6321FA113D900B4B205 /* FileAssociation.nsh */,
+				494AF84D1FA3BCBF00356A28 /* 7z.zip */,
 				4915A62E1F9E819300B4B205 /* rcedit-x86.exe */,
 				494B6F7B18796E9D00400328 /* lint */,
 			);

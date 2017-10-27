@@ -15,3 +15,7 @@ if [ ! -d nsis ]; then
 	unzip ../script/nsis.zip
 fi
 
+if [ ! -d 7z ]; then
+	unzip ../script/7z.zip
+fi
+

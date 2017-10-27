@@ -182,8 +182,15 @@ CreateWin32Version()
 	(
 	 cd build
 	 ln -s electron-v$ELECTRONVERSION-win32-ia32-$LANG Raster
-	 rm -f Raster-ia32-$LANG.zip
-	 zip -r Raster-ia32-$LANG.zip Raster
+
+	 rm -f raster-ia32-$LANG.zip
+	 zip -r raster-ia32-$LANG.zip Raster
+
+	 rm -f raster-$LANG-basic-installer.exe
+	 PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
+	 wine ../cache/7z/7z.exe a -sfx7zCon.sfx raster-$LANG-basic-installer.exe Raster
+	 wine ../script/rcedit-x86.exe raster-$LANG-basic-installer.exe --set-icon $BASEDIR/raster.ico
+
 	 rm Raster
 	)
 
