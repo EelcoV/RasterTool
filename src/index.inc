@@ -80,63 +80,14 @@ See LICENSE.md
  <p><small>goodbye</small></p>
 </div>
 
+#ifdef SERVER
 <div id="networkactivity" class="donotprint"></div>
 
-<div id="templates" class="ui-state-default">
-    <div class="template t1">
-        <div id="tWLS" class="templatebg"><img class="templateicon" src="../img/tWLSicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Wireless</div>
-        <img id="tC_tWLS" class="tC" src="../img/dropedit.png">
-    </div>
-    <div class="template t2">
-        <div id="tWRD" class="templatebg"><img class="templateicon" src="../img/tWRDicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Wired</div>
-        <img id="tC_tWRD" class="tC" src="../img/dropedit.png">
-    </div>
-    <div class="template t3">
-        <div id="tEQT" class="templatebg"><img class="templateicon" src="../img/tEQTicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Equipment</div>
-        <img id="tC_tEQT" class="tC" src="../img/dropedit.png">
-    </div>
-    <div class="template t4">
-        <div id="tACT" class="templatebg"><img class="templateicon" src="../img/tACTicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Actor</div>
-    </div>
-    <div class="template t5">
-        <div id="tUNK" class="templatebg"><img class="templateicon" src="../img/tUNKicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Unexplored</div>
-    </div>
-    <div class="template t6">
-        <div id="tNOT" class="templatebgNOT"><img class="templateicon" src="../img/tNOTicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">note</div>
-    </div>
-</div> <!-- id="templates" -->
-
-#ifdef SERVER
 <div id="findbutton" class="donotprint"><img id="findimg" src="../img/find.png"></div>
-#endif
-
 <div id="helpbutton" class="donotprint"><img id="helpimg" src="../img/qm-lo.png"></div>
-<div id="helppanel">
-    <div id="helptabs">
-        <ul>
-            <li><a href="../help/Frequency.html">Frequency</a></li>
-            <li><a href="../help/Impact.html">Impact</a></li>
-            <li><a href="../help/Process.html">How to use</a></li>
-            <li><a href="../help/About.html">About</a></li>
-        </ul>
-    </div>
-</div>
 
 <div id="libraryactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Library</span><span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
 <div id="optionsactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Options</span><span id="optionsupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
-
-#ifdef STANDALONE
-<div style="display:none">
-	<a href="" id="savelink"></a>
-	<input id="filepicker" type="file" accept=".raster">
-</div>
-#endif
 
 <div id="librarypanel" class="actpanel ui-widget">
   <form id="libform">
@@ -156,7 +107,7 @@ See LICENSE.md
         <input id="libadd" type="button" value="New">
         <input id="libimport" type="button" value="Import">
         <input id="libexportall" type="button" value="Export library">
-        <input id="fileElem" type="file">    
+        <input id="fileElem" type="file">
         <input id="libzap" type="button" value="Zap library">
     </td>
     </tr>
@@ -188,7 +139,6 @@ See LICENSE.md
             <input type="radio" id="label_on" name="labelonoff" checked="checked"><label for="label_on">Show color</label>
         </fieldset>
     </div>
-#ifdef SERVER
     <div id="onlineonoff">
         <span class="leftlabel ui-widget ui-state-default">Network connection:</span>
         <fieldset>
@@ -200,7 +150,78 @@ See LICENSE.md
         <span class="leftlabel ui-widget ui-state-default">Your name:</span>
         <input type="text" id="creator" size="35">
     </div>
+</div>
 #endif
+
+#ifdef STANDALONE
+<div id="pdfoptions">
+    <div id="pdf_orientation" class="controlgroup">
+        <span class="pdflabel ui-widget ui-state-default">Orientation:</span>
+        <fieldset>
+            <input type="radio" name="pdf_orientation" id="paperorientation_portrait"><label id="label_portrait" for="paperorientation_portrait">XXX</label>
+            <input type="radio" name="pdf_orientation" id="paperorientation_landscape"><label id="label_landscape" for="paperorientation_landscape">YYY</label>
+        </fieldset>
+    </div>
+    <div id="pdf_papersize" class="controlgroup">
+        <span class="pdflabel ui-widget ui-state-default">Paper size:</span>
+        <fieldset>
+            <input type="radio" name="pdf_papersize" id="papersize_a4"><label for="papersize_a4">A4</label>
+            <input type="radio" name="pdf_papersize" id="papersize_a3"><label for="papersize_a3">A3</label>
+        </fieldset>
+    </div>
+    <div id="pdf_scale" class="controlgroup">
+        <span class="pdflabel ui-widget ui-state-default">Scale:</span>
+        <fieldset>
+            <input type="radio" name="pdf_scale" id="pdfscale_50"><label for="pdfscale_50">50</label>
+            <input type="radio" name="pdf_scale" id="pdfscale_60"><label for="pdfscale_60">60</label>
+            <input type="radio" name="pdf_scale" id="pdfscale_70"><label for="pdfscale_70">70</label>
+            <input type="radio" name="pdf_scale" id="pdfscale_80"><label for="pdfscale_80">80</label>
+            <input type="radio" name="pdf_scale" id="pdfscale_90"><label for="pdfscale_90">90</label>
+            <input type="radio" name="pdf_scale" id="pdfscale_100"><label for="pdfscale_100">100</label>
+        </fieldset>
+    </div>
+</div>
+#endif
+
+<div id="templates" class="ui-state-default">
+    <div class="template t1">
+        <div id="tWLS" class="templatebg"><img class="templateicon" src="../img/tWLSicon.png"></div>
+        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Wireless</div>
+        <img id="tC_tWLS" class="tC" src="../img/dropedit.png">
+    </div>
+    <div class="template t2">
+        <div id="tWRD" class="templatebg"><img class="templateicon" src="../img/tWRDicon.png"></div>
+        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Wired</div>
+        <img id="tC_tWRD" class="tC" src="../img/dropedit.png">
+    </div>
+    <div class="template t3">
+        <div id="tEQT" class="templatebg"><img class="templateicon" src="../img/tEQTicon.png"></div>
+        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Equipment</div>
+        <img id="tC_tEQT" class="tC" src="../img/dropedit.png">
+    </div>
+    <div class="template t4">
+        <div id="tACT" class="templatebg"><img class="templateicon" src="../img/tACTicon.png"></div>
+        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Actor</div>
+    </div>
+    <div class="template t5">
+        <div id="tUNK" class="templatebg"><img class="templateicon" src="../img/tUNKicon.png"></div>
+        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Unexplored</div>
+    </div>
+    <div class="template t6">
+        <div id="tNOT" class="templatebgNOT"><img class="templateicon" src="../img/tNOTicon.png"></div>
+        <div class="ui-widget ui-widget-content ui-state-default templatelabel">note</div>
+    </div>
+</div> <!-- id="templates" -->
+
+<div id="helppanel">
+    <div id="helptabs">
+        <ul>
+            <li><a href="../help/Frequency.html">Frequency</a></li>
+            <li><a href="../help/Impact.html">Impact</a></li>
+            <li><a href="../help/Process.html">How to use</a></li>
+            <li><a href="../help/About.html">About</a></li>
+        </ul>
+    </div>
 </div>
 
 <div id="nodemenu" class="popupmenu">

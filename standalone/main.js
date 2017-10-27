@@ -26,6 +26,14 @@ const DefaultRasterOptions = {
 	// 0 = none, 1 = small, 2 = large
 	vulnlevel: 2
 };
+const DefaultPDFOptions = {
+	// 0 = portrait, 1 = landscape
+	pdforientation: 1,
+	// 3 = A3, 4 = A4
+	pdfsize: 4,
+	// scale factor in percentage (80 means a factor 0.8)
+	pdfscale: 80
+};
 
 // Keep a global reference of the window objects. Otherwise windows will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -74,6 +82,11 @@ function createWindow(filename) {
 	win.rasteroptions = {
 		labels: DefaultRasterOptions.labels,
 		vulnlevel: DefaultRasterOptions.vulnlevel
+	};
+	win.pdfoptions = {
+		pdforientation: DefaultPDFOptions.pdforientation,
+		pdfsize: DefaultPDFOptions.pdfsize,
+		pdfscale: DefaultPDFOptions.pdfscale
 	};
 
 	// and load the base HTML of the app.
@@ -227,7 +240,7 @@ function doOpen(win) {
 	}
 }
 
-function doNew(win) {
+function doNew() {
 	createWindow(null);
 }
 
@@ -242,26 +255,49 @@ function doPrint(win) {
 	});
 	if (!filename) return;
 
-	win.webContents.printToPDF({
-		pageSize: 'A3',
-		landscape: true,
-		printBackground: true
-	}, function(error, data) {
-		if (error) {
-			dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
-			return;
-		}
-		try {
-			fs.writeFileSync(filename, data);
-		}
-		catch (e) {
-			dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
-		}
-	});
+	win.webContents.setZoomFactor(win.pdfoptions.pdfscale/100.0);
+	setTimeout(function() {
+		win.webContents.printToPDF({
+			pageSize: (win.pdfoptions.pdfsize==3 ? 'A3' : 'A4'),
+			landscape: (win.pdfoptions.pdforientation==1),
+			printBackground: true
+		}, function(error, data) {
+			win.webContents.setZoomFactor(1.0);
+			if (error) {
+				dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
+				return;
+			}
+			try {
+				fs.writeFileSync(filename, data);
+			}
+			catch (e) {
+				dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
+			}
+		});
+	}, 200);
 }
 
 /***************************************************************************************************/
 /***************************************************************************************************/
+
+ipc.on('pdfoption-modified', function(event,id,opt,val) {
+	var win = BrowserWindow.fromId(id);
+	if (!win)
+		return;
+	switch (opt) {
+	case 'pdforientation':
+		win.pdfoptions.pdforientation = val;
+		break;
+	case 'pdfsize':
+		win.pdfoptions.pdfsize = val;
+		break;
+	case 'pdfscale':
+		win.pdfoptions.pdfscale = val;
+		break;
+	default:
+		break;
+	}
+});
 
 ipc.on('document-modified', function(event,id) {
 	var win = BrowserWindow.fromId(id);
@@ -351,7 +387,7 @@ MenuTemplate = [{
 	submenu: [{
 		label: _("New"),
 		accelerator: 'CmdOrCtrl+N',
-		click: function (item, focusedWindow) { doNew(focusedWindow); }
+		click: function () { doNew(); }
 	}, {
 		label: _("Open..."),
 		accelerator: 'CmdOrCtrl+O',
@@ -360,26 +396,27 @@ MenuTemplate = [{
 		label: _("Save"),
 		accelerator: 'CmdOrCtrl+S',
 		click: function (item, focusedWindow) {
-			focusedWindow.webContents.send('document-start-save');
+			if (focusedWindow) focusedWindow.webContents.send('document-start-save');
 		}
 	}, {
 		label: _("Save as..."),
 		accelerator: 'Shift+CmdOrCtrl+Z',
 		click: function (item, focusedWindow) {
-			focusedWindow.webContents.send('document-start-saveas');
+			if (focusedWindow) focusedWindow.webContents.send('document-start-saveas');
 		}
 	}, {
 		type: 'separator'
 	}, {
-		label: _("PDF settings"),
+		label: _("PDF settings..."),
 		click: function (item, focusedWindow) {
-			focusedWindow.webContents.send('pdf-settings-show');
+			if (!focusedWindow) return;
+			focusedWindow.webContents.send('pdf-settings-show', focusedWindow.pdfoptions);
 		}
 	}, {
 		label: _("Save as PDF"),
 		accelerator: 'CmdOrCtrl+P',
 		click: function (item, focusedWindow) {
-			doPrint(focusedWindow);
+			if (focusedWindow) doPrint(focusedWindow);
 		}
 	}, {
 		type: 'separator'
@@ -417,6 +454,7 @@ MenuTemplate = [{
 		type: 'radio',
 		checked: (DefaultRasterOptions.labels==true),
 		click: function (item, focusedWindow) {
+			if (!focusedWindow) return;
 			focusedWindow.rasteroptions.labels = true;
 			focusedWindow.webContents.send('options', 'labels', true);
 		}
@@ -425,6 +463,7 @@ MenuTemplate = [{
 		type: 'radio',
 		checked: (DefaultRasterOptions.labels==false),
 		click: function (item, focusedWindow) {
+			if (!focusedWindow) return;
 			focusedWindow.rasteroptions.labels = false;
 			focusedWindow.webContents.send('options', 'labels', false);
 		}
@@ -435,6 +474,7 @@ MenuTemplate = [{
 		type: 'radio',
 		checked: (DefaultRasterOptions.vulnlevel==1),
 		click: function (item, focusedWindow) {
+			if (!focusedWindow) return;
 			focusedWindow.rasteroptions.vulnlevel = 1;
 			focusedWindow.webContents.send('options', 'vulnlevel', 1);
 		}
@@ -443,6 +483,7 @@ MenuTemplate = [{
 		type: 'radio',
 		checked: (DefaultRasterOptions.vulnlevel==2),
 		click: function (item, focusedWindow) {
+			if (!focusedWindow) return;
 			focusedWindow.rasteroptions.vulnlevel = 2;
 			focusedWindow.webContents.send('options', 'vulnlevel', 2);
 		}
@@ -451,6 +492,7 @@ MenuTemplate = [{
 		type: 'radio',
 		checked: (DefaultRasterOptions.vulnlevel==0),
 		click: function (item, focusedWindow) {
+			if (!focusedWindow) return;
 			focusedWindow.rasteroptions.vulnlevel = 0;
 			focusedWindow.webContents.send('options', 'vulnlevel', 0);
 		}
@@ -459,7 +501,7 @@ MenuTemplate = [{
 	}, {
 		label: _("Find nodes..."),
 		accelerator: 'CmdOrCtrl+F',
-		click: function (item, focusedWindow) {	focusedWindow.webContents.send('find-show'); }
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('find-show'); }
 	}, {
 		type: 'separator'
 	}, {
@@ -489,9 +531,7 @@ MenuTemplate = [{
 			}
 		})(),
 		click: function (item, focusedWindow) {
-			if (focusedWindow) {
-				focusedWindow.toggleDevTools();
-			}
+			if (focusedWindow) focusedWindow.toggleDevTools();
 		}
 	}]
 }, {
@@ -511,7 +551,7 @@ MenuTemplate = [{
 	role: 'help',
 	submenu: [{
 		label: _("Quick guide..."),
-		click: function (item, focusedWindow) {	focusedWindow.webContents.send('help-show'); }
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('help-show'); }
 	}]
 }];
 

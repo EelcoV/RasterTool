@@ -26,6 +26,7 @@ _t['New'] = 'Nieuw';
 _t['Open...'] = 'Openen...';
 _t['Save'] = 'Opslaan';
 _t['Save as...'] = 'Opslaan als...';
+_t['PDF settings...'] = 'PDF instellingen...';
 _t['Save as PDF'] = 'Opslaan als PDF';
 _t['Quit'] = 'Afsluiten';
 _t['Close'] = 'Sluiten';
@@ -72,4 +73,5 @@ _t['No vulnerability levels'] = 'Geen kwetsbaarheidsindicator';
 _t['Details...'] = 'Details...';
 _t['Find nodes...'] = 'Zoek componenten...';
 _t[''] = '';
+
 

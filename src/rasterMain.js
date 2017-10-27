@@ -82,7 +82,18 @@ ipc && ipc.on('help-show', function() {
 ipc && ipc.on('find-show', function() {
 	StartFind();
 });
-ipc && ipc.on('pdf-settings-show', function() {
+ipc && ipc.on('pdf-settings-show', function(event,pdfoptions) {
+	if (pdfoptions.pdforientation==0)
+		$('#paperorientation_portrait').prop("checked","checked");
+	else
+		$('#paperorientation_landscape').prop("checked","checked");
+	if (pdfoptions.pdfsize==3)
+		$('#papersize_a3').prop("checked","checked");
+	else
+		$('#papersize_a4').prop("checked","checked");
+	$('#pdfscale_' + pdfoptions.pdfscale).prop("checked","checked");
+	$('#pdfoptions fieldset').controlgroup('refresh');
+	$('#pdfoptions').dialog('open');
 });
 
 function setModified() {
@@ -97,21 +108,6 @@ function clearModified() {
 function CurrentProjectAsString() {
     return exportProject(Project.cid);
 }
-
-function lz(n) {
-	return (n<10 ? "0" : "") + n;
-}
-
-//function doSave() {
-//	clearModified();
-//	var s = CurrentProjectAsString();
-//	var url = 'data:text/raster;,' + encodeURIComponent(s);
-//	var d = new Date();
-//	var link = document.getElementById('savelink');
-//	link.download = 'Diensten '+d.getFullYear()+lz(d.getMonth()+1)+lz(d.getDate())+'-'+lz(d.getHours())+lz(d.getMinutes())+'.tsv';
-//	link.href = url;
-//	link.click();
-//}
 
 #endif
 
@@ -137,6 +133,37 @@ $(function() {
 	$('#helpbutton').hide();
 	$('.workouter').css('top', '0px');
 	$('#templates').removeClass('ui-state-default').css('background','rgba(200,200,200,0.8)');
+
+	// PDF print options dialog
+    $('#pdf_orientation span').html(_("Orientation:"));
+    $('#label_portrait').html(_("Portrait"));
+    $('#label_landscape').html(_("Landscape"));
+    $('#pdf_papersize span').html(_("Paper size:"));
+    $('#pdf_scale span').html(_("Scale:"));
+
+	$('[for=paperorientation_portrait]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdforientation',0); });
+	$('[for=paperorientation_landscape]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdforientation',1); });
+	$('[for=papersize_a3]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfsize',3); });
+	$('[for=papersize_a4]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfsize',4); });
+	$('[for=pdfscale_50]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',50); });
+	$('[for=pdfscale_60]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',60); });
+	$('[for=pdfscale_70]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',70); });
+	$('[for=pdfscale_80]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',80); });
+	$('[for=pdfscale_90]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',90); });
+	$('[for=pdfscale_100]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',100); });
+
+    $('#pdfoptions').dialog({
+		title: _("Settings for PDF"),
+		autoOpen: false,
+		modal: false,
+		width: 400,
+		resizable: false,
+		buttons: [{ text: _("Done"),
+			click: function() {$('#pdfoptions').dialog("close");}
+		}]
+	});
+	// Don't print the settings dialog. This means you can leave it open while saving a PDF. Convenient!
+	$('#pdfoptions').parent().addClass('donotprint');
 #endif
 
     initTabDiagrams();

@@ -461,6 +461,13 @@ div.th_remark {
 
 .copybutton {margin-left: 20px; }
 
+.pdflabel {
+    display: inline-block;
+    width: 10em;
+	line-height: 3em;
+    background: transparent !important;
+    border: 0 !important;
+}
 
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *|         DIAGRAMS        |* * * * * * * * * * * * * * * * */

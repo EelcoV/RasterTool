@@ -353,3 +353,11 @@ _t["Are you really sure?"] = "Weet u het echt zeker?";
 _t["If your project is open in another browser window or tab, <em>you will lose all your work</em>."] = "Als uw project wel geopend is in een ander venster of tab van deze browser, <em>dan gaat al uw werk verloren</em>.";
 _t["Yes, I am sure"] = "Ja, ik weet het zeker";
 _t["No, let me check again"] = "Nee, ik wil nog eens controleren";
+
+_t["Orientation:"] = "Oriëntatie:";
+_t["Portrait"] = "Portret";
+_t["Landscape"] = "Landschap";
+_t["Paper size:"] = "Papiergrootte:";
+_t["Scale:"] = "Schaal:";
+_t["Settings for PDF"] = "Instellingen voor PDF";
+
