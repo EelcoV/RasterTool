@@ -2654,7 +2654,7 @@ function initTabDiagrams() {
         var dialog = $('<div></div>');
         var snippet ='\
             <form id="form_componentrename">\
-            <input id="field_componentrename" name="fld" type="text" size="55" value="_CN_">\
+            <input id="field_componentrename" class="field_rename" name="fld" type="text" value="_CN_">\
             </form>\
         ';
         snippet = snippet.replace(/_CN_/g, H(cm.title));
@@ -2679,7 +2679,7 @@ function initTabDiagrams() {
             title: _("Rename class '%%'", cm.title),
             modal: true,
             position: {my: 'center', at: 'center'},
-            width: 405,
+            width: 350,
             height: 130,
             buttons: dbuttons,
             open: function() {
@@ -2704,7 +2704,7 @@ function initTabDiagrams() {
         var dialog = $('<div></div>');
         var snippet ='\
             <form id="form_suffixrename">\
-            <input id="field_suffixrename" name="fld" type="text" size="55" value="_SX_">\
+            <input id="field_suffixrename" class="field_rename" name="fld" type="text" value="_SX_">\
             </form>\
         ';
         snippet = snippet.replace(/_SX_/g, H(rn.suffix));
@@ -2729,7 +2729,7 @@ function initTabDiagrams() {
             title: _("Rename suffix '%%' for node '%%'", rn.suffix, rn.title),
             modal: true,
             position: {my: 'center', at: 'center'},
-            width: 405,
+            width: 350,
             height: 130,
             buttons: dbuttons,
             open: function() {

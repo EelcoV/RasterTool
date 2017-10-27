@@ -512,7 +512,7 @@ function diagramTabEditStart(event) {
 	var dialog = $('<div></div>');
 	var snippet ='\
 		<form id="form_servicerename">\
-		<input id="field_servicerename" name="fld" type="text" size="55" value="_SN_">\
+		<input id="field_servicerename" class="field_rename" name="fld" type="text" value="_SN_">\
 		</form>\
 	';
 	snippet = snippet.replace(/_SN_/g, H(s.title));
@@ -537,7 +537,7 @@ function diagramTabEditStart(event) {
 		title: _("Rename service '%%'", s.title),
 		modal: true,
 		position: {my: 'center', at: 'center'},
-		width: 405,
+		width: 350,
 		height: 130,
 		buttons: dbuttons,
 		open: function() {
