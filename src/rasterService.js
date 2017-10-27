@@ -213,6 +213,9 @@ Service.prototype = {
 		';
 		snippet = snippet.replace(/_I_/g, this.id);
 		$('#diagrams_body').append(snippet);
+#ifdef STANDALONE
+		$('#scroller_overview'+this.id).css('top','20px');
+#endif
 		snippet = '\n\
 			<h1 class="printonly underlay servicename_I_">_SN_</h1>\n\
 			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
