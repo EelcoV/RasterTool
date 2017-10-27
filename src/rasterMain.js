@@ -82,6 +82,8 @@ ipc && ipc.on('help-show', function() {
 ipc && ipc.on('find-show', function() {
 	StartFind();
 });
+ipc && ipc.on('pdf-settings-show', function() {
+});
 
 function setModified() {
 	Modified = true;
@@ -3839,6 +3841,11 @@ function moveSelectionToCluster(cluster) {
     root.normalize();
     root.calculatemagnitude();
     triggerRepaint(root.id);
+    // Wait for the repaint to finish, the new cluster to be painted, then
+    // trigger a rename
+	setTimeout(function(){
+		$('#litext'+cluster.id).trigger('click');
+    },500);
 }
 
 var CCFSortOpt = "alpha";

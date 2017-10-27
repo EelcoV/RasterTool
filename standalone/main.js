@@ -310,6 +310,8 @@ app.on('window-all-closed', function()  {
 		fileMenu[2].enabled = false;
 		fileMenu[3].enabled = false;
 		fileMenu[4].enabled = false;
+		fileMenu[5].enabled = false;
+		fileMenu[6].enabled = false;
 		var viewMenu = menuitems[3].submenu.items;
 		viewMenu[0].enabled = false;
 		viewMenu[1].enabled = false;
@@ -365,6 +367,13 @@ MenuTemplate = [{
 		accelerator: 'Shift+CmdOrCtrl+Z',
 		click: function (item, focusedWindow) {
 			focusedWindow.webContents.send('document-start-saveas');
+		}
+	}, {
+		type: 'separator'
+	}, {
+		label: _("PDF settings"),
+		click: function (item, focusedWindow) {
+			focusedWindow.webContents.send('pdf-settings-show');
 		}
 	}, {
 		label: _("Save as PDF"),
