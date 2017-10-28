@@ -19,7 +19,7 @@ InstallDir "$PROGRAMFILES\${APPNAME}"
 
 # This will be in the installer/uninstaller's title bar
 Name "${COMPANYNAME}"
-Icon "raster.ico"
+Icon "..\..\script\installraster.ico"
 outFile "..\raster-EN-full-installer.exe"
 
 !addincludedir ..\..\script
