@@ -419,7 +419,6 @@
 		49E402C11F99383100978B5C /* electron.iconset */ = {
 			isa = PBXGroup;
 			children = (
-				494AF84E1FA48AA100356A28 /* installraster.ico */,
 				49E402B91F99381600978B5C /* icon_16x16.png */,
 				49E402B71F99381600978B5C /* icon_16x16@2x.png */,
 				49E402B81F99381600978B5C /* icon_32x32.png */,
@@ -490,6 +489,7 @@
 				4954ADED1F954398002A6FBC /* base.EN.dmg */,
 				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
 				4915A6301FA0482800B4B205 /* raster.ico */,
+				494AF84E1FA48AA100356A28 /* installraster.ico */,
 				4915A63D1FA126E600B4B205 /* nsis.zip */,
 				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
 				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,
