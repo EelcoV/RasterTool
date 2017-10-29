@@ -186,11 +186,11 @@ CreateWin32Version()
 	 rm -f raster-win32-$LANG.zip
 	 zip -r raster-win32-$LANG.zip Raster
 
-	 rm -f raster-$LANG-basic-installer.exe
+	 rm -f raster-$LANG-unpack.exe
 	 PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
 	 # Filenames containing "instal" require admin privileges!?
-	 wine ../cache/7z/7z.exe a -sfx7z.sfx raster-$LANG-basic-insta.exe Raster
-	 wine ../script/rcedit-x86.exe raster-$LANG-basic-insta.exe --set-icon ../script/installraster.ico
+	 wine ../cache/7z/7z.exe a -sfx7z.sfx raster-$LANG-unpack.exe Raster
+	 wine ../script/rcedit-x86.exe raster-$LANG-unpack.exe --set-icon ../script/installraster.ico
 
 	 rm Raster
 	)
