@@ -2365,7 +2365,7 @@ function initTabDiagrams() {
     $("#mi_cl span").html( _("Class") );
     $("#mi_rc").html( _("Rename class") );
     $("#mi_sx").html( _("Rename suffix") );
-    $("#mi_rc").html( _("Rename class") );
+    // Menu item Similar/Identical is handled inside Nodecluster:_showpopupmenu()
     $("#mi_du").html( _("Duplicate") );
     $("#mi_de").html( _("Delete") );
 
