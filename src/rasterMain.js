@@ -48,12 +48,13 @@ ipc && ipc.on('document-start-saveas', function() {
 	var s = CurrentProjectAsString();
 	ipc && ipc.send('document-saveas',WindowID,s);
 });
-ipc && ipc.on('document-save-success', function() {
+ipc && ipc.on('document-save-success', function(event,docname) {
 	clearModified();
-});
-ipc && ipc.on('show-details', function() {
-	var p = Project.get(Project.cid);
-	ShowDetails(p);
+	if (!docname)
+		return;
+	docname = docname.replace(/\.raster$/,"");
+	$('.projectname').html(H(docname));
+	Project.get(Project.cid).settitle(docname);
 });
 ipc && ipc.on('document-start-open', function(event,str) {
 	var newp = loadFromString(str,true,false,_("File"));

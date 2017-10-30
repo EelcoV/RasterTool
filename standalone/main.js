@@ -125,9 +125,7 @@ function createWindow(filename) {
 		if (!checkSaveModifiedDocument(win))
 			e.preventDefault();
 		else
-			// Dereference the window object, usually you would store windows
-			// in an array if your app supports multi windows, this is the time
-			// when you should delete the corresponding element.
+			// Allow garbage collection to remove the window
 			delete Win[win.id];
 	});
 
@@ -139,8 +137,8 @@ function createWindow(filename) {
 function ReadFileAndLoad(win,filename) {
 	try {
 		var str = fs.readFileSync(filename, 'utf8');
-		RecordFilename(win,filename);
 		win.webContents.send('document-start-open', str);
+		RecordFilename(win,filename);
 		app.addRecentDocument(filename);
 	} catch (e) {
 		dialog.showErrorBox(_("Cannot read the file"), _("System notification:") +"\n"+e);
@@ -148,20 +146,24 @@ function ReadFileAndLoad(win,filename) {
 }
 
 function RecordFilename(win,filename) {
+	var docname;
 	win.pathname = filename;
 	if (filename) {
 		win.setRepresentedFilename(filename);
 		if (process.platform=="win32") {
 			// Windows uses backslash in path names
-			win.setTitle( filename.match(/[^\\]+$/)[0] + ' - Raster');
+			docname = filename.match(/[^\\]+$/)[0];
+			win.setTitle(docname + ' - Raster');
 		} else {
-			win.setTitle( filename.match(/[^\/]+$/)[0] );
+			docname = filename.match(/[^\/]+$/)[0];
+			win.setTitle(docname);
 		}
 	} else {
 		win.setTitle(_("No name - Raster"));
 	}
 	win.documentIsModified = false;
 	win.setDocumentEdited(false);
+	win.webContents.send('document-save-success',docname);
 }
 
 /* Returns false if current document was modified and should be saved. */
@@ -191,11 +193,9 @@ function doSaveAs(win,str) {
 		},
 		function(filename) {
 			if (filename) {
-				var docname = filename.match(/[^\/]+$/)[0];
 				try {
 					fs.writeFileSync(filename, str);
 					RecordFilename(win,filename);
-					win.webContents.send('document-save-success');
 				} catch (e) {
 					dialog.showErrorBox(_("Project was not saved"), _("System notification:") +"\n"+e);
 				}
@@ -208,7 +208,6 @@ function doSave(win,str) {
 		try {
 			fs.writeFileSync(win.pathname, str);
 			RecordFilename(win,win.pathname);
-			win.webContents.send('document-save-success');
 		} catch (e) {
 			dialog.showErrorBox(_("Project was not saved"), _("System notification:") +"\n"+e);
 		}
