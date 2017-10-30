@@ -134,6 +134,28 @@ function createWindow(filename) {
 //	});
 }
 
+function ForceWindowRepaint() {
+	// At least on "plain" Windows (e.g. without Aero desktop effects enabled), the window is not
+	// always repainted. For example, when saving a new project the project name is not painted
+	// in the title bar until the window is obscured and brought forward again.
+	// This stupid hack seems to force a refresh.
+	// See https://github.com/electron/electron/issues/1821
+
+	if (process.platform!="win32") return;
+
+	var win = BrowserWindow.getFocusedWindow();
+	if (!win) return;
+	var wasMaximized = win.isMaximized();
+	var bounds = win.getBounds();
+
+	win.setSize(bounds.width - 1, bounds.height - 1);
+	if (wasMaximized) {
+		win.maximize();
+	} else {
+		win.setSize(bounds.width, bounds.height);
+	}
+}
+
 function ReadFileAndLoad(win,filename) {
 	try {
 		var str = fs.readFileSync(filename, 'utf8');
@@ -164,6 +186,7 @@ function RecordFilename(win,filename) {
 	win.documentIsModified = false;
 	win.setDocumentEdited(false);
 	win.webContents.send('document-save-success',docname);
+	ForceWindowRepaint();
 }
 
 /* Returns false if current document was modified and should be saved. */
