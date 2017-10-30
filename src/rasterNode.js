@@ -894,7 +894,7 @@ Node.prototype = {
 			$('#mi_cl').addClass('popupmenuitemdisabled');
 		if (cm!=null && cm.single)
 			$('#mi_sx').addClass('popupmenuitemdisabled');
-		$('#mi_sm>span').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
+		$('#mi_sm').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
 		if (cm!=null && cm.single) {
 			$('#mi_du').addClass('popupmenuitemdisabled');
 		}
