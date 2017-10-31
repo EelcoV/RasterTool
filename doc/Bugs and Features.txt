@@ -3,6 +3,8 @@ See LICENSE.md
 
 
 BUGS
+Under Windows, using Chrome or standalone, connectors often get misaligned when nodes are moved.
+Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
 When removing the last vulnerability on a component, the overall vulnerability level should be set to Extremely Low.
 In the Analysis tab, the Single Failures per level counts node classes multiple times. Only single classes are counted once.
