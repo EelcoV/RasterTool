@@ -146,6 +146,7 @@ $(function() {
 	$('[for=paperorientation_landscape]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdforientation',1); });
 	$('[for=papersize_a3]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfsize',3); });
 	$('[for=papersize_a4]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfsize',4); });
+	$('[for=pdfscale_40]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',40); });
 	$('[for=pdfscale_50]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',50); });
 	$('[for=pdfscale_60]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',60); });
 	$('[for=pdfscale_70]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',70); });
@@ -157,7 +158,7 @@ $(function() {
 		title: _("Settings for PDF"),
 		autoOpen: false,
 		modal: false,
-		width: 400,
+		width: 420,
 		resizable: false,
 		buttons: [{ text: _("Done"),
 			click: function() {$('#pdfoptions').dialog("close");}

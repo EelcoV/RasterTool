@@ -172,6 +172,7 @@ See LICENSE.md
     <div id="pdf_scale" class="controlgroup">
         <span class="pdflabel ui-widget ui-state-default">Scale:</span>
         <fieldset>
+            <input type="radio" name="pdf_scale" id="pdfscale_40"><label for="pdfscale_40">40</label>
             <input type="radio" name="pdf_scale" id="pdfscale_50"><label for="pdfscale_50">50</label>
             <input type="radio" name="pdf_scale" id="pdfscale_60"><label for="pdfscale_60">60</label>
             <input type="radio" name="pdf_scale" id="pdfscale_70"><label for="pdfscale_70">70</label>

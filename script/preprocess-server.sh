@@ -30,4 +30,6 @@ if [ $srcfile -nt $destfile ]; then
 	cpp -E -P -C -w -DSERVER $srcfile $destfile
 fi
 
+chmod -R a+rX $BUILDDIR
+
 echo "...done"
