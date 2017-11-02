@@ -203,9 +203,9 @@ CreateAll()
 	LANG=$1
 	CreateAppVersion $LANG
 	CreateMacOSVersion $LANG
-#	CreateWin32Version $LANG
+	CreateWin32Version $LANG
 }
 
 CreateAll "EN"
-#CreateAll "NL"
+CreateAll "NL"
 
