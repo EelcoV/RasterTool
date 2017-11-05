@@ -94,6 +94,12 @@ section "uninstall"
 	# Remove Start Menu launcher
 	delete "$SMPROGRAMS\${APPNAME}.lnk"
 
+	# Preference files, caches, etc.
+	SetShellVarContext current
+	rmdir /r "$APPDATA\${APPNAME}"
+	rmdir /r "$LOCALAPPDATA\${APPNAME}"
+	SetShellVarContext all
+
  	${unregisterExtension} ".raster" "Raster project"
 
 	# Remove files

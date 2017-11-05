@@ -21,13 +21,16 @@ var FileToBeOpened = null;
 var MenuTemplate;
 var appMenu;
 
+/* Labels and Vulnlevels are set in the main process, and sent to the Renderer using
+ *   win.webContents.send('options', kind, value)
+ * PDF options are set in the Renderer, and sent to the main process using
+ *   ipc.on('pdfoption-modified', handler)
+ */
 const DefaultRasterOptions = {
 	// true = show, false = hide
 	labels: true,
 	// 0 = none, 1 = small, 2 = large
-	vulnlevel: 2
-};
-const DefaultPDFOptions = {
+	vulnlevel: 2,
 	// 0 = portrait, 1 = landscape
 	pdforientation: 1,
 	// 3 = A3, 4 = A4
@@ -35,6 +38,9 @@ const DefaultPDFOptions = {
 	// scale factor in percentage (80 means a factor 0.8)
 	pdfscale: 80
 };
+
+const prefsDir = app.getPath('userData');
+const prefsFile = prefsDir + "/prefs.json";
 
 // Keep a global reference of the window objects. Otherwise windows will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -73,15 +79,6 @@ function createWindow(filename) {
 
 	win.documentIsModified = false;
 	win.pathname = null;
-	win.rasteroptions = {
-		labels: DefaultRasterOptions.labels,
-		vulnlevel: DefaultRasterOptions.vulnlevel
-	};
-	win.pdfoptions = {
-		pdforientation: DefaultPDFOptions.pdforientation,
-		pdfsize: DefaultPDFOptions.pdfsize,
-		pdfscale: DefaultPDFOptions.pdfscale
-	};
 
 	// and load the base HTML of the app.
 	win.loadURL(url.format({
@@ -98,8 +95,8 @@ function createWindow(filename) {
 		} else {
 			RecordFilename(win,null);
 		}
-		win.webContents.send('options', 'labels', win.rasteroptions.labels);
-		win.webContents.send('options', 'vulnlevel', win.rasteroptions.vulnlevel);
+		win.webContents.send('options', 'labels', app.rasteroptions.labels);
+		win.webContents.send('options', 'vulnlevel', app.rasteroptions.vulnlevel);
 		EnableMenuItems(true);
 		win.show();
 	});
@@ -256,11 +253,11 @@ function doPrint(win) {
 	});
 	if (!filename) return;
 
-	win.webContents.setZoomFactor(win.pdfoptions.pdfscale/100.0);
+	win.webContents.setZoomFactor(app.rasteroptions.pdfscale/100.0);
 	setTimeout(function() {
 		win.webContents.printToPDF({
-			pageSize: (win.pdfoptions.pdfsize==3 ? 'A3' : 'A4'),
-			landscape: (win.pdfoptions.pdforientation==1),
+			pageSize: (app.rasteroptions.pdfsize==3 ? 'A3' : 'A4'),
+			landscape: (app.rasteroptions.pdforientation==1),
 			printBackground: true
 		}, function(error, data) {
 			win.webContents.setZoomFactor(1.0);
@@ -314,18 +311,29 @@ function EnableMenuItems(val)  {
 }
 
 function AllWindowsSetLabels(val) {
+	app.rasteroptions.labels = val;
 	var allwins = BrowserWindow.getAllWindows();
 	for (var i=0; i<allwins.length; i++) {
-		allwins[i].rasteroptions.labels = true;
 		allwins[i].webContents.send('options', 'labels', val);
 	}
+	SavePreferences();
 }
 
 function AllWindowsSetVulnlevel(val) {
+	app.rasteroptions.vulnlevel = val;
 	var allwins = BrowserWindow.getAllWindows();
 	for (var i=0; i<allwins.length; i++) {
-		allwins[i].rasteroptions.labels = true;
 		allwins[i].webContents.send('options', 'vulnlevel', val);
+	}
+	SavePreferences();
+}
+
+function SavePreferences(win) {
+	try {
+		fs.writeFileSync(prefsFile, JSON.stringify(app.rasteroptions));
+	}
+	catch (e) {
+		// ignore silently
 	}
 }
 
@@ -338,17 +346,18 @@ ipc.on('pdfoption-modified', function(event,id,opt,val) {
 		return;
 	switch (opt) {
 	case 'pdforientation':
-		win.pdfoptions.pdforientation = val;
+		app.rasteroptions.pdforientation = val;
 		break;
 	case 'pdfsize':
-		win.pdfoptions.pdfsize = val;
+		app.rasteroptions.pdfsize = val;
 		break;
 	case 'pdfscale':
-		win.pdfoptions.pdfscale = val;
+		app.rasteroptions.pdfscale = val;
 		break;
 	default:
 		break;
 	}
+	SavePreferences(win);
 });
 
 ipc.on('document-modified', function(event,id) {
@@ -414,6 +423,34 @@ app.on('open-file', function(event,file)  {
 // Disable hardware accelerationfor maximum compatibility. Could be an option.
 app.disableHardwareAcceleration();
 
+// Create a directory to store preferences in
+try {
+	fs.mkdirSync(prefsDir);
+}
+catch (e) {
+	// Ignore silently
+}
+
+app.rasteroptions = {};
+// Copy default options into app.rasteroptions
+Object.keys(DefaultRasterOptions).forEach(function(key,i,a) {
+	app.rasteroptions[key] = DefaultRasterOptions[key];
+});
+
+// Load preferences
+try {
+	var str = fs.readFileSync(prefsFile);
+	var raw_pref = JSON.parse(str);
+	Object.keys(DefaultRasterOptions).forEach(function(key,i,a) {
+		if (raw_pref && raw_pref[key]!=undefined) {
+			app.rasteroptions[key] = raw_pref[key];
+		}
+	});
+}
+catch (e) {
+	// ignore silently
+}
+
 // On Windows, the file to be opened is in argv[1]
 if (process.argv.length>1 && fs.existsSync(process.argv[1]))
 	FileToBeOpened = process.argv[1];
@@ -452,7 +489,7 @@ MenuTemplate = [{
 		label: _("PDF settings..."),
 		click: function (item, focusedWindow) {
 			if (!focusedWindow) return;
-			focusedWindow.webContents.send('pdf-settings-show', focusedWindow.pdfoptions);
+			focusedWindow.webContents.send('pdf-settings-show', app.rasteroptions);
 		}
 	}, {
 		label: _("Save as PDF"),
@@ -494,14 +531,14 @@ MenuTemplate = [{
 	submenu: [{
 		label: _("Show labels"),
 		type: 'radio',
-		checked: (DefaultRasterOptions.labels==true),
+		checked: (app.rasteroptions.labels==true),
 		click: function (item, focusedWindow) {
 			AllWindowsSetLabels(true);
 		}
 	}, {
 		label: _("Hide labels"),
 		type: 'radio',
-		checked: (DefaultRasterOptions.labels==false),
+		checked: (app.rasteroptions.labels==false),
 		click: function (item, focusedWindow) {
 			AllWindowsSetLabels(false);
 		}
@@ -510,21 +547,21 @@ MenuTemplate = [{
 	}, {
 		label: _("Small vulnerability levels"),
 		type: 'radio',
-		checked: (DefaultRasterOptions.vulnlevel==1),
+		checked: (app.rasteroptions.vulnlevel==1),
 		click: function (item, focusedWindow) {
 			AllWindowsSetVulnlevel(1);
 		}
 	}, {
 		label: _("Large vulnerability levels"),
 		type: 'radio',
-		checked: (DefaultRasterOptions.vulnlevel==2),
+		checked: (app.rasteroptions.vulnlevel==2),
 		click: function (item, focusedWindow) {
 			AllWindowsSetVulnlevel(2);
 		}
 	}, {
 		label: _("No vulnerability levels"),
 		type: 'radio',
-		checked: (DefaultRasterOptions.vulnlevel==0),
+		checked: (app.rasteroptions.vulnlevel==0),
 		click: function (item, focusedWindow) {
 			AllWindowsSetVulnlevel(0);
 		}
