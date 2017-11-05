@@ -19,6 +19,7 @@ const _ = lang.translate;
 var FileToBeOpened = null;
 
 var MenuTemplate;
+var appMenu;
 
 const DefaultRasterOptions = {
 	// true = show, false = hide
@@ -42,14 +43,7 @@ var Win = {};
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-function debug(msg) {
-	dialog.showErrorBox("Debug information", msg);
-}
-
 function createWindow(filename) {
-	const menu = Menu.buildFromTemplate(MenuTemplate);
-	Menu.setApplicationMenu(menu);
-
 	// Find a position that does not overlap an existing window.
 	// Otherwise the File|New operation, for example, will be confusing to the user.
 	var pos = {x: 100, y:100};
@@ -106,19 +100,8 @@ function createWindow(filename) {
 		}
 		win.webContents.send('options', 'labels', win.rasteroptions.labels);
 		win.webContents.send('options', 'vulnlevel', win.rasteroptions.vulnlevel);
+		EnableMenuItems(true);
 		win.show();
-	});
-
-	win.on('focus', function(e)  {
-		// Reset the View menu radio options
-		var viewMenu = menu.items[3].submenu.items;
-		// 0 = Show, 1 = Hide
-		var labels_idx = (win.rasteroptions.labels ? 0 : 1);
-		// 3 = small, 4 = large, 5 = none
-		var vulnlevel_idx = (win.rasteroptions.vulnlevel==0 ? 5 : (win.rasteroptions.vulnlevel==1 ? 3 : 4));
-		if (viewMenu[ labels_idx ]) viewMenu[ labels_idx ].checked = true;
-		if (viewMenu[ vulnlevel_idx ]) viewMenu[ vulnlevel_idx ].checked = true;
-		Menu.setApplicationMenu(menu);
 	});
 
 	win.on('close', function(e)  {
@@ -128,10 +111,6 @@ function createWindow(filename) {
 			// Allow garbage collection to remove the window
 			delete Win[win.id];
 	});
-
-	// Emitted when the window is closed.
-//	win.on('closed', function()  {
-//	});
 }
 
 function ForceWindowRepaint() {
@@ -302,6 +281,57 @@ function doPrint(win) {
 /***************************************************************************************************/
 /***************************************************************************************************/
 
+function debug(msg) {
+	dialog.showErrorBox("Debug information", msg);
+}
+
+function EnableMenuItems(val)  {
+	if (process.platform !== 'darwin')
+		return;
+	// MacOS. Grey out the several menu items when no windows are open
+	var menuitems = Menu.getApplicationMenu().items;
+	var fileMenu = menuitems[1].submenu.items;
+	fileMenu[2].enabled = val;
+	fileMenu[3].enabled = val;
+	fileMenu[4].enabled = val;
+	fileMenu[5].enabled = val;
+	fileMenu[6].enabled = val;
+	var viewMenu = menuitems[3].submenu.items;
+	viewMenu[0].enabled = val;
+	viewMenu[1].enabled = val;
+	viewMenu[3].enabled = val;
+	viewMenu[4].enabled = val;
+	viewMenu[5].enabled = val;
+	viewMenu[7].enabled = val;
+	viewMenu[8].enabled = val;
+	viewMenu[9].submenu.items[0].enabled = val;
+	viewMenu[9].submenu.items[1].enabled = val;
+	viewMenu[9].submenu.items[2].enabled = val;
+	viewMenu[10].enabled = val;
+	viewMenu[12].enabled = val;
+	var helpMenu = menuitems[5].submenu.items;
+	helpMenu[0].enabled = val;
+}
+
+function AllWindowsSetLabels(val) {
+	var allwins = BrowserWindow.getAllWindows();
+	for (var i=0; i<allwins.length; i++) {
+		allwins[i].rasteroptions.labels = true;
+		allwins[i].webContents.send('options', 'labels', val);
+	}
+}
+
+function AllWindowsSetVulnlevel(val) {
+	var allwins = BrowserWindow.getAllWindows();
+	for (var i=0; i<allwins.length; i++) {
+		allwins[i].rasteroptions.labels = true;
+		allwins[i].webContents.send('options', 'vulnlevel', val);
+	}
+}
+
+/***************************************************************************************************/
+/***************************************************************************************************/
+
 ipc.on('pdfoption-modified', function(event,id,opt,val) {
 	var win = BrowserWindow.fromId(id);
 	if (!win)
@@ -343,12 +373,18 @@ ipc.on('document-saveas', function(event,id,str) {
 	doSaveAs(win,str);
 });
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
+// This method will be called when Electron has finished initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function() {
+	// Create the application menu
+	appMenu = Menu.buildFromTemplate(MenuTemplate);
+	Menu.setApplicationMenu(appMenu);
+
+	// On Windows, the project is given on the commandline, so it can be opened now.
 	createWindow(FileToBeOpened);
 	FileToBeOpened = null;
+
+	// On MacOS, the project is given through an open-file event.
 	app.on('open-file', function(event,file)  {
 		if (fs.existsSync(file))
 			createWindow(file);
@@ -362,29 +398,7 @@ app.on('window-all-closed', function()  {
 	if (process.platform !== 'darwin') {
 		app.quit();
 	} else {
-		// MacOS. Grey out the several menu items when no windows are open
-		var menuitems = Menu.getApplicationMenu().items;
-		var fileMenu = menuitems[1].submenu.items;
-		fileMenu[2].enabled = false;
-		fileMenu[3].enabled = false;
-		fileMenu[4].enabled = false;
-		fileMenu[5].enabled = false;
-		fileMenu[6].enabled = false;
-		var viewMenu = menuitems[3].submenu.items;
-		viewMenu[0].enabled = false;
-		viewMenu[1].enabled = false;
-		viewMenu[3].enabled = false;
-		viewMenu[4].enabled = false;
-		viewMenu[5].enabled = false;
-		viewMenu[7].enabled = false;
-		viewMenu[8].enabled = false;
-		viewMenu[9].submenu.items[0].enabled = false;
-		viewMenu[9].submenu.items[1].enabled = false;
-		viewMenu[9].submenu.items[2].enabled = false;
-		viewMenu[10].enabled = false;
-		viewMenu[12].enabled = false;
-		var helpMenu = menuitems[5].submenu.items;
-		helpMenu[0].enabled = false;
+		EnableMenuItems(false);
 	}
 });
 
@@ -404,6 +418,12 @@ app.disableHardwareAcceleration();
 if (process.argv.length>1 && fs.existsSync(process.argv[1]))
 	FileToBeOpened = process.argv[1];
 
+// Menu template:
+// 0 : File
+// 1 : Edit
+// 2 : View
+// 3 : Window
+// 4 : Help
 MenuTemplate = [{
 	label: _("File"),
 	submenu: [{
@@ -476,18 +496,14 @@ MenuTemplate = [{
 		type: 'radio',
 		checked: (DefaultRasterOptions.labels==true),
 		click: function (item, focusedWindow) {
-			if (!focusedWindow) return;
-			focusedWindow.rasteroptions.labels = true;
-			focusedWindow.webContents.send('options', 'labels', true);
+			AllWindowsSetLabels(true);
 		}
 	}, {
 		label: _("Hide labels"),
 		type: 'radio',
 		checked: (DefaultRasterOptions.labels==false),
 		click: function (item, focusedWindow) {
-			if (!focusedWindow) return;
-			focusedWindow.rasteroptions.labels = false;
-			focusedWindow.webContents.send('options', 'labels', false);
+			AllWindowsSetLabels(false);
 		}
 	}, {
 		type: 'separator'
@@ -496,27 +512,21 @@ MenuTemplate = [{
 		type: 'radio',
 		checked: (DefaultRasterOptions.vulnlevel==1),
 		click: function (item, focusedWindow) {
-			if (!focusedWindow) return;
-			focusedWindow.rasteroptions.vulnlevel = 1;
-			focusedWindow.webContents.send('options', 'vulnlevel', 1);
+			AllWindowsSetVulnlevel(1);
 		}
 	}, {
 		label: _("Large vulnerability levels"),
 		type: 'radio',
 		checked: (DefaultRasterOptions.vulnlevel==2),
 		click: function (item, focusedWindow) {
-			if (!focusedWindow) return;
-			focusedWindow.rasteroptions.vulnlevel = 2;
-			focusedWindow.webContents.send('options', 'vulnlevel', 2);
+			AllWindowsSetVulnlevel(2);
 		}
 	}, {
 		label: _("No vulnerability levels"),
 		type: 'radio',
 		checked: (DefaultRasterOptions.vulnlevel==0),
 		click: function (item, focusedWindow) {
-			if (!focusedWindow) return;
-			focusedWindow.rasteroptions.vulnlevel = 0;
-			focusedWindow.webContents.send('options', 'vulnlevel', 0);
+			AllWindowsSetVulnlevel(0);
 		}
 	}, {
 		type: 'separator'
@@ -563,10 +573,6 @@ MenuTemplate = [{
 		label: _("Minimize"),
 		accelerator: 'CmdOrCtrl+M',
 		role: 'minimize'
-	}, {
-		label: _("Close"),
-		accelerator: 'CmdOrCtrl+W',
-		role: 'close'
 	}]
 }, {
 	label: _("Help"),
@@ -580,6 +586,8 @@ MenuTemplate = [{
 // Fix the default menu above for MacOS
 if (process.platform === 'darwin') {
 	const name = app.getName();
+
+	// Insert an application menu at the front
 	MenuTemplate.unshift({
 		label: name,
 		submenu: [{
@@ -614,19 +622,8 @@ if (process.platform === 'darwin') {
 			}
 		}]
 	});
-
-	// Window menu.
-	// Remove the Close option (it should be under the File menu)
-	var mi = MenuTemplate[4].submenu.pop();
-	MenuTemplate[1].submenu.pop();
-	MenuTemplate[1].submenu.push(mi);
-	// Add one option
-	MenuTemplate[4].submenu.push({
-		type: 'separator'
-	}, {
-		label: 'Bring All to Front',
-		role: 'front'
-	});
-
+} else {
+	// No Window menu on Windows
+	MenuTemplate.splice(3,1);
 }
 
