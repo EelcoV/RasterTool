@@ -60,7 +60,7 @@ body {
 }
 
 .connbutton { display: none !important; }
-._jsPlumb_endpoint { visibility: hidden !important; }
+.jtk-endpoint { visibility: hidden !important; }
 
 .sfaccordion { page-break-inside: avoid; }
 /*.shfaccordion { page-break-inside: avoid; }*/

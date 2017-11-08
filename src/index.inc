@@ -26,7 +26,7 @@ See LICENSE.md
 <script type="text/javascript" src="../js/eventsource.js"></script>
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
 #endif
-<script type="text/javascript" src="../js/jquery.jsPlumb-1.7.5.js"></script>
+<script type="text/javascript" src="../js/jsplumb-2.5.7.min.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>
 <script type="text/javascript" src="../js/encodedecode.js"></script>
 <script type="text/javascript" src="../js/rasterMain.js"></script>

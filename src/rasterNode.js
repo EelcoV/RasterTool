@@ -545,7 +545,7 @@ Node.prototype = {
 							var node2 = labelOverlay.component.targetId;
 							var src = Node.get(nid2id(node1));
 							var dst = Node.get(nid2id(node2));
-							jsP.detach(labelOverlay.component);
+							jsP.deleteConnection(labelOverlay.component);
 							src.detach_center(dst);
 							transactionCompleted("Node disconnect");
 						}
@@ -667,27 +667,28 @@ Node.prototype = {
 			$(this.jnid).css("display", "block");
 		this.setposition(this.position.x, this.position.y, false);
 		var containmentarr = [];
+		/* This is *not* jQuery's draggable, but Katavorio's!
+		 * See https://github.com/jsplumb/katavorio/wiki
+		 */
 		jsP.draggable($(this.jnid), {
 			containment: 'parent',
 			distance: 10,	// prevent drags when clicking the menu activator
 			opacity: 0.8,
-			stop: function(event,ui) {
+			filter: '.ui-resizable-handle',
+			stop: function(event) {
 				// Reset the node to the grid
-				var rn = Node.get( nid2id(this.id) );
+				var rn = Node.get( nid2id(event.el.id) );
 				rn.setposition(rn.position.x,rn.position.y);
 				// Disallow dragging for 100msec
 				setTimeout( function(){rn.dragging=false;}, 100);
 				transactionCompleted("Node move (selection)");
 			},
-			drag: function(event,ui) {
-				var rn = Node.get( nid2id(this.id) );
-				var r = $('#tab_diagrams').offset();
-				var sl = $('#diagrams'+rn.service).scrollLeft();
-				var st = $('#diagrams'+rn.service).scrollTop();
-				var dx = (ui.offset.left-r.left+sl) - rn.position.x;
-				var dy = (ui.offset.top-r.top+st) - rn.position.y;
+			drag: function(event) {
+				var rn = Node.get( nid2id(event.el.id) );
+				var dx = event.pos[0] - rn.position.x;
+				var dy = event.pos[1] - rn.position.y;
 				rn.dragging = true;
-				if (event.shiftKey) {
+				if (event.e.shiftKey) {
 					// Drag the whole service diagram
 					var ni = new NodeIterator({service: rn.service});
 					for (ni.first(); ni.notlast(); ni.next()) {
@@ -705,13 +706,14 @@ Node.prototype = {
 				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : "TopCenter"),
 				isSource: true,
 				isTarget: false,
+				connector: ["Bezier", { curviness: 80 } ], // When dragging
 				maxConnections: -1,
 				source: this.nid
 			});
 			$(this.dragpoint.canvas).css({visibility: "hidden"});
 			this.centerpoint = jsP.addEndpoint(this.nid, {
 				anchor: "Center",
-				paintStyle: {fillStyle:"transparent"},
+				paintStyle: {fill:"transparent"},
 				isSource: false,
 				isTarget: false,
 				enabled: false,
@@ -720,7 +722,8 @@ Node.prototype = {
 			});
 			// Drop connections onto the target node, not on the dragpoint of the target node (as in older versions).
 			jsP.makeTarget(this.nid, {
-				deleteEndpointsOnDetach: true
+				allowLoopback: false,
+				deleteEndpointsOnEmpty: true
 			});
 		}
 
@@ -799,6 +802,7 @@ Node.prototype = {
 	
 		$('#titlemain'+this.id).editInPlace({
 			bg_over: "rgb(255,204,102)",
+			show_buttons: false,
 			field_type: (this.type=='tNOT' ? "textarea" : "text"),
 			callback: function(domid, enteredText) {
 				var rn = Node.get( nid2id(domid) );

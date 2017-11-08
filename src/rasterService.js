@@ -48,13 +48,17 @@ var Service = function(id) {
 	this._painted=false;
 	this._loaded=false;
 	this._jsPlumb = jsPlumb.getInstance({
+		PaintStyle: {
+			strokeWidth: 3,
+			stroke: "#666"
+		},
 		EndpointStyle: {
-			lineWidth: 10,
-			fillStyle: '#aaa'
+			strokeWidth: 10,
+			fill: '#aaa'
 		},
 		EndpointHoverStyle: {
-			fillStyle: '#666',
-			strokeStyle: '#000'
+			fill: '#666',
+			stroke: '#000'
 		},
 		DragOptions: { cursor: 'move' },
 		Endpoint: [ "Dot", { radius: 6 } ]

@@ -579,7 +579,7 @@ div.th_remark {
 
 /* Basic Node templates */
 /* round dot on top of nodes */
-._jsPlumb_endpoint {
+.jtk-endpoint {
     z-index: 2;
     user-select: none;
     -ms-user-select: none;
@@ -587,17 +587,20 @@ div.th_remark {
     -webkit-user-select: none;
 }
 /* Lines between nodes */
-._jsPlumb_connector {
+.jtk-connector {
     z-index: 1;
     user-select: none;
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
 }
-._jsPlumb_hover {
+.jtk-drag-hover {
+	outline: 3px dotted rgb(252,107,33,0.6);
+}
+.jtk-hover {
     visibility: visible !important;
 }
-._jsPlumb_dragging {
+.jtk-dragging {
     /* Dragging connections should be on top */
     z-index: 200;
 }
@@ -617,8 +620,8 @@ svg path {
 }
 
 .ui-resizable-se {
-    bottom: -2px !important;
-    right: -4px !important;
+    bottom: -4px !important;
+    right: -6px !important;
 }
 
 div.node {
@@ -658,6 +661,14 @@ div.nodeheader input.inplace_field {
     position: relative;
     left: -4em;
     width: 15em;
+}
+div.tACTtitle .editInPlace-active {
+	width: 6em;
+	display: block;
+}
+div.tACTtitle input.inplace_field {
+	width: 6em;
+	left: 0;
 }
 div.nodetitle {
     position: relative;
@@ -751,11 +762,12 @@ div.tWLStitle {
     transform: translateY(-50%);
     -webkit-transform: translateY(-50%);
 }
-div.WLScontent {
+div.tWLScontent {
     position: absolute;
     top: 0px;
     left: 0px;
     width: 100%;
+    height: 100%;
     border: 0px;
 }
 
@@ -776,11 +788,12 @@ div.tWRDtitle {
     transform: translateY(-50%);
     -webkit-transform: translateY(-50%);
 }
-div.WRDcontent {
+div.tWRDcontent {
     position: absolute;
     top: 0px;
     left: 0px;
     width: 100%;
+    height: 100%;
     border: 0px;
 }
 
@@ -800,7 +813,7 @@ div.tEQTtitle {
     transform: translateY(-50%);
     -webkit-transform: translateY(-50%);
 }
-div.EQTcontent {
+div.tEQTcontent {
     position: absolute;
     top: 0px;
     left: 0px;
