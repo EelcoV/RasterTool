@@ -595,7 +595,7 @@ div.th_remark {
     -webkit-user-select: none;
 }
 .jtk-drag-hover {
-	outline: 3px dotted rgb(252,107,33,0.6);
+	outline: 3px dotted rgb(252,107,33);
 }
 .jtk-hover {
     visibility: visible !important;
