@@ -18,6 +18,7 @@ var LS = LS_prefix+":"+LS_version+":";
 /* Global preferences */
 var Preferences;
 var ToolGroup;
+var UserLanguage;
 
 #ifdef STANDALONE
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -122,6 +123,9 @@ $(function() {
 
 #ifdef SERVER
     ToolGroup = $('meta[name="group"]').attr('content');
+    // Use only the first language in the list
+	UserLanguage = $('meta[name="language"]').attr('content').replace(/(;.+)/,'').replace(/,.+/,'');
+	$.localise('../js/translation', {language: UserLanguage});
 #else
 	ToolGroup = '_%standalone%_';
 	// Prevent file drops

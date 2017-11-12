@@ -8,6 +8,7 @@ See LICENSE.md
 <head>
 #ifdef SERVER
 <meta name="group" content="<?= GROUP ?>">
+<meta name="language" content="<?= LANGUAGE ?>">
 #endif
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <meta charset="UTF-8"> 
@@ -31,7 +32,7 @@ See LICENSE.md
 <script type="text/javascript" src="../js/encodedecode.js"></script>
 <script type="text/javascript" src="../js/rasterMain.js"></script>
 #ifdef SERVER
-<script type="text/javascript">$.localise('../js/translation');</script>
+<script type="text/javascript"></script>
 #else
 #ifdef LANG_NL
   <script src="../js/translation-nl.js"></script>

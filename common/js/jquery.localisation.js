@@ -129,6 +129,12 @@ $.localise = function(packages, settings, loadBase, path, timeout, async, comple
 // Localise it!
 $.localize = $.localise;
 
+/* Internet Explorer does not expose the user selected languages in the navigator object.
+ * The language given in navigator.userLanguage is the language of the browser.
+ * As a workaround for Internet Explorer (as always!) we look at the http header obtained
+ * using PHP, and saved in rasterMain.js in the UserLanguages variable.
+ */
+
 /* Retrieve the default language set for the browser. */
 $.localise.defaultLanguage = normaliseLang(navigator.language /* Mozilla */ ||
     navigator.userLanguage /* IE */);
