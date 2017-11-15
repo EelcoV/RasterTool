@@ -5669,7 +5669,7 @@ function listSelectedRisks() {
                 cm: (nc.isroot() ? _("All nodes") : nc.title),
                 ccf: true,
                 qw: (exclCl.indexOf(nc.id+'_0')>=0),
-                v: ThreatAssessment.valueindex[nc.magnitude]
+                v: ThreatAssessment.valueindex[ta.total]
             });
         }
     }
