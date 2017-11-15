@@ -404,11 +404,9 @@ var DefaultThreats = [
 ["tWRD",_("Break"),				_("Cable damaged by natural events, trenching, anchors, or other external influence.")],
 ["tWRD",_("Congestion"),		_("The amount of traffic offered exceeds the capacity of the link.")],
 ["tWRD",_("Cable aging"),		_("Insulation weakens with age.")],
-["tWRD",_("EMC"),				_("Electromagnetic influences from neighbouring cables or radio sources.")],
 ["tEQT",_("Physical damage"),	_("Fire, flood, knocks and other physical damage inflicted.")],
 ["tEQT",_("Power"),				_("Failure of electrical power supply.")],
-["tEQT",_("EMC"),				_("Electromagnetic influences from neighbouring cables or radio sources.")],
-["tEQT",_("Configuration"),		_("Incorrect configuration or mistakes by operators.")],
+["tEQT",_("Configuration"),		_("Incorrect configuration or mistakes by operators or users.")],
 ["tEQT",_("Malfunction"),		_("Failure of an internal module without a clear external cause, possibly by aging.")]
 ];
 
