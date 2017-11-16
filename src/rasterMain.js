@@ -528,8 +528,8 @@ function StartFind() {
  * If no translation is provided, the default is to show the unlocalised English version.
  */
 function _(s) {
-    var str = _t[s];
-    if (!str) {
+    var str;
+    if (typeof(_t)=='undefined' || _t[s]==undefined) {
         // No localisation available. Default to English version
 #ifdef SERVER
         if (DEBUG
@@ -540,7 +540,8 @@ function _(s) {
         }
 #endif
         str=s;
-    }
+    } else
+    	str=_t[s];
     // Replace %1, %2, ... %9 by the first, second, ... ninth argument.
     //for (var i=1; i<10; i++) {
     //    str = str.replace("%"+i, arguments[i])
