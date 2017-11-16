@@ -8,7 +8,6 @@ See LICENSE.md
 <head>
 #ifdef SERVER
 <meta name="group" content="<?= GROUP ?>">
-<meta name="language" content="<?= LANGUAGE ?>">
 #endif
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <meta charset="UTF-8"> 
@@ -30,14 +29,14 @@ See LICENSE.md
 <script type="text/javascript" src="../js/jsplumb-2.5.7.min.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>
 <script type="text/javascript" src="../js/encodedecode.js"></script>
-<script type="text/javascript" src="../js/rasterMain.js"></script>
 #ifdef SERVER
-<script type="text/javascript"></script>
+<script type="text/javascript">$.localise('../js/translation', {async: false, language: "<?= LANGUAGE ?>".replace(/(;.+)/,'').replace(/,.+/,'')});</script>
 #else
 #ifdef LANG_NL
   <script src="../js/translation-nl.js"></script>
 #endif
 #endif
+<script type="text/javascript" src="../js/rasterMain.js"></script>
 <script type="text/javascript" src="../js/rasterProject.js"></script>
 <script type="text/javascript" src="../js/rasterService.js"></script>  
 <script type="text/javascript" src="../js/rasterThreatEvaluation.js"></script>  

@@ -124,8 +124,6 @@ $(function() {
 #ifdef SERVER
     ToolGroup = $('meta[name="group"]').attr('content');
     // Use only the first language in the list
-	UserLanguage = $('meta[name="language"]').attr('content').replace(/(;.+)/,'').replace(/,.+/,'');
-	$.localise('../js/translation', {language: UserLanguage});
 #else
 	ToolGroup = '_%standalone%_';
 	// Prevent file drops
@@ -529,8 +527,6 @@ function StartFind() {
  *
  * If no translation is provided, the default is to show the unlocalised English version.
  */
-var _t = new Array;
-
 function _(s) {
     var str = _t[s];
     if (!str) {

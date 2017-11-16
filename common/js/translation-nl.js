@@ -4,6 +4,8 @@
 
 /* Nederlandse vertalingen */
 
+var _t = new Array;
+
 _t["Check the projects for internal consistency."] = "Controleer de projecten op interne consistentie.";
 _t["Library"] = "Bibliotheek";
 _t["Options"] = "Opties";
