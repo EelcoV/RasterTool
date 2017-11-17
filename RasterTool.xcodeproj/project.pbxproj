@@ -16,6 +16,7 @@
 		4915A6361FA116CF00B4B205 /* fillcache.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = fillcache.sh; sourceTree = "<group>"; };
 		4915A6371FA1178D00B4B205 /* Versions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Versions.sh; sourceTree = "<group>"; };
 		4915A63D1FA126E600B4B205 /* nsis.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = nsis.zip; sourceTree = "<group>"; };
+		4918F0BE1FBEBF13008A6208 /* Build and Install.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Build and Install.md"; sourceTree = "<group>"; };
 		49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.2.1.min.js"; sourceTree = "<group>"; };
 		49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.12.1.min.js"; sourceTree = "<group>"; };
 		49196E311F85417B00097E97 /* smoothness-1.12.1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "smoothness-1.12.1"; sourceTree = "<group>"; };
@@ -137,7 +138,7 @@
 		499804E4187F29D10063E8C5 /* qm-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-lo.png"; sourceTree = "<group>"; };
 		4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "preprocess-server.sh"; sourceTree = "<group>"; };
 		4999EB5F1F9004D0009BBF18 /* clean.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
-		4999EB651F9007CE009BBF18 /* build-electron-macos.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-electron-macos.sh"; sourceTree = "<group>"; };
+		4999EB651F9007CE009BBF18 /* build-electron.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-electron.sh"; sourceTree = "<group>"; };
 		4999EB6B1F900AA9009BBF18 /* standalone.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = standalone.html; sourceTree = "<group>"; };
 		4999EB6C1F900BB2009BBF18 /* package.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
 		4999EB6D1F900C07009BBF18 /* main.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = main.js; sourceTree = "<group>"; };
@@ -485,7 +486,7 @@
 				4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */,
 				498BB2B91A2626AF00B12844 /* build_tgz.sh */,
 				4999EB5F1F9004D0009BBF18 /* clean.sh */,
-				4999EB651F9007CE009BBF18 /* build-electron-macos.sh */,
+				4999EB651F9007CE009BBF18 /* build-electron.sh */,
 				4954ADED1F954398002A6FBC /* base.EN.dmg */,
 				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
 				4915A6301FA0482800B4B205 /* raster.ico */,
@@ -516,6 +517,7 @@
 				4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */,
 				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
 				49CD587F1F93922E00A9F17F /* Object data structure.txt */,
+				4918F0BE1FBEBF13008A6208 /* Build and Install.md */,
 			);
 			path = doc;
 			sourceTree = "<group>";
@@ -595,7 +597,7 @@
 			buildConfigurationList = 4999EB671F9007E5009BBF18 /* Build configuration list for PBXLegacyTarget "Build Electron" */;
 			buildPhases = (
 			);
-			buildToolPath = "script/build-electron-macos.sh";
+			buildToolPath = "script/build-electron.sh";
 			buildWorkingDirectory = "$(PROJECT_DIR)";
 			dependencies = (
 			);

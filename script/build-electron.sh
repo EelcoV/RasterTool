@@ -2,6 +2,9 @@
 
 . script/Versions.sh
 
+PREPROCESS="filepp -pb"
+#PREPROCESS="cpp -E -P -C -w"
+
 CreateAppVersion()
 {
 	LANG=$1
@@ -20,7 +23,7 @@ CreateAppVersion()
 	do
 		destfile=$BUILDDIR/js/`basename $srcfile`
 		if [ $srcfile -nt $destfile ]; then
-			cpp -E -P -C -w -DSTANDALONE $srcfile $destfile
+			$PREPROCESS -DSTANDALONE $srcfile > $destfile
 			# Check whether the sources are correct, and correctly preprocessed
 			script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process "$destfile" || exit 1
 		fi
@@ -30,7 +33,7 @@ CreateAppVersion()
 #	do
 #		destfile=$BUILDDIR/`basename $srcfile .html`-$LANG.html
 #		if [ $srcfile -nt $destfile ]; then
-#			cpp -E -P -C -w -DLANG=$LANG -DSTANDALONE $srcfile $destfile
+#			$PREPROCESS -DLANG=$LANG -DSTANDALONE $srcfile > $destfile
 #		fi
 #	done
 
@@ -42,7 +45,7 @@ CreateAppVersion()
 	srcfile=src/index.inc
 	destfile=$BUILDDIR/app/app.html
 	if [ $srcfile -nt $destfile ]; then
-		cpp -E -P -C -w -DLANG_$LANG -DSTANDALONE $srcfile $destfile
+		$PREPROCESS -DLANG_$LANG -DSTANDALONE $srcfile > $destfile
 	fi
 
 
@@ -129,6 +132,9 @@ CreateWin32Version()
 	BASEDIR=build/electron-v$ELECTRONVERSION-win32-ia32-$LANG
 	APPDIR=$BASEDIR/resources/app
 
+	WINE="/Applications/Wine Stable.app/Contents/Resources/wine/bin/wine"
+	#WINE=""
+
 	echo "************************** Building $LANG version for Win32..."
 
 	script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process standalone/main.js || exit 1
@@ -147,8 +153,7 @@ CreateWin32Version()
 		cp script/raster.ico $BASEDIR
 		# At this stage, it would be cool to convert the icon PNGs into an ICO file
 		(
-		 PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
-		 wine script/rcedit-x86.exe $BASEDIR/raster.exe \
+		 "$WINE" script/rcedit-x86.exe $BASEDIR/raster.exe \
 		  --set-version-string CompanyName "The Raster Method" \
 		  --set-version-string FileDescription Raster \
 		  --set-file-version $RASTERNUMVERSION \
@@ -175,8 +180,7 @@ CreateWin32Version()
 
 	(
 	 cd $BASEDIR
-	 PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
-	 wine ../../cache/nsis/makensis.exe /nocd ../../script/Raster.$LANG.nsis
+	 "$WINE" ../../cache/nsis/makensis.exe /nocd ../../script/Raster.$LANG.nsis
 	)
 
 	(
@@ -187,10 +191,9 @@ CreateWin32Version()
 	 zip -r raster-win32-$LANG.zip Raster
 
 	 rm -f raster-$LANG-unpack.exe
-	 PATH="/Applications/Wine Stable.app/Contents/Resources/wine/bin:$PATH"
 	 # Filenames containing "instal" require admin privileges!?
-	 wine ../cache/7z/7z.exe a -sfx7z.sfx raster-$LANG-unpack.exe Raster
-	 wine ../script/rcedit-x86.exe raster-$LANG-unpack.exe --set-icon ../script/installraster.ico
+	 "$WINE" ../cache/7z/7z.exe a -sfx7z.sfx raster-$LANG-unpack.exe Raster
+	 "$WINE" ../script/rcedit-x86.exe raster-$LANG-unpack.exe --set-icon ../script/installraster.ico
 
 	 rm Raster
 	)
