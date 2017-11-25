@@ -3,6 +3,9 @@ See LICENSE.md
 
 
 BUGS
+Intranet-version: project details panel is a few pixels to narrow.
+Intranet-version: when renaming a project, the web page title does not change.
+CCF display for unique classes: only first label shows; on hover, the popup only shows the first service.
 Dragging connections onto title fails?!
 On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
