@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		4912CBDE1F966ED700DF081C /* base.NL.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.NL.dmg; sourceTree = "<group>"; };
 		4915A62E1F9E819300B4B205 /* rcedit-x86.exe */ = {isa = PBXFileReference; lastKnownFileType = file; path = "rcedit-x86.exe"; sourceTree = "<group>"; };
 		4915A6301FA0482800B4B205 /* raster.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = raster.ico; sourceTree = "<group>"; };
 		4915A6311FA049DD00B4B205 /* Raster.EN.nsis */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Raster.EN.nsis; sourceTree = "<group>"; };
@@ -123,6 +124,7 @@
 		494B702918796E9D00400328 /* share.inc */ = {isa = PBXFileReference; explicitFileType = text.script.php; path = share.inc; sourceTree = "<group>"; };
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		4954ADED1F954398002A6FBC /* base.EN.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.EN.dmg; sourceTree = "<group>"; };
 		4961E8B71C415CE60001FAE3 /* Raster-EN-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-EN-1.1.epub"; sourceTree = "<group>"; };
 		4961E8B81C415CE60001FAE3 /* Raster-NL-1.1.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raster-NL-1.1.epub"; sourceTree = "<group>"; };
 		4985A2E11FAF41320012DE1B /* jsplumb-2.5.7.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jsplumb-2.5.7.min.js"; sourceTree = "<group>"; };
@@ -485,6 +487,8 @@
 				498BB2B91A2626AF00B12844 /* build_tgz.sh */,
 				4999EB5F1F9004D0009BBF18 /* clean.sh */,
 				4999EB651F9007CE009BBF18 /* build-electron.sh */,
+				4954ADED1F954398002A6FBC /* base.EN.dmg */,
+				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
 				4915A6301FA0482800B4B205 /* raster.ico */,
 				494AF84E1FA48AA100356A28 /* installraster.ico */,
 				4915A63D1FA126E600B4B205 /* nsis.zip */,
