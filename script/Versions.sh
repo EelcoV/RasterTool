@@ -1,0 +1,9 @@
+#
+# Common settings for all builds
+#
+
+ELECTRONVERSION=1.7.9
+RASTERNUMVERSION="2.0"
+RASTERVERSION="2.0"
+RASTERSEASON="November 2017"
+

@@ -1,0 +1,118 @@
+# This installs several files, including raster.exe and raster.ico, creates a start menu shortcut, builds an uninstaller, and
+# adds uninstall information to the registry for Add/Remove Programs
+
+!define APPNAME "Raster"
+!define COMPANYNAME "The Raster Method"
+# These three must be integers
+!define VERSIONMAJOR 2
+!define VERSIONMINOR 0
+!define VERSIONBUILD 0
+
+# This is the size (in kB) of all the files copied into "Program Files"
+!define INSTALLSIZE 107000
+
+BrandingText "Raster"
+
+RequestExecutionLevel admin
+
+InstallDir "$PROGRAMFILES\${APPNAME}"
+
+# This will be in the installer/uninstaller's title bar
+Name "${COMPANYNAME}"
+Icon "..\..\script\installraster.ico"
+outFile "..\raster-NL-full-installer.exe"
+
+!addincludedir ..\..\script
+
+!include LogicLib.nsh
+!include "FileAssociation.nsh"
+
+# Just two pages - install location, and installation
+page directory
+Page instfiles
+
+!macro VerifyUserIsAdmin
+UserInfo::GetAccountType
+pop $0
+${If} $0 != "admin" ;Require admin rights on NT4+
+        messageBox mb_iconstop "Beheerders-rechten nodig!"
+        setErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
+        quit
+${EndIf}
+!macroend
+
+function .onInit
+	setShellVarContext all
+	!insertmacro VerifyUserIsAdmin
+functionEnd
+
+section "install"
+	# Files for the install directory - to build the installer, these should be in the same directory as the install script (this file)
+	setOutPath $INSTDIR
+	# Files added here should be removed by the uninstaller (see section "uninstall")
+	file /r /x .DS_Store .\*.*
+
+	# Uninstaller - See function un.onInit and section "uninstall" for configuration
+	writeUninstaller "$INSTDIR\uninstall.exe"
+
+	# Associate extension .raster with raster.exe
+	${registerExtension} "$INSTDIR\raster.exe" ".raster" "Raster project"
+
+	# Start Menu
+	createShortCut "$SMPROGRAMS\${APPNAME}.lnk" "$INSTDIR\raster.exe" "" "$INSTDIR\raster.ico"
+
+	# Registry information for add/remove programs
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayName" "The Raster tool"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "InstallLocation" "$\"$INSTDIR$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayIcon" "$\"$INSTDIR\raster.ico$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "Publisher" "$\"${COMPANYNAME}$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayVersion" "$\"${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}$\""
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "VersionMajor" ${VERSIONMAJOR}
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "VersionMinor" ${VERSIONMINOR}
+	# There is no option for modifying or repairing the install
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "NoModify" 1
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "NoRepair" 1
+	# Set the INSTALLSIZE constant (!defined at the top of this script) so Add/Remove Programs can accurately report the size
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "EstimatedSize" ${INSTALLSIZE}
+sectionEnd
+
+# Uninstaller
+
+function un.onInit
+	SetShellVarContext all
+
+	!insertmacro VerifyUserIsAdmin
+	#Verify the uninstaller - last chance to back out
+	MessageBox MB_OKCANCEL "De Raster applicatie voorgoed verwijderen?" IDOK next
+		Abort
+	next:
+functionEnd
+
+section "uninstall"
+	# Remove Start Menu launcher
+	delete "$SMPROGRAMS\${APPNAME}.lnk"
+
+	# Preference files, caches, etc.
+	SetShellVarContext current
+	rmdir /r "$APPDATA\${APPNAME}"
+	rmdir /r "$LOCALAPPDATA\${APPNAME}"
+	SetShellVarContext all
+
+ 	${unregisterExtension} ".raster" "Raster project"
+
+	# Remove files
+	rmdir /r $INSTDIR\locales
+	rmdir /r $INSTDIR\resources
+	delete $INSTDIR\*.*
+
+	# Always delete uninstaller as the last action
+	delete $INSTDIR\uninstall.exe
+
+	# Try to remove the install directory - this will only happen if it is empty
+	rmDir $INSTDIR
+
+	# Remove uninstaller information from the registry
+	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}"
+sectionEnd

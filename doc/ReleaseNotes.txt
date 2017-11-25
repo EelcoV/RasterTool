@@ -1,0 +1,119 @@
+Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+See LICENSE.md
+
+
+October 2017
+==============
+* Preparing for a major change: a standalone app for MacOS and Windows, separate
+  from a server-based version. The standalone versions operate on local files,
+  and do not support project sharing.
+* The tree structure is now shown using lines in Common Cause Failure View.
+* Made tool more robust when trying to import corrupted projects.
+* Added a check whether the tool is already running in another browser tab.
+* Updated About tab of help pages.
+* The project name now shows in the page title.
+* Bug fixes.
+
+January 2016
+=============
+We now have ePub versions of the English and Dutch manuals.
+
+July 2015
+=============
+* Nodes in CCF view can now be selected, and all selected nodes can be dragged and
+  dropped collectively. Normal click = select/deselect. Cmd click or Ctrl click =
+  add/remove that node from the current selection. Shift click = extend selection.
+* In CCF view, individual nodes and selected nodes have a popup menu. Use the menu
+  to create a cluster from the selection, or to move nodes between clusters.
+* Clusters also have a popup menu. Use the menu to delete the cluster, or to move it.
+* Clusters can be opened/closed like accordions.
+* Find panel now searches and shows suffixes.
+
+June 2015
+=============
+* In the Diagrams and Single Failures screens, the service tabs at the bottom can
+  now be dragged into the desired order.
+* The option 'Move freely' or 'Snap to grid' has been removed. Nodes now always
+  line up.
+* Maintain current service when reloading the page, or when updating a shared project
+  when it was changed on the server.
+* Fixed: issues with merging, and other small bug fixes.
+
+May 2015
+==========
+* When more than one group is used (for access control), then swapping between groups
+  now hides shared projects and will not give error messages.
+* Connections are now deleted (nodes are disconnected) with a single click on the
+  disconnect icon (the circled X). This used to require a double click.
+* Fixes when simultaneously working on a project from MSIE browsers.
+
+February 2015
+=============
+* Internal changes (library upgrades) and small bug fixes.
+
+December 2014
+=============
+* A new analysis tool is available: Longlist.
+* The popup menu on diagram nodes has a submenu especially for node classes:
+  - rename all nodes in the node class collectively
+  - change the suffix from 'a', 'b', 'c' to something more meaningful.
+
+November 2014
+=============
+The tool is sufficiently stable and usable to drop the 'proto' name. Since proto4, the
+following features were added:
+* Translations were added. The language preferences of your web browser will determine
+  which interface language is shown. The default is still English, and currently only
+  a Dutch translation is provided.
+* A quick search feature was added. This is of use mainly in large projects.
+* Double-clicking a project in the Library will now activate that project.
+* You can add sticky notes to diagrams.
+* Duplicating a node now creates a node class, not a duplicate with a different name.
+* A help button was added. This mostly shows the tables for Frequency and Impact, but
+  does allow for further expansion.
+* Vulnerabilities can now be reordered: drag them up and down to put them in the
+  order that seems most logical to you.
+* Some visual niceties and improvements.
+* And many bug fixes, some of which could lead to data corruption.
+
+
+Proto 4
+=======
+* There are now two types of node classes: plain classes and singular classes. Plain classes
+  are as before: similar nodes that share a single vulnerability assessment. Singular classes
+  indicate that there is one physical component that occurs in more than one service. A plain
+  class can only be converted into a singular class if there is at most one node of that class
+  per service. Singular classes can always be converted back into plain classes.
+* All nodes in a diagram can be moved using the Shift key. Move any node while holding Shift,
+  and all nodes in the diagram will move.
+* It is now possible to select nodes. Simply hold the mouse button down and drag a selection
+  rectangle. All nodes in the selection can be moved by dragging the selection. All nodes in
+  the selection can be deleted by clicking the right mouse button.
+* The project switcher has gone. The current project is now listed in the top right corner.
+  Switching must be done using the Library panel.
+* The library panel is rearranged. The currently active project is indicated, and the rename
+  function has been taken out.
+* The node menu can be invoked using the right mouse button. This is more intuitive for most
+  people.
+* The workspace for diagrams can now be scrolled using normal scrollbars.
+* The analysis tab now features horizontal tabs, and new reports have been added.
+* Added a splash screen that hides the UI until it is ready for interaction.
+* When printing, the diagram view is returned to the top-left and all sigle and common cause
+  failures are expanded. This does not work in all browser (not in Chrome/webkit currently).
+* Vulnerabilities can be left unassessed without affecting the overall vulnerability level.
+  Previously, if any vulnerability was assessed as '-', the overall vulnerability level would
+  be '-'.
+* Modified the instructions on removing vulnerabilities, to better avoid unwarranted removal
+  of "black swan" vulnerabilities.
+* Saving a project now gives a properly named file to be saved. As a result, files cannot be
+  saved offline (the server is required).
+* Aging on equipment is replaced by the more general 'Malfunction'.
+* Projects can now be shared, and stored on the server. Major rework has been done.
+
+
+Beta 3
+======
+Beta 3 improves the Analysis tab with Quick Wins.
+A notable visible change is that Common Cause Failures are once more called Common Cause Failures.
+The themes Sunny and Overcast did not fit visually with the interface, and are now removed.
+Several bugs were fixed.

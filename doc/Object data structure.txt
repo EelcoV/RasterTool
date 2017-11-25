@@ -1,0 +1,79 @@
+
+Property		setter					fieldname in export/localStorage
+--------		--------------------	--------------------------------
+Project
+.id				creator(p.id)			key raster:<version>:P:<p.id>
+.title			settitle(str)			.l
+.group			create only				.g
+.shared			shared(bool)			.a
+.description	setdescription(str)		.d
+.date			setdate(d)				.w // when = date
+.services[i]	addservice(s.id,title)	.s
+.threats[i]		(internal)				.t   (careful: also used for 'type')
+
+Threat
+.id				creator(type,th.id)		key raster:<version>:T:<th.id>
+.project		setproject(p.id)		.p
+.type			creator(type,th.id)		.t
+.title			settitle(str)			.l
+.description	setdescription(str)		.d
+
+Service
+.id				creator(s.id)			key raster:<version>:S:<s.id>
+.title			settitle(str)			.l
+.project		setproject(p.id)		.p
+
+Node
+.id				creator(type,n.id)		key raster:<version>:N:<n.id>
+.type			creator(type,n.id)		.t
+.title			various					.l
+.suffix			various					.f
+.service		Service.cid				.s
+.component		setcomponent(ct.id)		.m
+.position.x		setposition(x,y)		.x
+.position.y		setposition(x,y)		.y
+.position.width	   (internal)			.w
+.position.height   (internal)			.h
+._normw			(internal)				.v // letter just before w
+._normh			(internal)				.g // letter just before h
+.connect[]		(internal)				.c
+.color			setlabel(c)				.o
+
+Component
+.id				creator(type,ct.id)		key raster:<version>:C:<ct.id>
+.type			creator(type,n.id)		.t
+.project		setproject(p.id)		.p
+.thrass[]		(internal)				.e
+.title			settitle(str)			.l
+.nodes[]		addnode(n.id)			.n
+.single			setsingle				.s
+.accordionopened setaccordionopened(b)	.o
+
+NodeCluster		creator(type,cl.id)		key raster:<version>:L:<ct.id>
+.id
+.type									.t
+.title									.l
+.project								.p
+.parentcluster							.u	// u = up
+.childclusters[]						.c	// c = child
+.childnodes[]							.n	// n = nodes
+.thrass									.e
+.accordionopened setaccordionopened(b)	.o
+
+ThreatAssessment
+.id				creator(type,te.id)		key raster:<version>:E:<te.id>
+.type			creator(type,te.id)		.t
+.component		setcomponent(n.id)		.m
+.cluster		setcluster(f.id)		.u
+.title			settitle(str)			.l
+.description	setdescription(str)		.d
+.freq			setfreq(str)			.p
+.impact			setimpact(str)			.i
+.remark			setremark(str)			.r
+
+RasterPreferences						key raster:version:R:0
+.theme			"name of theme preference"
+.emsize			"em_none", "em_small", "em_large"
+.tab			0..3
+.creator		"name of creator"
+

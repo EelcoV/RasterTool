@@ -1,0 +1,1214 @@
+/*
+Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+See LICENSE.md
+
+                              --== Raster tool Stylesheet ==--
+
+The UI consists of a main window containing three sections: diagrams, single element failures,
+ and shared failures. One switches between sections by using the vertical tabs.
+
+*/
+
+.ui-widget {font-size:11px !important;
+}
+
+.ui-state-focus { outline: none; }
+
+body {
+    padding: 0px;
+    border: 0px;
+    margin: 2px 2px 0 2px;
+    overflow: hidden;
+}
+.wait {
+    cursor: wait !important;
+}
+
+.printonly { display: none; }
+.printonlycell { display: none; }
+.doshow { visibility: visible !important; }
+.noselect {
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Vertical tabs */
+#tabs {padding: 0px; border-left: 0px;}
+.ui-tabs-nav {  z-index: 150; }
+.ui-tabs-vertical-sw > .ui-tabs-nav li { width: 9em; float: right; z-index: 150; }
+.longtab { width: 15.5em !important; }
+.rot-neg-90 {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    transform-origin: 0 0;
+    -ms-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+    -o-transform-origin:  0 0;
+}
+.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150; outline: none;}
+.longlink { width: 12.5em !important; }
+.tabcloseicon {margin-top:0.4em !important; cursor: pointer;}
+
+/* The content panes to each vertical tab */
+.workouter {position: absolute; left: 35px; top: 42px; margin: 0px; }
+.workinner {overflow: auto; border-radius: 4px 0 4px 0; }
+.workbody h1 {margin-top: 0;}
+
+input.inplace_field, textarea.inplace_field {
+    font-size: 11px;
+    box-shadow: 0 0 0 4px white;
+    outline: 2px dotted grey;
+    -moz-outline-border: 4px;
+    border: 0;
+    z-index: 1100;
+    background: rgb(255,204,102);
+}
+.th_freq .inplace_form {position: relative; z-index:1100; left: -9px;}
+.th_impact .inplace_form {position: relative; z-index:1100; left: -9px;}
+.th_freq select {
+    margin-left: -7em !important;
+}
+
+.ui-link { cursor: pointer; text-decoration: underline; }
+
+#currentProject {
+    color: #999;
+    font-size: 1.3em !important;
+    overflow: hidden;
+    position: absolute;
+    right: 8px;
+    text-align: right;
+    top: 10px;
+    white-space: nowrap;
+    width: 400px;
+    z-index: 99; /* Just below templates */
+}
+
+#networkactivity {
+    position: absolute;
+    left: 59px;
+    top: 6px;
+    width: 6px;
+    height: 6px;
+    z-index: 9999;
+    border-radius: 4px;
+}
+.activityoff {background: transparent; border: none;}
+.activityyes {background: lightgreen; border: 1px solid grey;}
+.activityno  {background: white; border: 1px solid grey;}
+
+
+/* Templates of the 5 node types, for dragging onto the workspace */
+#templates {
+    position: absolute;
+    left: 400px;
+    top: 2px;
+    width: 398px;
+    height: 40px;
+    border-radius: 0 0 5px 5px;
+    z-index: 100;
+}
+.template {
+    position: absolute;
+    width: 63px;
+    height: 45px;
+    z-index: 100;
+}
+.templatebg {
+    position: absolute;
+    width: 50px;
+    height: 23px;
+    top: 2px;
+    left: 0px;
+    border: 1px solid #333;
+    border-radius: 3px;
+    background: #ccccff;
+    cursor: move;
+    overflow: hidden;
+    z-index: 100;
+}
+.templatebgNOT {
+    position: absolute;
+    top: 2px;
+    left: 12px;
+    height: 24px;
+    width: 26px;
+    border: 1px solid #333;
+    border-radius: 3px;
+    background: #ffff87;
+    cursor: move;
+}
+.templatebgNOT .templateicon {
+    padding-left: 3px;
+    padding-top: 0px;
+}
+.t1 {left: 14px;}
+.t2 {left: 75px;}
+.t3 {left: 138px;}
+.t4 {left: 200px;}
+.t5 {left: 262px;}
+.t6 {left: 344px;}
+img.templateicon { padding-top: 1px; }
+img.tC {
+    position: absolute;
+    top: 0px;
+    right: 7px;
+    width: 16px;
+    height: 16px;
+    z-index: 105;
+    visibility: hidden;
+    cursor: context-menu;
+}
+.templatelabel {
+    position: relative;
+    left: -5px;
+    top: 26px;
+    z-index: 101;
+    white-space: nowrap;
+    text-align: center;
+    color: #666;
+    cursor: default;
+    background: transparent !important;
+    border: 0 !important;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+#helpbutton {
+    position: absolute;
+    top: 6px;
+    left: 820px;
+    z-index: 100;
+}
+#helppanel {
+    width: auto;
+}
+#helptabs td { padding: 2px; }
+#helptabs table p { margin: 0; }
+.exampleMagnitude {
+    border: 1px solid grey;
+    border-radius: 3px;
+    width: 2em;
+    text-align: center;
+}
+
+#findbutton {
+    position: absolute;
+    top: 6px;
+    left: 350px;
+    z-index: 100;
+}
+#field_found {
+    width: 380px;
+    height: 180px;
+    overflow: auto;
+    white-space: nowrap;
+    border: 1px solid grey;
+}
+#field_find {
+    width: 376px;
+    margin-bottom: 5px;
+}
+#helppanel {
+    width: auto;
+}
+::-webkit-input-placeholder { font-style: italic; }
+::-moz-placeholder { font-style: italic; }
+:-ms-input-placeholder { font-style: italic; }
+
+
+/* Hoverbuttons to activate the three panels */
+.activator {
+    position: absolute;
+    width: 80px;
+    height: 20px;
+    top: 2px;
+    border: 0px;
+    background: #999;
+    color: white;
+    font-size: 1.3em;
+    padding-left: 15px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    z-index: 99;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+.actactive {
+    height: 30px;
+    border-radius: 0;
+    border: 1px solid white;
+    border-top: 0px;
+    border-bottom: 0px;
+    box-shadow: 7px 7px 6px #999;
+}
+#libraryactivator { left: 55px; }
+#optionsactivator { left: 175px; }
+
+
+
+/* Common settings for all three panels */
+.actpanel {
+    display: none;
+    position: absolute;
+    top: 32px;
+    border: 1px solid white;
+    border-top: 0px;
+    background: rgba(190,190,190,0.95);
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    z-index: 800;
+    box-shadow: 7px 7px 6px #999;
+}
+.actpanel table { font-size: 11px; width: 100%; }
+.actpanel tr { vertical-align: top; }
+.actpanel .tlabel {width: 10em; text-align: left;}
+.actpanel input { margin-top: 0px; margin-bottom: 6px; }
+.actpanel select { width: 34em; margin: 0 0 10px;}
+.actpanel optgroup {color: #888; font-style: normal; font-weight: normal; margin: 0 0 4px 2px; }
+.actpanel option {background-repeat: no-repeat; padding-left:20px; color: black;}
+.actpanel #libzap  {float: right;}
+fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* Panel for projects */
+#librarypanel { width: 470px; left: 55px; border-top-left-radius: 0; }
+#fileElem {visibility: hidden; width: 0; height: 0; }
+
+#form_projectprops input,textarea,#sh_onoff { margin: 0 0 5px; }
+
+/* Panel for options */
+#optionspanel { width: 420px; left: 175px; border-top-left-radius: 0; }
+#optionspanel .ui-button .ui-button-text { line-height: 1.0; } /* radio buttons */
+#switcher,#labelonoff, #emblem_size, #onlineonoff { margin-bottom: 10px; }
+.leftlabel {
+    display: inline-block;
+    width: 13em;
+    background: transparent !important;
+    border: 0 !important;
+}
+
+.ui-dialog {
+    z-index: 1200 !important;
+}
+
+/*
+Dialog windows:
+ - popup menu
+ - errors in connections for element nodes
+ - threats (checklist) for links and equipment
+ - threat evaluations for element nodes
+*/
+
+/* Dialog: popup menu */
+div.popupmenu {
+    display: none;
+    position: absolute;
+    width: 130px;
+    z-index: 700;
+    box-shadow: 7px 7px 6px #999;
+}
+div.popupsubmenu {
+    position: absolute;
+    margin-left: 121px;
+    margin-top: -22px;
+    z-index: 701;
+    display: none;
+    width: 155px;
+    box-shadow: 7px 7px 6px #999;
+}
+div.popupmenuitem {
+    width: 113px;
+    height: 21px;
+    text-align: left;
+    margin: 0;
+    padding: 5px 11px 0px 11px;
+}
+.popupsubmenuitem {
+    width: 148px !important;
+}
+
+.smallblock {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 1px solid grey;
+    border-radius: 6px;
+    margin-right: 10px;
+}
+.tinyblock {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border: 1px solid grey;
+    border-radius: 3px;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+.tinysquare {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border: 1px solid grey;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+.labelmenuitem { width: 160px !important; }
+.Bnone {display: inline-block; margin-right: 10px;}
+.Bred {background: rgb(240,165,166);}
+.Borange {background: rgb(248,207,127);}
+.Byellow {background: rgb(248,255,140);}
+.Bgreen {background: rgb(204,255,144);}
+.Bblue {background: rgb(193,238,255);}
+.Bpurple {background: rgb(239,169,224);}
+.Bgrey {background: rgb(177,177,177);}
+.labeltext {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 115px;
+}
+.labeltextw {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 145px;
+}
+#mlabel {width:95px !important}
+div.popupmenuitemdisabled {
+    color: #aaa;
+}
+#form_editlabels input {margin-bottom: 5px; }
+
+/* Dialog: errors connections */
+.ui-dialog {
+    box-shadow: 7px 7px 6px #999;
+}
+div.nodereport p { margin-bottom: 0.5ex; }
+
+/* Dialog: checklist and threat evaluation common parts */
+div.thr_header {
+    font-weight: bold;
+}
+div.threat {
+    display: table-row;
+}
+.sfa_sortable .threat { cursor: ns-resize; }
+.checklist .threat { cursor: ns-resize; }
+.th_col {
+    display: block;
+    float: left;
+    height: 19px;
+    padding: 3px;
+    background: #eee;
+}
+div.th_name {
+    width: 14em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+div.th_descr {
+    width: 46em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+div.th_del {
+    width: 15px;
+    padding-left: 0;
+    padding-right: 0;
+    background: white;
+}
+div.th_del input { padding: 1px; }
+.th_name span { cursor: text; }
+.th_descr span { cursor: text; }
+.th_name .inplace_field { width: 8em; } /* Less than width of column, to account for tree structure lines */
+.th_descr .inplace_field { width: 46em; }
+
+/* Dialog: checklist */
+.checklist { display: none; }
+div.threats { }
+
+/* Dialog: threat evaluation */
+div.componentthreats {}
+div.th_freq { width: 4.5em; }
+div.th_impact { width: 4.5em; }
+div.th_total { width: 5em; text-align: center; }
+div.th_remark {
+    width: 35em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.th_freq span { cursor: text; }
+.th_impact span { cursor: text; }
+.th_remark span { cursor: text; }
+.th_remark .inplace_field { width: 35em; }
+
+.copybutton {margin-left: 20px; }
+
+.pdflabel {
+    display: inline-block;
+    width: 10em;
+	line-height: 3em;
+    background: transparent !important;
+    border: 0 !important;
+}
+
+.field_rename {
+	width: 30em;
+}
+
+
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|         DIAGRAMS        |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+
+/* Main workspace (element nodes described further down) */
+.workspace {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    padding: 0 !important;
+}
+#tabdiagrams .workspace {
+    overflow: scroll !important;
+}
+.fancyworkspace {
+    width: 2250px;
+    height: 2000px;
+    background: #ddf;
+    background: -moz-linear-gradient(top, #ccccff, #eeeeff);
+    background: -webkit-gradient(linear, left top, left bottom, from(#ccccff), to(#eeeeff));
+    position: relative;
+    top: 0;
+    left: 0;
+}
+.plainworkspace {
+    overflow: auto !important;
+    margin-left: 15px;
+}
+
+/* Horizontal tabs below the main workspace
+#diagrams_body {
+    position: relative;
+    top: 0px;
+    bottom: 5px;
+}
+*/
+.tabs-bottom .ui-tabs-panel { height: 140px; overflow: auto; }
+.tabs-bottom .ui-tabs-nav { position: absolute !important; left: 38px; bottom: -1px; right:0; padding: 0 !important; }
+.tabs-flushleft .ui-tabs-nav { left: 0 !important; }
+.tabs-bottom .ui-tabs-nav li.ui-tabs-selected { margin-top: -2px !important; }
+.tabs-bottom .ui-tabs-nav li {
+    margin-top: 0px !important;
+    margin-bottom: 1px !important;
+    border-top: none;
+    border-bottom-width: 1px;
+    width: 13em;
+    padding-bottom: 1px !important;
+}
+.tabs-bottom li .inplace_field { /* is this still used? */
+    width: 20em;
+    font-size: 11px;
+    font-weight: bold;
+    border: 0;
+    padding: 0;
+    background: rgb(255,204,102);
+    z-index: 9999;
+}
+.tabtitle { width: 9em; }
+#servaddbutton {
+    position: absolute;
+}
+.servplusbutton {
+    bottom: -1px;
+    left: -1px;
+    width: 40px;
+    height: 29px;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+.scroller_overview {
+    position: fixed;
+    display: none;
+    right: 40px;
+    top: 60px;
+    width: 60px;
+    height: 40px;
+    background: #aaa;
+    border: 1px solid white;
+    z-index: 97;
+    box-shadow: 7px 7px 6px #999;
+}
+
+.scroller_region {
+    position: absolute;
+    left: 0px;        /* Recalculated in $(".scroller_region").draggable( ... ) */
+    top: 0px;
+    width: 54px;    /* Recalculated in SizeDOMElements() */
+    height: 36px;
+    cursor: move;
+    border: 1px solid black;
+    background: rgba(153,153,255,0.60);
+    z-index: 99;
+}
+.tinynode {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: red;
+    z-index: 98;
+}
+
+/* Basic Node templates */
+/* round dot on top of nodes */
+.jtk-endpoint {
+    z-index: 2;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+/* Lines between nodes */
+.jtk-connector {
+    z-index: 1;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+.jtk-drag-hover {
+	outline: 3px dotted rgb(252,107,33);
+}
+.jtk-hover {
+    visibility: visible !important;
+}
+.jtk-dragging {
+    /* Dragging connections should be on top */
+    z-index: 200;
+}
+svg path {
+    stroke-width: 3;
+    stroke: #666;
+}
+
+.connbutton {
+    font-size: 16px !important;
+    z-index: 2;
+    cursor: pointer;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+.ui-resizable-se {
+    bottom: -4px !important;
+    right: -6px !important;
+}
+
+div.node {
+    position: absolute;
+    padding: 0px;
+    z-index: 10;
+    cursor: move;
+    display: none; /* must fade in after create */
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+div.nodeheader {
+    position: absolute;
+    width: 100%;
+    top: 0px;
+    left: 0px;
+    color: black;
+    text-align: center;
+    font: 12px sans-serif;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+.none {color: black !important;}
+.red {color: darkred !important;}
+.orange {color: brown !important;}
+.yellow {color: black !important;}
+.green {color: darkgreen !important;}
+.blue {color: darkblue !important;}
+.purple {color: black !important;}
+.grey {color: #aaa !important;}
+.Chide {color: black !important;}
+div.nodeheader input.inplace_field {
+    position: relative;
+    left: -4em;
+    width: 15em;
+}
+div.tACTtitle .editInPlace-active {
+	width: 6em;
+	display: block;
+}
+div.tACTtitle input.inplace_field {
+	width: 6em;
+	left: 0;
+}
+div.nodetitle {
+    position: relative;
+/*    top: 0em;*/
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+.nodetitle span { cursor: pointer; }
+.marktitleM {
+    color: rgb(153,51,0);
+    position: relative;
+}
+.marktitleS {
+    color: rgb(153,51,0);
+    position: relative;
+}
+div.nodecontent {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+img.nodeC {
+    position: absolute;
+    top: -5px;
+    right: 0px;
+    width: 16px;
+    height: 16px;
+    z-index: 15;
+    cursor: context-menu;
+    visibility: hidden;
+}
+.markhi { visibility: visible; }
+.marklo { visibility: hidden; }
+img.nodeW {
+    position: absolute;
+    top: -5px;
+    left: 0px;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    z-index: 15;
+}
+div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
+    display: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 3px;
+    border: 1px solid grey;
+    text-align: center;
+    position: absolute;
+    color: transparent;
+    top: -9px;
+    left: 0px;
+    z-index: 15;
+    box-shadow: 2px 2px 3px #999;
+}
+.M0 { background: rgb(255,255,255) }    /* '-' */
+.M1 { background: rgb(255,0,255) }        /* 'A' */
+.M2 { background: rgb(51,255,0) }        /* 'U' */
+.M3 { background: rgb(204,255,0) }        /* 'L' */
+.M4 { background: rgb(255,204,51) }        /* 'M' */
+.M5 { background: rgb(255,153,153) }    /* 'H' */
+.M6 { background: rgb(255,0,0) }        /* 'V' */
+.M7 { background: rgb(153,204,255) }    /* 'X' */
+
+img.contentimg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Mods for Wireless links */
+div.tWLS {
+    width: 100px;
+    height: 30px;
+}
+div.tWLSheader {
+    left: 6%;
+    right: 6%;
+    width: 88%;
+    height: 100%;
+}
+div.tWLStitle {
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+}
+div.tWLScontent {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    border: 0px;
+}
+
+/* Mods for Wired links */
+div.tWRD {
+    border: 0px;
+    width: 99px;
+    height: 29px;
+}
+div.tWRDheader {
+    left: 8%;
+    right: 8%;
+    width: 84%;
+    height: 100%;
+}
+div.tWRDtitle {
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+}
+div.tWRDcontent {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    border: 0px;
+}
+
+/* Mods for Equiment nodes */
+div.tEQT {
+    border: 0px;
+    width: 99px;
+    height: 29px;
+}
+div.tEQTheader {
+    left: 11%;
+    width: 77%;
+    height: 100%;
+}
+div.tEQTtitle {
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+}
+div.tEQTcontent {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    border: 0px;
+}
+
+/* Mods for Actor nodes */
+div.tACT {
+    width: 70px;
+    height: 35px;
+}
+div.tACTcontent {
+    left: 25%;
+    right: 25%;
+    width: 50%;
+    height: 100%;
+}
+div.tACTheader {
+    position: absolute;
+    top: 100%;
+    width: auto;
+    min-width: 6em;
+    left: 50%;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+    /*border: 1px solid grey;*/
+    border-radius: 3px;
+    background: rgba(240,240,240,0.8);
+    padding: 2px 2px 0 2px;
+}
+div.tACTtitle {
+    left: 50%;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+}
+img.tACTD {
+    right: 10%;
+}
+img.tACTW {
+    left: 10%;
+}
+
+/* Mods for Unknown links */
+div.tUNK {
+    width: 100px;
+    height: 50px;
+}
+div.tUNKheader {
+    left: 15%;
+    right: 15%;
+    width: 70%;
+    height: 100%;
+}
+div.tUNKtitle {
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+}
+
+/* Mods for Notes */
+.tNOT {
+    width: 100px;
+    height: 50px;
+}
+div.tNOTheader {
+    top: 5%;
+    left: 3%;
+    right: 3%;
+    width: 96%;
+    text-align: left;
+}
+.tNOTD {
+    top: -3px !important;
+    right: -3px !important;
+}
+.tNOTMagnitude, .tNOTW {
+    visibility: hidden !important;
+}
+.tNOTtitle span {white-space: pre-wrap;}
+.tNOTcontent {height: 100%;}
+
+#selectrect {
+    position: absolute;
+    display: none;
+    background: blue;
+    opacity: 0.2;
+    border-radius: 7px;
+    border: 4px solid white;
+    z-index: 300;
+}
+
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|     SINGLE FAILURES     |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+
+#servaddbuttonsf {
+    position: absolute;
+}
+
+.firstp {
+    margin-top: 22px;
+}
+.sortalls { margin-left: 30px; }
+
+/*
+This tab (as does the common cause failures tab) borrows definitions from the dialogs
+for checklists and threat evaluations.
+*/
+.sfaccordion {
+    width: 810px !important;
+    margin-bottom: 3px !important;
+}
+
+.incomplete {
+    margin-left: 2em;
+    color: rgb(255,102,0);
+}
+.disabled {
+    margin-left: 2em;
+    color: rgb(255,102,0);
+    text-transform: uppercase;
+}
+
+.Magnitude {
+    float: right;
+    width: 3em;
+    margin-left: 2em;
+    border: 1px solid grey;
+    color: black;
+    text-align: center;
+}
+.Md {     /* disabled */
+    border: 0px;
+    background: transparent;
+}
+.sflabelgroup {
+    position: absolute;
+    right: 40px;
+    top: 5px;
+    width: 175px;
+}
+
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|  COMMON CAUSE FAILURES  |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+
+#ccfs_body p {
+    margin-left: 15px;
+    margin-top: 22px;
+}
+
+.expandcollapse {
+}
+
+#filter {
+    margin-left: 40px;
+}
+
+.shfaccordion {
+    width: 810px !important;
+    margin-left: 15px !important;
+    margin-bottom: 3px !important;
+}
+
+.shfaccordionbody {
+    padding-top: 0px !important;
+    padding-right: 0px !important;
+}
+
+.linechar {
+	position: relative;
+	left: 1px;
+	top: -3px;
+	overflow: visible;
+	display: inline;
+	float: left;
+}
+.lineimg {
+	width: 12px;
+	height: 25px;
+}
+
+.threatdomain {
+/*    height: 450px; is now set in SizeDOMElements() */
+    margin-top: 5px;
+
+    overflow: auto;
+    background:
+        linear-gradient(white 30%, rgba(255,255,255,0)),
+        linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+        radial-gradient(50% 0, farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)),
+        radial-gradient(50% 100%,farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
+    background:
+        linear-gradient(white 30%, rgba(255,255,255,0)),
+        linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+/*        radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
+        radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
+*/
+        linear-gradient(to bottom, rgba(90,0,0,.8), rgba(50,0,0,.2) 2px, rgba(0,0,0,0)),
+        linear-gradient(to top, rgba(90,0,0,.8), rgba(50,0,0,.2) 2px, rgba(0,0,0,0)) 0 100%;
+    background-repeat: no-repeat;
+    background-size: 100% 40px, 100% 40px, 740px 15px, 740px 15px;
+
+    /* Opera doesn't support this in the shorthand */
+    background-attachment: local, local, scroll, scroll;
+}
+
+.tlist {
+    list-style-type: none;
+}
+
+.tlistitem {
+    margin: 0 44px 5px 0px;
+    padding: 1px 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: ns-resize;
+}
+.li_selected {
+    border: 1px solid red;
+    background: #fee;
+}
+.tlistroot { /* Identical to .tlistitem */
+    margin: 0 44px 5px 0px;
+    padding: 1px 5px;
+    border: 1px solid gray;
+    border-radius: 3px;
+}
+
+#ccfs_body .ui-draggable-dragging {
+    background-color: white;
+    z-index: 999;
+    box-shadow: 5px 5px 5px #999;
+}
+
+.tlisthigh {
+    background: #dfd !important;
+}
+
+/*.tlisthigh:before {
+    content: "\2666";
+}*/
+
+.tlisthover {
+    background: #bdb !important;
+}
+
+.childnode {
+      margin-left: 10px;
+}
+
+.labelind {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 150px;
+}
+.shflabelgroup {
+    position: absolute;
+    right: 20px;
+    top: 0;
+}
+
+.litext {
+    cursor: text;
+}
+
+.clustericon {
+    float:left;
+    margin-left: -8px;
+    margin-right: 2px;
+    cursor: pointer;
+}
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|         ANALYSIS        |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+
+#analysis_body h3 {
+    background: #eee;
+    margin: 0 0 5px;
+    padding: 15px 100px 5px;
+}
+#analysis_body p {
+    margin-top: 2px;
+    margin-bottom: 1em;
+}
+#analysis_body input { margin-top: 0px; margin-bottom: 0.5em; margin-right: 1em; padding: 2px; }
+
+#ana_nodethreattop { margin: 15px 0 0; }
+#ana_nodethreattop td {vertical-align: top; padding-right: 3em;}
+#ana_exclusions {width: 40em;}
+
+#ana_nodethreattable table {
+    table-layout: fixed;
+}
+#ana_nodethreattable td {
+    white-space: nowrap;
+    text-align: center;
+}
+#ana_ccftable table {
+    table-layout: fixed;
+}
+#ana_ccftable td {
+    white-space: nowrap;
+    text-align: center;
+}
+#at2 table {
+    table-layout: fixed;
+}
+#at2 td {
+    white-space: nowrap;
+    text-align: center;
+}
+#at4 table {
+    table-layout: fixed;
+}
+#at4 td {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.headercell {
+    vertical-align: bottom;
+    transform: translatex(12px) rotate(-50deg);
+    -ms-transform: translatex(12px) rotate(-50deg);
+    -webkit-transform: translatex(12px) rotate(-50deg);
+    -moz-transform: translatex(12px) rotate(-50deg);
+    -o-transform: translatex(12px) rotate(-50deg);
+    transform-origin: bottom left;
+    -ms-transform-origin: bottom left;
+    -moz-transform-origin: bottom left;
+    -webkit-transform-origin: bottom left;
+    -o-transform-origin: bottom left;
+    overflow: visible;
+    height: 10em;
+}
+.printonlyheadercell {
+    display: none;
+}
+.blankcell { background: #eee; }
+.continuationcell { background: #faf8f8; }
+.nodetitlecell { text-align: right !important; overflow: hidden; vertical-align: bottom; }
+.largetitlecell { font-size: 14px; text-decoration: underline;}
+.nodecell { cursor: pointer; }
+.clustercell { cursor: pointer; }
+.excluded {
+    background: white !important;
+    color: gray !important;
+    text-decoration: line-through;
+    border: 1px solid red;
+    padding: 0;
+}
+.reduced {
+    color: red;
+    background: white;
+    font-style: italic;
+    margin-left: 0.6em;
+}
+
+.servicestats { margin: 25px 30px; }
+.servicestats th { font-style: italic; font-weight: normal; }
+
+.statstype { text-align: right !important; padding-left: 6px; }
+.statsnum {text-align: left !important; padding-left: 14px; }
+
+.statstable {
+    background: #faf8f8;
+    border-bottom: 1px solid black;
+    border-spacing: 0;
+}
+
+#ana_nodetypestats th {
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+.thinrow { height: 5px; }
+
+#ana_reports { margin-left: 20px; }
+
+.itemll { left: 140px; position: absolute; }
+
+#lloptions {
+    margin-top: 10px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    line-height: 25px;
+    background: lightgrey;
+    padding-bottom: 10px;
+    padding-left: 5px;
+    width: 800px;
+}
+
+#longlist {
+    margin-bottom: 30px;
+}
