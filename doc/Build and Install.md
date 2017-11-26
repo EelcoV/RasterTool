@@ -7,7 +7,7 @@ You need:
 1. XCode. Not essential, but useful and free. MacOS only.
 2. filepp (http://www-users.york.ac.uk/%7Edm26/filepp/). If not available, the standard C-Preprocessor can be used.
 
-There is one build scripts for the server. From the root of the Raster tools project, run 'script/fillcache.sh'. This will create a 'server' directory under the 'build' directory containing all the server files.
+There is one build scripts for the server. From the root of the Raster tools project, run 'script/preprocess-server.sh'. This will create a 'server' directory under the 'build' directory containing all the server files.
 
 You will need a web server that can handle PHP. Place all files in a directory that is accessible by the web server. All files require read-permission. The webserver requires write-permission on the directory 'public_group/SharedProjects'.
 
@@ -24,7 +24,7 @@ In addition to the tools required for the Intranet version, you need:
 
 To build, run these scripts from the root of the Raster tools project:
 1. 'script/fillcache.sh' to download Electron and prepare the required Windows utilities.
-2. 'script/electron.sh' to build the MacOS and Windows versions.
+2. 'script/build-electron.sh' to build the MacOS and Windows versions.
 
 The build results are found in the 'build' directory. For both platforms, the tool is available in English (EN) or Dutch (NL).
 The MacOS version is distributed using the DMG files. To install, doubleclick the DMG file, and drag the Raster application to your Applications folder.
