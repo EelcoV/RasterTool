@@ -2,9 +2,10 @@ Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
 
-October 2017
+November 2017
 ==============
-* Preparing for a major change: a standalone app for MacOS and Windows, separate
+* Release as 2.0.
+* Implement a major change: a standalone app for MacOS and Windows, separate
   from a server-based version. The standalone versions operate on local files,
   and do not support project sharing.
 * The tree structure is now shown using lines in Common Cause Failure View.

@@ -2,6 +2,10 @@
 
 . script/Versions.sh
 
+if [ ! -d cache ]; then
+	mkdir -p cache
+fi
+
 cd cache
 if [ ! -f electron-v$ELECTRONVERSION-darwin-x64.zip ]; then
 	curl -O -L https://github.com/electron/electron/releases/download/v$ELECTRONVERSION/electron-v$ELECTRONVERSION-darwin-x64.zip

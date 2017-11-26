@@ -175,13 +175,6 @@
 			path = css;
 			sourceTree = "<group>";
 		};
-		4915A6351FA1168B00B4B205 /* cache */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = cache;
-			sourceTree = "<group>";
-		};
 		493AA22E1A7419A9005DDFFB /* SharedProjects */ = {
 			isa = PBXGroup;
 			children = (
@@ -208,7 +201,7 @@
 		494B6F5E18796DD000400328 = {
 			isa = PBXGroup;
 			children = (
-				4915A6351FA1168B00B4B205 /* cache */,
+				499A6B9F1A72D97A0047E182 /* README.md */,
 				49F279FE1F91DB3E003F360B /* doc */,
 				49F279FD1F91DB23003F360B /* script */,
 				49F279FC1F91DB17003F360B /* src */,
@@ -506,7 +499,6 @@
 			isa = PBXGroup;
 			children = (
 				499A6BA01A72DC080047E182 /* LICENSE.md */,
-				499A6B9F1A72D97A0047E182 /* README.md */,
 				494B6F6718796E9D00400328 /* Bugs and Features.txt */,
 				494B6F6818796E9D00400328 /* designAtomicActions.txt */,
 				494B6F8818796E9D00400328 /* Testcase.txt */,
