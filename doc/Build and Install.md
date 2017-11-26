@@ -7,7 +7,7 @@ You need:
 1. XCode. Not essential, but useful and free. MacOS only.
 2. filepp (http://www-users.york.ac.uk/%7Edm26/filepp/). If not available, the standard C-Preprocessor can be used.
 
-There is one build scripts for the server. From the root of the Raster tools project, run 'script/preprocess-server.sh'. This will create a 'server' directory under the 'build' directory containing all the server files.
+There is one build script for the server. From the root of the Raster tools project, run 'script/preprocess-server.sh'. This will create a 'server' directory under the 'build' directory containing all the server files.
 
 You will need a web server that can handle PHP. Place all files in a directory that is accessible by the web server. All files require read-permission. The webserver requires write-permission on the directory 'public_group/SharedProjects'.
 
