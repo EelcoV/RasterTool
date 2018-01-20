@@ -287,6 +287,9 @@ fieldset {
 #fileElem {visibility: hidden; width: 0; height: 0; }
 
 #form_projectprops input,textarea,#sh_onoff { margin: 0 0 5px; }
+#field_projecttitle, #field_projectdescription {
+	width: 470px;
+}
 
 /* Panel for options */
 #optionspanel { width: 420px; left: 175px; border-top-left-radius: 0; }
@@ -297,6 +300,9 @@ fieldset {
     width: 13em;
     background: transparent !important;
     border: 0 !important;
+}
+#creator {
+	width: 260px;
 }
 
 .ui-dialog {
@@ -388,6 +394,10 @@ div.popupmenuitem {
     width: 145px;
 }
 #mlabel {width:95px !important}
+.field_label_text {
+	width: 22
+	0px;
+}
 div.popupmenuitemdisabled {
     color: #aaa;
 }

@@ -26,7 +26,7 @@ See LICENSE.md
 <script type="text/javascript" src="../js/eventsource.js"></script>
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
 #endif
-<script type="text/javascript" src="../js/jsplumb-2.5.7.min.js"></script>
+<script type="text/javascript" src="../js/jsplumb-2.6.0.min.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>
 <script type="text/javascript" src="../js/encodedecode.js"></script>
 #ifdef SERVER
@@ -148,7 +148,7 @@ See LICENSE.md
     </div>
     <div id="creator_name">
         <span class="leftlabel ui-widget ui-state-default">Your name:</span>
-        <input type="text" id="creator" size="35">
+        <input type="text" id="creator">
     </div>
 </div>
 #endif

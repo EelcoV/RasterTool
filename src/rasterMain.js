@@ -2162,16 +2162,16 @@ function ShowDetails(p) {
 #ifdef STANDALONE
 	var snippet ='\
 		<form id="form_projectprops">\n\
-		_LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
-		_LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
+		_LT_<br><input id="field_projecttitle" name="fld" type="text" value="_PN_"><br>\n\
+		_LD_<br><textarea id="field_projectdescription" rows="2">_PD_</textarea><br>\n\
 		</form>\
 	';
 #else
 	var snippet ='\
 		<form id="form_projectprops">\n\
-		_LT_<br><input id="field_projecttitle" name="fld" type="text" size="65" value="_PN_"><br>\n\
+		_LT_<br><input id="field_projecttitle" name="fld" type="text" value="_PN_"><br>\n\
 		<div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n\
-		_LD_<br><textarea id="field_projectdescription" cols="63" rows="2">_PD_</textarea><br>\n\
+		_LD_<br><textarea id="field_projectdescription" rows="2">_PD_</textarea><br>\n\
 		<fieldset>\n\
 		<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
 		<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n\
@@ -2251,7 +2251,7 @@ function ShowDetails(p) {
 		title: _("Properties for project '%%'", p.title),
 		modal: true,
 		position: {my: 'left top', at: 'right', of: '#libprops', collision: 'fit'},
-		width: 480,
+		width: 490,
 #ifdef SERVER
 		height: 280,
 #endif
@@ -3026,13 +3026,13 @@ function showLabelEditForm() {
     var dialog = $('<div></div>');
     var snippet ='\
         <form id="form_editlabels">\
-        <div class="smallblock Bred"></div><input id="field_red" name="fld_red" type="text" size="30" value="_RED_"><br>\
-        <div class="smallblock Borange"></div><input id="field_orange" name="fld_orange" type="text" size="30" value="_ORANGE_"><br>\
-        <div class="smallblock Byellow"></div><input id="field_yellow" name="fld_yellow" type="text" size="30" value="_YELLOW_"><br>\
-        <div class="smallblock Bgreen"></div><input id="field_green" name="fld_green" type="text" size="30" value="_GREEN_"><br>\
-        <div class="smallblock Bblue"></div><input id="field_blue" name="fld_blue" type="text" size="30" value="_BLUE_"><br>\
-        <div class="smallblock Bpurple"></div><input id="field_purple" name="fld_purple" type="text" size="30" value="_PURPLE_"><br>\
-        <div class="smallblock Bgrey"></div><input id="field_grey" name="fld_grey" type="text" size="30" value="_GREY_"><br>\
+        <div class="smallblock Bred"></div><input id="field_red" class="field_label_text" name="fld_red" type="text" value="_RED_"><br>\
+        <div class="smallblock Borange"></div><input id="field_orange" class="field_label_text" name="fld_orange" type="text" value="_ORANGE_"><br>\
+        <div class="smallblock Byellow"></div><input id="field_yellow" class="field_label_text" name="fld_yellow" type="text" value="_YELLOW_"><br>\
+        <div class="smallblock Bgreen"></div><input id="field_green" class="field_label_text" name="fld_green" type="text" value="_GREEN_"><br>\
+        <div class="smallblock Bblue"></div><input id="field_blue" class="field_label_text" name="fld_blue" type="text" value="_BLUE_"><br>\
+        <div class="smallblock Bpurple"></div><input id="field_purple" class="field_label_text" name="fld_purple" type="text" value="_PURPLE_"><br>\
+        <div class="smallblock Bgrey"></div><input id="field_grey" class="field_label_text" name="fld_grey" type="text" value="_GREY_"><br>\
         </form>\
     ';
     snippet = snippet.replace(/_RED_/g, H(p.labels[0]));
