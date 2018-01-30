@@ -338,7 +338,7 @@ Component.prototype = {
 	addthrass: function(te) {
 		this.thrass.push(te.id);
 		te.setcomponent(this.id);
-		for (var i=0; i<this.nodes.length; i++)
+		for (var i=0; i<(this.single?1:this.nodes.length); i++)
 			NodeCluster.addnode_threat(this.project,this.nodes[i],te.title,te.type,false);
 		this.calculatemagnitude();
 		this.store();
