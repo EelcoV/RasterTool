@@ -6,7 +6,7 @@ PREPROCESS="filepp -pb"
 #PREPROCESS="cpp -E -P -C -w"
 
 BUILDDIR=build/server
-echo "Building server version $BUILDDIR..."
+echo "Building server version $RASTERVERSION into $BUILDDIR..."
 
 if [ ! -d $BUILDDIR ]; then
 	mkdir -p $BUILDDIR
@@ -34,5 +34,15 @@ if [ $srcfile -nt $destfile ]; then
 fi
 
 chmod -R a+rX $BUILDDIR
+
+export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
+export COPYFILE_DISABLE=true
+
+(
+	cd build
+	mv server server-v$RASTERNUMVERSION
+	tar -c --exclude '._' --exclude='.DS_Store' -z -f server-v$RASTERNUMVERSION.tar.gz server-v$RASTERNUMVERSION
+	mv server-v$RASTERNUMVERSION server
+)
 
 echo "...done"
