@@ -141,7 +141,6 @@
 		4999EB5F1F9004D0009BBF18 /* clean.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
 		4999EB651F9007CE009BBF18 /* build-electron.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-electron.sh"; sourceTree = "<group>"; };
 		4999EB6B1F900AA9009BBF18 /* standalone.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = standalone.html; sourceTree = "<group>"; };
-		4999EB6C1F900BB2009BBF18 /* package.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
 		4999EB6D1F900C07009BBF18 /* main.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = main.js; sourceTree = "<group>"; };
 		499A6B9F1A72D97A0047E182 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
@@ -403,7 +402,6 @@
 			isa = PBXGroup;
 			children = (
 				4999EB6B1F900AA9009BBF18 /* standalone.html */,
-				4999EB6C1F900BB2009BBF18 /* package.json */,
 				4999EB6D1F900C07009BBF18 /* main.js */,
 			);
 			path = standalone;
