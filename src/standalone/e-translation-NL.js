@@ -72,6 +72,10 @@ _t['Large vulnerability levels'] = 'Grote kwetsbaarheidsindicator';
 _t['No vulnerability levels'] = 'Geen kwetsbaarheidsindicator';
 _t['Details...'] = 'Details...';
 _t['Find nodes...'] = 'Zoek componenten...';
+_t['Update available'] = 'Nieuwe versie beschikbaar';
+_t['An update of this tool is available'] = 'Er is een bijgewerkte versie van deze applicatie beschikbaar';
+_t['Version %% of the tool is available; you have version %%.'] = 'Versie %% van de applicatie is beschikbaar; u heeft versie %%.';
+_t['Visit the risicotools.nl website to download the latest version.'] = 'Ga naar risicotools.nl om de laatste versie te downloaden.';
 _t[''] = '';
 
 

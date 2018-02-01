@@ -3,6 +3,7 @@ const electron = require('electron');
 const path = require('path');
 const url = require('url');
 const fs = require('fs');
+const https = require('https');
 
 const Menu = electron.Menu;
 const BrowserWindow = electron.BrowserWindow;
@@ -450,6 +451,39 @@ try {
 catch (e) {
 	// ignore silently
 }
+
+// Check for updates
+https.get('https://risicotools.nl/docs/toollatestversion.txt').on('response', function (response) {
+    var body = '';
+    response.on('data', function (chunk) {
+        body += chunk;
+    });
+    response.on('end', function () {
+        console.log(body);
+        console.log('Finished');
+        if (response.statusCode == '200') {
+        	// Use only the first line
+        	body = body.replace(/\s.*/, '');
+        	var appversion = app.getVersion();
+        	if (body != appversion) {
+				dialog.showMessageBox({
+					title: _("Update available"),
+					message: _("An update of this tool is available"),
+					detail: _("Version %% of the tool is available; you have version %%.", body, appversion)
+						+ "\n"
+						+ _("Visit the risicotools.nl website to download the latest version.")
+				});
+			}
+		} else {
+			// Ignore silently
+			//debug('Got error: ' + response.statusCode);
+			/*jsl:pass*/
+		}
+    });
+}).on('error', function(e) {
+	// Ignore silently
+	//debug('Got error: ' + e.message);
+});
 
 // On Windows, the file to be opened is in argv[1]
 if (process.argv.length>1 && fs.existsSync(process.argv[1]))
