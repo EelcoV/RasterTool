@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		49044A5E20249EC5002AEFCB /* jquery-3.3.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.3.1.min.js"; sourceTree = "<group>"; };
 		4912CBDE1F966ED700DF081C /* base.NL.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.NL.dmg; sourceTree = "<group>"; };
 		4915A62E1F9E819300B4B205 /* rcedit-x86.exe */ = {isa = PBXFileReference; lastKnownFileType = file; path = "rcedit-x86.exe"; sourceTree = "<group>"; };
 		4915A6301FA0482800B4B205 /* raster.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = raster.ico; sourceTree = "<group>"; };
@@ -17,7 +18,6 @@
 		4915A6371FA1178D00B4B205 /* Versions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Versions.sh; sourceTree = "<group>"; };
 		4915A63D1FA126E600B4B205 /* nsis.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = nsis.zip; sourceTree = "<group>"; };
 		4918F0BE1FBEBF13008A6208 /* Build and Install.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Build and Install.md"; sourceTree = "<group>"; };
-		49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.2.1.min.js"; sourceTree = "<group>"; };
 		49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.12.1.min.js"; sourceTree = "<group>"; };
 		49196E311F85417B00097E97 /* smoothness-1.12.1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "smoothness-1.12.1"; sourceTree = "<group>"; };
 		49196E321F85417B00097E97 /* redmond-1.12.1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "redmond-1.12.1"; sourceTree = "<group>"; };
@@ -215,8 +215,8 @@
 		494B6F6618796E9D00400328 /* js */ = {
 			isa = PBXGroup;
 			children = (
+				49044A5E20249EC5002AEFCB /* jquery-3.3.1.min.js */,
 				494B6F6918796E9D00400328 /* encodedecode.js */,
-				49196E2C1F85312F00097E97 /* jquery-3.2.1.min.js */,
 				49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
