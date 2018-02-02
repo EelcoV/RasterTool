@@ -26,6 +26,7 @@ var appMenu;
  *   win.webContents.send('options', kind, value)
  * PDF options are set in the Renderer, and sent to the main process using
  *   ipc.on('pdfoption-modified', handler)
+ * Updates are checked in CheckForUpdate()
  */
 const DefaultRasterOptions = {
 	// true = show, false = hide
@@ -37,7 +38,9 @@ const DefaultRasterOptions = {
 	// 3 = A3, 4 = A4
 	pdfsize: 4,
 	// scale factor in percentage (80 means a factor 0.8)
-	pdfscale: 80
+	pdfscale: 80,
+	// datetime of last successful check for updates
+	updatechecktime: 0
 };
 
 const prefsDir = app.getPath('userData');
@@ -100,6 +103,7 @@ function createWindow(filename) {
 		win.webContents.send('options', 'vulnlevel', app.rasteroptions.vulnlevel);
 		EnableMenuItems(true);
 		win.show();
+		CheckForUpdates(win);
 	});
 
 	win.on('close', function(e)  {
@@ -338,6 +342,50 @@ function SavePreferences(win) {
 	}
 }
 
+// Once per day, check whether a newer version is available, and alert the user if so.
+// Silently ignore errors if the check fails (e.g. due to no internet connection).
+function CheckForUpdates(win) {
+	// Test time since last check
+	if (app.rasteroptions.updatechecktime + 24*60*60*1000 > Date.now()) {
+		console.log('Skipping check for update.');
+		return;
+	}
+
+	https.get('https://risicotools.nl/docs/toollatestversion.txt').on('response', function (response) {
+		var body = '';
+		response.on('data', function (chunk) {
+			body += chunk;
+		});
+		response.on('end', function () {
+			console.log('Toolversion retrieved; HTTP result code = ' + response.statusCode);
+			if (response.statusCode == '200') {
+				// Use only the first word
+				body = body.replace(/\s.*/, '');
+				var appversion = app.getVersion();
+				if (body != appversion) {
+					dialog.showMessageBox({
+						title: _("Update available"),
+						message: _("An update of this tool is available."),
+						detail: _("Version %% is available; you have version %%.", body, appversion)
+							+ "\n"
+							+ _("Visit the risicotools.nl website to download the latest version.")
+					});
+				}
+				// Record the datetime of thisupdate check
+				app.rasteroptions.updatechecktime = Date.now();
+				SavePreferences(win);
+			} else {
+				// Ignore silently
+				//debug('Got error: ' + response.statusCode);
+				/*jsl:pass*/
+			}
+		});
+	}).on('error', function(e) {
+		// Ignore silently
+		//debug('Got error: ' + e.message);
+	});
+}
+
 /***************************************************************************************************/
 /***************************************************************************************************/
 
@@ -451,39 +499,6 @@ try {
 catch (e) {
 	// ignore silently
 }
-
-// Check for updates
-https.get('https://risicotools.nl/docs/toollatestversion.txt').on('response', function (response) {
-    var body = '';
-    response.on('data', function (chunk) {
-        body += chunk;
-    });
-    response.on('end', function () {
-        console.log(body);
-        console.log('Finished');
-        if (response.statusCode == '200') {
-        	// Use only the first line
-        	body = body.replace(/\s.*/, '');
-        	var appversion = app.getVersion();
-        	if (body != appversion) {
-				dialog.showMessageBox({
-					title: _("Update available"),
-					message: _("An update of this tool is available"),
-					detail: _("Version %% of the tool is available; you have version %%.", body, appversion)
-						+ "\n"
-						+ _("Visit the risicotools.nl website to download the latest version.")
-				});
-			}
-		} else {
-			// Ignore silently
-			//debug('Got error: ' + response.statusCode);
-			/*jsl:pass*/
-		}
-    });
-}).on('error', function(e) {
-	// Ignore silently
-	//debug('Got error: ' + e.message);
-});
 
 // On Windows, the file to be opened is in argv[1]
 if (process.argv.length>1 && fs.existsSync(process.argv[1]))
