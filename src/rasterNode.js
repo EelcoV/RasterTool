@@ -225,7 +225,7 @@ Node.prototype = {
 		this.store();
 		$(this.jnid).css("left",px+"px").css("top",py+"px");
 		jsP.revalidate(this.nid);
-		
+
 		dO.left = (px * ow)/fw;
 		dO.top = (py * oh)/fh;
 		$('#tinynode'+this.id).css('left', dO.left);
@@ -666,14 +666,12 @@ Node.prototype = {
 		else
 			$(this.jnid).css("display", "block");
 		this.setposition(this.position.x, this.position.y, false);
-		var containmentarr = [];
 		/* This is *not* jQuery's draggable, but Katavorio's!
 		 * See https://github.com/jsplumb/katavorio/wiki
 		 */
 		jsP.draggable($(this.jnid), {
 			containment: 'parent',
 			distance: 10,	// prevent drags when clicking the menu activator
-			opacity: 0.8,
 			filter: '.ui-resizable-handle',
 			stop: function(event) {
 				// Reset the node to the grid
@@ -705,8 +703,9 @@ Node.prototype = {
 				// For clouds, the dragpoint is slightly off-center.
 				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : "TopCenter"),
 				isSource: true,
-				isTarget: false,
-				connector: ["Bezier", { curviness: 80 } ], // When dragging
+				isTarget: true,
+				connector: ["Bezier", { curviness: 100 } ], // When dragging
+				dragProxy: [ 'Dot', {radius: 12, cssClass: 'draggedEndpoint'}],
 				maxConnections: -1,
 				source: this.nid
 			});
