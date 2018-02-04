@@ -53,13 +53,12 @@ var Service = function(id) {
 			stroke: "#666"
 		},
 		EndpointStyle: {
-			strokeWidth: 8,
-			stroke: 'transparent',
+			strokeWidth: 10,
 			fill: '#aaa'
 		},
 		EndpointHoverStyle: {
-			fill: 'black',
-			stroke: 'black'
+			fill: '#666',
+			stroke: '#000'
 		},
 		DragOptions: { cursor: 'move' },
 		Endpoint: [ "Dot", { radius: 6 } ]
