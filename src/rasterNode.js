@@ -364,9 +364,7 @@ Node.prototype = {
 		var C = {'tWLS':0, 'tWRD':0, 'tEQT':0, 'tACT':0, 'tUNK':0, 'TOTAL':0};
 		var conn = jsP.getConnections({scope:'center'});
 		for (var i=0; i<conn.length; i++) {
-			/* Use conn[i].xxxx, where xxxx is one of:
-			 * sourceId, targetId, source, target, sourceEndpoint, targetEndpoint, connection
-			 */
+			/* Use conn[i].sourceId and conn[i].targetId */
 			if (this.nid==conn[i].sourceId) {
 				C['TOTAL']++;
 				C[Node.get(nid2id(conn[i].targetId)).type]++;
@@ -500,20 +498,30 @@ Node.prototype = {
 		// can be connected to a node of that same type.
 		if (this.id==dst.id)
 			return;
-		var C = this._edgecount();
-		/* Node has C['TOTAL'] edges, C[t] per type t; this includes one edge
+		var Csrc = this._edgecount();
+		var Cdst = dst._edgecount();
+		// The node counts do not included the intended connection from this to dst.
+		Csrc['TOTAL']++;
+		Csrc[dst.type]++;
+		Cdst['TOTAL']++;
+		Cdst[dst.type]++;
+		/* Node 'this' has Csrc['TOTAL'] edges, Csrc[t] per type t; this includes one edge
 		 * to the node of type dst.type.
 		 * Disallow the edge only if either the maximum total number of edges,
 		 * or the maximum number of edges to nodes of type dst.type has been
-		 * exceeded.
+		 * exceeded. Vice versa for dst and Cdst.
 		 */
 		if (this.connect.indexOf(dst.id)>-1) {
 			/* Already connected. Detach the newly attached connection
 		  	 * without visual feedback.
 		  	 */
 			null;
-		} else if (C['Total']>Rules.totaledgeMax[this.type]
-		  || C[dst.type]>=Rules.edgeMax[this.type][dst.type] ) {
+		} else if (
+			 Csrc['TOTAL']>Rules.totaledgeMax[this.type]
+		  || Cdst['TOTAL']>Rules.totaledgeMax[dst.type]
+		  || Csrc[dst.type]>Rules.edgeMax[this.type][dst.type]
+		  || Cdst[this.type]>Rules.edgeMax[dst.type][this.type]
+		  ) {
 		  	/* detach the newly attached connection, and flash the element for
 		  	 * visual feedback.
 		  	 */
