@@ -507,7 +507,7 @@ Node.prototype = {
 		 * or the maximum number of edges to nodes of type dst.type has been
 		 * exceeded.
 		 */
-		if (jQuery.inArray(dst.id,this.connect)>-1) {
+		if (this.connect.indexOf(dst.id)>-1) {
 			/* Already connected. Detach the newly attached connection
 		  	 * without visual feedback.
 		  	 */

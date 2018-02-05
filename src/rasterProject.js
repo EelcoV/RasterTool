@@ -401,7 +401,7 @@ Project.prototype = {
 		var s = Service.get(id);
 		if (this.services.indexOf(s.id)==-1)
 			bugreport("no such service","Project.removeservice");
-		this.services.splice( jQuery.inArray(s.id,this.services),1 );
+		this.services.splice( this.services.indexOf(s.id),1 );
 		s.destroy();
 		this.store();
 	},
@@ -419,7 +419,7 @@ Project.prototype = {
 		var th = Threat.get(id);
 		if (this.threats.indexOf(th.id)==-1)
 			bugreport("no such threat","Project.removethreat");
-		this.threats.splice( jQuery.inArray(th.id,this.threats),1 );
+		this.threats.splice( this.threats.indexOf(th.id),1 );
 		th.destroy();
 		this.store();
 	},

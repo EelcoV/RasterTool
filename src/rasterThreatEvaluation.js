@@ -205,13 +205,13 @@ ThreatAssessment.prototype = {
 	},
 
 	setfreq: function(v) {
-		this.freq = (jQuery.inArray(v,ThreatAssessment.values)>-1 ? v : 'X');
+		this.freq = (ThreatAssessment.values.indexOf(v)>-1 ? v : 'X');
 		this.computetotal();
 		this.store();
 	},
 
 	setimpact: function(v) {
-		this.impact = (jQuery.inArray(v,ThreatAssessment.values)>-1 ? v : 'X');
+		this.impact = (ThreatAssessment.values.indexOf(v)>-1 ? v : 'X');
 		this.computetotal();
 		this.store();
 	},
