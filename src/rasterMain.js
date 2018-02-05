@@ -1276,10 +1276,10 @@ function loadFromString(str,showerrors,allowempty,strsource) {
             if (lThrEval[i].u!=null && !containsID(lNodeCluster,lThrEval[i].u))
                 throw new Error('Vulnerability assessment '+lThrEval[i].id+' does not belong to a valid cluster.');
             /* lThrEval[i].p must be a valid frequency/impact string */
-            if (jQuery.inArray(lThrEval[i].p, ThreatAssessment.values)==-1)
+            if (ThreatAssessment.values.indexOf(lThrEval[i].p)==-1)
                 throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid frequency.');
             /* lThrEval[i].i must be a valid frequency/impact string */
-            if (jQuery.inArray(lThrEval[i].i, ThreatAssessment.values)==-1)
+            if (ThreatAssessment.values.indexOf(lThrEval[i].i)==-1)
                 throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid impact.');
         }
         for (i=0; i<lNodeClusterlen; i++) {
@@ -1765,7 +1765,7 @@ function exportService(sid) {
 }
 
 function exportNode(n) {
-    if (jQuery.inArray(n,NodeExported)>-1)
+    if (NodeExported.indexOf(n)>-1)
         return "";
     var rn = Node.get(n);
     var s = rn.exportstring();
@@ -1778,7 +1778,7 @@ function exportNode(n) {
 }
 
 function exportComponent(c) {
-    if (jQuery.inArray(c,ComponentExported)>-1)
+    if (ComponentExported.indexOf(c)>-1)
         return "";
     var cm = Component.get(c);
     var s = cm.exportstring();
@@ -1796,14 +1796,9 @@ function exportThreatAssessment(te) {
 }
 
 function exportNodeCluster(ncid) {
-//    if (jQuery.inArray(ncid,ClusterExported)>-1)
-//        return "";
     var nc = NodeCluster.get(ncid);
     var s = nc.exportstring();
-//    ClusterExported.push(ncid);
     s += exportThreatAssessment(nc.thrass);
-//    for (var i=0; i<nc.childclusters.length; i++)
-//        s += exportNodeCluster(nc.childclusters[i]);
     return s;
 }
 
