@@ -1075,7 +1075,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
     var lThrEval = [];
     
     var res, key, val;
-    var upgrade_0_1 = false;
     var patt = new RegExp(/^([^\t\n]+)\t([^\n]+)\n/);
     res=patt.exec(str);
     try {
@@ -1086,12 +1085,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
             if (!key || key[0]!=LS_prefix)
                 throw new Error('Invalid key');
             if (key[1]!=LS_version) {
-                if (key[1]==0) {
-                    // Can upgrade from version 0 to version 1
-                    upgrade_0_1 = true;
-                } else {
-                    throw new Error("The file has version ("+key[1]+"); expected version ("+LS_version+"). You must use a more recent version of the Raster tool.");
-                }
+				throw new Error("The file has version ("+key[1]+"); expected version ("+LS_version+"). You must use a more recent version of the Raster tool.");
             }
             val = JSON.parse(urlDecode(res[2]));
             val.id = parseInt(key[3],10);
@@ -1185,22 +1179,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
     var lComponentlen=lComponent.length;
     var lThrEvallen=lThrEval.length;
 
-    /* When upgrading from a version 0 file to version 1, all ThrEvals for CCFs
-     * should be removed completely.
-     */
-    if (upgrade_0_1) {
-        i=0;
-        while (i<lThrEvallen) {
-            if (lThrEval[i].f==null) {
-                i++;
-                continue;
-            }
-            // Delete this element
-            lThrEval.splice(i,1);
-            lThrEvallen--;
-        }
-    }
-    
     try {
         if (lProjectlen==0) throw new Error("There are no projects; there must be at least one");
         if (lServicelen==0) throw new Error("There are no services; there must be at least one");
@@ -1247,7 +1225,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
             if (Rules.nodetypes[lComponent[i].t]==null)
                 throw new Error('Component '+lComponent[i].id+' has an invalid type.');
             /* lComponent[i].p must be the ID of a project */
-            if (!upgrade_0_1 && !containsID(lProject,lComponent[i].p))
+            if (!containsID(lProject,lComponent[i].p))
                 throw new Error('Component '+lComponent[i].id+' does not belong to a valid project.');
             /* lComponent[i].e[] must contain IDs of threat evaluations */
             if (!containsAllIDs(lThrEval,lComponent[i].e))
@@ -1513,15 +1491,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
      * existing Project, Service etc objects.
      * It is safe to create new objects now.
      */
-    if (upgrade_0_1) {
-        var nodesforthreat = {};
-        for (var typ in Rules.nodetypes) {
-            if (typ=='tUNK') continue;
-            if (typ=='tACT') continue;
-            nodesforthreat[typ] = {};
-        }
-    }
-    
     for (i=0; i<lServicelen; i++) {
         var ls = lService[i];
         s = new Service(ls.id);
@@ -1535,11 +1504,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         th.settitle(lth.l);
         th.setdescription(lth.d);
         th.store();
-        if (upgrade_0_1) {
-            if (!nodesforthreat[lth.t][lth.p])
-                nodesforthreat[lth.t][lth.p] = {};
-            nodesforthreat[lth.t][lth.p][lth.l] = [];
-        }
     }
     for (i=0; i<lProjectlen; i++) {
         var lp = lProject[i];
@@ -1605,26 +1569,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         te.component=lte.m;
         te.cluster=lte.u;
         te.store();
-        if (upgrade_0_1) {
-            /* We need to know the project to which this ThreatAssessment belongs.
-             * Take the project of the component.
-             */
-            for (j=0; j<lComponentlen && lComponent[j].id!=lte.m; j++) { /*jsl:pass*/ }
-            var pid = lComponent[j].p;
-            if (lte.t=='tUNK') {
-                /* Do it for all node types (except tUNK and tACT */
-                for (typ in Rules.nodetypes) {
-                    if (typ=='tUNK') continue;
-                    if (typ=='tACT') continue;
-                    if (!nodesforthreat[typ][pid]) nodesforthreat[typ][pid] = {};
-                    nodesforthreat[typ][pid][lte.l] = [];
-                }
-            } else {
-                if (!nodesforthreat[lte.t][pid])
-                    nodesforthreat[lte.t][pid] = {};
-                nodesforthreat[lte.t][pid][lte.l] = [];
-            }
-        }
     }
     for (i=0; i<lNodeClusterlen; i++) {
         var lnc = lNodeCluster[i];
@@ -1648,45 +1592,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         nc.calculatemagnitude();
     }
 
-    /* If we are upgrading from 0 to 1, then we need to populate nodesforthreat */
-    if (upgrade_0_1) {
-        for (i=0; i<lComponentlen; i++) {
-            cm = Component.get(lComponent[i].id);
-            for (j=0; j<cm.thrass.length; j++) {
-                th = ThreatAssessment.get(cm.thrass[j]);
-                for (k=0; k<cm.nodes.length; k++) {
-                    if (th.type=='tUNK') {
-                        for (typ in Rules.nodetypes) {
-                            if (typ=='tUNK') continue;
-                            if (typ=='tACT') continue;
-                            if (nodesforthreat[typ][cm.project][th.title].indexOf(cm.nodes[k])==-1)
-                                nodesforthreat[typ][cm.project][th.title].push(cm.nodes[k]);
-                        }
-                    } else {
-                        if (nodesforthreat[th.type][cm.project][th.title].indexOf(cm.nodes[k])==-1)
-                            nodesforthreat[th.type][cm.project][th.title].push(cm.nodes[k]);
-                    }
-                }
-            }
-        }
-
-        // Create all NodeClusters for the first time
-        for (i in nodesforthreat) {            // type
-            if (i=='tUNK')
-                bugreport("Cannot create NodeCluster of type tUNK","loadFromString");
-            for (j in nodesforthreat[i]) {            // project
-            for (k in nodesforthreat[i][j]) {        // threat
-                if (nodesforthreat[i][j][k].length>0) {
-                    var cl = new NodeCluster(i);
-                    cl.project = parseInt(j,10);
-                    cl.childnodes = cl.childnodes.concat(nodesforthreat[i][j][k]);
-                    cl.addthrass();
-                    cl.settitle(k);
-                }
-            }}
-        }
-    }
-    
     return lProject[0].id;
 }
 
