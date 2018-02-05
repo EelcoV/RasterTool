@@ -497,16 +497,15 @@ function dropfunction(data) {
 
 	if (!src || !dst) {
         bugreport("Incorrect nodes","dropfunction");
-        return true;
+        return;
 	}
 
     if (data.scope=="center") {
         bugreport("Connection in default scope","dropfunction");
-        return true;
+        return;
     }
     src.try_attach_center(dst);
 	Service.get(src.service)._jsPlumb.deleteEndpoint(data.dropEndpoint);
-    return false; // prevent creation of DOM elements by jsPlumb.
 }
 
 var RectDragOrigin = {left:0, top:0};

@@ -613,6 +613,9 @@ div.th_remark {
     /* Dragging connections should be on top */
     z-index: 200;
 }
+.draggedEndpoint circle {
+	fill: #666;
+}
 svg path {
     stroke-width: 3;
     stroke: #666;

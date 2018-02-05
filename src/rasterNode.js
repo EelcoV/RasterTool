@@ -706,9 +706,21 @@ Node.prototype = {
 				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : "TopCenter"),
 				isSource: true,
 				isTarget: false,
-				connector: ["Bezier", { curviness: 80 } ], // When dragging
-				maxConnections: -1,
-				source: this.nid
+				connector: ["Bezier", { curviness: 100 } ], // When dragging
+				source: this.oid,
+				dragProxy: [ 'Dot', {radius: 12, cssClass: 'draggedEndpoint'}],
+				scope: 'dragpoint',
+				dropOptions: { scope: 'node' }
+			});
+			// Drop connections onto the target node, not on the dragpoint of the target node (as in older versions).
+			jsP.makeTarget(this.nid, {
+				allowLoopback: false,
+				deleteEndpointsOnEmpty: true,
+				isSource: false,
+				isTarget: true,
+				source: this.oid,
+				scope: 'node',
+				dropOptions: { scope: 'dragpoint' }
 			});
 			$(this.dragpoint.canvas).css({visibility: "hidden"});
 			this.centerpoint = jsP.addEndpoint(this.nid, {
@@ -719,11 +731,6 @@ Node.prototype = {
 				enabled: false,
 				maxConnections: -1, // unlimited
 				scope: 'center'
-			});
-			// Drop connections onto the target node, not on the dragpoint of the target node (as in older versions).
-			jsP.makeTarget(this.nid, {
-				allowLoopback: false,
-				deleteEndpointsOnEmpty: true
 			});
 		}
 
