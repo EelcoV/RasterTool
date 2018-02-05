@@ -26,7 +26,7 @@ See LICENSE.md
 <script type="text/javascript" src="../js/eventsource.js"></script>
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
 #endif
-<script type="text/javascript" src="../js/jsplumb-2.6.0.min.js"></script>
+<script type="text/javascript" src="../js/jsplumb-2.6.6.min.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>
 <script type="text/javascript" src="../js/encodedecode.js"></script>
 #ifdef SERVER
