@@ -8,7 +8,8 @@ Beta version 2.1
   for an update to the standalone tool.
 * Fix UI difficulties when connecting nodes. It should be easier to connect nodes now.
 * Enforce type-dependent limits when connecting nodes. E.g. a wired link can be
-  connected to at most two other nodes (a cable has two ends).
+  connected to at most two other nodes ("a cable has exactly two ends").
+* After importing/opening a project, a thorough check is done on its correctness.
 * Minor fixes and improvements.
 
 January 2018
