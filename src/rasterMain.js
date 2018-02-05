@@ -61,6 +61,7 @@ ipc && ipc.on('document-start-open', function(event,str) {
 	var newp = loadFromString(str,true,false,_("File"));
 	if (newp!=null) {
 		switchToProject(newp);
+		checkForErrors(false);
 	}
 	clearModified();
 });
@@ -1963,10 +1964,7 @@ function initLibraryPanel() {
             transactionCompleted("Project add");
             // Import checks are not as thorough as the internal consistency checks on components.
             // Therefore, force a check after load.
-			var errors = checkForErrors();
-			if (errors!="") {
-				rasterAlert(_("This project contains errors:"), errors);
-			}
+			checkForErrors(false);
         };
         reader.readAsText(files[0]);
     });
@@ -1996,10 +1994,7 @@ function initLibraryPanel() {
     });
     // Check --------------------
     $('#libcheck').on('click',  function() {
-    	var errors = checkForErrors();
-        if (errors=="")
-            errors = _("There were no errors; all projects are OK.\n");
-        rasterAlert(_("Checked all projects"), errors);
+    	checkForErrors(true);
         $('#libcheck').removeClass('ui-state-hover');
         $('#libselect').focus(); // Won't work, because the alert is still active.
     });
@@ -2042,10 +2037,12 @@ function initLibraryPanel() {
     });
 }
 
-/* Returns an empty string when all projects are internally consistent.
- * Returns descriptive error messages otherwise (one per line).
+/* Show an alert if there are any errors in the projects (e.g. in a newly loaded project).
+ * If verbose, show an explicit alert to say that there are no errors.
+ * Import checks are not as thorough as the internal consistency checks on components.
+ * Therefore, it is a good idea to checkForErrors after importing a project.
  */
-function checkForErrors() {
+function checkForErrors(verbose) {
 	var errors = "";
 	var it = new ProjectIterator();
 	it.sortByTitle();
@@ -2060,7 +2057,11 @@ function checkForErrors() {
 			errors += _("Project <i>%%</i>:\n", H(p.title)) + e.join('<br>\n');
 		}
 	}
-	return errors;
+	if (verbose && errors=="")
+		errors = _("There were no errors; all projects are OK.\n");
+	if (errors!="") {
+		rasterAlert(_("Your projects contain errors:"), errors);
+	}
 }
 
 function ShowDetails(p) {
