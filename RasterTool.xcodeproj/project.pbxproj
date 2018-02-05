@@ -43,6 +43,7 @@
 		494464B81A2324D40066BDE1 /* About-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "About-nl.html"; sourceTree = "<group>"; };
 		494AF84D1FA3BCBF00356A28 /* 7z.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = 7z.zip; sourceTree = "<group>"; };
 		494AF84E1FA48AA100356A28 /* installraster.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; name = installraster.ico; path = script/installraster.ico; sourceTree = SOURCE_ROOT; };
+		494B0117202822CA001EDED2 /* jsplumb-2.6.6.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jsplumb-2.6.6.min.js"; sourceTree = "<group>"; };
 		494B6F6718796E9D00400328 /* Bugs and Features.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Bugs and Features.txt"; sourceTree = "<group>"; };
 		494B6F6818796E9D00400328 /* designAtomicActions.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = designAtomicActions.txt; sourceTree = "<group>"; };
 		494B6F6918796E9D00400328 /* encodedecode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = encodedecode.js; sourceTree = "<group>"; };
@@ -129,7 +130,6 @@
 		4962CD6D1FCAD79700EBD886 /* User manual EN v2.0.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "User manual EN v2.0.pdf"; sourceTree = "<group>"; };
 		4962CD6E1FCAD79700EBD886 /* Handleiding methode NL v2.0.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Handleiding methode NL v2.0.pdf"; sourceTree = "<group>"; };
 		4962CD6F1FCAD79700EBD886 /* Handleiding methode NL v2.0.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Handleiding methode NL v2.0.epub"; sourceTree = "<group>"; };
-		496BCE2D20136474005E4291 /* jsplumb-2.6.0.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jsplumb-2.6.0.min.js"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
 		4997D9131F8A5DF200E3481A /* barB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barB.png; sourceTree = "<group>"; };
 		4997D9141F8A5DF300E3481A /* barC.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barC.png; sourceTree = "<group>"; };
@@ -215,12 +215,12 @@
 		494B6F6618796E9D00400328 /* js */ = {
 			isa = PBXGroup;
 			children = (
+				494B0117202822CA001EDED2 /* jsplumb-2.6.6.min.js */,
 				49044A5E20249EC5002AEFCB /* jquery-3.3.1.min.js */,
 				494B6F6918796E9D00400328 /* encodedecode.js */,
 				49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
-				496BCE2D20136474005E4291 /* jsplumb-2.6.0.min.js */,
 				49D256061A1E88A200102918 /* translation-nl.js */,
 			);
 			path = js;
