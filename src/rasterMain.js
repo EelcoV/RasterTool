@@ -1961,6 +1961,12 @@ function initLibraryPanel() {
             }
             // Remove the default project, as long as it is still unmodified??
             transactionCompleted("Project add");
+            // Import checks are not as thorough as the internal consistency checks on components.
+            // Therefore, force a check after load.
+			var errors = checkForErrors();
+			if (errors!="") {
+				rasterAlert(_("This project contains errors:"), errors);
+			}
         };
         reader.readAsText(files[0]);
     });
@@ -1990,25 +1996,10 @@ function initLibraryPanel() {
     });
     // Check --------------------
     $('#libcheck').on('click',  function() {
-        var errors = "";
-        var n = 0;
-        var it = new ProjectIterator();
-        it.sortByTitle();
-        for (it.first(); it.notlast(); it.next()) {
-            var p = it.getproject();
-            n++;
-            var err = p.internalCheck();
-            if (err!="") {
-                var e = err.split('\n');
-                e.sort();
-                if (errors!="")
-                    errors += "<p>";
-                errors += _("Project <i>%%</i>:\n", H(p.title)) + e.join('<br>\n');
-            }
-        }
+    	var errors = checkForErrors();
         if (errors=="")
             errors = _("There were no errors; all projects are OK.\n");
-        rasterAlert(_("Checked %% projects", n), errors);
+        rasterAlert(_("Checked all projects"), errors);
         $('#libcheck').removeClass('ui-state-hover');
         $('#libselect').focus(); // Won't work, because the alert is still active.
     });
@@ -2049,6 +2040,27 @@ function initLibraryPanel() {
         }
         return false;
     });
+}
+
+/* Returns an empty string when all projects are internally consistent.
+ * Returns descriptive error messages otherwise (one per line).
+ */
+function checkForErrors() {
+	var errors = "";
+	var it = new ProjectIterator();
+	it.sortByTitle();
+	for (it.first(); it.notlast(); it.next()) {
+		var p = it.getproject();
+		var err = p.internalCheck();
+		if (err!="") {
+			var e = err.split('\n');
+			e.sort();
+			if (errors!="")
+				errors += "<p>";
+			errors += _("Project <i>%%</i>:\n", H(p.title)) + e.join('<br>\n');
+		}
+	}
+	return errors;
 }
 
 function ShowDetails(p) {
