@@ -1,6 +1,21 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
+Beta version 2.1
+================
+* Release as 2.1
+* Notification of tool updates. Once daily, check with the risicotools.nl website
+  for an update to the standalone tool.
+* Fix UI difficulties when connecting nodes. It should be easier to connect nodes now.
+* Enforce type-dependent limits when connecting nodes. E.g. a wired link can be
+  connected to at most two other nodes (a cable has two ends).
+* Minor fixes and improvements.
+
+January 2018
+============
+* Release as 2.0.1.
+* Fix for a condition that could lead to data loss. This would happen when adding
+  a vulnerability to a node class marked as Single.
 
 November 2017
 ==============
