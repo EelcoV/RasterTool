@@ -2117,6 +2117,7 @@ function ShowDetails(p) {
 					p.settitle(fname.val());
 					if (Project.cid==p.id) {
 						$('.projectname').html(H(p.title));
+						document.title = "Raster - " + p.title;
 						Preferences.setcurrentproject(p.title);
 					}
 					fname = $('#field_projectdescription');
