@@ -849,7 +849,6 @@ Node.prototype = {
 		$("#node"+this.id).resizable({
 			handles: 'se',
 			autoHide: true,
-			//containment: '#workspace',//is buggy?
 			aspectRatio: (this.type=='tNOT' ? false : true),
 			minWidth: this._normw,
 			maxWidth: (this.type=='tNOT' ? 3 : 2) * this._normw,

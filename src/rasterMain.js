@@ -806,15 +806,9 @@ function rasterAlert(title,msg) {
         zIndex: 9999,
         title: String(title),
         height: "auto",
-        maxHeight: 600,
-        // This works around bug http://bugs.jqueryui.com/ticket/4820
-        open: function(event, ui) {
-            $(this).css({'max-height': 600, 'overflow-y': 'auto'}); 
-        }
+        maxHeight: 600
        });
     $('#modaldialog').html( String(msg) );
-//    $('#modaldialog').dialog({close: function() {
-//    }});
     $('#modaldialog').dialog("open");
 }
 
@@ -3817,7 +3811,7 @@ function removeCluster(cluster) {
     cluster.destroy();
     root.normalize();
     root.calculatemagnitude();
-    triggerRepaint(root.id);
+    repaintTDom(root.id);
 }
 
 function moveCluster(from_cluster,to_cluster) {
@@ -3834,7 +3828,7 @@ function moveCluster(from_cluster,to_cluster) {
 //    from_cluster.setaccordionopened(opened);
     root.normalize();
     root.calculatemagnitude();
-    triggerRepaint(root.id);
+    repaintTDom(root.id);
 }
 
 function moveToClusterHandler(ev) {
@@ -3865,7 +3859,7 @@ function moveSelectionToCluster(cluster) {
     });
     root.normalize();
     root.calculatemagnitude();
-    triggerRepaint(root.id);
+    repaintTDom(root.id);
     // Wait for the repaint to finish, the new cluster to be painted, then
     // trigger a rename
 	setTimeout(function(){
@@ -4334,20 +4328,6 @@ function appendAllThreats(nc,domid,prefix) {
 	}
 }
 
-/* To work around a bug in jQuery UI 
- * When a draggable is destroyed inside the drop handler, jQuery gives an error:
- *
- *        d(this).data("draggable") is undefined
- *
- * As a workaround, delay repainting (and hence destruction) of <li> elements
- * a single millisecond, so that it executes *after* the drop handler has completed.
- */
-function triggerRepaint(elem) {
-    setTimeout(function(){
-        repaintTDom(elem);
-    },5);
-}
-
 /* 
     Drag node onto node, belonging to the same cluster:
     Create a new node cluster, containing the drop node and all selected nodes.
@@ -4440,7 +4420,7 @@ function nodeClusterReorder(event,ui) {
             drag_cluster.addchildcluster( nc.id );
             root_cluster.calculatemagnitude();
             root_cluster.normalize();
-            triggerRepaint(root_cluster.id);
+            repaintTDom(root_cluster.id);
             transactionCompleted("Create cluster");
         } else if (drop_n!=null && drag!=drop) {
             bugreport("Node dropped on node of a different cluster","nodeClusterReorder");
@@ -4458,7 +4438,7 @@ function nodeClusterReorder(event,ui) {
             });
             root_cluster.normalize();
             root_cluster.calculatemagnitude();
-            triggerRepaint(root_cluster.id);
+            repaintTDom(root_cluster.id);
             transactionCompleted("Move node from cluster");
         }
     } else {
