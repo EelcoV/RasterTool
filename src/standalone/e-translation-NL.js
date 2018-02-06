@@ -76,6 +76,10 @@ _t['Update available'] = 'Nieuwe versie beschikbaar';
 _t['An update of this tool is available.'] = 'Er is een bijgewerkte versie van deze applicatie beschikbaar.';
 _t['Version %% is available; you have version %%.'] = 'Versie %% is beschikbaar; u heeft versie %%.';
 _t['Visit the risicotools.nl website to download the latest version.'] = 'Ga naar risicotools.nl om de laatste versie te downloaden.';
+_t['About...'] = 'Info...';
+_t['About this program'] = 'Over dit programma';
+_t['Version'] = 'Versie';
+_t['OK'] = 'OK';
 _t[''] = '';
 
 

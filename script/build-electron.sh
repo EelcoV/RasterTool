@@ -19,7 +19,7 @@ CreateAppVersion()
 	cp -p standalone/* $BUILDDIR
 	cp -R -p common/* $BUILDDIR
 
-	echo "{\"name\":\"Raster\",\"version\":\"$RASTERNUMVERSION\",\"main\":\"main.js\"}" >$BUILDDIR/package.json
+	echo "{\"name\":\"Raster\",\"version\":\"$RASTERVERSION ($RASTERSEASON)\",\"main\":\"main.js\"}" >$BUILDDIR/package.json
 
 	for srcfile in src/raster*.js
 	do

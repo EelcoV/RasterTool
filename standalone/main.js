@@ -672,10 +672,21 @@ MenuTemplate = [{
 	submenu: [{
 		label: _("Quick guide..."),
 		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('help-show'); }
+	}, {
+		label: _("About..."),
+		click: function (item, focusedWindow) {
+			if (!focusedWindow) return;
+			dialog.showMessageBox(focusedWindow, {
+				type: 'none',
+				buttons: [_("OK")],
+				title: _("About this program"),
+				message: _("Version") + ' ' + app.getVersion()
+			});
+		}
 	}]
 }];
 
-// Fix the default menu above for MacOS
+// Fix the default menu above for MacOS and Windows
 if (process.platform === 'darwin') {
 	const name = app.getName();
 
@@ -714,6 +725,9 @@ if (process.platform === 'darwin') {
 			}
 		}]
 	});
+
+	// No About... option in the Help menu
+	MenuTemplate[5].submenu.splice(1,1);
 } else {
 	// No Window menu on Windows
 	MenuTemplate.splice(3,1);
