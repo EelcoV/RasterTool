@@ -345,9 +345,16 @@ function SavePreferences(win) {
 // Once per day, check whether a newer version is available, and alert the user if so.
 // Silently ignore errors if the check fails (e.g. due to no internet connection).
 function CheckForUpdates(win) {
-	// Test time since last check
+	var appversion = app.getVersion();
+	if (appversion.indexOf('b')!=-1) {
+		// Do not check for updates to beta versions. Beta versions have the letter 'b'
+		// in the version string.
+		return;
+	}
+
+	// Test time since last check; interval in msec (24 hours)
 	if (app.rasteroptions.updatechecktime + 24*60*60*1000 > Date.now()) {
-		console.log('Skipping check for update.');
+		//console.log('Skipping check for update.');
 		return;
 	}
 
@@ -361,7 +368,6 @@ function CheckForUpdates(win) {
 			if (response.statusCode == '200') {
 				// Use only the first word
 				body = body.replace(/\s.*/, '');
-				var appversion = app.getVersion();
 				if (body != appversion) {
 					dialog.showMessageBox({
 						title: _("Update available"),
