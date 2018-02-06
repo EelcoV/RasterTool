@@ -145,9 +145,9 @@ Node.prototype = {
 		}
 
 		if (this.id==Node.DialogNode) 
-			$('#nodereport').dialog("close");
+			$('#nodereport').dialog('close');
 		if (this.component==Component.ThreatsComponent) 
-			$('#componentthreats').dialog("close");
+			$('#componentthreats').dialog('close');
 		var neighbours = this.connect.slice(0); // duplicate the array
 		for (var i=0; i<neighbours.length; i++) {
 			var nb = Node.get(neighbours[i]);
@@ -162,7 +162,7 @@ Node.prototype = {
 		$('#tinynode'+this.id).remove();
 		Node._all[this.id]=null;
 		if (effect==undefined || effect==true)
-			$(this.jnid).effect("explode", 500, function() {
+			$(this.jnid).effect('explode', 500, function() {
 				var id = nid2id(this.id);
 				jsP.remove('node'+id);
 			});
@@ -188,9 +188,7 @@ Node.prototype = {
 		newn.store();
 		newn.paint(false);
 		for (i=0; i<this.connect.length; i++)
-			newn.attach_center(
-				Node._all[this.connect[i]] 
-			);
+			newn.attach_center( Node.get(this.connect[i]) );
 		newn.setmarker();
 		this.destroy(false);
 	},
@@ -223,7 +221,7 @@ Node.prototype = {
 		this.position.x = px;
 		this.position.y = py;
 		this.store();
-		$(this.jnid).css("left",px+"px").css("top",py+"px");
+		$(this.jnid).css('left',px+'px').css('top',py+'px');
 		jsP.revalidate(this.nid);
 		
 		dO.left = (px * ow)/fw;
@@ -279,7 +277,7 @@ Node.prototype = {
 			var targettitle = str;
 			// If there is an actor "abc" and an actor "abc (1)", then renaming that second actor
 			// to "abc" should not result in a name "abc (2)"
-			this.title="NoSuchNameNoSuchNameNoSuchNameNoSuchName";
+			this.title='NoSuchNameNoSuchNameNoSuchNameNoSuchName';
 			while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
 				// dummy comment
 				targettitle = str + ' (' + (++i) + ')';
@@ -312,8 +310,8 @@ Node.prototype = {
 					var rn = Node.get(cm.nodes[i]);
 					if (rn.service==this.service) {
 						// do not change the title
-						$(this.jnid).effect("pulsate", { times:2 }, 800);
-						$(rn.jnid).effect("pulsate", { times:2 }, 800);
+						$(this.jnid).effect('pulsate', { times:2 }, 800);
+						$(rn.jnid).effect('pulsate', { times:2 }, 800);
 						return;
 					}
 				}
@@ -336,7 +334,7 @@ Node.prototype = {
 			}
 		}
 		$('#titlemain'+this.id).html(H(this.title));
-		$('#titlesuffix'+this.id).html(this.suffix=="" ? "" : "&thinsp;<sup>"+H(this.suffix)+"</sup>");
+		$('#titlesuffix'+this.id).html(this.suffix=='' ? '' : '&thinsp;<sup>'+H(this.suffix)+'</sup>');
 		this.store();
 	},
 	
@@ -466,8 +464,8 @@ Node.prototype = {
 				var m = Component.get(this.component).magnitude;
 				var mi = ThreatAssessment.valueindex[m];
 				$('#nodeMagnitude'+this.id).text(m);
-				$('#nodeMagnitude'+this.id).removeClass("M0 M1 M2 M3 M4 M5 M6 M7").addClass("M"+mi);
-				$('#nodeMagnitude'+this.id).attr("title",ThreatAssessment.descr[mi]);
+				$('#nodeMagnitude'+this.id).removeClass('M0 M1 M2 M3 M4 M5 M6 M7').addClass('M'+mi);
+				$('#nodeMagnitude'+this.id).attr('title',ThreatAssessment.descr[mi]);
 				$('#nodeMagnitude'+this.id).show();
 			}
 			this.hidemarker();
@@ -475,11 +473,11 @@ Node.prototype = {
 	},
 
 	hidemarker: function() {
-		$('#nodeW'+this.id).removeClass("markhi").addClass("marklo");
+		$('#nodeW'+this.id).removeClass('markhi').addClass('marklo');
 	},
 	
 	showmarker: function() {
-		$('#nodeW'+this.id).removeClass("marklo").addClass("markhi");
+		$('#nodeW'+this.id).removeClass('marklo').addClass('markhi');
 	},
 	
 	setlabel: function(str) {
@@ -488,9 +486,9 @@ Node.prototype = {
 		this.store();
 		$('#nodeheader'+this.id).addClass(this.color);
 		if (Preferences.label) 
-			$('#nodecontents'+this.id+' img').attr("src", "../img/"+this.color+"/"+this.type+".png");
+			$('#nodecontents'+this.id+' img').attr('src', '../img/'+this.color+'/'+this.type+'.png');
 		else
-			$('#nodeheader'+this.id).addClass("Chide");
+			$('#nodeheader'+this.id).addClass('Chide');
 	},
 	
 	try_attach_center: function(dst) {
@@ -525,8 +523,8 @@ Node.prototype = {
 		  	/* detach the newly attached connection, and flash the element for
 		  	 * visual feedback.
 		  	 */
-		  	$(this.jnid).effect("pulsate", { times:2 }, 800);
-		  	$(dst.jnid).effect("pulsate", { times:2 }, 800);
+		  	$(this.jnid).effect('pulsate', { times:2 }, 800);
+		  	$(dst.jnid).effect('pulsate', { times:2 }, 800);
 		} else {
 		 	/* Move the begin and endpoints to the center points */
 		  	this.attach_center(dst);
@@ -542,11 +540,11 @@ Node.prototype = {
 		var edge = jsP.connect({
 			sourceEndpoint: this.centerpoint,
 			targetEndpoint: dst.centerpoint,
-			connector: "Straight",
+			connector: 'Straight',
 			scope: 'center',
-			overlays: [[ "Label", {
-					label: "⊗",
-					cssClass: "connbutton",
+			overlays: [[ 'Label', {
+					label: '⊗',
+					cssClass: 'connbutton',
 					events: {
 						click: function(labelOverlay, originalEvent) {
 							var node1 = labelOverlay.component.sourceId;
@@ -667,12 +665,12 @@ Node.prototype = {
 			}
 		}
 		$('#titlemain'+this.id).html(H(this.title));
-		$('#titlesuffix'+this.id).html(this.suffix=="" ? "" : "&thinsp;<sup>"+H(this.suffix)+"</sup>");
+		$('#titlesuffix'+this.id).html(this.suffix=='' ? '' : '&thinsp;<sup>'+H(this.suffix)+'</sup>');
 		
 		if (effect==undefined || effect==true)
 			$(this.jnid).fadeIn(500);
 		else
-			$(this.jnid).css("display", "block");
+			$(this.jnid).css('display', 'block');
 		this.setposition(this.position.x, this.position.y, false);
 		var containmentarr = [];
 		/* This is *not* jQuery's draggable, but Katavorio's!
@@ -711,10 +709,10 @@ Node.prototype = {
 		if (this.type!='tNOT') {
 			this.dragpoint = jsP.addEndpoint(this.nid, {
 				// For clouds, the dragpoint is slightly off-center.
-				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : "TopCenter"),
+				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : 'TopCenter'),
 				isSource: true,
 				isTarget: false,
-				connector: ["Bezier", { curviness: 100 } ], // When dragging
+				connector: ['Bezier', { curviness: 100 } ], // When dragging
 				source: this.oid,
 				dragProxy: [ 'Dot', {radius: 12, cssClass: 'draggedEndpoint'}],
 				scope: 'dragpoint',
@@ -730,10 +728,10 @@ Node.prototype = {
 				scope: 'node',
 				dropOptions: { scope: 'dragpoint' }
 			});
-			$(this.dragpoint.canvas).css({visibility: "hidden"});
+			$(this.dragpoint.canvas).css({visibility: 'hidden'});
 			this.centerpoint = jsP.addEndpoint(this.nid, {
-				anchor: "Center",
-				paintStyle: {fill:"transparent"},
+				anchor: 'Center',
+				paintStyle: {fill:'transparent'},
 				isSource: false,
 				isTarget: false,
 				enabled: false,
@@ -754,14 +752,14 @@ Node.prototype = {
 				if (evt.which!=0) return;
 			}
 			var id = nid2id(this.id);
-			$('#nodeC'+id).css({visibility: "visible"});
-			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: "visible"});
-			if (Preferences.emsize=="em_none")
+			$('#nodeC'+id).css({visibility: 'visible'});
+			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: 'visible'});
+			if (Preferences.emsize=='em_none')
 				$('#nodeMagnitude'+id).addClass('doshow'); 
 		}).on('mouseleave',function() {
 			var id = nid2id(this.id);
-			$('#nodeC'+id).css({visibility: "hidden"});
-			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: "hidden"});
+			$('#nodeC'+id).css({visibility: 'hidden'});
+			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: 'hidden'});
 			$('#nodeMagnitude'+id).removeClass('doshow'); 
 		});
 		
@@ -780,7 +778,7 @@ Node.prototype = {
 		});
 		$('#nodeC'+this.id).on('click',  function(e){ return false; });
 		
-		$("#nodeW"+this.id).on('click', function(e) {
+		$('#nodeW'+this.id).on('click', function(e) {
 			// this.id is like "nodeWxxx", where xxx is the node id number
 			var id = nid2id(this.id);
 			var rn = Node.get(id);
@@ -790,18 +788,18 @@ Node.prototype = {
 			if (report.length==0)
 				s = _("Node is OK; there are no warnings.");
 			else {
-				s = report.join("<p>");
+				s = report.join('<p>');
 			}
-			if ($("#nodereport").dialog("isOpen"))
-				$("#nodereport").dialog("close");
-			$("#nodereport").html( s );
-			$("#nodereport").dialog({
+			if ($('#nodereport').dialog('isOpen'))
+				$('#nodereport').dialog('close');
+			$('#nodereport').html( s );
+			$('#nodereport').dialog({
 				title: _("Warning report on %%", rn.title+' '+rn.suffix),
 				position: {my: 'left top', at: 'center', of: e, collision: 'fit'},
 				zIndex: 400,
 				open: function() {
-					var o = $("#nodereport").dialog("widget").offset();
-					$("#nodereport").dialog("widget")
+					var o = $('#nodereport').dialog('widget').offset();
+					$('#nodereport').dialog('widget')
 					.css({display: "", opacity: 0})
 					.animate({
 						opacity: 1,
@@ -810,15 +808,15 @@ Node.prototype = {
 					}, 250);
 				}
 			});
-			$("#nodereport").dialog("open");
+			$('#nodereport').dialog('open');
 			Node.DialogNode = id;
 			return false;
 		});
 	
 		$('#titlemain'+this.id).editInPlace({
-			bg_over: "rgb(255,204,102)",
+			bg_over: 'rgb(255,204,102)',
 			show_buttons: false,
-			field_type: (this.type=='tNOT' ? "textarea" : "text"),
+			field_type: (this.type=='tNOT' ? 'textarea' : 'text'),
 			callback: function(domid, enteredText) {
 				var rn = Node.get( nid2id(domid) );
 				rn.changetitle(enteredText);
@@ -835,15 +833,15 @@ Node.prototype = {
 				},
 				didOpenEditInPlace: function(aDOMNode, aSettingsDict) {
 					var id = nid2id(aDOMNode[0].id);
-					$("#node"+id).css("z-index","1001");
-					$("#nodeheader"+id).css("z-index","1001");
-					$("#nodetitle"+id+" span:last-child").css("display","none");
+					$('#node'+id).css('z-index','1001');
+					$('#nodeheader'+id).css('z-index','1001');
+					$('#nodetitle'+id+' span:last-child').css('display','none');
 				},
 				didCloseEditInPlace: function (aDOMNode, aSettingsDict) {
 					var id = nid2id(aDOMNode[0].id);
-					$("#node"+id).css("z-index","");
-					$("#nodeheader"+id).css("z-index","");
-					$("#nodetitle"+id+" span:last-child").css("display","");
+					$('#node'+id).css('z-index',"");
+					$('#nodeheader'+id).css('z-index','');
+					$('#nodetitle'+id+' span:last-child').css('display',"");
 				}
 			}
 		});
@@ -854,7 +852,7 @@ Node.prototype = {
 		 */
 		if (this._normw==0) this._normw = $(this.jnid).width();
 		if (this._normh==0) this._normh = $(this.jnid).height();
-		$("#node"+this.id).resizable({
+		$('#node'+this.id).resizable({
 			handles: 'se',
 			autoHide: true,
 			aspectRatio: (this.type=='tNOT' ? false : true),
@@ -887,7 +885,7 @@ Node.prototype = {
 		this.dragpoint=null;
 
 		if (this.id==Node.DialogNode) 
-			$('#nodereport').dialog("close");
+			$('#nodereport').dialog('close');
 		$(this.jnid).remove();
 		$('#tinynode'+this.id).remove();
 	},
@@ -895,8 +893,8 @@ Node.prototype = {
 	_showpopupmenu: function(x,y) {
 		var p = Project.get(Project.cid);
 		var cm = Component.get(this.component);
-		$('#nodemenu').css("left", x);
-		$('#nodemenu').css("top", y);
+		$('#nodemenu').css('left', x);
+		$('#nodemenu').css('top', y);
 		$('.popupmenuitem').removeClass('menuhigh popupmenuitemdisabled');
 		$('.popupsubmenu').hide();
 		if (this.type=='tNOT') {
@@ -918,12 +916,12 @@ Node.prototype = {
 		}
 		populateLabelMenu();
 		var s=p.strToLabel(this.color);
-		if (s=="")
+		if (s=='')
 			s = _("Label");
 		else
 			s = '"' + s + '"';
 		$('#mi_cc .labeltext').html(s);
-		$('#nodemenu').css("display", "block");
+		$('#nodemenu').css('display', 'block');
 		// Remove any previous custom style
 		var limit = $('#diagrams'+Service.cid).offset().top + $('#diagrams'+Service.cid).height();
 		var o = $('#nodemenu').offset();
@@ -1014,7 +1012,7 @@ Node.prototype = {
 };
 
 function RefreshNodeReportDialog() {
-	if (! $('#nodereport').dialog("isOpen")) return;
+	if (! $('#nodereport').dialog('isOpen')) return;
 	// Refresh the contents
 	var rn = Node.get(Node.DialogNode);
 	var report = rn._getreport();
@@ -1023,14 +1021,14 @@ function RefreshNodeReportDialog() {
 	if (report.length==0)
 		s = _("Connections are OK; no warnings.");
 	else {
-		s = report.join("<p>");
+		s = report.join('<p>');
 	}
-	$("#nodereport").html( s );
-	$("#nodereport").dialog({
+	$('#nodereport').html( s );
+	$('#nodereport').dialog({
 		title: _("Warning report on %%", rn.title+' '+rn.suffix),
 		zIndex: 400
 	});
-	$("#nodereport").dialog("open");
+	$('#nodereport').dialog('open');
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

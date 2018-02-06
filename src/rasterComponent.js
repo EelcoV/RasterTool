@@ -81,7 +81,7 @@ Component.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS+'C:'+this.id);
 		if (this.id==Component.ThreatsComponent)
-			$("#componentthreats").dialog("close");
+			$('#componentthreats').dialog('close');
 		for (var i=0; i<this.thrass.length; i++)
 			ThreatAssessment.get(this.thrass[i]).destroy();
 		Component._all[this.id]=null;
@@ -124,7 +124,6 @@ Component.prototype = {
 		for (i=0; i<cm.nodes.length; i++) {
 			rn = Node.get(cm.nodes[i]);
 			this.addnode(rn.id);
-//			rn.addtonodeclusters();
 		}
 		cm.nodes = [];
 		cm.destroy();
@@ -296,7 +295,7 @@ Component.prototype = {
 		this._setalltitles();
 		this.store();
 		if (this.id==Component.ThreatsComponent)
-			$("#componentthreats").dialog('option', 'title',
+			$('#componentthreats').dialog('option', 'title',
 				_("Vulnerability assessment for '%%'", H(this.title)) +
 				(this.nodes.length>1 ? _(" (%% nodes)",this.nodes.length) : "")
 			);
@@ -328,7 +327,7 @@ Component.prototype = {
 		else {
 			this.store();
 			if (this.id==Component.ThreatsComponent)
-				$("#componentthreats").dialog('option', 'title',
+				$('#componentthreats').dialog('option', 'title',
 					_("Vulnerability assessment for '%%'", H(this.title)) +
 					(this.nodes.length>1 ? _(" (%% nodes)",this.nodes.length) : "")
 				);
@@ -447,7 +446,7 @@ Component.prototype = {
 		} else if (this.single != (single===true)) {
 			// Disallow change, flash all visible nodes
 			for (i=0; i<this.nodes.length; i++)
-			  	$("#node"+this.nodes[i]).effect("pulsate", { times:2 }, 800);
+			  	$('#node'+this.nodes[i]).effect('pulsate', { times:2 }, 800);
 			return;
 		} else {
 			// No change
