@@ -120,8 +120,8 @@ CreateMacOSVersion()
 	cp -R -p $BASEDIR/Raster.app "$VOLDIR"
 	sync && sync
 	hdiutil detach "$VOLDIR"
-	rm -f build/Raster.$LANG.dmg
-	hdiutil convert build/temp.dmg -format UDRO -o build/Raster.$LANG.dmg
+	rm -f build/Raster-v$RASTERNUMVERSION.$LANG.dmg
+	hdiutil convert build/temp.dmg -format UDRO -o build/Raster-v$RASTERNUMVERSION.$LANG.dmg
 	rm -f build/temp.dmg
 
 	echo "************************** ...done."
@@ -189,13 +189,13 @@ CreateWin32Version()
 	 cd build
 	 ln -s electron-v$ELECTRONVERSION-win32-ia32-$LANG Raster
 
-	 rm -f raster-win32-$LANG.zip
-	 zip -r raster-win32-$LANG.zip Raster
+	 rm -f raster-win32-v$RASTERNUMVERSION-$LANG.zip
+	 zip -r raster-win32-v$RASTERNUMVERSION-$LANG.zip Raster
 
-	 rm -f raster-$LANG-unpack.exe
+	 rm -f raster-v$RASTERNUMVERSION-$LANG-unpack.exe
 	 # Filenames containing "instal" require admin privileges!?
-	 "$WINE" ../cache/7z/7z.exe a -sfx7z.sfx raster-$LANG-unpack.exe Raster
-	 "$WINE" ../script/rcedit-x86.exe raster-$LANG-unpack.exe --set-icon ../script/installraster.ico
+	 "$WINE" ../cache/7z/7z.exe a -sfx7z.sfx raster-v$RASTERNUMVERSION-$LANG-unpack.exe Raster
+	 "$WINE" ../script/rcedit-x86.exe raster-v$RASTERNUMVERSION-$LANG-unpack.exe --set-icon ../script/installraster.ico
 
 	 rm Raster
 	)

@@ -5,8 +5,9 @@
 !define COMPANYNAME "The Raster Method"
 # These three must be integers
 !define VERSIONMAJOR 2
-!define VERSIONMINOR 0
+!define VERSIONMINOR 1
 !define VERSIONBUILD 0
+!define RASTERNUMVERSION "2.1b"
 
 # This is the size (in kB) of all the files copied into "Program Files"
 !define INSTALLSIZE 107000
@@ -20,7 +21,7 @@ InstallDir "$PROGRAMFILES\${APPNAME}"
 # This will be in the installer/uninstaller's title bar
 Name "${COMPANYNAME}"
 Icon "..\..\script\installraster.ico"
-outFile "..\raster-NL-full-installer.exe"
+outFile "..\raster-v${RASTERNUMVERSION}-NL-full-installer.exe"
 
 !addincludedir ..\..\script
 
