@@ -11,9 +11,9 @@ var DEBUG = true;  // set to false for production version
  * is versioned. In future, the app can check for presence of keys from
  * previous versions and perform an upgrade.
  */
-var LS_prefix = "raster";
+var LS_prefix = 'raster';
 var LS_version = 1;
-var LS = LS_prefix+":"+LS_version+":";
+var LS = LS_prefix+':'+LS_version+':';
 
 /* Global preferences */
 var Preferences;
@@ -71,30 +71,30 @@ ipc && ipc.on('options', function(event,option,val) {
 	}
 	if (option=='vulnlevel') {
 		if (val==0) {
-			Preferences.setemblem("em_none");
+			Preferences.setemblem('em_none');
 		} else if (val==1) {
-			Preferences.setemblem("em_small");
+			Preferences.setemblem('em_small');
 		} else {
-			Preferences.setemblem("em_large");
+			Preferences.setemblem('em_large');
 		}
 	}
 });
 ipc && ipc.on('help-show', function() {
-	$('#helppanel').dialog("open");
+	$('#helppanel').dialog('open');
 });
 ipc && ipc.on('find-show', function() {
 	StartFind();
 });
 ipc && ipc.on('pdf-settings-show', function(event,pdfoptions) {
 	if (pdfoptions.pdforientation==0)
-		$('#paperorientation_portrait').prop("checked","checked");
+		$('#paperorientation_portrait').prop('checked','checked');
 	else
-		$('#paperorientation_landscape').prop("checked","checked");
+		$('#paperorientation_landscape').prop('checked','checked');
 	if (pdfoptions.pdfsize==3)
-		$('#papersize_a3').prop("checked","checked");
+		$('#papersize_a3').prop('checked','checked');
 	else
-		$('#papersize_a4').prop("checked","checked");
-	$('#pdfscale_' + pdfoptions.pdfscale).prop("checked","checked");
+		$('#papersize_a4').prop('checked','checked');
+	$('#pdfscale_' + pdfoptions.pdfscale).prop('checked','checked');
 	$('#pdfoptions fieldset').controlgroup('refresh');
 	$('#pdfoptions').dialog('open');
 });
@@ -164,7 +164,7 @@ $(function() {
 		width: 420,
 		resizable: false,
 		buttons: [{ text: _("Done"),
-			click: function() {$('#pdfoptions').dialog("close");}
+			click: function() {$('#pdfoptions').dialog('close');}
 		}]
 	});
 	// Don't print the settings dialog. This means you can leave it open while saving a PDF. Convenient!
@@ -185,8 +185,8 @@ $(function() {
 
     $('input[type=button]').button();
     $('input[type=submit]').button();
-    $('input[type=button]').css("padding","2px 11px");
-    $('input[type=submit]').css("padding","2px 11px");
+    $('input[type=button]').css('padding','2px 11px');
+    $('input[type=submit]').css('padding','2px 11px');
 
     $('#modaldialog').dialog({ autoOpen:false, modal:true, width: 400 });
 
@@ -283,9 +283,9 @@ $(function() {
     forceSelectVerticalTab(Preferences.tab);
 
     $('#helpimg').on('mouseenter', function() {
-        $('#helpimg').attr("src","../img/qm-hi.png");
+        $('#helpimg').attr('src','../img/qm-hi.png');
     }).on('mouseleave', function() {
-        $('#helpimg').attr("src","../img/qm-lo.png");
+        $('#helpimg').attr('src','../img/qm-lo.png');
     });
     $('#helptabs a').eq(0).html( _("Frequency") );
     $('#helptabs a').eq(1).html( _("Impact") );
@@ -311,12 +311,12 @@ $(function() {
             $('#helptabs ul').width(ui.size.width-36);
         }
     });
-    $('#helppanel').dialog("widget").css("overflow","visible").addClass("donotprint");
+    $('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
     $('#helptabs').tabs({
-        heightStyle: "content"
+        heightStyle: 'content'
     });
     $('#helpbutton img').on('click',  function() {
-        $('#helppanel').dialog("open");
+        $('#helppanel').dialog('open');
     });
 
 #ifdef SERVER
@@ -325,19 +325,19 @@ $(function() {
     var flashTimer;
     $(document).ajaxSend(function(){
         window.clearTimeout(flashTimer);
-        $("#networkactivity").removeClass("activityoff activityno").addClass("activityyes");
+        $('#networkactivity').removeClass('activityoff activityno').addClass('activityyes');
     });
     $(document).ajaxStop(function(){
         // Make sure that the activity light flashes at least some small time
         flashTimer = window.setTimeout(function(){
-            $("#networkactivity").removeClass("activityoff activityyes").addClass("activityno");
+            $('#networkactivity').removeClass('activityoff activityyes').addClass('activityno');
         },200);
     });
 #endif
 
     $('body').on('keydown', function(evt){
         if (evt.keyCode==8) { // Backspace, unfortunately, is bound in the browser to 'Return to previous page'
-            if (!$(evt.target).is("input:not([readonly]):not([type=radio]):not([type=checkbox]), textarea, [contentEditable], [contentEditable=true]"))
+            if (!$(evt.target).is('input:not([readonly]):not([type=radio]):not([type=checkbox]), textarea, [contentEditable], [contentEditable=true]'))
                 // Only when focus is NOT on input or textarea
                 evt.preventDefault();
         }
@@ -364,11 +364,11 @@ $(function() {
                             localStorage.RasterToolIsLoaded = window.name;
                         },
                         function() {
-                            window.location = "about:blank";
+                            window.location = 'about:blank';
                         });
                 },
                 function() {
-                    window.location = "about:blank";
+                    window.location = 'about:blank';
                 });
             return;
         } else
@@ -433,7 +433,6 @@ var updateFind = function() {
             var s = Service.get(rn.service);
             if (rn.title.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1
              || (rn.suffix!='' && rn.suffix.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1)
-//             && (rn.suffix=='' || rn.suffix=='a')
             ) {
                 if (rn.type!=currtype) {
                     if (res!='')
@@ -494,7 +493,7 @@ function StartFind() {
 		width: 405,
 		resizable: true,
 		buttons: [{ text: _("Done"),
-			click: function() {dialog.dialog("close");}
+			click: function() {dialog.dialog('close');}
 		}],
 		open: function(event, ui) {
 			$('#field_find').focus().select();
@@ -563,13 +562,13 @@ function testLocalStorage() {
         if (window.location.href.match(/^file/i))
             rasterAlert('Warning',"Warning: Firefox discards your work on page reload.\nYou will lose your work unless you export your project.");
         if (!localStorage) 
-            throw("noLocalStorage");
-        localStorage[LS+"test"] = "it works";
-        if (localStorage[LS+"test"] != "it works")
-            throw("noLocalStorage");
-        localStorage.removeItem(LS+"test");
-        if (localStorage[LS+"test"]) 
-            throw("noLocalStorage");
+            throw('noLocalStorage');
+        localStorage[LS+'test'] = 'it works';
+        if (localStorage[LS+'test'] != 'it works')
+            throw('noLocalStorage');
+        localStorage.removeItem(LS+'test');
+        if (localStorage[LS+'test'])
+            throw('noLocalStorage');
         return true;
     } catch(err) {
         return false;
@@ -603,13 +602,13 @@ function SizeDOMElements() {
     s += 'rotate(-90deg) translateX(-';
     s += wh-6;
     s += 'px)';
-    $('.rot-neg-90').css("transform",s); 
-    $('.rot-neg-90').css("-ms-transform",s); 
-    $('.rot-neg-90').css("-moz-transform",s); 
-    $('.rot-neg-90').css("-webkit-transform",s); 
-    $('.rot-neg-90').css("-o-transform",s); 
-    $('.rot-neg-90').css("border-bottom-left-radius","0px"); 
-    $('.rot-neg-90').css("border-bottom-right-radius","0px"); 
+    $('.rot-neg-90').css('transform',s);
+    $('.rot-neg-90').css('-ms-transform',s);
+    $('.rot-neg-90').css('-moz-transform',s);
+    $('.rot-neg-90').css('-webkit-transform',s);
+    $('.rot-neg-90').css('-o-transform',s);
+    $('.rot-neg-90').css('border-bottom-left-radius','0px');
+    $('.rot-neg-90').css('border-bottom-right-radius','0px');
 
     $('.workbody').width(ww-43);
 #ifdef SERVER
@@ -626,10 +625,10 @@ function SizeDOMElements() {
     /* Find a CSS-rule with the exact name ".threatdomain", then
      * modify that rule on the fly.
      */
-	var css=document.getElementById("maincssfile").sheet;
+	var css=document.getElementById('maincssfile').sheet;
 	var rule=null;
 	for (var i=0; i<css.cssRules.length; i++) {
-		if (css.cssRules[i].selectorText==".threatdomain") {
+		if (css.cssRules[i].selectorText=='.threatdomain') {
 			rule = css.cssRules[i];
 			break;
 		}
@@ -637,7 +636,7 @@ function SizeDOMElements() {
 	if (!rule) {
 		bugreport('cannot locate css rule for .threatdomain width','SizeDOMElements');
 	} else {
-		rule.style.height= (wh-250) + "px";
+		rule.style.height= (wh-250) + 'px';
 	}
 
     $('#servaddbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
@@ -666,11 +665,11 @@ function SizeDOMElements() {
     // Make sure that we only touch the top and right attributes and not the left attribute,
     // so that the scroller remains fixed relative to the upper-right corner of the workspace.
     if (o && o.left>0 && o.left<50) {
-        scroller.css("right", (wsw-60) + "px");
+        scroller.css('right', (wsw-60) + 'px');
     }
     if (o && o.top>0 && o.top>wsh-30) {
         var t = wsh-30;
-        scroller.css("top", (t<15 ? 15 : t) + "px");
+        scroller.css('top', (t<15 ? 15 : t) + 'px');
     }
 }
 
@@ -704,7 +703,7 @@ function removetransientwindows(evt) {
 }
 
 function removetransientwindowsanddialogs(evt) {
-    $(".ui-dialog-content").dialog("close");
+    $('.ui-dialog-content').dialog('close');
     removetransientwindows();
 }
 
@@ -798,7 +797,7 @@ function prettyDate(d) {
  * - you can set the title
  */
 function rasterAlert(title,msg) {
-    $('#modaldialog').dialog("option", "buttons", [
+    $('#modaldialog').dialog('option', 'buttons', [
     {text: _("Close"), click: function(){
         $(this).dialog('close'); 
     } }
@@ -806,11 +805,11 @@ function rasterAlert(title,msg) {
     $('#modaldialog').dialog({
         zIndex: 9999,
         title: String(title),
-        height: "auto",
+        height: 'auto',
         maxHeight: 600
        });
     $('#modaldialog').html( String(msg) );
-    $('#modaldialog').dialog("open");
+    $('#modaldialog').dialog('open');
 }
 
 /* Replacement for the standard Javascript confirm() function. Several differences:
@@ -820,7 +819,7 @@ function rasterAlert(title,msg) {
  *   (and optionally a function to call on Cancel/deny)
  */
 function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
-    $('#modaldialog').dialog("option", "buttons", [
+    $('#modaldialog').dialog('option', 'buttons', [
     {text: buttcancel, click: function(){ 
         $(this).dialog('close'); 
         if (funcnoaction) funcnoaction();
@@ -830,18 +829,16 @@ function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
         funcaction(); 
     } }
     ]);
-    $('#modaldialog').dialog( "option", "zIndex", 9999 );
-    $('#modaldialog').dialog( "option", "title", String(title) );
+    $('#modaldialog').dialog( 'option', 'zIndex', 9999 );
+    $('#modaldialog').dialog( 'option', 'title', String(title) );
     $('#modaldialog').html( String(msg) );
-//    $('#modaldialog').dialog({close: function() {
-//    }});
-    $('#modaldialog').dialog("open");
+    $('#modaldialog').dialog('open');
     $('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
 }
 
 function newRasterConfirm(title,msg,buttok,buttcancel) {
     var dfd = $.Deferred();
-    $('#modaldialog').dialog("option", "buttons", [
+    $('#modaldialog').dialog('option', 'buttons', [
     {text: buttcancel, click: function(){ 
         $(this).dialog('close'); 
         dfd.reject(false);
@@ -851,12 +848,10 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
         dfd.resolve(true); 
     } }
     ]);
-    $('#modaldialog').dialog( "option", "zIndex", 9999 );
-    $('#modaldialog').dialog( "option", "title", String(title) );
+    $('#modaldialog').dialog( 'option', 'zIndex', 9999 );
+    $('#modaldialog').dialog( 'option', 'title', String(title) );
     $('#modaldialog').html( String(msg) );
-//    $('#modaldialog').dialog({close: function() {
-//    }});
-    $('#modaldialog').dialog("open");
+    $('#modaldialog').dialog('open');
     $('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
     return dfd.promise();
 }
@@ -915,24 +910,13 @@ var lastSavedString;
  * change to the project. This would also make it easier to implement an Undo capability.
  */
 function startAutoSave() {
-//    if (AutoSaveTimer!=null) {
-//        window.clearTimeout(AutoSaveTimer);
-//        AutoSaveTimer = null;
-        stopWatching(null);
-//    }
+	stopWatching(null);
     var p = Project.get(Project.cid);
     if (p==null || !p.shared || !Preferences.online) {
         if (Preferences!=null && !Preferences.online)
-            $("#networkactivity").removeClass("activityyes activityno").addClass("activityoff");
+            $('#networkactivity').removeClass("activityyes activityno").addClass("activityoff");
         return;
     }
-//    // Capture the initial state
-//    lastSavedString = exportProject(Project.cid);
-//    // Make sure it is on the server
-//    p.storeIfNotPresent(lastSavedString,{});
-//    // Update very 2 seconds, if modified. 
-//    AutoSaveTimer = window.setTimeout(autoSaveFunction,2000);
-
     startWatching(p);
 }
 
@@ -941,12 +925,10 @@ function startAutoSave() {
  * have been made.
  */
 function startWatching(p) {
-//console.log("Start watching project " + p.id);
     if (SSEClient!=null) {
-//console.log("  and closing previous watcher");
         SSEClient.close();
     }
-    SSEClient = new EventSource("sse_projmon.php?name=" + urlEncode(p.title));
+    SSEClient = new EventSource('sse_projmon.php?name=' + urlEncode(p.title));
     
     SSEClient.onmessage = function(msg) {
         if (msg.data=="NO PROJECT") {
@@ -986,7 +968,6 @@ function startWatching(p) {
                 p.destroy();
                 newp.settitle(t);
                 switchToProject(newpid);
-    //            p.dorefresh(true);
             } else {
                 rasterAlert('Project has been made private', 
                     'The server version of project "'+H(p.title)+'" is damaged. '+
@@ -998,61 +979,37 @@ function startWatching(p) {
         }
     };
     
-//    SSEClient.onerror = function(msg) {
-// This seems to be called without valid reason, for example when reloading the page
-// when there is an active connection. It seems safe to ignore this altogether.
-//        if (SSEClient!=null)
-//            SSEClient.close();
-//        SSEClient = null;
-//        p.setshared(false,false);
-//        rasterAlert('Project has been made private', 
-//            'Project "'+H(p.title)+'" could not be retrieved from the server. '+
-//            'It will now be marked as private. '+
-//            'If you wish to share your local version of the project, '+
-//            'you must set it\'s details to "Shared" yourself.<br>'+
-//            '<p><i>Your changes are not shared with others anymore.</i>'
-//        );
-//    };
 }
 
 /* Stop monitoring a project using Server-Sent Events. Either stop a specific
  * projet using its project id, or stop whatever current watch (pid==null)
  */
 function stopWatching(pid) {
-//console.log("Possibly stopping project " + pid);
     if ((pid==null || pid==Project.cid) && SSEClient!=null) {
         SSEClient.close();
         SSEClient = null;
-//console.log(" yup, stopping");
     }
 }
 
 function autoSaveFunction() {
     var p = Project.get(Project.cid);
     if (!p.shared || !Preferences.online) {
-//        window.clearTimeout(AutoSaveTimer);
-//        AutoSaveTimer=null;
         if (!Preferences.online)
-            $("#networkactivity").removeClass("activityyes activityno").addClass("activityoff");
+            $('#networkactivity').removeClass('activityyes activityno').addClass('activityoff');
         return;
     }
     var exportstring = exportProject(p.id);
-//    if (exportstring!=lastSavedString) {
-        // First, stop watching the file so that we do not notify ourselves
-        stopWatching(p.id);
-        p.storeOnServer(false,exportstring,{
-            onUpdate: function() {
-                startWatching(p);
-            }
-        });
-//        lastSavedString = exportstring;
-//    }
-//    AutoSaveTimer = window.setTimeout(autoSaveFunction,2000);
+	// First, stop watching the file so that we do not notify ourselves
+	stopWatching(p.id);
+	p.storeOnServer(false,exportstring,{
+		onUpdate: function() {
+			startWatching(p);
+		}
+	});
 }
 #endif
 
 function transactionCompleted(transaction) {
-//console.debug("Transaction [" + transaction + "]");
 #ifdef SERVER
     autoSaveFunction();
 #else
@@ -1112,11 +1069,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
             case 'E':
                 lThrEval.push(val); 
                 break;
-            case 'F':
-                //lCCF.push(val); 
-                // These are not used anymore in version 2. We use NodeClusters instead.
-                // Silently ignore this line, and create all NodeClusters afterwards.
-                break;
             case 'R':
                 // Ignore all preferences for purposes of loading projects
                 break;
@@ -1154,7 +1106,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
     //  there exists j, 0<=j<arr.length, such that arr[j].id == id
     function containsID(arr,id) {
         var exists=false;
-        for    (var j=0,alen=arr.length; !exists && j<alen; j++)
+        for (var j=0,alen=arr.length; !exists && j<alen; j++)
             exists = (arr[j].id==id);
         return exists;
     }
@@ -1162,9 +1114,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
     //  for all j, 0<=j<arr2.length, containsID(arr,arr2[j])
     function containsAllIDs(arr,arr2) {
         var forall=true;
-        for    (var j=0,alen=arr2.length; forall && j<alen; j++) {
-//            forall = containsID(arr,arr2[j]);    
-            for    (var k=0,alen2=arr.length; !forall && k<alen2; k++) {
+        for (var j=0,alen=arr2.length; forall && j<alen; j++) {
+            for (var k=0,alen2=arr.length; !forall && k<alen2; k++) {
                 forall = (arr[k].id==arr2[j]);
             }
         }
@@ -1289,23 +1240,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
             close: function(event, ui) { errdialog.remove(); }
         });
         return null;
-    }
-    
-    for (i=0; i<lThrEvallen; i++) {
-        if (lThrEval[i].t!='tUNK') continue;
-        // Due to a bug, version 0 files may contain ThreatAssessment objects with type tUNK
-        // Try to locate the proper type, else default to tEQT
-        var conv = false;
-        for (j=0; j<lThreatlen; j++) {
-            if (lThreat[j].l==lThrEval[i].l) {
-                // got it!
-                lThrEval[i].t=lThreat[j].t;
-                conv=true;
-                break;
-            }
-        }
-        if (!conv)
-            lThrEval[i].t = 'tEQT';
     }
     
     /* We loaded data into arrays lProject lService lThreat lNode lNodeCluster lThrEval
@@ -1625,9 +1559,6 @@ function singleProjectExport(p) {
     $('#exp_name').val(proj.title);
     $('#exp_contents').val(s);
     $('#exp_form').submit();
-
-//    if (request.status == 200)  
-//      console.log(request.responseText);    
 }
 
 function exportProject(pid) {
@@ -1726,7 +1657,6 @@ function forceSelectVerticalTab(n) {
 function vertTabSelected(event, ui) {
     removetransientwindows();
 
-//    $('body').css('cursor','progress'); // this does not seem to be effective, at least not on FF4
     $('#nodereport').dialog('close');
     $('#componentthreats').dialog('close');
     $('#checklist_tWLS').dialog('close');
@@ -1769,7 +1699,6 @@ function vertTabSelected(event, ui) {
     default:
         bugreport('unknown tab encountered','vertTabSelected');
     }
-//    $('body').css('cursor','default');
 }
 
 function initLibraryPanel() {
@@ -1922,8 +1851,8 @@ function initLibraryPanel() {
         var p = Project.get( $('#libselect option:selected').val() );
         $('#libactivate').button('option','disabled',p.id==Project.cid);
         $('#libmerge').button('option','disabled',p.id==Project.cid);
-        $('#libselect option').css("background-image","");
-        $('#libselect option[value='+Project.cid+']').css("background-image","url(../img/selected.png)");
+        $('#libselect option').css('background-image','');
+        $('#libselect option[value='+Project.cid+']').css('background-image','url(../img/selected.png)');
     });
     $('#libselect').on('dblclick',  function(){
         $('#libactivate').trigger('click');
@@ -2029,7 +1958,6 @@ function initLibraryPanel() {
             if ($('#optionspanel').css('display')!='none') $('#optionsactivator').trigger('click');
             $('#libraryactivator').addClass('actactive ui-state-active');
             $('#libraryupdown').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-n');
-//            $('#librarypanel').on('click',  function(){ return false; });
         } else {
             removetransientwindows();
         }
@@ -2267,18 +2195,18 @@ function initOptionsPanel() {
     $('#optionsactivator span').first().html(_("Options"));
 
     $('#switcher span').first().html( _("Visual style:") );
-    $('[for=smoothness]').on('click',  function() { Preferences.settheme("smoothness"); return true; });
-    $('[for=start]').on('click',  function() { Preferences.settheme("start"); return true; });
-    $('[for=redmond]').on('click',  function() { Preferences.settheme("redmond"); return true; });
+    $('[for=smoothness]').on('click',  function() { Preferences.settheme('smoothness'); return true; });
+    $('[for=start]').on('click',  function() { Preferences.settheme('start'); return true; });
+    $('[for=redmond]').on('click',  function() { Preferences.settheme('redmond'); return true; });
     $('#'+Preferences.theme).trigger('click');
 
     $('#emblem_size span').first().html( _("Vulnerability levels:") );
     $('#emblem_size label span').eq(0).html( _("Small") );
     $('#emblem_size label span').eq(1).html( _("Large") );
-    $('#emblem_size label span').eq(2).html( _("None") );
-    $('[for=em_small]').on('click',  function() { Preferences.setemblem("em_small"); });
-    $('[for=em_large]').on('click',  function() { Preferences.setemblem("em_large"); });
-    $('[for=em_none]').on('click',  function() { Preferences.setemblem("em_none"); });
+    $('#emblem_size label span').eq(2).html( _('none') );
+    $('[for=em_small]').on('click',  function() { Preferences.setemblem('em_small'); });
+    $('[for=em_large]').on('click',  function() { Preferences.setemblem('em_large'); });
+    $('[for=em_none]').on('click',  function() { Preferences.setemblem('em_none'); });
     
     $('#labelonoff span').first().html( _("Labels:") );
     $('#labelonoff label span').eq(0).html( _("Hide color") );
@@ -2312,9 +2240,9 @@ function initOptionsPanel() {
     $('#optionsactivator').on('click',  function() {
         if ($('#optionspanel').css('display')=='none') {
             removetransientwindows();
-            $('#'+Preferences.emsize).prop("checked","checked");
-            $(Preferences.online?'#online_on':'#online_off').prop("checked","checked");
-            $(Preferences.label?'#label_on':'#label_off').prop("checked","checked");
+            $('#'+Preferences.emsize).prop('checked','checked');
+            $(Preferences.online?'#online_on':'#online_off').prop('checked','checked');
+            $(Preferences.label?'#label_on':'#label_off').prop('checked','checked');
             $('#optionspanel fieldset').controlgroup('refresh');
             if ($('#librarypanel').css('display')!='none') $('#libraryactivator').trigger('click');
             $('#optionspanel').show();
@@ -2330,7 +2258,7 @@ function initOptionsPanel() {
 function bottomTabsCloseHandler(event) {
     var p = Project.get(Project.cid);
     if (p.services.length==1) {
-        $('#diagrams_workspace'+p.services[0]).effect("pulsate", { times:2 }, 800);
+        $('#diagrams_workspace'+p.services[0]).effect('pulsate', { times:2 }, 800);
         return;
     }
     $('#selectrect').hide();
@@ -2409,22 +2337,22 @@ function initTabDiagrams() {
     
     $('.popupmenuitem').button();
     $('.popupmenuitem').removeClass('ui-corner-all');
-    $("#mi_th").html( _("Vulnerabilities") );
-    $("#mi_ct span").html( _("Change type") );
-    $("#mi_cttWLS").html( _("Wireless link") );
-    $("#mi_cttWRD").html( _("Wired link") );
-    $("#mi_cttEQT").html( _("Equipment") );
-    $("#mi_cttACT").html( _("Actor") );
-    $("#mi_cttUNK").html( _("Unknown link") );
-    $("#mi_cl span").html( _("Class") );
-    $("#mi_rc").html( _("Rename class") );
-    $("#mi_sx").html( _("Rename suffix") );
+    $('#mi_th').html( _("Vulnerabilities") );
+    $('#mi_ct span').html( _("Change type") );
+    $('#mi_cttWLS').html( _("Wireless link") );
+    $('#mi_cttWRD').html( _("Wired link") );
+    $('#mi_cttEQT').html( _("Equipment") );
+    $('#mi_cttACT').html( _("Actor") );
+    $('#mi_cttUNK').html( _("Unknown link") );
+    $('#mi_cl span').html( _("Class") );
+    $('#mi_rc').html( _("Rename class") );
+    $('#mi_sx').html( _("Rename suffix") );
     // Menu item Similar/Identical is handled inside Nodecluster:_showpopupmenu()
-    $("#mi_du").html( _("Duplicate") );
-    $("#mi_de").html( _("Delete") );
+    $('#mi_du').html( _("Duplicate") );
+    $('#mi_de').html( _("Delete") );
 
-    $("#mi_sd").html( _("Delete selection") );
-    $("#mi_sc span").html( _("Label") );
+    $('#mi_sd').html( _("Delete selection") );
+    $('#mi_sc span').html( _("Label") );
     
     $('#templates .t1 .templatelabel').html( _("Wireless") );
     $('#templates .t2 .templatelabel').html( _("Wired") );
@@ -2442,17 +2370,17 @@ function initTabDiagrams() {
     $('#tC_tWRD').attr('title', _("Click to edit default threats for Wired links."));
     $('#tC_tEQT').attr('title', _("Click to edit default threats for Equipment components."));
 
-    $("#mi_ccnone .plainlabel").html( _("No label") );
-    $("#mi_ccedit .plainlabel").html( _("Edit labels ...") );
-    $("#mi_scnone .plainlabel").html( _("No label") );
-    $("#mi_scedit .plainlabel").html( _("Edit labels ...") );
+    $('#mi_ccnone .plainlabel').html( _("No label") );
+    $('#mi_ccedit .plainlabel').html( _("Edit labels ...") );
+    $('#mi_scnone .plainlabel').html( _("No label") );
+    $('#mi_scedit .plainlabel').html( _("Edit labels ...") );
     
-    $("#nodereport").dialog({
+    $('#nodereport').dialog({
         autoOpen: false,
         minHeight: 80,
         zIndex: 400
     });
-    $("#componentthreats").dialog({
+    $('#componentthreats').dialog({
         autoOpen: false,
         minHeight: 180,
         minWidth: 775,
@@ -2471,18 +2399,18 @@ function initTabDiagrams() {
         transactionCompleted("Service add");
     });
 
-    $(".templatebg,.templatebgNOT").draggable({
-        cursor: "move",
+    $('.templatebg,.templatebgNOT').draggable({
+        cursor: 'move',
         helper: 'clone'
     });
 
     $('.template').on('mouseenter', function() {
-        $('#tC_'+this.firstElementChild.id).css({visibility: "visible"});
+        $('#tC_'+this.firstElementChild.id).css({visibility: 'visible'});
     }).on('mouseleave',function() {
-        $('#tC_'+this.firstElementChild.id).css({visibility: "hidden"});
+        $('#tC_'+this.firstElementChild.id).css({visibility: 'hidden'});
     });
     $('.tC').on('mousedown', function(e,ui){
-        $('#'+this.id).css({visibility: "hidden"});
+        $('#'+this.id).css({visibility: 'hidden'});
         // this.id is of the form "tC_YYY", and we need to know YYY
         var ctype = this.id.substr(3);
         displayChecklistsDialog(ctype);        
@@ -2490,7 +2418,7 @@ function initTabDiagrams() {
     });
     
     $('#mi_th').on('mouseup', function(e) {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         if (rn.type=='tACT' || rn.type=='tNOT')
             return;
@@ -2512,31 +2440,31 @@ function initTabDiagrams() {
         menuTimerct = setTimeout( function() {$('#mi_ctsm').hide();}, 150);
     });
     $('#mi_cttWLS').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         rn.changetype('tWLS');
         transactionCompleted("Node change type tWLS");
     });
     $('#mi_cttWRD').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         rn.changetype('tWRD');
         transactionCompleted("Node change type tWRD");
     });
     $('#mi_cttEQT').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         rn.changetype('tEQT');
         transactionCompleted("Node change type tEQT");
     });
     $('#mi_cttACT').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         rn.changetype('tACT');
         transactionCompleted("Node change type tACT");
     });
     $('#mi_cttUNK').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         rn.changetype('tUNK');
         transactionCompleted("Node change type tUNK");
@@ -2557,7 +2485,7 @@ function initTabDiagrams() {
         menuTimercl = setTimeout( function() {$('#mi_clsm').hide();}, 150);
     });
     $('#mi_rc').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         if (rn.component==null)    // Actors and notes don't have components
             return;
@@ -2574,7 +2502,7 @@ function initTabDiagrams() {
         dbuttons.push({
             text: _("Cancel"),
             click: function() {
-                    $(this).dialog("close");
+                    $(this).dialog('close');
                 }
         });
         dbuttons.push({
@@ -2582,7 +2510,7 @@ function initTabDiagrams() {
             click: function() {
                     var name = $('#field_componentrename');
                     cm.changetitle(name.val());
-                    $(this).dialog("close");
+                    $(this).dialog('close');
                     transactionCompleted("Component class rename");
                 }
         });
@@ -2598,7 +2526,7 @@ function initTabDiagrams() {
                 $('#form_componentrename').submit(function() {
                     var name = $('#field_componentrename');
                     cm.changetitle(name.val());
-                    dialog.dialog("close");
+                    dialog.dialog('close');
                     transactionCompleted("Component class rename");
                 });
             },
@@ -2608,7 +2536,7 @@ function initTabDiagrams() {
         });
     });
     $('#mi_sx').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         if (rn.component==null)    // Actors and notes don't have components
             return;
@@ -2624,7 +2552,7 @@ function initTabDiagrams() {
         dbuttons.push({
             text: _("Cancel"),
             click: function() {
-                    $(this).dialog("close");
+                    $(this).dialog('close');
                 }
         });
         dbuttons.push({
@@ -2632,7 +2560,7 @@ function initTabDiagrams() {
             click: function() {
                     var name = $('#field_suffixrename');
                     rn.changesuffix(name.val());
-                    $(this).dialog("close");
+                    $(this).dialog('close');
                     transactionCompleted("Node suffix rename");
                 }
         });
@@ -2648,7 +2576,7 @@ function initTabDiagrams() {
                 $('#form_suffixrename').submit(function() {
                     var name = $('#field_suffixrename');
                     rn.changesuffix(name.val());
-                    dialog.dialog("close");
+                    dialog.dialog('close');
                     transactionCompleted("Node suffix rename");
                 });
             },
@@ -2658,7 +2586,7 @@ function initTabDiagrams() {
         });
     });
     $('#mi_sm').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         if (rn.component==null)    // Actors and notes don't have components
             return;
@@ -2667,7 +2595,7 @@ function initTabDiagrams() {
         transactionCompleted("Component class single/multiple");
     });
     $('#mi_du').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         if (rn.component!=null) {
             var cm = Component.get(rn.component);
@@ -2716,7 +2644,7 @@ function initTabDiagrams() {
         menuTimercc = setTimeout( function() {$('#mi_ccsm').hide();}, 150);
     });
     function colorfunc(c) { return function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         rn.setlabel(c);
         transactionCompleted("Node change color "+c);
@@ -2732,7 +2660,7 @@ function initTabDiagrams() {
     $('#mi_ccgrey').on('mouseup', colorfunc('grey') );
     $('#mi_ccedit').on('mouseup', showLabelEditForm );
     $('#mi_de').on('mouseup', function() {
-        $('#nodemenu').css("display", "none");
+        $('#nodemenu').css('display', 'none');
         var rn = Node.get( Node.MenuNode );
         rasterConfirm(_("Delete element node?"),
             _("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
@@ -2754,7 +2682,7 @@ function initTabDiagrams() {
         // Start blinking
         for (var i=0; i<num; i++) {
             var rn = Node.get(nodes[i]);
-              $(rn.jnid).effect("pulsate", { times:10 }, 4000);
+              $(rn.jnid).effect('pulsate', { times:10 }, 4000);
         }
         rasterConfirm(_("Delete %% %% in selection?", num, plural(_("node"),_("nodes"),num)),
             _("Are you sure you want to delete all selected nodes?"),
@@ -2898,7 +2826,7 @@ function initChecklistsDialog(type) {
     // When displaying multiple checklist windows, each will get the same location and size.
     // Since that is confusing, we prevent obscuration by using a type-specific offset.
     var offsets = {'tWLS': 100, 'tWRD': 130, 'tEQT': 160};
-    $("#checklist_"+type).dialog({
+    $('#checklist_'+type).dialog({
         title: _("Default vulnerabilities for new nodes of type '%%'", Rules.nodetypes[type]),
         closeOnEscape: false,
         minWidth: 725,
@@ -2911,26 +2839,26 @@ function initChecklistsDialog(type) {
 
 function populateLabelMenu() {
     var p = Project.get(Project.cid);
-    $("#mi_ccred .labeltext").html( '"' + H(p.labels[0]) + '"' );
-    $("#mi_ccorange .labeltext").html( '"' + H(p.labels[1]) + '"' );
-    $("#mi_ccyellow .labeltext").html( '"' + H(p.labels[2]) + '"' );
-    $("#mi_ccgreen .labeltext").html( '"' + H(p.labels[3]) + '"' );
-    $("#mi_ccblue .labeltext").html( '"' + H(p.labels[4]) + '"' );
-    $("#mi_ccpurple .labeltext").html( '"' + H(p.labels[5]) + '"' );
-    $("#mi_ccgrey .labeltext").html( '"' + H(p.labels[6]) + '"' );
+    $('#mi_ccred .labeltext').html( '"' + H(p.labels[0]) + '"' );
+    $('#mi_ccorange .labeltext').html( '"' + H(p.labels[1]) + '"' );
+    $('#mi_ccyellow .labeltext').html( '"' + H(p.labels[2]) + '"' );
+    $('#mi_ccgreen .labeltext').html( '"' + H(p.labels[3]) + '"' );
+    $('#mi_ccblue .labeltext').html( '"' + H(p.labels[4]) + '"' );
+    $('#mi_ccpurple .labeltext').html( '"' + H(p.labels[5]) + '"' );
+    $('#mi_ccgrey .labeltext').html( '"' + H(p.labels[6]) + '"' );
     
-    $("#mi_scred .labeltext").html( '"' + H(p.labels[0]) + '"' );
-    $("#mi_scorange .labeltext").html( '"' + H(p.labels[1]) + '"' );
-    $("#mi_scyellow .labeltext").html( '"' + H(p.labels[2]) + '"' );
-    $("#mi_scgreen .labeltext").html( '"' + H(p.labels[3]) + '"' );
-    $("#mi_scblue .labeltext").html( '"' + H(p.labels[4]) + '"' );
-    $("#mi_scpurple .labeltext").html( '"' + H(p.labels[5]) + '"' );
-    $("#mi_scgrey .labeltext").html( '"' + H(p.labels[6]) + '"' );
+    $('#mi_scred .labeltext').html( '"' + H(p.labels[0]) + '"' );
+    $('#mi_scorange .labeltext').html( '"' + H(p.labels[1]) + '"' );
+    $('#mi_scyellow .labeltext').html( '"' + H(p.labels[2]) + '"' );
+    $('#mi_scgreen .labeltext').html( '"' + H(p.labels[3]) + '"' );
+    $('#mi_scblue .labeltext').html( '"' + H(p.labels[4]) + '"' );
+    $('#mi_scpurple .labeltext').html( '"' + H(p.labels[5]) + '"' );
+    $('#mi_scgrey .labeltext').html( '"' + H(p.labels[6]) + '"' );
 }
 
 function showLabelEditForm() {
     var p = Project.get(Project.cid);
-    $('#nodemenu').css("display", "none");
+    $('#nodemenu').css('display', 'none');
     var dialog = $('<div></div>');
     var snippet ='\
         <form id="form_editlabels">\
@@ -3033,13 +2961,13 @@ function displayThreatsDialog(cid,event) {
     snippet = snippet.replace(/_BC_/g, _("Copy"));
     snippet = snippet.replace(/_BP_/g, _("Paste"));
     snippet = snippet.replace(/_CI_/g, cid);
-    $("#componentthreats").html(snippet);
+    $('#componentthreats').html(snippet);
     c.setmarkeroid(null);
     
     for (var i=0; i<c.thrass.length; i++) {
         if (c.thrass[i]==null) continue;
         var th = ThreatAssessment.get(c.thrass[i]);
-        th.addtablerow('#threats'+cid,"dia");
+        th.addtablerow('#threats'+cid,'dia');
     }
     $('#dthadddia'+cid).button();
     $('#dthcopydia'+cid).button();
@@ -3051,7 +2979,7 @@ function displayThreatsDialog(cid,event) {
         var c = Component.get(nid2id(this.id));
         var th = new ThreatAssessment((c.type=='tUNK' ? 'tEQT' : c.type));
         c.addthrass(th);
-        th.addtablerow('#threats'+c.id,"dia");
+        th.addtablerow('#threats'+c.id,'dia');
         transactionCompleted("Vuln add");
     });
     $('#dthcopydia'+cid).on('click',  function() {
@@ -3095,30 +3023,30 @@ function displayThreatsDialog(cid,event) {
 //                else
 //                    te.setremark(te.remark + ThreatAssessment.Clipboard[j].r);
 //                $('#dthdia_'+te.id).remove();
-//                te.addtablerow('#threats'+c.id,"dia");
+//                te.addtablerow('#threats'+c.id,'dia');
 //            }
 //        }
         for (i=0; i<cm.thrass.length; i++) {
             th = ThreatAssessment.get(cm.thrass[i]);
             if (newte.indexOf(cm.thrass[i])==-1)
                 $('#dthdia_'+th.id).remove();
-            th.addtablerow('#threats'+cm.id,"dia");
+            th.addtablerow('#threats'+cm.id,'dia');
         }
         cm.setmarker();
         transactionCompleted("Vuln paste");
     });
         
-    if ($("#componentthreats").dialog("isOpen"))
-        $("#componentthreats").dialog('close');
-    $("#componentthreats").dialog({
+    if ($('#componentthreats').dialog('isOpen'))
+        $('#componentthreats').dialog('close');
+    $('#componentthreats').dialog({
         title: _("Vulnerability assessment for '%%'", c.title) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
         position: {my: 'left top', at: 'right', of: event, collision: 'fit'},
         closeOnEscape: false,
         open: function() {
-            var o = $("#componentthreats").dialog("widget").offset();
+            var o = $('#componentthreats').dialog('widget').offset();
             // Fade in the menu, and move it left & down, but only move it if the call to "open" did not adjust the position
             // of the window. Windows are adjusted to prevent them from sticking out of the viewport.
-            $("#componentthreats").dialog("widget")
+            $('#componentthreats').dialog('widget')
             .css({display: "", opacity: 0.3})
             .animate({
                 opacity: 1,
@@ -3127,14 +3055,14 @@ function displayThreatsDialog(cid,event) {
             }, 250);
         }
     });
-    $("#componentthreats").dialog("open");
+    $('#componentthreats').dialog('open');
     // First delete button gains focus, and is highlighted. Looks ugly.
     $('#dialogthreatlist input').trigger('blur');
     
-    $("#threats"+cid).sortable({
-        containment: "parent",
-        helper: "clone",
-        cursor: "ns-resize",
+    $('#threats'+cid).sortable({
+        containment: 'parent',
+        helper: 'clone',
+        cursor: 'ns-resize',
         deactivate: function(e,ui) {
             var newlist = [];
             for (var i=0; i<this.children.length; i++)
@@ -3151,7 +3079,7 @@ function displayThreatsDialog(cid,event) {
 function displayChecklistsDialog(type) {
     // When displaying multiple checklist windows, each will get the same location and size.
     // Since that is confusing, we prevent obscuration by using a type-specific offset.
-    $("#checklist_"+type).dialog("open");
+    $("#checklist_"+type).dialog('open');
     $('.checklist input').each( function () { 
         $(this).trigger('blur'); return true; 
     });
@@ -3203,7 +3131,7 @@ function initTabSingleFs() {
     });
 }
 
-var SFSortOpt = "alpha";
+var SFSortOpt = 'alpha';
 
 function paintSingleFailures(s) {
     var appendstring = "";
@@ -3222,7 +3150,7 @@ function paintSingleFailures(s) {
     }
     
     switch (SFSortOpt) {
-    case "alpha":
+    case 'alpha':
         it.sortByName();
         break;
     case "type":
@@ -3295,7 +3223,7 @@ function paintSingleFailures(s) {
             var str;
             for (i=0; i<cm.nodes.length; i++) {
                 var rn = Node.get(cm.nodes[i]);
-                if (rn.color!="none" && labels.indexOf(rn.color)==-1)
+                if (rn.color!='none' && labels.indexOf(rn.color)==-1)
                     labels.push(rn.color);
             }
             if (labels.length==0) {
@@ -3398,9 +3326,9 @@ snippet += "</div>\n";
         });
         
         $(acc.selector + ' .sfa_sortable').sortable({
-            containment: "parent",
-            helper: "clone",
-            cursor: "ns-resize",
+            containment: 'parent',
+            helper: 'clone',
+            cursor: 'ns-resize',
             deactivate: function(e,ui) {
                 var newlist = [];
                 var cm = Component.get( nid2id(this.previousElementSibling.id) );
@@ -3740,11 +3668,6 @@ function moveCluster(from_cluster,to_cluster) {
     parent.removechildcluster(from_cluster.id);
     to_cluster.addchildcluster(from_cluster.id);
     
-//    var opened = to_cluster.accordionopened;
-//    for (var cl=to_cluster; cl.id!=root.id; cl=NodeCluster.get(cl.parentcluster)) {
-//        openend = openend && cl.accordionopened;
-//    }
-//    from_cluster.setaccordionopened(opened);
     root.normalize();
     root.calculatemagnitude();
     repaintTDom(root.id);
@@ -3786,7 +3709,7 @@ function moveSelectionToCluster(cluster) {
     },500);
 }
 
-var CCFSortOpt = "alpha";
+var CCFSortOpt = 'alpha';
 
 function AddAllClusters() {
     var snippet = '\
@@ -3833,13 +3756,13 @@ function AddAllClusters() {
     
     $('#ccfselect').val(CCFSortOpt);
     switch (CCFSortOpt) {
-    case "alpha":
+    case 'alpha':
         it.sortByName();
         break;
-    case "type":
+    case 'type':
         it.sortByType();
         break;
-    case "threat":
+    case 'threat':
         it.sortByLevel();
         break;
     default:
@@ -3894,9 +3817,9 @@ function addTDomElements(nc) {
     });
     if (nc.childclusters.length + nc.childnodes.length < 2)
         // Just an empty placeholder for a node cluster that is too small
-        $('#shfaccordion'+nc.id).css("display", "none");
+        $('#shfaccordion'+nc.id).css('display', 'none');
     else
-        $('#shfaccordion'+nc.id).css("display", "block");
+        $('#shfaccordion'+nc.id).css('display', 'block');
 }
 
 function expandAllCCF() {
@@ -3982,13 +3905,13 @@ function reallyRepaintTDom(elem) {
     snippet = snippet.replace(/_LR_/g, _("Remark"));
     snippet = snippet.replace(/_ID_/g, nc.id);
     $('#shfaccordionbody'+nc.id).html( snippet );
-    computeSpacesMakeup(nc,"#shftable"+nc.id,"shf"+nc.id);
+    computeSpacesMakeup(nc,'#shftable'+nc.id,'shf'+nc.id);
     nc.calculatemagnitude();
-    nc.setallmarkeroid("#shfamark");
+    nc.setallmarkeroid('#shfamark');
 
     if (nc.childclusters.length + nc.childnodes.length < 2) {
         // Just an empty/invisible placeholder for a node cluster that is too small
-        $('#shfaccordion'+nc.id).css("display", "none");
+        $('#shfaccordion'+nc.id).css('display', 'none');
         // Check whether there are any cluster remaining visible
         var it = new NodeClusterIterator({project:Project.cid, isroot:true});
         for (it.first(); it.notlast(); it.next()) {
@@ -4002,13 +3925,13 @@ function reallyRepaintTDom(elem) {
         return;
     }
 
-    $('#shfaccordion'+nc.id).css("display", "block");
+    $('#shfaccordion'+nc.id).css('display', 'block');
     // Retain scrollbar position
     $('#tdom'+nc.id).append( listFromCluster(nc) ).scrollTop(ScrollBarPosition);
-    nc.setallmarkeroid("#shfamark");
+    nc.setallmarkeroid('#shfamark');
     $('#tdom'+nc.id+' .tlistitem').draggable({
         containment: '#tdom'+nc.id,
-        revert: "invalid",
+        revert: 'invalid',
         revertDuration: 300, // Default is 500 ms
         axis: 'y',
         scrollSensitivity: 40,
@@ -4032,7 +3955,7 @@ function reallyRepaintTDom(elem) {
         drop: nodeClusterReorder
     });
     $('.litext').editInPlace({
-        bg_over: "rgb(255,204,102)",
+        bg_over: 'rgb(255,204,102)',
         callback: function(domid, enteredText) { 
             var nc = NodeCluster.get( nid2id(domid) );
             nc.settitle(enteredText);
@@ -4104,14 +4027,14 @@ function listFromCluster(nc) {
         });
         return arr;
     };
-    node = node.concat(sortednodeswithcolor("red",nc.childnodes));
-    node = node.concat(sortednodeswithcolor("orange",nc.childnodes));
-    node = node.concat(sortednodeswithcolor("yellow",nc.childnodes));
-    node = node.concat(sortednodeswithcolor("green",nc.childnodes));
-    node = node.concat(sortednodeswithcolor("blue",nc.childnodes));
-    node = node.concat(sortednodeswithcolor("purple",nc.childnodes));
-    node = node.concat(sortednodeswithcolor("grey",nc.childnodes));
-    node = node.concat(sortednodeswithcolor("none",nc.childnodes));
+    node = node.concat(sortednodeswithcolor('red',nc.childnodes));
+    node = node.concat(sortednodeswithcolor('orange',nc.childnodes));
+    node = node.concat(sortednodeswithcolor('yellow',nc.childnodes));
+    node = node.concat(sortednodeswithcolor('green',nc.childnodes));
+    node = node.concat(sortednodeswithcolor('blue',nc.childnodes));
+    node = node.concat(sortednodeswithcolor('purple',nc.childnodes));
+    node = node.concat(sortednodeswithcolor('grey',nc.childnodes));
+    node = node.concat(sortednodeswithcolor('none',nc.childnodes));
     if (node.length!=nc.childnodes.length)
         bugreport("Invalidly labeled children","listFromCluster");
     
@@ -4125,7 +4048,7 @@ function listFromCluster(nc) {
         str = str.replace(/_SV_/g, H(sv.title));
         str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
         str += rn.htmltitle();
-        if (Preferences.label && rn.color!="none") {
+        if (Preferences.label && rn.color!='none') {
             var p = Project.get(Project.cid);
             str += '<div class="shflabelgroup"><div class="smallblock B_CO_"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
             str = str.replace(/_CO_/g, rn.color);
@@ -4320,7 +4243,7 @@ function nodeClusterReorder(event,ui) {
             var dropNode = Node.get(drop_n);
             if (!dragNode || !dropNode)
                 bugreport('drag node or drop node does not exist', 'nodeClusterReorder');
-            if (dragNode.color==dropNode.color && dragNode.color!="none") {
+            if (dragNode.color==dropNode.color && dragNode.color!='none') {
                 // Both have the same label. Name the new node cluster after this label.
                 var p = Project.get(Project.cid);
                 nc.settitle( p.strToLabel(dragNode.color) );
@@ -4472,7 +4395,7 @@ function AddAllAnalysis() {
     paintLonglist();
 }
 
-var FailureThreatSortOpt = {node: "threat", threat: "alpha"};
+var FailureThreatSortOpt = {node: "threat", threat: 'alpha'};
 
 function paintNodeThreatTables() {
     ComponentExclusions = {};
@@ -4643,7 +4566,7 @@ function paintSFTable() {
     var cit = new ComponentIterator({project: Project.cid});
         
     switch (FailureThreatSortOpt.node) {
-    case "alpha":
+    case 'alpha':
         cit.sortByName();
         break;
     case "type":
@@ -4657,7 +4580,7 @@ function paintSFTable() {
     }
     
     switch (FailureThreatSortOpt.threat) {
-    case "alpha":
+    case 'alpha':
         tit.sortByName();
         break;
     case "type":
@@ -4777,13 +4700,13 @@ function paintCCFTable() {
     var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
     
     switch (FailureThreatSortOpt.node) {
-    case "alpha":
+    case 'alpha':
         ncit.sortByName();
         break;
-    case "type":
+    case 'type':
         ncit.sortByType();
         break;
-    case "threat":
+    case 'threat':
         ncit.sortByLevel();
         break;
     default:
@@ -4791,10 +4714,10 @@ function paintCCFTable() {
     }
     
     switch (FailureThreatSortOpt.threat) {
-        case "alpha":
+        case 'alpha':
             tit.sortByName();
             break;
-        case "type":
+        case 'type':
             tit.sortByType();
             break;
         default:
@@ -4862,7 +4785,6 @@ function paintCCFTable() {
 
     $('.clustercell').on('click',  function(evt){
         var cid = parseInt($(evt.currentTarget).attr('cluster'),10);
-//        var tid = parseInt($(evt.currentTarget).attr('threat'),10);
         if (exclusionsContains(ClusterExclusions,cid,0))
             exclusionsRemove(ClusterExclusions,cid,0);
         else
@@ -4882,7 +4804,6 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
             snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[ta.total]);
             snippet = snippet.replace(/_TO_/g, ta.total);
             snippet = snippet.replace(/_TI_/g, "CCF for "+H(cl.title)+" ("+Rules.nodetypes[cl.type]+")");
-//            snippet = snippet.replace(/_TH_/g, ta.id);
             snippet = snippet.replace(/_CI_/g, cl.id);
             snippet = snippet.replace(/_EX_/g, exclusionsContains(ClusterExclusions,cl.id,0)?"excluded":"" );
         } else {

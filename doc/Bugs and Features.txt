@@ -23,6 +23,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
+Change node shapes from image to SVG, helps for cleaner resizes.
 Feature: on selection use Del to delete. Other menu shortcuts? E.g. F2 to rename on Windows.
 Try IndexDB instead of localStorage. This will benefit concurrent use in multiple tabs, and may ease the implementation of Undo and concurrent use across computers.
 When renaming a node, split at the ^ sign and treat the latter part as the suffix?
@@ -33,7 +34,6 @@ Create toolbar/buttons for actions in popup menu.
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
 Sort Single failures by Label.
 When changing the type of a node: if the name of the node looks like a default one, then update the name to reflect the new type; otherwise, leave the name untouched.
-Remove the code for upgrading ancient formats to the new format?
 The sort order on the Failures and Vulnerabilities tab should probably be a Preference.
 Exclude entire vulnerabilities in Analysis|Failures and Vulnerabilities tab.
 Add Copy option to the popup menu of a selection (difficult?).

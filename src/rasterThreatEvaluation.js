@@ -32,7 +32,6 @@
  *	remark: free form text (200 chars max)
  * Methods:
  *	destroy: destructor.
- *	_isblank(): returns whether the eval is in its initial (unmodified) state.
  *	setcomponent(id): set the owning Component object to id.
  *	setcluster(id): set the owning NodeCluster object to id.
  *	settitle(str): sets the short name text to 'str'.
@@ -149,10 +148,6 @@ ThreatAssessment.prototype = {
 		ThreatAssessment._all[this.id]=null;
 	},
 	
-//	_isblank: function() {
-//		return (this.freq=='-' && this.impact=='-' && this.remark=="");
-//	},
-	
 	setcomponent: function(id) {
 		this.component = id;
 		if (this.cluster!=null)
@@ -264,18 +259,17 @@ ThreatAssessment.prototype = {
 		if (interact==null) interact=true;
 
 		if (this.component!=null && Component.get(this.component).type=='tUNK') {
-			$("#dth_"+prefix+"name"+this.id).attr('title', _("For %%: ",Rules.nodetypes[this.type]) + H(this.description));
+			$('#dth_'+prefix+'name'+this.id).attr('title', _("For %%: ",Rules.nodetypes[this.type]) + H(this.description));
 		} else {
-			$("#dth_"+prefix+"name"+this.id).attr('title', H(this.description));
+			$('#dth_'+prefix+'name'+this.id).attr('title', H(this.description));
 		}
 		if (interact) {
-			$("#dth_"+prefix+"del"+this.id).button().removeClass('ui-corner-all').addClass('ui-corner-right');
+			$('#dth_'+prefix+'del'+this.id).button().removeClass('ui-corner-all').addClass('ui-corner-right');
 		}
 		
-//		var selectoptions = ThreatAssessment.values.join(",");
-		var selectoptions = "";
+		var selectoptions = '';
 		for (var i=0; i<ThreatAssessment.values.length; i++) {
-			if (selectoptions!="")
+			if (selectoptions!='')
 				selectoptions += ',';
 			selectoptions += '_L_ _D_:_L_';
 			selectoptions = selectoptions.replace(/_L_/g, ThreatAssessment.values[i]);
@@ -294,12 +288,12 @@ ThreatAssessment.prototype = {
 			nc_isroot = c.isroot();
 		}
 		
-		if (!nc_isroot) $("#dthE_"+prefix+"name"+this.id).editInPlace({
-			bg_out: "#eee", bg_over: "rgb(255,204,102)",
+		if (!nc_isroot) $('#dthE_'+prefix+'name'+this.id).editInPlace({
+			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			callback: function(oid, enteredText) {
 				te.settitle(enteredText);
 				te.setdescription(""); // Description from checklist does not apply anymore now.
-				$("#dthE_"+prefix+"name"+te.id).attr('title', '');
+				$('#dthE_'+prefix+'name'+te.id).attr('title', '');
 				if (c.parentcluster != undefined) {
 					// c is a nodecluster, not a component
 					c.settitle(te.title);
@@ -309,34 +303,34 @@ ThreatAssessment.prototype = {
 				return H(te.title);
 			}
 		});
-		$("#dth_"+prefix+"freq"+this.id).editInPlace({
-			bg_out: "#eee", bg_over: "rgb(255,204,102)",
+		$('#dth_'+prefix+"freq"+this.id).editInPlace({
+			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			field_type: "select",
 			select_options: selectoptions,
 			select_text: "",
 			callback: function(oid, enteredText) {
 				te.setfreq(enteredText);
-				$("#dth_"+prefix+"total"+te.id).text(te.total);
+				$('#dth_'+prefix+"total"+te.id).text(te.total);
 				c.setmarker();
 				transactionCompleted("Vuln setfreq");
 				return enteredText; 
 			}
 		});
-		$("#dth_"+prefix+"impact"+this.id).editInPlace({
-			bg_out: "#eee", bg_over: "rgb(255,204,102)",
+		$('#dth_'+prefix+"impact"+this.id).editInPlace({
+			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			field_type: "select",
 			select_options: selectoptions,
 			select_text: "",
 			callback: function(oid, enteredText) {
 				te.setimpact(enteredText);
-				$("#dth_"+prefix+"total"+te.id).text(te.total);
+				$('#dth_'+prefix+"total"+te.id).text(te.total);
 				c.setmarker();
 				transactionCompleted("Vuln setimpact");
 				return enteredText; 
 			}
 		});
-		$("#dth_"+prefix+"remark"+this.id).editInPlace({
-			bg_out: "#eee", bg_over: "rgb(255,204,102)",
+		$('#dth_'+prefix+"remark"+this.id).editInPlace({
+			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			default_text: "-",
 			callback: function(oid, enteredText) {
 				te.setremark(enteredText);
@@ -345,7 +339,7 @@ ThreatAssessment.prototype = {
 			}
 		});
 	
-		if (interact) $("#dth_"+prefix+"del"+this.id).on('click',  function() {
+		if (interact) $('#dth_'+prefix+"del"+this.id).on('click',  function() {
 			var th = ThreatAssessment.get(nid2id(this.id));
 			var c;
 			if (th.component!=null) {
@@ -489,7 +483,7 @@ Threat.prototype = {
 		$('#thdel'+this.id).removeClass('ui-corner-all').addClass('ui-corner-right');
 	
 		$('#thname'+this.id).editInPlace({
-			bg_out: "#eee", bg_over: "rgb(255,204,102)",
+			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			callback: function(domid, enteredText) { 
 				var th = Threat.get( nid2id(domid) );
 				th.settitle(enteredText);
@@ -498,7 +492,7 @@ Threat.prototype = {
 			}
 		});
 		$('#thdesc'+this.id).editInPlace({
-			bg_out: "#eee", bg_over: "rgb(255,204,102)",
+			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			callback: function(domid, enteredText) { 
 				var th = Threat.get( nid2id(domid) );
 				th.setdescription(enteredText);

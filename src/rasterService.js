@@ -50,7 +50,7 @@ var Service = function(id) {
 	this._jsPlumb = jsPlumb.getInstance({
 		PaintStyle: {
 			strokeWidth: 3,
-			stroke: "#666"
+			stroke: '#666'
 		},
 		EndpointStyle: {
 			strokeWidth: 10,
@@ -61,7 +61,7 @@ var Service = function(id) {
 			stroke: '#000'
 		},
 		DragOptions: { cursor: 'move' },
-		Endpoint: [ "Dot", { radius: 6 } ]
+		Endpoint: [ 'Dot', { radius: 6 } ]
 	});
 	
 	this.store();
@@ -243,24 +243,24 @@ Service.prototype = {
 			var fw = $('.fancyworkspace').width();
 			var oh = $('#scroller_overview'+serviceid).height();
 			var ow = $('#scroller_overview'+serviceid).width();
-			$('#scroller_region'+serviceid).css("top",(wst*oh)/fh+"px").css("left",(wsl*ow)/fw+"px");
+			$('#scroller_region'+serviceid).css('top',(wst*oh)/fh+'px').css('left',(wsl*ow)/fw+'px');
 		});
 
 		$('#scroller_overview'+this.id).draggable({
 			stop: function(event,ui){
 				var l = $('#scroller_overview'+serviceid).position().left;
 				var w = $('#diagrams'+serviceid).width();
-				$('#scroller_overview'+serviceid).css("right", (w-l) + "px").css("left","");
+				$('#scroller_overview'+serviceid).css('right', (w-l) + 'px').css('left','');
 			},
 			containment: 'parent',
-			cursor: "move"
+			cursor: 'move'
 		});
 		$('#diagrams_workspace'+this.id).on('mousedown', function(evt) {
 			if (evt.button!=0) return; // only do left mousebutton
 			if (evt.eventPhase==Event.BUBBLING_PHASE) return; // Only direct events
 			RectDragOrigin = {left: evt.pageX, top: evt.pageY};
 			$('#selectrect').show().offset({left: evt.pageX, top: evt.pageY}).width(0).height(0);
-			$('#diagrams_workspace'+serviceid).on("mousemove", function(evt) {
+			$('#diagrams_workspace'+serviceid).on('mousemove', function(evt) {
 				if (evt.button!=0 || evt.shiftKey || evt.ctrlKey || evt.altKey || evt.metaKey) 
 					return; // only do plain left mousebutton drags
 				// If any text was selected (accidentally, most likely), then deselect it.
@@ -400,12 +400,12 @@ Service.prototype = {
 		$('.scroller_overview').hide();
 		$('#scroller_overview'+this.id).show();
 		$('#selectrect').remove();
-		$('#diagrams_workspace'+this.id).append("<div id='selectrect'></div>");
+		$('#diagrams_workspace'+this.id).append('<div id="selectrect"></div>');
 		$('#selectrect').bind('contextmenu', function(e) {
 			e.preventDefault();
-			$('#selectmenu').css("left", e.pageX+4).css("top", e.pageY+4);
+			$('#selectmenu').css('left', e.pageX+4).css('top', e.pageY+4);
 			$('.popupsubmenu').hide();
-			$('#selectmenu').css("display", "block");
+			$('#selectmenu').css('display', 'block');
 			return false;
 		});
 		var origpos;
@@ -500,7 +500,7 @@ function dropfunction(data) {
         return;
 	}
 
-    if (data.scope=="center") {
+    if (data.scope=='center') {
         bugreport("Connection in default scope","dropfunction");
         return;
     }
@@ -527,7 +527,7 @@ function diagramTabEditStart(event) {
 	dbuttons.push({
 		text: _("Cancel"),
 		click: function() {
-				$(this).dialog("close");
+				$(this).dialog('close');
 			}
 	});
 	dbuttons.push({
@@ -535,7 +535,7 @@ function diagramTabEditStart(event) {
 		click: function() {
 				var name = $('#field_servicerename');
 				s.settitle(name.val());
-				$(this).dialog("close");
+				$(this).dialog('close');
 				transactionCompleted("Service rename");
 			}
 	});
@@ -551,7 +551,7 @@ function diagramTabEditStart(event) {
 			$('#form_servicerename').submit(function() {
 				var name = $('#field_servicerename');
 				s.settitle(name.val());
-				dialog.dialog("close");
+				dialog.dialog('close');
 				transactionCompleted("Service rename");
 			});
 		},

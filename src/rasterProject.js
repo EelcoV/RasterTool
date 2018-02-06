@@ -246,7 +246,6 @@ Project.retrieve = function(pid,doWhenReady,doOnError) {
 			'&date=' + urlEncode(p.date),
 		dataType: 'text',
 		success: function (data) {
-//			p.destroy();
 			var newp = loadFromString(data,true,false,'Remote project');
 			if (newp!=null) {
 				var np = Project.get(newp);
@@ -318,9 +317,6 @@ Project.getProps = function(pname,doWhenReady) {
 
 Project.prototype = {
 	destroy: function() {
-		//this.unload();
-//		$('#libselect option[value='+this.id+']').remove();
-//		$('#projloader option[value='+this.id+']').remove();
 		for (var i=0; i<this.threats.length; i++)
 			Threat.get(this.threats[i]).destroy();		
 		for (i=0; i<this.services.length; i++)
@@ -442,14 +438,14 @@ Project.prototype = {
 		for (i=0; i<this.threats.length; i++) {
 			var th = Threat.get( this.threats[i] );
 			switch (th.type) {
-			case "tWLS":
-				th.addtablerow("#tWLSthreats");
+			case 'tWLS':
+				th.addtablerow('#tWLSthreats');
 				break;
-			case "tWRD":
-				th.addtablerow("#tWRDthreats");
+			case 'tWRD':
+				th.addtablerow('#tWRDthreats');
 				break;
-			case "tEQT":
-				th.addtablerow("#tEQTthreats");
+			case 'tEQT':
+				th.addtablerow('#tEQTthreats');
 				break;
 			default:
 				bugreport('unknown type encountered','Project.load'); 
@@ -460,13 +456,13 @@ Project.prototype = {
 		var sortfunc = function(e,ui) {
 			var p = Project.get(pid);
 			var newlist = [];
-			$("#tWLSthreats .threat").each( function(index,elem) {
+			$('#tWLSthreats .threat').each( function(index,elem) {
 				newlist.push( nid2id(elem.id) );
 			});
-			$("#tWRDthreats .threat").each( function(index,elem) {
+			$('#tWRDthreats .threat').each( function(index,elem) {
 				newlist.push( nid2id(elem.id) );
 			});
-			$("#tEQTthreats .threat").each( function(index,elem) {
+			$('#tEQTthreats .threat').each( function(index,elem) {
 				newlist.push( nid2id(elem.id) );
 			});
 			if (newlist.length != p.threats.length)
@@ -475,22 +471,22 @@ Project.prototype = {
 			p.store();
 			transactionCompleted("Project threats reordered "+pid);
 		};
-		$("#tWLSthreats").sortable({
-			containment: "parent",
-			helper: "clone",
-			cursor: "ns-resize",
+		$('#tWLSthreats').sortable({
+			containment: 'parent',
+			helper: 'clone',
+			cursor: 'ns-resize',
 			deactivate: sortfunc
 		});
-		$("#tWRDthreats").sortable({
-			containment: "parent",
-			helper: "clone",
-			cursor: "ns-resize",
+		$('#tWRDthreats').sortable({
+			containment: 'parent',
+			helper: 'clone',
+			cursor: 'ns-resize',
 			deactivate: sortfunc
 		});
-		$("#tEQTthreats").sortable({
-			containment: "parent",
-			helper: "clone",
-			cursor: "ns-resize",
+		$('#tEQTthreats').sortable({
+			containment: 'parent',
+			helper: 'clone',
+			cursor: 'ns-resize',
 			deactivate: sortfunc
 		});
 
@@ -518,21 +514,21 @@ Project.prototype = {
 
 	strToLabel: function(str) {
 		switch (str) {
-		case "none":
+		case 'none':
 			return "";
-		case "red":
+		case 'red':
 			return this.labels[0];
-		case "orange":
+		case 'orange':
 			return this.labels[1];
-		case "yellow":
+		case 'yellow':
 			return this.labels[2];
-		case "green":
+		case 'green':
 			return this.labels[3];
-		case "blue":
+		case 'blue':
 			return this.labels[4];
-		case "purple":
+		case 'purple':
 			return this.labels[5];
-		case "grey":
+		case 'grey':
 			return this.labels[6];
 		default:
 			bugreport("Invalid color code","Project.strToLabel;");
@@ -574,12 +570,6 @@ Project.prototype = {
 		Project.getProps(this.title,function(details){
 			if (details!=null && (thisp.date=="" || thisp.date < details.date) && !auto) {
 				askForConflictResolution(thisp,details);
-//				rasterAlert('Cannot store project on server',
-//					'A newer version of project "'+H(thisp.title)+'" has been stored on the server by user "'+H(details.creator)+'" on '+H(prettyDate(details.date))+'. '
-//					+'This project will now be made private, so that you can continue using it.\n'
-//					+'<p><i>This project is not shared with others</i>.'
-//				);
-//				thisp.setshared(false,false);
 				return;
 			} 
 			// It is safe to upload the file.
@@ -661,7 +651,6 @@ Project.prototype = {
 				return;
 			if (this.date=="")
 				bugreport("Project does not have a date","deleteFromServer");
-//			if (thisp.date!="" && thisp.date < details.date) {
 			if (thisp.date < details.date) {
 				rasterAlert(_("Cannot remove project from server"),
 					_("Project '%%' has been stored on the server by user '%%' on '%%'. ", H(thisp.title), H(details.creator), H(details.date))
@@ -674,7 +663,6 @@ Project.prototype = {
 			$.ajax({
 				url: 'share.php?op=del'+
 					'&name=' + urlEncode(thisp.title) +
-//					'&creator=' + urlEncode(Preferences.creator) +
 					'&creator=' + urlEncode(details.creator) +
 					'&date=' + urlEncode(details.date),
 				type: 'POST',
@@ -906,19 +894,19 @@ Project.prototype = {
 
 #ifdef SERVER
 function askForConflictResolution(proj,details) {
-	$('#modaldialog').dialog("option", "buttons", [
+	$('#modaldialog').dialog('option', 'buttons', [
 	{text: _("Make private"), click: function(){
-		$(this).dialog("close"); 
+		$(this).dialog('close'); 
 		proj.setshared(false,false);
 	} },
 	{text: _("Overrule"), click: function(){
-		$(this).dialog("close");
+		$(this).dialog('close');
 		proj.setdate(details.date);
 		proj.storeOnServer(true,exportProject(proj.id),{}); // auto-save, without asking for confirmation
 		startAutoSave();
 	} },
 	{text: _("Adopt other"), click: function(){
-		$(this).dialog("close"); 
+		$(this).dialog('close'); 
 		// The contents of 'date' may be stale; the project may have been saved since we
 		// created this dialog.
 		Project.getProps(proj.title,function(details){
@@ -938,15 +926,15 @@ function askForConflictResolution(proj,details) {
 		});
 	} }
 	]);
-	$('#modaldialog').dialog( "option", "zIndex", 9999 );
-	$('#modaldialog').dialog( "option", "title", _("Conflict resulution"));
+	$('#modaldialog').dialog( 'option', 'zIndex', 9999 );
+	$('#modaldialog').dialog( 'option', 'title', _("Conflict resulution"));
 	$('#modaldialog').html(
 		_("A newer version of project '%%' has been stored on the server by user '%%' on '%%'. ", H(proj.title), H(details.creator), H(prettyDate(details.date)))
 		+_("You can continue this version as a private project, overrule the other version so that everyone will use this version, or you can adopt the other version.")
 		+"<p>"
 		+_("If you adopt the other version, you may lose some of your latest edits.")
 	);
-	$('#modaldialog').dialog("open");
+	$('#modaldialog').dialog('open');
 	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
 }
 #endif

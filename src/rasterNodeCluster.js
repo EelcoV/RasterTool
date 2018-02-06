@@ -456,7 +456,7 @@ NodeCluster.prototype = {
  * NodeClusterIterator: iterate over all NodeClusters of a project, optionally limited by status
  *
  * usage:
- * 		var it = new NodeClusterIterator({project: pid, parent: parid, type: 'tEQT', title: stringT});
+ * 		var it = new NodeClusterIterator({project: pid, parentcluster: parid, type: 'tEQT', title: stringT});
  * 		for (it.first(); it.notlast(); it.next()) {
  *			var ncid = it.getNodeClusterid();
  *			var nc = it.getNodeCluster();
