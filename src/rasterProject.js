@@ -205,7 +205,7 @@ Project.updateStubs = function(doWhenReady) {
 				p.title = rp.name;
 				p.creator = rp.creator;
 				p.date = rp.date;
-				p.description = rp.description;
+				p.description = unescapeNewlines(rp.description);
 			}
 			if (doWhenReady)
 				doWhenReady(data);
@@ -295,8 +295,11 @@ Project.getProps = function(pname,doWhenReady) {
 		url: 'share.php?op=getprops'+'&name=' + urlEncode(pname),
 		dataType: 'json',
 		success: function (data) {
-			if (doWhenReady)
+			if (doWhenReady) {
+				if (data && data.description)
+					data.description = unescapeNewlines(data.description);
 				doWhenReady(data);
+			}
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
 			if (textStatus=="timeout") {
@@ -577,7 +580,7 @@ Project.prototype = {
 				url: 'share.php?op=put'+
 					'&name=' + urlEncode(thisp.title) +
 					'&creator=' + urlEncode(Preferences.creator) +
-					'&description=' + urlEncode(thisp.description),
+					'&description=' + urlEncode(escapeNewlines(thisp.description)),
 				type: 'POST',				
 				dataType: 'text',
 				data: exportstring,
@@ -617,7 +620,7 @@ Project.prototype = {
 				url: 'share.php?op=put'+
 					'&name=' + urlEncode(thisp.title) +
 					'&creator=' + urlEncode(Preferences.creator) +
-					'&description=' + urlEncode(thisp.description),
+					'&description=' + urlEncode(escapeNewlines(thisp.description)),
 				type: 'POST',				
 				dataType: 'text',
 				data: exportstring,
@@ -891,6 +894,15 @@ Project.prototype = {
 		return errors;
 	}
 };
+
+function escapeNewlines(s) {
+	// Change backslash to "backslash-!" and newlines to "backslash-n"
+	return s.replace(/\\/g,'\\!').replace(/\n/g,'\\n');
+}
+
+function unescapeNewlines(s) {
+	return s.replace(/\\n/g,'\n').replace(/\\!/g,'\\');
+}
 
 #ifdef SERVER
 function askForConflictResolution(proj,details) {
