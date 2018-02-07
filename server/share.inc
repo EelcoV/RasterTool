@@ -267,13 +267,18 @@ function doGet() {
 	sendError("No matching project was found.");
 }
 
+/* Description cannot be a multiline string. Any newline characters must be escaped
+ * by the client, and restored after retrieving data from this PHP script.
+ * To prevent issues, any remaining newlines (which are a bug in the client) will be
+ * replaced by spaces.
+ */
 function doPut() {
 	global $projName,$projCreator,$projDate,$projDescr,$projFname;
 	if ($_SERVER["REQUEST_METHOD"] != "POST")
 		sendError("The 'put' operation must use the POST method.");
 	$name=$_REQUEST['name'];
 	$creator=$_REQUEST['creator'];
-	$descr=$_REQUEST['description'];
+	$descr=str_replace("\n"," ",$_REQUEST['description']);
 	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
 	if (is_null($creator) || $creator=="") sendError("Required parameter 'creator' is missing.");
 	if (is_null($descr)) sendError("Required parameter 'description' is missing.");
