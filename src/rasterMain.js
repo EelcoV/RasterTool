@@ -944,19 +944,21 @@ function startWatching(p) {
             /*jsl:pass*/
         } else  if (msg.data=="DELETED") {
             // Project has been deleted from the server
+            var pp = Project.get(Project.cid);
             stopWatching(Project.cid);
-            p.setshared(false,false);
+            pp.setshared(false,false);
             removetransientwindows();
-            rasterAlert('Project has been made private', 
-                'Project "'+H(p.title)+'" has been deleted from the server by someone. '+
-                'Your local version of the project will now be marked as private. '+
-                'If you wish to share your project again, '+
-                'you must set it\'s details to "Shared" yourself.<br>'+
-                '<p><i>Your changes are not shared with others anymore.</i>'
+            rasterAlert( _("Project has been made private"),
+				_("Project '%%' has been deleted from the server by someone. ", H(pp.title))+
+				_("Your local version of the project will now be marked as private. ")+
+				_("If you wish to share your project again, you must set it\'s details to 'Shared' yourself.")+
+				"<br><p><i>"+
+				_("Your changes are not shared with others anymore.")+
+				"</i>"
             );
         } else {
             var xdetails = JSON.parse(msg.data);
-            var p = Project.get(Project.cid);
+            pp = Project.get(Project.cid);
             var newpid = loadFromString(xdetails.contents);
             if (newpid!=null) {
                 var newp = Project.get(newpid);
@@ -964,17 +966,17 @@ function startWatching(p) {
                 newp.creator = xdetails.creator;
                 newp.date = xdetails.date;
                 newp.description = unescapeNewlines(xdetails.description);
-                var t = p.title;
-                p.destroy();
+                var t = pp.title;
+                pp.destroy();
                 newp.settitle(t);
                 switchToProject(newpid);
             } else {
-                rasterAlert('Project has been made private', 
-                    'The server version of project "'+H(p.title)+'" is damaged. '+
+                rasterAlert(_("Project has been made private"),
+                    'The server version of project "'+H(pp.title)+'" is damaged. '+
                     'The project  will now be marked as private. '+
                     '<p><i>Your changes are not shared with others anymore.</i>'
                 );
-                p.setshared(false,false);                
+                pp.setshared(false,false);
             }
         }
     };
