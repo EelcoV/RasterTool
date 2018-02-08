@@ -87,14 +87,14 @@ ipc && ipc.on('find-show', function() {
 });
 ipc && ipc.on('pdf-settings-show', function(event,pdfoptions) {
 	if (pdfoptions.pdforientation==0)
-		$('#paperorientation_portrait').prop('checked','checked');
+		$('#paperorientation_portrait').prop('checked',true);
 	else
-		$('#paperorientation_landscape').prop('checked','checked');
+		$('#paperorientation_landscape').prop('checked',true);
 	if (pdfoptions.pdfsize==3)
-		$('#papersize_a3').prop('checked','checked');
+		$('#papersize_a3').prop('checked',true);
 	else
-		$('#papersize_a4').prop('checked','checked');
-	$('#pdfscale_' + pdfoptions.pdfscale).prop('checked','checked');
+		$('#papersize_a4').prop('checked',true);
+	$('#pdfscale_' + pdfoptions.pdfscale).prop('checked',true);
 	$('#pdfoptions fieldset').controlgroup('refresh');
 	$('#pdfoptions').dialog('open');
 });
@@ -2201,23 +2201,23 @@ function initOptionsPanel() {
     $('#'+Preferences.theme).trigger('click');
 
     $('#emblem_size span').first().html( _("Vulnerability levels:") );
-    $('#emblem_size label span').eq(0).html( _("Small") );
-    $('#emblem_size label span').eq(1).html( _("Large") );
-    $('#emblem_size label span').eq(2).html( _('none') );
+    $('#em_small').checkboxradio('option', 'label', _("Small"));
+    $('#em_large').checkboxradio('option', 'label', _("Large"));
+    $('#em_none').checkboxradio('option', 'label', _("None"));
     $('[for=em_small]').on('click',  function() { Preferences.setemblem('em_small'); });
     $('[for=em_large]').on('click',  function() { Preferences.setemblem('em_large'); });
     $('[for=em_none]').on('click',  function() { Preferences.setemblem('em_none'); });
     
     $('#labelonoff span').first().html( _("Labels:") );
-    $('#labelonoff label span').eq(0).html( _("Hide color") );
-    $('#labelonoff label span').eq(1).html( _("Show color") );
+    $('#label_off').checkboxradio('option', 'label', _("Hide color"));
+    $('#label_on').checkboxradio('option', 'label', _("Show color"));
     $('[for=label_off]').on('click',  function() { Preferences.setlabel(false); });
     $('[for=label_on]').on('click',  function() { Preferences.setlabel(true); });
 
 #ifdef SERVER
     $('#onlineonoff span').first().html( _("Network connection:") );
-    $('#onlineonoff label span').eq(0).html( _("Offline") );
-    $('#onlineonoff label span').eq(1).html( _("Online") );
+    $('#online_off').checkboxradio('option', 'label', _("Offline"));
+    $('#online_on').checkboxradio('option', 'label', _("Online"));
     $('[for=online_off]').on('click',  function() { Preferences.setonline(false); });
     $('[for=online_on]').on('click',  function() { Preferences.setonline(true); });
 
@@ -2240,9 +2240,9 @@ function initOptionsPanel() {
     $('#optionsactivator').on('click',  function() {
         if ($('#optionspanel').css('display')=='none') {
             removetransientwindows();
-            $('#'+Preferences.emsize).prop('checked','checked');
-            $(Preferences.online?'#online_on':'#online_off').prop('checked','checked');
-            $(Preferences.label?'#label_on':'#label_off').prop('checked','checked');
+            $('#'+Preferences.emsize).prop('checked',true);
+            $(Preferences.online?'#online_on':'#online_off').prop('checked',true);
+            $(Preferences.label?'#label_on':'#label_off').prop('checked',true);
             $('#optionspanel fieldset').controlgroup('refresh');
             if ($('#librarypanel').css('display')!='none') $('#libraryactivator').trigger('click');
             $('#optionspanel').show();
