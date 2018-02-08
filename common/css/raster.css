@@ -225,7 +225,7 @@ img.tC {
 /* Hoverbuttons to activate the three panels */
 .activator {
     position: absolute;
-    width: 80px;
+    width: 88px;
     height: 20px;
     top: 2px;
     border: 0px;
@@ -283,7 +283,7 @@ fieldset {
 }
 
 /* Panel for projects */
-#librarypanel { width: 470px; left: 55px; border-top-left-radius: 0; }
+#librarypanel { width: 475px; left: 55px; border-top-left-radius: 0; }
 #fileElem {visibility: hidden; width: 0; height: 0; }
 
 #form_projectprops input,textarea,#sh_onoff { margin: 0 0 5px; }
