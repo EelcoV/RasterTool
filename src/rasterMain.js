@@ -963,7 +963,7 @@ function startWatching(p) {
                 newp.shared = true;
                 newp.creator = xdetails.creator;
                 newp.date = xdetails.date;
-                newp.description = xdetails.description;
+                newp.description = unescapeNewlines(xdetails.description);
                 var t = p.title;
                 p.destroy();
                 newp.settitle(t);
