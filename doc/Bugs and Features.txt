@@ -3,9 +3,7 @@ See LICENSE.md
 
 
 BUGS
-Intranet-version: project details panel is a few pixels to narrow.
 CCF display for unique classes: only first label shows; on hover, the popup only shows the first service.
-Dragging connections onto title fails?!
 On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
@@ -16,7 +14,6 @@ Be consistent: cloud, unknown link, unexplored link. Decision: use "unknwon link
 When printing CCF, the accordions are not always all expanded.
 SizeDOMElements is not called when browser goes fullscreen. The bottom tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?
 Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?
-Create a new project, change its details to Shared, then switch to it: error message about project not being on the server.
 When a project is changed from Private to Shared and then a different project is selected without changing the shared project, no version is uploaded. When re-activating the shared project an error message indicates that the project was deleted from the server. It was never uploaded.
 Third party cookies must be enabled for localStorage to function. This is a concern, perhaps, when never versions of Firefox disable third party cookies by default.
 Change details of a project on the server but not active: function not implemented.
