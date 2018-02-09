@@ -1,8 +1,8 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
-Beta version 2.1
-================
+February 2018
+=============
 * Release as 2.1
 * Notification of tool updates. Once daily, check with the risicotools.nl website
   for an update to the standalone tool.
