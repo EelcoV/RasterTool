@@ -346,9 +346,8 @@ function SavePreferences(win) {
 // Silently ignore errors if the check fails (e.g. due to no internet connection).
 function CheckForUpdates(win) {
 	var appversion = app.getVersion();
-	if (appversion.indexOf('b')!=-1) {
-		// Do not check for updates to beta versions. Beta versions have the letter 'b'
-		// in the version string.
+	if (appversion.toLowerCase().indexOf('beta')!=-1) {
+		// Do not check for updates to beta versions.
 		return;
 	}
 
@@ -366,8 +365,8 @@ function CheckForUpdates(win) {
 		response.on('end', function () {
 			console.log('Toolversion retrieved; HTTP result code = ' + response.statusCode);
 			if (response.statusCode == '200') {
-				// Use only the first word
-				body = body.replace(/\s.*/, '');
+				// Use only the first line
+				body = body.replace(/$.*/m, '');
 				if (body != appversion) {
 					dialog.showMessageBox({
 						title: _("Update available"),
