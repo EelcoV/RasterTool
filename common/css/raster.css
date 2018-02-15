@@ -1087,10 +1087,17 @@ for checklists and threat evaluations.
 }
 .shflabelgroup {
     position: absolute;
-    right: 20px;
+    right: 30px;
     top: 0;
 }
-
+.shfMagnitude {
+    float: right;
+    width: 20px;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    text-align: center;
+}
 .litext {
     cursor: text;
 }

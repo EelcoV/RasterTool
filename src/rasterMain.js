@@ -4049,12 +4049,29 @@ function listFromCluster(nc) {
         str = str.replace(/_CI_/g, nc.id);
         str = str.replace(/_SV_/g, H(sv.title));
         str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
+
         str += rn.htmltitle();
+
         if (Preferences.label && rn.color!='none') {
             var p = Project.get(Project.cid);
             str += '<div class="shflabelgroup"><div class="smallblock B_CO_"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
             str = str.replace(/_CO_/g, rn.color);
         }
+
+		var cm = Component.get(rn.component);
+		var rc = NodeCluster.get(nc.root());
+		for (var j=0; j<cm.thrass.length; j++) {
+			var ta = ThreatAssessment.get(cm.thrass[j]);
+			if (ta.title != rc.title || ta.type != rc.type)
+				continue;
+			var mi = ThreatAssessment.valueindex[ta.total];
+			str += '<div id="shfmag_NI_" class="shfMagnitude M_LV_" title="_DE_">_TX_</div>';
+			str = str.replace(/_NI_/, rn.id);
+			str = str.replace(/_LV_/, mi);
+			str = str.replace(/_TX_/, ta.total);
+			str = str.replace(/_DE_/, ThreatAssessment.descr[mi]);
+		}
+
         str += '</li>\n';
     }
          
