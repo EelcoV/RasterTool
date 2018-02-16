@@ -276,7 +276,7 @@ $(function() {
 #endif
 
     // May be necessary to wait and resize
-    window.setTimeout(SizeDOMElements, 1000);
+//    window.setTimeout(SizeDOMElements, 1000);
 
     Preferences.settab(remembertab);
     $('#tabs').tabs('option','active',Preferences.tab);
@@ -352,6 +352,7 @@ $(function() {
 			return;
 		}
         $('#splash').hide();
+        sizeworkspace();
 #ifdef SERVER
         if (
         	localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
@@ -678,18 +679,28 @@ function sizeworkspace() {
     // #bottomtabsdia or #bottomtabssf height is 27px per row. Double rows possible with many services
     // and/or a narrow window.
     var wh = $(window).height();
-    var bh = $('#bottomtabsdia').height();
-    if (bh<=0)
-        bh = $('#bottomtabssf').height();
-    if (bh<=0)
-        bh = $('#bottomtabsshf').height();
-    if (bh>0) {
+    var bh;
 #ifdef SERVER
-        $('.workspace').height(wh-77+27-bh);
+	var adj = 77;
 #else
-        $('.workspace').height(wh-35+27-bh);
+	var adj = 35;
 #endif
-        $('.servplusbutton').height(bh-4);
+
+    bh = $('#bottomtabsdia').height();
+    if (bh>0) {
+        $('#diagrams_body .workspace').height(wh-adj+27-bh);
+        $('#diagrams_body .servplusbutton').height(bh-4);
+    }
+
+    bh = $('#bottomtabssf').height();
+    if (bh>0) {
+        $('#singlefs_body .workspace').height(wh-adj+27-bh);
+        $('#singlefs_body .servplusbutton').height(bh-4);
+    }
+
+    bh = $('#bottomtabsshf').height();
+    if (bh>0) {
+        $('#analysis_body .workspace').height(wh-adj+27-bh);
     }
 }
 
@@ -3134,7 +3145,7 @@ function initTabSingleFs() {
     });
 }
 
-var SFSortOpt = 'alpha';
+var SFSortOpt = 'alph';
 
 function paintSingleFailures(s) {
     var appendstring = "";
@@ -3152,40 +3163,32 @@ function paintSingleFailures(s) {
         return;
     }
     
-    switch (SFSortOpt) {
-    case 'alpha':
-        it.sortByName();
-        break;
-    case "type":
-        it.sortByType();
-        break;
-    case "threat":
-        it.sortByLevel();
-        break;
-    default:
-        bugreport("Unknown node sort option","paintSingleFailures");
-    }
-    
     // Adding elements to the DOM is slow, so it is best to do it all at
     // once, rather than piece by piece.
     // First collect the bulk of the DOM elements to be appended. Then loop
     // over the components again, adding the vulnerabilities to them, and adding
     // behaviour stuff.
     snippet = '\
-        <p class="firstp donotprint">\
-        [+] <span id="expandalls_SV_" class="ui-link">_EA_</span>\
-        &nbsp;&nbsp;&nbsp;&nbsp;\
-        [&minus;] <span id="collapsealls_SV_" class="ui-link">_CA_</span>\
-        <span id="sortalls_SV_" class="sortalls">_LS_ <select id="sfselect_SV_">\n\
-            <option value="alpha">_O1_</option>\n\
-            <option value="type">_O2_</option>\n\
-            <option value="threat">_O3_</option>\n\
-        </select></span>\n\
-        </p>\
+        <div id="somesf_SV_" class="optionsarea" class="donotprint">\n\
+          <div class="shfopts">\n\
+			<span class="shoptlabel">_L1_</span><br>\n\
+        	<span id="expandallsf_SV_">_EA_</span>\n\
+	        <span id="collapseallsf_SV_" class="collapseall">_CA_</span>\n\
+		  </div>\n\
+          <div class="shfopts">\n\
+			<span class="shoptlabel">_L2_</span><br>\n\
+			<fieldset>\n\
+				<input type="radio" id="sfsort_alph_SV_" name="sfsort_SV_"><label for="sfsort_alph_SV_">_O1_</label>\n\
+				<input type="radio" id="sfsort_type_SV_" name="sfsort_SV_"><label for="sfsort_type_SV_">_O2_</label>\n\
+				<input type="radio" id="sfsort_thrt_SV_" name="sfsort_SV_"><label for="sfsort_thrt_SV_">_O3_</label>\n\
+			</fieldset>\n\
+		  </div>\n\
+		</div>\
     ';
+    snippet = snippet.replace(/_L1_/g, _("Fold:"));
     snippet = snippet.replace(/_EA_/g, _("Expand all"));
     snippet = snippet.replace(/_CA_/g, _("Collapse all"));
-    snippet = snippet.replace(/_LS_/g, _("Sort:"));
+    snippet = snippet.replace(/_L2_/g, _("Sort:"));
     snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
     snippet = snippet.replace(/_O2_/g, _("by Type"));
     snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
@@ -3193,7 +3196,48 @@ function paintSingleFailures(s) {
     snippet = snippet.replace(/_SV_/g, s.id);
     snippet = snippet.replace(/_PN_/g, H(Project.get(s.project).title));
     snippet = snippet.replace(/_PJ_/g, s.project);
-    appendstring += snippet;
+    $('#singlefs_workspace'+s.id).append(snippet);
+
+	$('#expandallsf'+s.id).button({icon: 'ui-icon-plus'});
+	$('#collapseallsf'+s.id).button({icon: 'ui-icon-minus'});
+    $('#somesf'+s.id+' input[type=radio]').checkboxradio({icon: false});
+    $('#somesf'+s.id+' fieldset').controlgroup();
+
+    $('#expandallsf'+s.id).on('click',  function(evt){
+        expandAllSingleF(nid2id(evt.target.id));
+    });
+    $('#collapseallsf'+s.id).on('click',  function(evt){
+        collapseAllSingleF(nid2id(evt.target.id));
+    });
+
+    var create_sf_sortfunc = function(opt,sid) {
+    	return function(evt) {
+			SFSortOpt = opt;
+ 			paintSingleFailures(Service.get(sid));
+        };
+    };
+
+    $('[for=sfsort_alph'+s.id+']').on('click', create_sf_sortfunc('alph',s.id));
+    $('[for=sfsort_type'+s.id+']').on('click', create_sf_sortfunc('type',s.id));
+    $('[for=sfsort_thrt'+s.id+']').on('click', create_sf_sortfunc('thrt',s.id));
+
+    switch (SFSortOpt) {
+    case 'alph':
+		$('#sfsort_alph'+s.id).prop('checked',true);
+        it.sortByName();
+        break;
+    case 'type':
+		$('#sfsort_type'+s.id).prop('checked',true);
+        it.sortByType();
+        break;
+    case 'thrt':
+		$('#sfsort_thrt'+s.id).prop('checked',true);
+        it.sortByLevel();
+        break;
+    default:
+        bugreport("Unknown node sort option","paintSingleFailures");
+    }
+    $('#somesf'+s.id+' fieldset').controlgroup('refresh');
 
     for (it.first(); it.notlast(); it.next()) {
         var i;
@@ -3347,20 +3391,6 @@ snippet += "</div>\n";
             }
         });
     }
-    
-    $('#expandalls'+s.id).on('click',  function(evt){
-        expandAllSingleF(nid2id(evt.target.id));
-    });
-    $('#collapsealls'+s.id).on('click',  function(evt){
-        collapseAllSingleF(nid2id(evt.target.id));
-    });
-    $('#sfselect'+s.id).val(SFSortOpt);
-    $('#sfselect'+s.id).on('change',  function(evt){
-        var id = nid2id(evt.target.id);
-        var selected = $('#sfselect'+id+' option:selected').val();
-        SFSortOpt = selected;
-        paintSingleFailures( Service.get(id) );
-    });
     
     $('#singlefs_body input[type=button]').button();
     $('#singlefs_body input[class~="addthreatbutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
@@ -3722,11 +3752,11 @@ function AddAllClusters() {
         <p id="noshf" class="firstp sfaccordion">_N1_\
         _N2_\
         _N3_</p>\
-        <div id="someshf" class="donotprint">\n\
+        <div id="someshf" class="donotprint optionsarea">\n\
           <div class="shfopts">\n\
 			<span class="shoptlabel">_L1_</span><br>\n\
         	<span id="expandallshf">_EA_</span>\n\
-	        <span id="collapseallshf">_CA_</span>\n\
+	        <span id="collapseallshf" class="collapseall">_CA_</span>\n\
 		  </div>\n\
           <div class="shfopts">\n\
 			<span class="shoptlabel">_L2_</span><br>\n\
