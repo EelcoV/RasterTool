@@ -979,10 +979,14 @@ for checklists and threat evaluations.
 }
 
 #someshf {
+	margin-left: 15px;
+}
+
+.optionsarea {
 	border: 1px solid lightgrey;
     border-radius: 5px;
     background: whitesmoke;
-	margin: 10px 0 15px 15px;
+	margin: 10px 0 15px 0px;
 	padding: 0 0 15px 10px;
     width: 800px; /* width of .shfaccordion - left padding - right padding */
 }
@@ -996,7 +1000,7 @@ for checklists and threat evaluations.
 	font-style: italic;
 	line-height: 20px;
 }
-#collapseallshf {
+.collapseall {
 	margin-left: 10px;
 }
 
