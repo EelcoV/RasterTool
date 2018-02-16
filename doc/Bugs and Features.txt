@@ -8,7 +8,6 @@ On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
 When removing the last vulnerability on a component, the overall vulnerability level should be set to Extremely Low.
-In the Analysis tab, the Single Failures per level counts node classes multiple times. Only single classes are counted once.
 After upgrade, scrolling within large CCFs is weird. Two competing scroll bars??
 Be consistent: cloud, unknown link, unexplored link. Decision: use "unknwon link" as the official term, with "cloud" as a possible informal nickname.
 When printing CCF, the accordions are not always all expanded.

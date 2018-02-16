@@ -4919,14 +4919,10 @@ function paintVulnsTableType(tabletype) {
     tit.sortByType();
     
     // Precompute all numbers
-    // Iterate over all non-actor nodes
-    var nit = new NodeIterator({project: Project.cid, match: 'tUNK'});
-    for (nit.first(); nit.notlast(); nit.next()) {
-        var node = nit.getnode();
-        var cm = Component.get(node.component);
-        // Count 'single' node classes only once
-        if (cm.single && cm.nodes[0]!=node.id)
-            continue;
+    // Iterate over all components
+    var cit = new ComponentIterator({project: Project.cid});
+    for (cit.first(); cit.notlast(); cit.next()) {
+        var cm = cit.getcomponent();
         for (var i=0; i<cm.thrass.length; i++) {
             var ta = ThreatAssessment.get(cm.thrass[i]);
             var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
