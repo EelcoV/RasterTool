@@ -3712,7 +3712,8 @@ function moveSelectionToCluster(cluster) {
     },500);
 }
 
-var CCFSortOpt = 'alpha';
+var CCFSortOpt = 'alph';
+var CCFMinOpt = '-';
 
 function AddAllClusters() {
     var snippet = '\
@@ -3721,31 +3722,62 @@ function AddAllClusters() {
         <p id="noshf" class="firstp sfaccordion">_N1_\
         _N2_\
         _N3_</p>\
-        <p id="someshf" class="firstp donotprint">\
-        [+] <span id="expandallshf" class="ui-link">_EA_</span>\
-        &nbsp;&nbsp;&nbsp;&nbsp;\
-        [&minus;] <span id="collapseallshf" class="ui-link">_CA_</span>\
-        <span id="sortallccf" class="sortalls">_LS_ <select id="ccfselect">\n\
-            <option value="alpha">_O1_</option>\n\
-            <option value="type">_O2_</option>\n\
-            <option value="threat">_O3_</option>\n\
-        </select></span>\n\
-        </p>\
+        <div id="someshf" class="donotprint">\n\
+          <div class="shfopts">\n\
+			<span class="shoptlabel">_L1_</span><br>\n\
+        	<span id="expandallshf">_EA_</span>\n\
+	        <span id="collapseallshf">_CA_</span>\n\
+		  </div>\n\
+          <div class="shfopts">\n\
+			<span class="shoptlabel">_L2_</span><br>\n\
+			<fieldset>\n\
+				<input type="radio" id="ccfsort_alph" name="ccfsort"><label for="ccfsort_alph">_O1_</label>\n\
+				<input type="radio" id="ccfsort_type" name="ccfsort"><label for="ccfsort_type">_O2_</label>\n\
+				<input type="radio" id="ccfsort_thrt" name="ccfsort"><label for="ccfsort_thrt">_O3_</label>\n\
+			</fieldset>\n\
+		  </div>\n\
+          <div class="shfopts">\n\
+			<span class="shoptlabel">_L3_</span><br>\n\
+			<select id="ccfminV"></select>\n\
+		  </div>\n\
+		</div>\
     ';
     snippet = snippet.replace(/_LP_/g, _("Project"));
     snippet = snippet.replace(/_LCCF_/g, _("Common Cause Failures"));
     snippet = snippet.replace(/_N1_/g, _("This space will show all vulnerabilities domains for the components in this project."));
     snippet = snippet.replace(/_N2_/g, _("Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet."));
     snippet = snippet.replace(/_N3_/g, _("Add some nodes to the diagrams first."));
+    snippet = snippet.replace(/_L1_/g, _("Fold:"));
     snippet = snippet.replace(/_EA_/g, _("Expand all"));
     snippet = snippet.replace(/_CA_/g, _("Collapse all"));
-    snippet = snippet.replace(/_LS_/g, _("Sort:"));
+    snippet = snippet.replace(/_L2_/g, _("Sort:"));
     snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
     snippet = snippet.replace(/_O2_/g, _("by Type"));
     snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
+    snippet = snippet.replace(/_L3_/g, _("Filter minimum:"));
     snippet = snippet.replace(/_PJ_/g, Project.cid);
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     $('#ccfs_body').append(snippet);
+
+	$('#expandallshf').button({icon: 'ui-icon-plus'});
+	$('#collapseallshf').button({icon: 'ui-icon-minus'});
+    $('#someshf input[type=radio]').checkboxradio({icon: false});
+    $('#someshf fieldset').controlgroup();
+    var selectoptions = "";
+    selectoptions += '<option value="-">_ALL_</option>\n';
+	selectoptions = selectoptions.replace(/_ALL_/g, _("(Show all)"));
+    for (var i=ThreatAssessment.valueindex['U']; i<=ThreatAssessment.valueindex['H']; i++) {
+        selectoptions += '<option value="_V_">_D_</option>\n';
+        selectoptions = selectoptions.replace(/_V_/g, ThreatAssessment.values[i]);
+        selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
+    }
+    $('#ccfminV').html(selectoptions).selectmenu({
+    	select: function(event,ui) {
+			CCFMinOpt = $('#ccfminV').val();
+			$('.HlU,.HlL,.HlM,.HlH').show();
+			$('.Hl' + CCFMinOpt).hide();
+    	}
+	}).val(CCFMinOpt).selectmenu('refresh');
 
     // create list of all vulnerabilities
     // for each vulnerability, list the nested list / vulnerability-domain-tree
@@ -3757,21 +3789,24 @@ function AddAllClusters() {
         return;
     }
     
-    $('#ccfselect').val(CCFSortOpt);
     switch (CCFSortOpt) {
-    case 'alpha':
+    case 'alph':
+		$('#ccfsort_alph').prop('checked',true);
         it.sortByName();
         break;
     case 'type':
+		$('#ccfsort_type').prop('checked',true);
         it.sortByType();
         break;
-    case 'threat':
+    case 'thrt':
+		$('#ccfsort_thrt').prop('checked',true);
         it.sortByLevel();
         break;
     default:
         bugreport("Unknown node sort option","AddAllClusters");
     }
-    
+    $('#someshf fieldset').controlgroup('refresh');
+
     $('#noshf').css('display', 'none');
     $('#someshf').css('display', 'block');
     $('#expandallshf').on('click',  function(evt){
@@ -3780,13 +3815,18 @@ function AddAllClusters() {
     $('#collapseallshf').on('click',  function(evt){
         collapseAllCCF(nid2id(evt.target.id));
     });
-    $('#ccfselect').on('change',  function(){
-        var selected = $('#ccfselect option:selected').val();
-        CCFSortOpt = selected;
-        $('#ccfs_body').empty();
-        AddAllClusters();
-    });
-    
+    var create_shf_sortfunc = function(opt) {
+    	return function() {
+			CCFSortOpt = opt;
+			$('#ccfs_body').empty();
+			AddAllClusters();
+        };
+    };
+
+    $('[for=ccfsort_alph]').on('click', create_shf_sortfunc('alph'));
+    $('[for=ccfsort_type]').on('click', create_shf_sortfunc('type'));
+    $('[for=ccfsort_thrt]').on('click', create_shf_sortfunc('thrt'));
+
     for (it.first(); it.notlast(); it.next()) {
         var nc = it.getNodeCluster();
         addTDomElements(nc);
@@ -4045,9 +4085,27 @@ function listFromCluster(nc) {
     for (i=0; i<node.length; i++) {
         var rn = Node.get(node[i]);
         var sv = Service.get(rn.service);
-        str += '<li id="linode_NI___CI_" title="_SV_" class="tlistitem childnode" style="display: _DI_;">\n';
+
+		var cm = Component.get(rn.component);
+		var rc = NodeCluster.get(nc.root());
+		var ta;
+		for (var j=0; j<cm.thrass.length; j++) {
+			ta = ThreatAssessment.get(cm.thrass[j]);
+			if (ta.title==rc.title && ta.type==rc.type)
+				break;
+		}
+		var mi = ThreatAssessment.valueindex[ta.total];
+
+		var classlist = '';
+		if ("-ULMH".indexOf(ta.total)!=-1) {
+			for (j=ThreatAssessment.valueindex[ta.total]+1; j<=ThreatAssessment.valueindex['V']; j++) {
+				classlist += 'Hl'+ThreatAssessment.values[j]+' ';
+			}
+		}
+        str += '<li id="linode_NI___CI_" title="_SV_" class="tlistitem childnode _CL_" style="display: _DI_;">\n';
         str = str.replace(/_NI_/g, rn.id);
         str = str.replace(/_CI_/g, nc.id);
+        str = str.replace(/_CL_/g, classlist);
         str = str.replace(/_SV_/g, H(sv.title));
         str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
 
@@ -4059,19 +4117,11 @@ function listFromCluster(nc) {
             str = str.replace(/_CO_/g, rn.color);
         }
 
-		var cm = Component.get(rn.component);
-		var rc = NodeCluster.get(nc.root());
-		for (var j=0; j<cm.thrass.length; j++) {
-			var ta = ThreatAssessment.get(cm.thrass[j]);
-			if (ta.title != rc.title || ta.type != rc.type)
-				continue;
-			var mi = ThreatAssessment.valueindex[ta.total];
-			str += '<div id="shfmag_NI_" class="shfMagnitude M_LV_" title="_DE_">_TX_</div>';
-			str = str.replace(/_NI_/, rn.id);
-			str = str.replace(/_LV_/, mi);
-			str = str.replace(/_TX_/, ta.total);
-			str = str.replace(/_DE_/, ThreatAssessment.descr[mi]);
-		}
+		str += '<div id="shfmag_NI_" class="shfMagnitude M_LV_" title="_DE_">_TX_</div>';
+		str = str.replace(/_NI_/, rn.id);
+		str = str.replace(/_LV_/, mi);
+		str = str.replace(/_TX_/, ta.total);
+		str = str.replace(/_DE_/, ThreatAssessment.descr[mi]);
 
         str += '</li>\n';
     }

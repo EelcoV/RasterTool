@@ -978,11 +978,26 @@ for checklists and threat evaluations.
     margin-top: 22px;
 }
 
-.expandcollapse {
+#someshf {
+	border: 1px solid lightgrey;
+    border-radius: 5px;
+    background: whitesmoke;
+	margin: 10px 0 15px 15px;
+	padding: 0 0 15px 10px;
+    width: 800px; /* width of .shfaccordion - left padding - right padding */
 }
+.shfopts {
+	display: inline-block;
+	margin-right: 25px;
+	margin-top: 5px;
 
-#filter {
-    margin-left: 40px;
+}
+.shoptlabel {
+	font-style: italic;
+	line-height: 20px;
+}
+#collapseallshf {
+	margin-left: 10px;
 }
 
 .shfaccordion {
