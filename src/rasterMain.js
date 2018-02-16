@@ -5037,23 +5037,42 @@ function paintVulnsTableType(tabletype) {
     snippet += '<td>'+grandtotal+'</td>\n';
     snippet += '</tr>\n';
 
+	var max = Math.max(
+		v_U['__TOTAL__'],
+		v_L['__TOTAL__'],
+		v_M['__TOTAL__'],
+		v_H['__TOTAL__'],
+		v_V['__TOTAL__'],
+		v_X['__TOTAL__'],
+		v_A['__TOTAL__']
+	);
+
     // Do the ending/closing
     snippet += '\n\
     <tr class="thinrow">\n\
       <td></td>\n\
-      <td class="M2"></td>\n\
-      <td class="M3"></td>\n\
-      <td class="M4"></td>\n\
-      <td class="M5"></td>\n\
-      <td class="M6"></td>\n\
-      <td class="M7"></td>\n\
-      <td class="M1"></td>\n\
-      <td class="M0" style="border:1px solid grey;"></td>\n\
+      <td><div class="M2" style="height: _2_px"></div></td>\n\
+      <td><div class="M3" style="height: _3_px"></div></td>\n\
+      <td><div class="M4" style="height: _4_px"></div></td>\n\
+      <td><div class="M5" style="height: _5_px"></div></td>\n\
+      <td><div class="M6" style="height: _6_px"></div></td>\n\
+      <td><div class="M7" style="height: _7_px"></div></td>\n\
+      <td><div class="M1" style="height: _1_px"></div></td>\n\
+      <td><div class="M0" style="height: 4px; border:1px solid grey;"></div></td>\n\
     </tr>\n\
     </tbody>\n\
     </table>\n\
     <br><br>\n\
     ';
+    const MAXCOLH = 30;
+    snippet = snippet.replace(/_2_/, 5 + MAXCOLH*v_U['__TOTAL__']/max);
+    snippet = snippet.replace(/_3_/, 5 + MAXCOLH*v_L['__TOTAL__']/max);
+    snippet = snippet.replace(/_4_/, 5 + MAXCOLH*v_M['__TOTAL__']/max);
+    snippet = snippet.replace(/_5_/, 5 + MAXCOLH*v_H['__TOTAL__']/max);
+    snippet = snippet.replace(/_6_/, 5 + MAXCOLH*v_V['__TOTAL__']/max);
+    snippet = snippet.replace(/_7_/, 5 + MAXCOLH*v_X['__TOTAL__']/max);
+    snippet = snippet.replace(/_1_/, 5 + MAXCOLH*v_A['__TOTAL__']/max);
+
     return snippet;
 }
 
