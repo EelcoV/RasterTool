@@ -144,8 +144,8 @@ _t["Warning report on %%"] = "Waarschuwingen voor %%";
 _t["This space will show all vulnerability evaluations for the components in this service. "] = "Hier komen alle kwetsbaarheden te staan van alle componenten in deze dienst. ";
 _t["Since this diagram for this service is empty, there is nothing to see here yet. "] = "Omdat het diagram voor deze dienst leeg is, is hier nu niets te zien. ";
 _t["Add some nodes to the diagrams first."] = "Voeg eerst een of meer componenten toe aan het diagram.";
-_t["Expand all"] = "Alles uitklappen";
-_t["Collapse all"] = "Alles inklappen";
+_t["Expand all"] = "Alles open";
+_t["Collapse all"] = "Alles dicht";
 _t["Sort:"] = "Sorteer:";
 _t["Alphabetically"] = "Alfabetisch";
 _t["by Type"] = "op Type";
@@ -364,3 +364,6 @@ _t["Paper size:"] = "Papiergrootte:";
 _t["Scale:"] = "Schaal:";
 _t["Settings for PDF"] = "Instellingen voor PDF";
 
+ _t["Fold:"] = "Uitvouwen:";
+_t["Filter minimum:"] = "Filter ondergrens:";
+_t["(Show all)"] = "(Laat alles zien)";
