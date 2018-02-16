@@ -342,7 +342,7 @@ See LICENSE.md
 
 <div id="tab_analysis" class="workbody workouter">
   <div id="analysis_body" class="tabs-bottom tabs-flushleft">
-  <ul>
+  <ul id="bottomtabsshf">
      <li class="longtab"><a class="longlink" href="#at1">Failures and Vulnerabilities</a></li>
      <li class="longtab"><a class="longlink" href="#at2">Single failures by level</a></li>
      <li class="longtab"><a class="longlink" href="#at3">Node counts</a></li>
