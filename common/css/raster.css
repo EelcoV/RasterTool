@@ -1211,7 +1211,7 @@ for checklists and threat evaluations.
     border-bottom: 1px solid black;
 }
 
-.thinrow { height: 5px; }
+.thinrow { height: 5px; vertical-align: bottom;}
 
 #ana_reports { margin-left: 20px; }
 
