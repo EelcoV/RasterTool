@@ -679,8 +679,10 @@ function sizeworkspace() {
     // and/or a narrow window.
     var wh = $(window).height();
     var bh = $('#bottomtabsdia').height();
-    if (bh==0)
+    if (bh<=0)
         bh = $('#bottomtabssf').height();
+    if (bh<=0)
+        bh = $('#bottomtabsshf').height();
     if (bh>0) {
 #ifdef SERVER
         $('.workspace').height(wh-77+27-bh);
@@ -1665,9 +1667,9 @@ function vertTabSelected(event, ui) {
     $('#checklist_tWRD').dialog('close');
     $('#checklist_tEQT').dialog('close');
 
+	sizeworkspace();
     switch ($('#tabs').tabs('option','active')) {
     case 0:        // tab Services
-        sizeworkspace();
         $('#templates').show();
         // Switch to the right service. A new service may have been created while working
         // in the Single Failures tab.
@@ -1677,7 +1679,6 @@ function vertTabSelected(event, ui) {
         Preferences.settab(0);
         break;
     case 1:        // tab Single Failures
-        sizeworkspace();
         $('#selectrect').hide();
         $('#templates').hide();
         $('#singlefstabtitle'+Service.cid).trigger('click');
