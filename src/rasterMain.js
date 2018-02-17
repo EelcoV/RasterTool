@@ -4034,7 +4034,7 @@ function reallyRepaintTDom(elem) {
         callback: function(domid, enteredText) { 
             var nc = NodeCluster.get( nid2id(domid) );
             nc.settitle(enteredText);
-            $('#dth_ccf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
+            $('#dthE_ccf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
             transactionCompleted("Rename cluster");
             return H(nc.title);
         }
