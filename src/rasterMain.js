@@ -3534,6 +3534,8 @@ function clickCollapseHandler(ev) {
         ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
         cluster.setaccordionopened(true);
         ul.children().slice(1).slideDown('fast');
+        // Make sure any hidden nodes stay hidden
+		$('.Hl' + CCFMinOpt).hide();
     }
 }
 
