@@ -63,8 +63,8 @@ x- change description 		[Threat.addtablerow: $('#thdesc'+this.id).editInPlace ca
 x- paste					[initTabDiagrams: function pastehandler]
 
 Service:
-x- addService(service)		[initTabDiagrams: $('#servaddbutton').click]
-x- addService(service)		[initTabSingleFs: $('#servaddbuttonf').click]
+x- addService(service)		[initTabDiagrams: $('#servaddbuttondia').click]
+x- addService(service)		[initTabSingleFs: $('#servaddbuttonsf').click]
 x- destroy()				[bottomTabsCloseHandler:]
 x- rename(title)			[diagramTabEditStart: "Change name" button callback]
 

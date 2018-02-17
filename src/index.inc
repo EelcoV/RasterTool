@@ -318,7 +318,7 @@ See LICENSE.md
 
 <div id="tab_diagrams" class="workbody workouter">
   <div id="diagrams_body" class="tabs-bottom">
-    <input id="servaddbutton" class="servplusbutton" type="button" value=" + ">
+    <input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
     <ul id="bottomtabsdia">
     </ul>
   </div>    
@@ -342,7 +342,7 @@ See LICENSE.md
 
 <div id="tab_analysis" class="workbody workouter">
   <div id="analysis_body" class="tabs-bottom tabs-flushleft">
-  <ul id="bottomtabsshf">
+  <ul id="bottomtabsana">
      <li class="longtab"><a class="longlink" href="#at1">Failures and Vulnerabilities</a></li>
      <li class="longtab"><a class="longlink" href="#at2">Single failures by level</a></li>
      <li class="longtab"><a class="longlink" href="#at3">Node counts</a></li>
