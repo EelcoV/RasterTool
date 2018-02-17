@@ -483,7 +483,7 @@ div.th_remark {
 }
 
 .displayoptsarea {
-	border: 1px solid lightgrey;
+	border: 1px solid #ccccff;
     border-radius: 5px;
     background: whitesmoke;
 	margin: 10px 0 15px 0px;
@@ -494,7 +494,7 @@ div.th_remark {
 	display: inline-block;
 	margin-right: 25px;
 	margin-top: 5px;
-
+	vertical-align: top;
 }
 .displayoptlabel {
 	font-style: italic;
@@ -1127,10 +1127,16 @@ for checklists and threat evaluations.
 }
 #analysis_body input { margin-top: 0px; margin-bottom: 0.5em; margin-right: 1em; padding: 2px; }
 
-#ana_nodethreattop { margin: 15px 0 0; }
-#ana_nodethreattop td {vertical-align: top; padding-right: 3em;}
+#ana_nodevuln {
+	width: 900px;
+}
+
 #ana_exclusions {width: 40em;}
 
+.ana_nodeccfblock {
+	display: inline-block;
+	vertical-align: top;
+}
 #ana_nodethreattable table {
     table-layout: fixed;
 }
@@ -1140,10 +1146,15 @@ for checklists and threat evaluations.
 }
 #ana_ccftable table {
     table-layout: fixed;
+    margin-left: 2em;
 }
 #ana_ccftable td {
     white-space: nowrap;
     text-align: center;
+}
+#at1 {
+	/* Make sure single failures and CCFs are side by side */
+	white-space: nowrap;
 }
 #at2 table {
     table-layout: fixed;
@@ -1218,19 +1229,6 @@ for checklists and threat evaluations.
 .thinrow { height: 5px; vertical-align: bottom;}
 
 #ana_reports { margin-left: 20px; }
-
-.itemll { left: 140px; position: absolute; }
-
-#lloptions {
-    margin-top: 10px;
-    margin-right: 20px;
-    margin-bottom: 20px;
-    line-height: 25px;
-    background: lightgrey;
-    padding-bottom: 10px;
-    padding-left: 5px;
-    width: 800px;
-}
 
 #longlist {
     margin-bottom: 30px;
