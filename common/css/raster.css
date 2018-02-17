@@ -254,7 +254,7 @@ img.tC {
 
 
 
-/* Common settings for all three panels */
+/* Common settings for all panels */
 .actpanel {
     display: none;
     position: absolute;
@@ -482,6 +482,27 @@ div.th_remark {
 	width: 30em;
 }
 
+.displayoptsarea {
+	border: 1px solid lightgrey;
+    border-radius: 5px;
+    background: whitesmoke;
+	margin: 10px 0 15px 0px;
+	padding: 0 0 15px 10px;
+    width: 800px; /* width of .ccfaccordion - left padding - right padding */
+}
+.displayopt {
+	display: inline-block;
+	margin-right: 25px;
+	margin-top: 5px;
+
+}
+.displayoptlabel {
+	font-style: italic;
+	line-height: 20px;
+}
+.collapseall {
+	margin-left: 10px;
+}
 
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *|         DIAGRAMS        |* * * * * * * * * * * * * * * * */
@@ -532,17 +553,8 @@ div.th_remark {
     width: 13em;
     padding-bottom: 1px !important;
 }
-.tabs-bottom li .inplace_field { /* is this still used? */
-    width: 20em;
-    font-size: 11px;
-    font-weight: bold;
-    border: 0;
-    padding: 0;
-    background: rgb(255,204,102);
-    z-index: 9999;
-}
 .tabtitle { width: 9em; }
-#servaddbutton {
+#servaddbuttondia {
     position: absolute;
 }
 .servplusbutton {
@@ -944,11 +956,6 @@ for checklists and threat evaluations.
     margin-left: 2em;
     color: rgb(255,102,0);
 }
-.disabled {
-    margin-left: 2em;
-    color: rgb(255,102,0);
-    text-transform: uppercase;
-}
 
 .Magnitude {
     float: right;
@@ -978,39 +985,17 @@ for checklists and threat evaluations.
     margin-top: 22px;
 }
 
-#someshf {
+#someccf {
 	margin-left: 15px;
 }
 
-.optionsarea {
-	border: 1px solid lightgrey;
-    border-radius: 5px;
-    background: whitesmoke;
-	margin: 10px 0 15px 0px;
-	padding: 0 0 15px 10px;
-    width: 800px; /* width of .shfaccordion - left padding - right padding */
-}
-.shfopts {
-	display: inline-block;
-	margin-right: 25px;
-	margin-top: 5px;
-
-}
-.shoptlabel {
-	font-style: italic;
-	line-height: 20px;
-}
-.collapseall {
-	margin-left: 10px;
-}
-
-.shfaccordion {
+.ccfaccordion {
     width: 810px !important;
     margin-left: 15px !important;
     margin-bottom: 3px !important;
 }
 
-.shfaccordionbody {
+.ccfaccordionbody {
     padding-top: 0px !important;
     padding-right: 0px !important;
 }
@@ -1104,12 +1089,12 @@ for checklists and threat evaluations.
     white-space: nowrap;
     width: 150px;
 }
-.shflabelgroup {
+.ccflabelgroup {
     position: absolute;
     right: 30px;
     top: 0;
 }
-.shfMagnitude {
+.ccfMagnitude {
     float: right;
     width: 20px;
     border: 1px solid grey;

@@ -640,7 +640,7 @@ function SizeDOMElements() {
 		rule.style.height= (wh-250) + 'px';
 	}
 
-    $('#servaddbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+    $('#servaddbuttondia').removeClass('ui-corner-all').addClass('ui-corner-bottom');
     $('.tabs-bottom > .ui-tabs-nav').width(ww-82);
     // special setting for tab "Analysis"
     $('#analysis_body > .ui-tabs-nav').width(ww-44);
@@ -698,7 +698,7 @@ function sizeworkspace() {
         $('#singlefs_body .servplusbutton').height(bh-4);
     }
 
-    bh = $('#bottomtabsshf').height();
+    bh = $('#bottomtabsana').height();
     if (bh>0) {
         $('#analysis_body .workspace').height(wh-adj+27-bh);
     }
@@ -2403,7 +2403,7 @@ function initTabDiagrams() {
         zIndex: 400
     });
 
-    $('#servaddbutton').on('click', function() {
+    $('#servaddbuttondia').on('click', function() {
         var p = Project.get( Project.cid );
         var s = new Service();
         p.addservice(s.id);
@@ -3169,14 +3169,14 @@ function paintSingleFailures(s) {
     // over the components again, adding the vulnerabilities to them, and adding
     // behaviour stuff.
     snippet = '\
-        <div id="somesf_SV_" class="optionsarea" class="donotprint">\n\
-          <div class="shfopts">\n\
-			<span class="shoptlabel">_L1_</span><br>\n\
+        <div id="somesf_SV_" class="displayoptsarea" class="donotprint">\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_L1_</span><br>\n\
         	<span id="expandallsf_SV_">_EA_</span>\n\
 	        <span id="collapseallsf_SV_" class="collapseall">_CA_</span>\n\
 		  </div>\n\
-          <div class="shfopts">\n\
-			<span class="shoptlabel">_L2_</span><br>\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_L2_</span><br>\n\
 			<fieldset>\n\
 				<input type="radio" id="sfsort_alph_SV_" name="sfsort_SV_"><label for="sfsort_alph_SV_">_O1_</label>\n\
 				<input type="radio" id="sfsort_type_SV_" name="sfsort_SV_"><label for="sfsort_type_SV_">_O2_</label>\n\
@@ -3751,25 +3751,25 @@ function AddAllClusters() {
     var snippet = '\
         <h1 class="printonly underlay">_LCCF_</h1>\
         <h2 class="printonly underlay projectname">_LP_: _PN_</h2>\
-        <p id="noshf" class="firstp sfaccordion">_N1_\
+        <p id="noccf" class="firstp sfaccordion">_N1_\
         _N2_\
         _N3_</p>\
-        <div id="someshf" class="donotprint optionsarea">\n\
-          <div class="shfopts">\n\
-			<span class="shoptlabel">_L1_</span><br>\n\
-        	<span id="expandallshf">_EA_</span>\n\
-	        <span id="collapseallshf" class="collapseall">_CA_</span>\n\
+        <div id="someccf" class="donotprint displayoptsarea">\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_L1_</span><br>\n\
+        	<span id="expandallccf">_EA_</span>\n\
+	        <span id="collapseallccf" class="collapseall">_CA_</span>\n\
 		  </div>\n\
-          <div class="shfopts">\n\
-			<span class="shoptlabel">_L2_</span><br>\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_L2_</span><br>\n\
 			<fieldset>\n\
 				<input type="radio" id="ccfsort_alph" name="ccfsort"><label for="ccfsort_alph">_O1_</label>\n\
 				<input type="radio" id="ccfsort_type" name="ccfsort"><label for="ccfsort_type">_O2_</label>\n\
 				<input type="radio" id="ccfsort_thrt" name="ccfsort"><label for="ccfsort_thrt">_O3_</label>\n\
 			</fieldset>\n\
 		  </div>\n\
-          <div class="shfopts">\n\
-			<span class="shoptlabel">_L3_</span><br>\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_L3_</span><br>\n\
 			<select id="ccfminV"></select>\n\
 		  </div>\n\
 		</div>\
@@ -3791,10 +3791,10 @@ function AddAllClusters() {
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     $('#ccfs_body').append(snippet);
 
-	$('#expandallshf').button({icon: 'ui-icon-plus'});
-	$('#collapseallshf').button({icon: 'ui-icon-minus'});
-    $('#someshf input[type=radio]').checkboxradio({icon: false});
-    $('#someshf fieldset').controlgroup();
+	$('#expandallccf').button({icon: 'ui-icon-plus'});
+	$('#collapseallccf').button({icon: 'ui-icon-minus'});
+    $('#someccf input[type=radio]').checkboxradio({icon: false});
+    $('#someccf fieldset').controlgroup();
     var selectoptions = "";
     selectoptions += '<option value="-">_ALL_</option>\n';
 	selectoptions = selectoptions.replace(/_ALL_/g, _("(Show all)"));
@@ -3816,8 +3816,8 @@ function AddAllClusters() {
     // allow manipulation of nested list
     var it = new NodeClusterIterator({project:Project.cid, isroot:true});
     if (!it.notlast()) {
-        $('#noshf').css('display', 'block');
-        $('#someshf').css('display', 'none');
+        $('#noccf').css('display', 'block');
+        $('#someccf').css('display', 'none');
         return;
     }
     
@@ -3837,17 +3837,17 @@ function AddAllClusters() {
     default:
         bugreport("Unknown node sort option","AddAllClusters");
     }
-    $('#someshf fieldset').controlgroup('refresh');
+    $('#someccf fieldset').controlgroup('refresh');
 
-    $('#noshf').css('display', 'none');
-    $('#someshf').css('display', 'block');
-    $('#expandallshf').on('click',  function(evt){
+    $('#noccf').css('display', 'none');
+    $('#someccf').css('display', 'block');
+    $('#expandallccf').on('click',  function(evt){
         expandAllCCF(nid2id(evt.target.id));
     });
-    $('#collapseallshf').on('click',  function(evt){
+    $('#collapseallccf').on('click',  function(evt){
         collapseAllCCF(nid2id(evt.target.id));
     });
-    var create_shf_sortfunc = function(opt) {
+    var create_ccf_sortfunc = function(opt) {
     	return function() {
 			CCFSortOpt = opt;
 			$('#ccfs_body').empty();
@@ -3855,9 +3855,9 @@ function AddAllClusters() {
         };
     };
 
-    $('[for=ccfsort_alph]').on('click', create_shf_sortfunc('alph'));
-    $('[for=ccfsort_type]').on('click', create_shf_sortfunc('type'));
-    $('[for=ccfsort_thrt]').on('click', create_shf_sortfunc('thrt'));
+    $('[for=ccfsort_alph]').on('click', create_ccf_sortfunc('alph'));
+    $('[for=ccfsort_type]').on('click', create_ccf_sortfunc('type'));
+    $('[for=ccfsort_thrt]').on('click', create_ccf_sortfunc('thrt'));
 
     for (it.first(); it.notlast(); it.next()) {
         var nc = it.getNodeCluster();
@@ -3869,9 +3869,9 @@ function AddAllClusters() {
 
 function addTDomElements(nc) {
     var snippet = '\n\
-      <div id="shfaccordion_ID_" class="shfaccordion">\n\
-        <h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="shfamark_ID_"></span></a></h3>\n\
-        <div id="shfaccordionbody_ID_" class="shfaccordionbody">\n\
+      <div id="ccfaccordion_ID_" class="ccfaccordion">\n\
+        <h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="ccfamark_ID_"></span></a></h3>\n\
+        <div id="ccfaccordionbody_ID_" class="ccfaccordionbody">\n\
           <div id="tdom_ID_" class="threatdomain noselect"></div>\n\
         </div>\n\
       </div>\n\
@@ -3882,7 +3882,7 @@ function addTDomElements(nc) {
     snippet = snippet.replace(/_TY_/g, Rules.nodetypes[nc.type]);
     $('#ccfs_body').append(snippet);
 
-    var acc = $('#shfaccordion'+nc.id);
+    var acc = $('#ccfaccordion'+nc.id);
     acc.accordion({
         activate: function(event,ui) { nc.setaccordionopened(ui.oldPanel.length===0); },
         heightStyle: 'content',
@@ -3892,9 +3892,9 @@ function addTDomElements(nc) {
     });
     if (nc.childclusters.length + nc.childnodes.length < 2)
         // Just an empty placeholder for a node cluster that is too small
-        $('#shfaccordion'+nc.id).css('display', 'none');
+        $('#ccfaccordion'+nc.id).css('display', 'none');
     else
-        $('#shfaccordion'+nc.id).css('display', 'block');
+        $('#ccfaccordion'+nc.id).css('display', 'block');
 }
 
 function expandAllCCF() {
@@ -3902,7 +3902,7 @@ function expandAllCCF() {
     for (it.first(); it.notlast(); it.next()) {
         var cl = it.getNodeCluster();
         if (cl.isroot()) {
-            var el = $('#shfaccordion'+cl.id);
+            var el = $('#ccfaccordion'+cl.id);
             el.accordion('option','animate',false);
             el.accordion('option','active',0);
             el.accordion('option','animate',true);
@@ -3922,7 +3922,7 @@ function collapseAllCCF() {
     for (it.first(); it.notlast(); it.next()) {
         var cl = it.getNodeCluster();
         if (cl.isroot()) {
-            var el = $('#shfaccordion'+cl.id);
+            var el = $('#ccfaccordion'+cl.id);
             el.accordion('option','animate',false);
             el.accordion('option','active',false);
             el.accordion('option','animate',true);
@@ -3970,7 +3970,7 @@ function reallyRepaintTDom(elem) {
         <div class="th_total th_col thr_header">_LT_</div>\
         <div class="th_remark th_col thr_header">_LR_</div>\
         </div>\
-        <div id="shftable_ID_" class="threats">\
+        <div id="ccftable_ID_" class="threats">\
         </div></div>\n\
         <div id="tdom_ID_" class="threatdomain noselect"></div>\n';
     snippet = snippet.replace(/_LN_/g, _("Name"));
@@ -3979,14 +3979,14 @@ function reallyRepaintTDom(elem) {
     snippet = snippet.replace(/_LT_/g, _("Total"));
     snippet = snippet.replace(/_LR_/g, _("Remark"));
     snippet = snippet.replace(/_ID_/g, nc.id);
-    $('#shfaccordionbody'+nc.id).html( snippet );
-    computeSpacesMakeup(nc,'#shftable'+nc.id,'shf'+nc.id);
+    $('#ccfaccordionbody'+nc.id).html( snippet );
+    computeSpacesMakeup(nc,'#ccftable'+nc.id,'ccf'+nc.id);
     nc.calculatemagnitude();
-    nc.setallmarkeroid('#shfamark');
+    nc.setallmarkeroid('#ccfamark');
 
     if (nc.childclusters.length + nc.childnodes.length < 2) {
         // Just an empty/invisible placeholder for a node cluster that is too small
-        $('#shfaccordion'+nc.id).css('display', 'none');
+        $('#ccfaccordion'+nc.id).css('display', 'none');
         // Check whether there are any cluster remaining visible
         var it = new NodeClusterIterator({project:Project.cid, isroot:true});
         for (it.first(); it.notlast(); it.next()) {
@@ -3995,15 +3995,15 @@ function reallyRepaintTDom(elem) {
                 return;
         }
         // None were visible
-        $('#noshf').css('display', 'block');
-        $('#someshf').css('display', 'none');
+        $('#noccf').css('display', 'block');
+        $('#someccf').css('display', 'none');
         return;
     }
 
-    $('#shfaccordion'+nc.id).css('display', 'block');
+    $('#ccfaccordion'+nc.id).css('display', 'block');
     // Retain scrollbar position
     $('#tdom'+nc.id).append( listFromCluster(nc) ).scrollTop(ScrollBarPosition);
-    nc.setallmarkeroid('#shfamark');
+    nc.setallmarkeroid('#ccfamark');
     $('#tdom'+nc.id+' .tlistitem').draggable({
         containment: '#tdom'+nc.id,
         revert: 'invalid',
@@ -4034,7 +4034,7 @@ function reallyRepaintTDom(elem) {
         callback: function(domid, enteredText) { 
             var nc = NodeCluster.get( nid2id(domid) );
             nc.settitle(enteredText);
-            $('#dth_shf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
+            $('#dth_ccf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
             transactionCompleted("Rename cluster");
             return H(nc.title);
         }
@@ -4057,7 +4057,7 @@ function listFromCluster(nc) {
             <li id="linode_ID_" class="tlistitem clusternode ui-state-default ui-state-selected">\n\
             <span id="cltrgl_ID_" class="ui-icon ui-icon-triangle-1-_LT_ clustericon"></span>\
             <span id="litext_ID_" class="litext">_TI_</span>\
-            <span id="shfamark_ID_"></span></a>\n\
+            <span id="ccfamark_ID_"></span></a>\n\
             </li>\n\
         ';
     }
@@ -4145,11 +4145,11 @@ function listFromCluster(nc) {
 
         if (Preferences.label && rn.color!='none') {
             var p = Project.get(Project.cid);
-            str += '<div class="shflabelgroup"><div class="smallblock B_CO_"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
+            str += '<div class="ccflabelgroup"><div class="smallblock B_CO_"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
             str = str.replace(/_CO_/g, rn.color);
         }
 
-		str += '<div id="shfmag_NI_" class="shfMagnitude M_LV_" title="_DE_">_TX_</div>';
+		str += '<div id="ccfmag_NI_" class="ccfMagnitude M_LV_" title="_DE_">_TX_</div>';
 		str = str.replace(/_NI_/, rn.id);
 		str = str.replace(/_LV_/, mi);
 		str = str.replace(/_TX_/, ta.total);
