@@ -1,6 +1,13 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
+Beta 2.2
+========
+* Vulnerability levels from Single Failure analysis are shown on nodes in Common Cause Failure view,
+  for reference. Also added an option to hide low-interest nodes, by vulnerability level.
+* Various UI improvements.
+* Minor fixes and improvements.
+
 February 2018
 =============
 * Release as 2.1
