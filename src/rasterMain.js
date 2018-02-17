@@ -276,7 +276,7 @@ $(function() {
 #endif
 
     // May be necessary to wait and resize
-//    window.setTimeout(SizeDOMElements, 1000);
+    window.setTimeout(SizeDOMElements, 1000);
 
     Preferences.settab(remembertab);
     $('#tabs').tabs('option','active',Preferences.tab);
@@ -3169,7 +3169,7 @@ function paintSingleFailures(s) {
     // over the components again, adding the vulnerabilities to them, and adding
     // behaviour stuff.
     snippet = '\
-        <div id="somesf_SV_" class="displayoptsarea" class="donotprint">\n\
+        <div id="somesf_SV_" class="displayoptsarea donotprint">\n\
           <div class="displayopt">\n\
 			<span class="displayoptlabel">_L1_</span><br>\n\
         	<span id="expandallsf_SV_">_EA_</span>\n\
@@ -4497,7 +4497,7 @@ function AddAllAnalysis() {
     paintLonglist();
 }
 
-var FailureThreatSortOpt = {node: "threat", threat: 'alpha'};
+var FailureThreatSortOpt = {node: 'thrt', threat: 'type'};
 
 function paintNodeThreatTables() {
     ComponentExclusions = {};
@@ -4514,47 +4514,69 @@ function paintNodeThreatTables() {
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     
     snippet += '\n\
-        <table id="ana_nodethreattop" class="donotprint"><tr>\n\
-        <td id="ana_nodesort">_LS1_ <select id="ana_nodeselect">\n\
-            <option value="threat">_O3_</option>\n\
-            <option value="alpha">_O1_</option>\n\
-            <option value="type">_O2_</option>\n\
-        </select></td>\n\
-        <td id="ana_failuresort">_LS2_ <select id="ana_failureselect">\n\
-            <option value="alpha">_O1_</option>\n\
-            <option value="type">_O2_</option>\n\
-            <!--option value="threat">_O3_</option-->\n\
-        </select></td>\n\
-        <td id="ana_exclusions">\n\
-        <input type="button" id="quickwinslink" value="_Q1_">\n\
-        <input type="button" id="clearexclusions" value="_Q2_"><br>\n\
-        <p class="donotprint">_Q3_</p>\n\
-        </td></tr></table>\n\
-        <div id="ana_nodethreattable"></div>\n\
-        <div id="ana_ccftable"></div>\n\
+        <div id="ana_nodevuln" class="displayoptsarea donotprint">\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_LS1_</span><br>\n\
+			<fieldset>\n\
+				<input type="radio" id="ana_nodesort_alph" name="ana_nodesort"><label for="ana_nodesort_alph">_O1_</label>\n\
+				<input type="radio" id="ana_nodesort_type" name="ana_nodesort"><label for="ana_nodesort_type">_O2_</label>\n\
+				<input type="radio" id="ana_nodesort_thrt" name="ana_nodesort"><label for="ana_nodesort_thrt">_O3_</label>\n\
+			</fieldset>\n\
+		  </div>\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_LS2_</span><br>\n\
+			<fieldset>\n\
+				<input type="radio" id="ana_failsort_alph" name="ana_failsort"><label for="ana_failsort_alph">_O1_</label>\n\
+				<input type="radio" id="ana_failsort_type" name="ana_failsort"><label for="ana_failsort_type">_O2_</label>\n\
+			</fieldset>\n\
+		  </div>\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_LS3_</span><br>\n\
+			<input type="button" id="quickwinslink" value="_Q1_">\n\
+			<input type="button" id="clearexclusions" value="_Q2_"><br>\n\
+		  </div>\n\
+		</div>\n\
+        <div id="ana_nodethreattable" class="ana_nodeccfblock"></div>\n\
+        <div id="ana_ccftable" class="ana_nodeccfblock"></div>\n\
     ';
     snippet = snippet.replace(/_L1_/g, _("Single & Common Cause Failures versus Vulnerabilities"));
     snippet = snippet.replace(/_LS1_/g, _("Sort nodes and clusters:"));
     snippet = snippet.replace(/_LS2_/g, _("Sort vulnerabilities:"));
+    snippet = snippet.replace(/_LS3_/g, _("Click cells to include/exclude them."));
     snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
     snippet = snippet.replace(/_O2_/g, _("by Type"));
     snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
     snippet = snippet.replace(/_Q1_/g, _("show Quick Wins"));
     snippet = snippet.replace(/_Q2_/g, _("clear exclusions"));
-    snippet = snippet.replace(/_Q3_/g, _("Click a coloured cell to include/exclude a failure or CCF"));
     $('#at1').html(snippet);
-    $('#ana_nodeselect').on('change',  function(){
-        var selected = $('#ana_nodeselect option:selected').val();
-        FailureThreatSortOpt.node = selected;
-        paintSFTable();
-        paintCCFTable();
-    });
-    $('#ana_failureselect').on('change',  function(){
-        var selected = $('#ana_failureselect option:selected').val();
-        FailureThreatSortOpt.threat = selected;
-        paintSFTable();
-        paintCCFTable();
-    });
+
+	$('#ana_nodevuln input[type=button]').button();
+    $('#ana_nodevuln input[type=radio]').checkboxradio({icon: false});
+	$('#ana_nodesort_'+FailureThreatSortOpt.node).prop('checked',true);
+	$('#ana_failsort_'+FailureThreatSortOpt.threat).prop('checked',true);
+    $('#ana_nodevuln fieldset').controlgroup();
+
+    var create_ananode_sortfunc = function(opt) {
+    	return function() {
+			FailureThreatSortOpt.node = opt;
+			paintSFTable();
+			paintCCFTable();
+        };
+    };
+    $('[for=ana_nodesort_alph]').on('click', create_ananode_sortfunc('alph'));
+    $('[for=ana_nodesort_type]').on('click', create_ananode_sortfunc('type'));
+    $('[for=ana_nodesort_thrt]').on('click', create_ananode_sortfunc('thrt'));
+
+    var create_anafail_sortfunc = function(opt) {
+    	return function() {
+			FailureThreatSortOpt.threat = opt;
+			paintSFTable();
+			paintCCFTable();
+        };
+    };
+    $('[for=ana_failsort_alph]').on('click', create_anafail_sortfunc('alph'));
+    $('[for=ana_failsort_type]').on('click', create_anafail_sortfunc('type'));
+
     $('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
         var exclCm = computeComponentQuickWins();
         var exclCl = computeClusterQuickWins();
@@ -4578,9 +4600,6 @@ function paintNodeThreatTables() {
     
     paintSFTable();
     paintCCFTable();
-
-    $('#ana_nodeselect').val(FailureThreatSortOpt.node);
-    $('#ana_failureselect').val(FailureThreatSortOpt.threat);
 }
 
 // Two associative arrays that record the single failures and CCFs that have been
@@ -4668,13 +4687,13 @@ function paintSFTable() {
     var cit = new ComponentIterator({project: Project.cid});
         
     switch (FailureThreatSortOpt.node) {
-    case 'alpha':
+    case 'alph':
         cit.sortByName();
         break;
-    case "type":
+    case 'type':
         cit.sortByType();
         break;
-    case "threat":
+    case 'thrt':
         cit.sortByLevel();
         break;
     default:
@@ -4682,15 +4701,12 @@ function paintSFTable() {
     }
     
     switch (FailureThreatSortOpt.threat) {
-    case 'alpha':
+    case 'alph':
         tit.sortByName();
         break;
-    case "type":
+    case 'type':
         tit.sortByType();
         break;
-//    case "threat":
-//        tit.sortByLevel();
-//        break;
     default:
         bugreport("Unknown threat sort option","paintSFTable");
     }
@@ -4779,7 +4795,7 @@ function paintSFTable() {
     // Do the ending/closing
     snippet += '\n\
         </tbody>\n\
-        </table>\n\
+        </table><p></p>\n\
     ';
     $('#ana_nodethreattable').html(snippet);
 
@@ -4802,28 +4818,28 @@ function paintCCFTable() {
     var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
     
     switch (FailureThreatSortOpt.node) {
-    case 'alpha':
+    case 'alph':
         ncit.sortByName();
         break;
     case 'type':
         ncit.sortByType();
         break;
-    case 'threat':
+    case 'thrt':
         ncit.sortByLevel();
         break;
     default:
-        bugreport("Unknown node sort option","paintSFTable");
+        bugreport("Unknown node sort option","paintCCFTable");
     }
     
     switch (FailureThreatSortOpt.threat) {
-        case 'alpha':
+        case 'alph':
             tit.sortByName();
             break;
         case 'type':
             tit.sortByType();
             break;
         default:
-            bugreport("Unknown threat sort option","paintSFTable");
+            bugreport("Unknown threat sort option","paintCCFTable");
     }
 
     $('#ana_ccftable').empty();
@@ -4853,9 +4869,9 @@ function paintCCFTable() {
     snippet = snippet.replace(/_NT_/, numthreats+1);
     for (tit.first(); tit.notlast(); tit.next()) {
         var nc = tit.getNodeCluster();
-        snippet += '<td class="printonlycell headercell">'+H(nc.title)+'</td>\n';
+        snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
     }    
-    snippet += '<td class="printonlycell headercell"><b>_OV_</b></td>\n\
+    snippet += '<td class="headercell"><b>_OV_</b></td>\n\
          </tr>\n\
         </thead>\n\
         <tbody>\n\
@@ -5503,18 +5519,25 @@ function paintLonglist() {
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     
     snippet += '\n\
-        <div id="lloptions" class="donotprint">\n\
-        <b>_INS_</b><br>\n\
-        <label for="incX">_LU_:</label> <span class="itemll"><input type="checkbox" id="incX" checked></span><br>\n\
-        <label for="incA">_LA_:</label> <span class="itemll"><input type="checkbox" id="incA" checked></span><br>\n\
-        <label for="minV">_LV_:</label> <span class="itemll"><select id="minV"></select></span><br>\n\
-        </div>\n\
-        <div id="longlist"></div>\
+        <p class="firstp"><b>_INS_</b></p>\n\
+        <div id="lloptions" class="displayoptsarea donotprint">\n\
+		  <div class="displayopt">\n\
+			<span class="displayoptlabel">_L1_</span><br>\n\
+			<input type="checkbox" id="incX" checked><label for="incX">_LU_</label><br>\n\
+			<input type="checkbox" id="incA" checked><label for="incA">_LA_</label>\n\
+		  </div>\n\
+		  <div class="displayopt">\n\
+			<span class="displayoptlabel">_L2_</span><br>\n\
+			<select id="minV"></select>\n\
+		  </div>\n\
+		</div>\n\
+		<div id="longlist"></div>\
     ';
     snippet = snippet.replace(/_INS_/g, _("Set the criteria for risks on the longlist.") );
-    snippet = snippet.replace(/_LU_/g, _("Include Unknown") );
-    snippet = snippet.replace(/_LA_/g, _("Include Ambiguous") );
-    snippet = snippet.replace(/_LV_/g, _("Minimum value") );
+    snippet = snippet.replace(/_L1_/g, _("Include:") );
+    snippet = snippet.replace(/_LU_/g, _("Unknown") );
+    snippet = snippet.replace(/_LA_/g, _("Ambiguous") );
+    snippet = snippet.replace(/_L2_/g, _("Minimum value:") );
 
     var selectoptions = "";
     for (var i=ThreatAssessment.valueindex['U']; i<=ThreatAssessment.valueindex['V']; i++) {
@@ -5523,17 +5546,17 @@ function paintLonglist() {
         selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
     }
     $('#at5').html(snippet);
-    $('#minV').html(selectoptions);
-    $('#minV').val(MinValue);
+    $('#minV').html(selectoptions).selectmenu({
+    	select: function(event,ui) {
+			MinValue = $('#minV').val();
+	        $('#longlist').html(listSelectedRisks());
+    	}
+	}).val(MinValue).selectmenu('refresh');
+
     $('#incX').on('change',  function() {
         $('#longlist').html(listSelectedRisks());
     });
     $('#incA').on('change',  function() {
-        $('#longlist').html(listSelectedRisks());
-    });
-    $('#minV').on('change',  function() {
-        // Remember the new cut-off point for longlist
-        MinValue = $('#minV option:selected').val();
         $('#longlist').html(listSelectedRisks());
     });
 
