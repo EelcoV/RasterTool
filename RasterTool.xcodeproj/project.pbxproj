@@ -221,7 +221,6 @@
 				49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
-				49D256061A1E88A200102918 /* translation-nl.js */,
 			);
 			path = js;
 			sourceTree = "<group>";
@@ -461,6 +460,7 @@
 				494B6F8518796E9D00400328 /* rasterProject.js */,
 				494B6F8618796E9D00400328 /* rasterService.js */,
 				494B6F8718796E9D00400328 /* rasterThreatEvaluation.js */,
+				49D256061A1E88A200102918 /* translation-nl.js */,
 			);
 			path = src;
 			sourceTree = "<group>";

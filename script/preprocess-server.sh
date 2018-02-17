@@ -16,8 +16,9 @@ fi
 cp -R -p server/* $BUILDDIR
 cp -R -p common/* $BUILDDIR
 cp -R -p public_group $BUILDDIR
+chmod a+rwX $BUILDDIR/public_group/SharedProjects
 
-for srcfile in src/raster*.js
+for srcfile in src/*.js
 do
 	destfile=$BUILDDIR/js/`basename $srcfile`
 	if [ $srcfile -nt $destfile ]; then

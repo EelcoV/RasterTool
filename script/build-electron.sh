@@ -21,7 +21,7 @@ CreateAppVersion()
 
 	echo "{\"name\":\"Raster\",\"version\":\"$RASTERVERSION ($RASTERSEASON)\",\"main\":\"main.js\"}" >$BUILDDIR/package.json
 
-	for srcfile in src/raster*.js
+	for srcfile in src/*.js
 	do
 		destfile=$BUILDDIR/js/`basename $srcfile`
 		if [ $srcfile -nt $destfile ]; then
