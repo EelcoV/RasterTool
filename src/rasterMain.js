@@ -4126,11 +4126,11 @@ function listFromCluster(nc) {
 			if (ta.title==rc.title && ta.type==rc.type)
 				break;
 		}
-		var mi = ThreatAssessment.valueindex[ta.total];
+		var mi = ThreatAssessment.valueindex[ta.impact];
 
 		var classlist = '';
-		if ("-ULMH".indexOf(ta.total)!=-1) {
-			for (j=ThreatAssessment.valueindex[ta.total]+1; j<=ThreatAssessment.valueindex['V']; j++) {
+		if ("-ULMH".indexOf(ta.impact)!=-1) {
+			for (j=ThreatAssessment.valueindex[ta.impact]+1; j<=ThreatAssessment.valueindex['V']; j++) {
 				classlist += 'Hl'+ThreatAssessment.values[j]+' ';
 			}
 		}
@@ -4152,8 +4152,8 @@ function listFromCluster(nc) {
 		str += '<div id="ccfmag_NI_" class="ccfMagnitude M_LV_" title="_DE_">_TX_</div>';
 		str = str.replace(/_NI_/, rn.id);
 		str = str.replace(/_LV_/, mi);
-		str = str.replace(/_TX_/, ta.total);
-		str = str.replace(/_DE_/, ThreatAssessment.descr[mi]);
+		str = str.replace(/_TX_/, ta.impact);
+		str = str.replace(/_DE_/, _("Impact")+' '+ThreatAssessment.descr[mi]);
 
         str += '</li>\n';
     }
