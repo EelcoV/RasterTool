@@ -398,7 +398,7 @@ div.popupmenuitem {
 	width: 220px;
 }
 div.popupmenuitemdisabled {
-    color: #aaa;
+    color: #aaa !important;
 }
 #form_editlabels input {margin-bottom: 5px; }
 
