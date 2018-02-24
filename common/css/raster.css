@@ -418,6 +418,7 @@ div.popupmenuitem {
     border: 1px solid grey;
     border-radius: 6px;
     margin-right: 10px;
+    margin-top: 2px;
 }
 .tinyblock {
     display: inline-block;
@@ -1159,6 +1160,7 @@ for checklists and threat evaluations.
     position: absolute;
     right: 20px;
     top: 0;
+    width: 175px;
 }
 
 .litext {

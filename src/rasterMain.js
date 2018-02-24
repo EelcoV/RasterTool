@@ -4223,19 +4223,50 @@ function listFromCluster(nc) {
     // Finally insert all child nodes
     for (i=0; i<node.length; i++) {
         var rn = Node.get(node[i]);
-        var sv = Service.get(rn.service);
+		var cm = Component.get(rn.component);
+        var sv = "";
+
+		// Single node classes can (will) be present in multiple services.
+        if (cm.single) {
+			for (var j=0; j<cm.nodes.length; j++) {
+				var n = Node.get(cm.nodes[j]);
+				if (sv!='') sv += '; ';
+				sv += Service.get(n.service).title;
+			}
+        } else {
+        	sv = Service.get(rn.service).title;
+        }
+
         str += '<li id="linode_NI___CI_" title="_SV_" class="tlistitem childnode" style="display: _DI_;">\n';
         str = str.replace(/_NI_/g, rn.id);
         str = str.replace(/_CI_/g, nc.id);
-        str = str.replace(/_SV_/g, H(sv.title));
-        str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
+        str = str.replace(/_SV_/g, H(sv));
 
+        str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
         str += rn.htmltitle();
 
-        if (Preferences.label && rn.color!='none') {
+        if (Preferences.label) {
             var p = Project.get(Project.cid);
-            str += '<div class="ccflabelgroup"><div class="smallblock B_CO_"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
-            str = str.replace(/_CO_/g, rn.color);
+			// Single node classes can have multiple labels
+            var labels = [];
+			if (cm.single) {
+				for (j=0; j<cm.nodes.length; j++) {
+					n = Node.get(cm.nodes[j]);
+					if (n.color!='none' && labels.indexOf(n.color)==-1)
+						labels.push(n.color);
+				}
+            } else {
+            	if (rn.color!='none') labels = [rn.color];
+            }
+            if (labels.length==1 ) {
+				str += '<div class="ccflabelgroup"><div class="smallblock B'+rn.color+'"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
+            } else if (labels.length>1) {
+                str += '<div class="ccflabelgroup">';
+                for (j=0; j<labels.length; j++) {
+                    str += '<div class="smallblock B'+labels[j]+'" title="' + H(p.strToLabel(labels[j])) + '"></div>';
+                }
+                str += '</div>';
+            }
         }
 
         str += '</li>\n';
