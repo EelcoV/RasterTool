@@ -2,6 +2,64 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
  -->
+<table id="freqcontrols">
+	<tr>
+		<td class="tdaright">
+			I have
+		</td>
+		<td>
+			<input id="fNum" type=text><div id="sNum" class="range"></div>
+		</td>
+		<td class="tdend">
+			identical nodes, and
+		</td>
+	<tr>
+	<tr>
+		<td class="tdaright">
+			every
+		</td>
+		<td>
+			<input id="fNPd" type=text><div id="sNPd" class="range"></div>
+		</td>
+		<td class="tdend">
+			<fieldset>
+			  <input id="rWeek" type=radio name="period" value="pweek"><label for="rWeek">week</label>
+			  <input id="rMnth" type=radio name="period" value="pmnth"><label for="rMnth">month</label>
+			  <input id="rYear" type=radio name="period" value="pyear"><label for="rYear">year</label>
+			</fieldset>
+		</td>
+	<tr>
+	<tr>
+		<td class="tdaright">
+
+		</td>
+		<td>
+			<input id="fInc" type=text><div id="sInc" class="range"></div>
+		</td>
+		<td class="tdend">
+			are affected.
+		</td>
+	<tr>
+</table>
+<div id="resultarea">
+	<div id="result"></div>
+</div>
+<div id="boxes">
+	<div id="bV" class="box"></div>
+	<div id="bH" class="box"></div>
+	<div id="b1" class="box"></div>
+	<div id="bM" class="box"></div>
+	<div id="b2" class="box"></div>
+	<div id="bL" class="box"></div>
+	<div id="bU" class="box"></div>
+</div>
+<div id="boxlabels">
+	<span id="lH" class="label">High</span>
+	<span id="lM" class="label">Medium</span>
+	<span id="lL" class="label">Low</span>
+</div>
+
+
 <TABLE BORDER=1 BORDERCOLOR="#000000" CELLPADDING=0 CELLSPACING=0 FRAME=HSIDES RULES=ROWS>
 	<TR VALIGN=TOP>
 		<TD>
