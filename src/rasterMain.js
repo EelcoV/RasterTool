@@ -296,6 +296,7 @@ $(function() {
     $('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
     $('#helptabs a').eq(3).attr('href', _("../help/About.html") );
     $('#helptabs li:last-of-type').css("margin-left","10px");
+
     $('#helppanel').dialog({
         title: _("Information on using this tool"),
         autoOpen: false,
@@ -305,6 +306,7 @@ $(function() {
         minWidth: 470,
         maxWidth: 800,
         open: function(event) {
+			initFrequencyTool();
             $('#helptabs ul').width($('#helppanel').width()-14);
         },
         resize: function(event,ui) {
@@ -313,7 +315,12 @@ $(function() {
     });
     $('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
     $('#helptabs').tabs({
-        heightStyle: 'content'
+        heightStyle: 'content',
+        load: function(event,ui) {
+        	if ($('#helptabs').tabs('option','active')==0) {
+        		initFrequencyTool();
+			}
+        }
     });
     $('#helpbutton img').on('click',  function() {
         $('#helppanel').dialog('open');
@@ -511,6 +518,128 @@ function StartFind() {
 		}
 	});
 }
+
+// Functions for the Frequency calculator (inside help/frequency-$LANG.html)
+//
+const Lj = 500; // Once in 500 years
+const Mj = 50;  // Once in 50 years
+const Hj = 5;   // Once in 5 years
+const log10_5 = log10(5);
+
+var vNum = 100;	// Initial number of nodes
+var vNPd = 1;	// Initial number of periods
+var vInc = 2;	// Initial number of incidents in that interval
+var cW = false;
+var cM = false;
+var cY = true;	// Interval is 'year'
+
+function initFrequencyTool() {
+	$('#sNum').slider({
+		min: 0,
+		max: 1000,
+		step: 10,
+		value: vNum,
+		slide: function( event, ui ) {
+			vNum = ui.value;
+			$('#fNum').val( vNum );
+			freqIndicatorUpdate();
+		}
+	});
+	$('#sNPd').slider({
+		min: 1,
+		max: 10,
+		value: vNPd,
+		slide: function( event, ui ) {
+			vNPd = ui.value;
+			$('#fNPd').val( vNPd );
+			freqIndicatorUpdate();
+		}
+	});
+	$('#sInc').slider({
+		min: 1,
+		max: 20,
+		value: vInc,
+		slide: function( event, ui ) {
+			vInc = ui.value;
+			$('#fInc').val( vInc );
+			freqIndicatorUpdate();
+		}
+	});
+	$('#fNum').val( vNum );
+	$('#fNPd').val( vNPd );
+	$('#fInc').val( vInc );
+
+	$('#freqcontrols input[type=radio]').checkboxradio({
+		icon: false
+	});
+	$('#fNum').on('change', function() {
+		vNum = $('#fNum').val();
+		$('#sNum').slider('value', vNum);
+		freqIndicatorUpdate();
+	});
+	$('#fNPd').on('change', function() {
+		vNPd = $('#fNPd').val();
+		$('#sNPd').slider('value', vNPd);
+		freqIndicatorUpdate();
+	});
+	$('#fInc').on('change', function() {
+		vInc = $('#fInc').val();
+		$('#sInc').slider('value', vInc);
+		freqIndicatorUpdate();
+	});
+	$('#freqcontrols fieldset').controlgroup();
+	$('#freqcontrols input[type=radio]').on('change', function() {
+		cW = $('#rWeek').prop('checked');
+		cM = $('#rMnth').prop('checked');
+		cY = $('#rYear').prop('checked');
+		freqIndicatorUpdate();
+	});
+
+	$('#rWeek').prop('checked', cW).checkboxradio('refresh');
+	$('#rMnth').prop('checked', cM).checkboxradio('refresh');
+	$('#rYear').prop('checked', cY).checkboxradio('refresh');
+
+	freqIndicatorUpdate(false);
+}
+
+function freqIndicatorUpdate(anim) {
+	var obH = $('#bH').offset().left;
+	var obM = $('#bM').offset().left;
+	var obL = $('#bL').offset().left;
+	var wbH = $('#bH').width();
+	var p;
+
+	if (cW) {
+		p = (vNum * vNPd / vInc) / 52;
+	}
+	if (cM) {
+		p = (vNum * vNPd / vInc) / 12;
+	}
+	if (cY) {
+		p = vNum * vNPd / vInc;
+	}
+	// Frequency is one per p years.
+	var pp = (obH+wbH/2) + (log10(p) - log10_5) * (obM-obH);
+
+	if (pp < obH - 35) { // Stop at left edge
+		pp = obH - 35;
+	}
+	if (pp > obL + 80) { // Stop at right edge
+		pp = obL + 80;
+	}
+	pp = pp - obH;
+
+	if (anim===false) {
+		$('#result').css("left",pp+23);
+	} else {
+		$('#result').stop().animate({
+			left: pp + 23
+		});
+	}
+}
+
+function log10(x) { return Math.LOG10E * Math.log(x); }
+
 
 /* In the code, use _("blue sky") instead of "blue sky"
  * Use

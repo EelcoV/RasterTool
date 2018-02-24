@@ -196,6 +196,72 @@ img.tC {
     width: 2em;
     text-align: center;
 }
+#freqcontrols input[type=text] {
+	width: 3em;
+	margin-right: 2em;
+}
+.range {
+	display: inline-block;
+	width: 130px;
+	padding-left: 30px;
+}
+#freqcontrols fieldset {
+	border: none;
+	padding: 0;
+}
+
+#resultarea {
+	position: relative;
+	height: 35px;
+}
+#result {
+	position: absolute;
+	bottom: -18px;
+	left: 237px;
+	width: 0;
+	height: 0;
+	border: 22px solid rgba(0,0,255,0.5);
+	box-shadow: blue 0px 0px 8px;
+	z-index: 2;
+	border-radius: 22px;
+}
+
+#freqcontrols {
+	background: whitesmoke;
+	border: 1px solid grey;
+	width: 525px;
+}
+.tdaright {
+	text-align: right;
+}
+
+.box {
+	border: 1px solid grey;
+	position: absolute;
+	height: 6px;
+	background: #f8f8f8;
+}
+#bV {left: 10px; width:50px;}
+#bH {left: 61px; width:48px;background:red;}
+#b1 {left:110px; width:140px;}
+#bM {left:251px; width:48px;background:orange;}
+#b2 {left:300px; width:140px;}
+#bL {left:441px; width:48px;background:green;}
+#bU {left:490px; width:50px;}
+
+#boxlabels {
+	position: relative;
+	height: 40px;
+}
+.label{
+	position: relative;
+	top: 10px;
+}
+#lH {left: 60px;}
+#lM {left:210px;}
+#lL {left:360px;}
+
+
 
 #findbutton {
     position: absolute;
