@@ -365,3 +365,5 @@ _t["Settings for PDF"] = "Instellingen voor PDF";
 
 _t["Fold:"] = "Uitvouwen:";
 
+_t["The impact should be at least %%, because the following nodes have that impact on %% for single failures."] = "De impact zou tenminste %% moeten zijn, omdat de volgende componenten die impact hebben voor %% bij Enkele Fouten.";
+

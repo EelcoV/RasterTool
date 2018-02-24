@@ -199,6 +199,7 @@
 		49E402BD1F99381700978B5C /* icon_512x512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_512x512.png; sourceTree = "<group>"; };
 		49E402BE1F99381700978B5C /* icon_512x512@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_512x512@2x.png"; sourceTree = "<group>"; };
 		49E402BF1F99381700978B5C /* icon_128x128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_128x128@2x.png"; sourceTree = "<group>"; };
+		49F29A2620420DEC002A2E1E /* hint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hint.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -383,6 +384,7 @@
 		494B6FEB18796E9D00400328 /* img */ = {
 			isa = PBXGroup;
 			children = (
+				49F29A2620420DEC002A2E1E /* hint.png */,
 				4997D9131F8A5DF200E3481A /* barB.png */,
 				4997D9141F8A5DF300E3481A /* barC.png */,
 				4997D9151F8A5DF300E3481A /* barCV.png */,
