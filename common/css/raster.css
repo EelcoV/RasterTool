@@ -1055,7 +1055,46 @@ for checklists and threat evaluations.
 #someccf {
 	margin-left: 15px;
 }
-
+#outerimpacthint {
+	position: absolute;
+	width: 260px;
+	height: 300px;
+	left: 835px;
+	top: 10px;
+	border: 3px solid grey;
+	background: whitesmoke;
+	border-radius: 15px;
+}
+#outerimpacthint img {
+	position: absolute;
+	width: 64px;
+	height: 74px;
+	top: -20px;
+	right: -47px;
+}
+#hintpoint {
+	position: absolute;
+	width: 0;
+	height: 0;
+	left: -40px;
+	top: 135px;
+	border: 20px solid grey;
+	border-color: transparent grey transparent transparent;
+}
+#impacthint {
+	position: relative;
+	top: 0;
+	left: 0;
+	width: 240px;
+	height: 280px;
+	overflow: hidden;
+	padding: 10px;
+	line-height: 1.5em;
+}
+#impacthint ul {
+	padding-left: 25px;
+	line-height: 1.7em;
+}
 .ccfaccordion {
     width: 810px !important;
     margin-left: 15px !important;

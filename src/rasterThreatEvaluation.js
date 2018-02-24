@@ -321,6 +321,9 @@ ThreatAssessment.prototype = {
 			field_type: "select",
 			select_options: selectoptions,
 			select_text: "",
+			postclose: function() {
+				$('#outerimpacthint').hide();	// When editing impact of CCFs
+			},
 			callback: function(oid, enteredText) {
 				te.setimpact(enteredText);
 				$('#dth_'+prefix+"total"+te.id).text(te.total);

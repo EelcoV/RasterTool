@@ -3,9 +3,10 @@ See LICENSE.md
 
 Beta 2.2
 ========
-* Vulnerability levels from Single Failure analysis are shown on nodes in Common Cause Failure view,
-  for reference. Also added an option to hide low-interest nodes, by vulnerability level.
-* Various UI improvements.
+* A hint or suggested value is shown when editing the impact of a node cluster. If
+  one of the nodes in that cluster scored High impact on Physical Damage, than the
+  cluster containing that node should also have at least High impact.
+* Various other UI improvements.
 * Minor fixes and improvements.
 
 February 2018
