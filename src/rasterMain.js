@@ -752,19 +752,19 @@ function SizeDOMElements() {
 #endif
     $('.workouter').css('padding','0px');
     
-    /* Find a CSS-rule with the exact name ".threatdomain", then
+    /* Find a CSS-rule with the exact name ".clusternodelist", then
      * modify that rule on the fly.
      */
 	var css=document.getElementById('maincssfile').sheet;
 	var rule=null;
 	for (var i=0; i<css.cssRules.length; i++) {
-		if (css.cssRules[i].selectorText=='.threatdomain') {
+		if (css.cssRules[i].selectorText=='.clusternodelist') {
 			rule = css.cssRules[i];
 			break;
 		}
 	}
 	if (!rule) {
-		bugreport('cannot locate css rule for .threatdomain width','SizeDOMElements');
+		bugreport('cannot locate css rule for .clusternodelist width','SizeDOMElements');
 	} else {
 		rule.style.height= (wh-250) + 'px';
 	}
@@ -3820,7 +3820,7 @@ function removeCluster(cluster) {
     cluster.destroy();
     root.normalize();
     root.calculatemagnitude();
-    repaintTDom(root.id);
+    repaintCluster(root.id);
 }
 
 function moveCluster(from_cluster,to_cluster) {
@@ -3832,7 +3832,7 @@ function moveCluster(from_cluster,to_cluster) {
     
     root.normalize();
     root.calculatemagnitude();
-    repaintTDom(root.id);
+    repaintCluster(root.id);
 }
 
 function moveToClusterHandler(ev) {
@@ -3863,7 +3863,7 @@ function moveSelectionToCluster(cluster) {
     });
     root.normalize();
     root.calculatemagnitude();
-    repaintTDom(root.id);
+    repaintCluster(root.id);
     // Wait for the repaint to finish, the new cluster to be painted, then
     // trigger a rename
 	setTimeout(function(){
@@ -3968,18 +3968,18 @@ function AddAllClusters() {
 
     for (it.first(); it.notlast(); it.next()) {
         var nc = it.getNodeCluster();
-        addTDomElements(nc);
-        repaintTDom(nc.id);
+        addClusterElements(nc);
+        repaintCluster(nc.id);
     }
     $('#ccfs_body').append('<br><br>');
 }
 
-function addTDomElements(nc) {
+function addClusterElements(nc) {
     var snippet = '\n\
       <div id="ccfaccordion_ID_" class="ccfaccordion">\n\
         <h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="ccfamark_ID_"></span></a></h3>\n\
         <div id="ccfaccordionbody_ID_" class="ccfaccordionbody">\n\
-          <div id="tdom_ID_" class="threatdomain noselect"></div>\n\
+          <div id="clust_ID_" class="clusternodelist noselect"></div>\n\
         </div>\n\
       </div>\n\
     ';
@@ -4051,23 +4051,23 @@ function collapseAllCCF() {
  */
 var REPAINT_TIMEOUTS=[];
 
-function repaintTDom(elem) {
+function repaintCluster(elem) {
     if (REPAINT_TIMEOUTS[elem])
         clearTimeout(REPAINT_TIMEOUTS[elem]);
-    var func = function(){reallyRepaintTDom(elem);};
+    var func = function(){reallyRepaintCluster(elem);};
     REPAINT_TIMEOUTS[elem] = setTimeout(func,100);
 }
 
-// To remember the scroll position within a .threatdomain div.
+// To remember the scroll position within a .clusternodelist div.
 var ScrollBarPosition;
 
-function reallyRepaintTDom(elem) {
+function reallyRepaintCluster(elem) {
     delete REPAINT_TIMEOUTS[elem];
     var nc = NodeCluster.get(elem);
     if (!nc)
         return;
     if (!nc.isroot())
-        bugreport("Repainting a non-root cluster","repaintTDom");
+        bugreport("Repainting a non-root cluster","repaintCluster");
 
     var snippet = '<div>\
         <div class="threat">\
@@ -4079,7 +4079,7 @@ function reallyRepaintTDom(elem) {
         </div>\
         <div id="ccftable_ID_" class="threats">\
         </div></div>\n\
-        <div id="tdom_ID_" class="threatdomain noselect"></div>\n';
+        <div id="clust_ID_" class="clusternodelist noselect"></div>\n';
     snippet = snippet.replace(/_LN_/g, _("Name"));
     snippet = snippet.replace(/_LF_/g, _("Freq."));
     snippet = snippet.replace(/_LI_/g, _("Impact"));
@@ -4109,17 +4109,17 @@ function reallyRepaintTDom(elem) {
 
     $('#ccfaccordion'+nc.id).css('display', 'block');
     // Retain scrollbar position
-    $('#tdom'+nc.id).append( listFromCluster(nc) ).scrollTop(ScrollBarPosition);
+    $('#clust'+nc.id).append( listFromCluster(nc) ).scrollTop(ScrollBarPosition);
     nc.setallmarkeroid('#ccfamark');
-    $('#tdom'+nc.id+' .tlistitem').draggable({
-        containment: '#tdom'+nc.id,
+    $('#clust'+nc.id+' .tlistitem').draggable({
+        containment: '#clust'+nc.id,
         revert: 'invalid',
         revertDuration: 300, // Default is 500 ms
         axis: 'y',
         scrollSensitivity: 40,
         scrollSpeed: 10,
         start: function(event,ui) {
-            ScrollBarPosition = $(this).parents('.threatdomain').scrollTop();
+            ScrollBarPosition = $(this).parents('.clusternodelist').scrollTop();
             $('.li_selected').addClass('ui-draggable-dragging');
             $(this).addClass('li_selected');
         },
@@ -4478,7 +4478,7 @@ function nodeClusterReorder(event,ui) {
             drag_cluster.addchildcluster( nc.id );
             root_cluster.calculatemagnitude();
             root_cluster.normalize();
-            repaintTDom(root_cluster.id);
+            repaintCluster(root_cluster.id);
             transactionCompleted("Create cluster");
         } else if (drop_n!=null && drag!=drop) {
             bugreport("Node dropped on node of a different cluster","nodeClusterReorder");
@@ -4496,7 +4496,7 @@ function nodeClusterReorder(event,ui) {
             });
             root_cluster.normalize();
             root_cluster.calculatemagnitude();
-            repaintTDom(root_cluster.id);
+            repaintCluster(root_cluster.id);
             transactionCompleted("Move node from cluster");
         }
     } else {

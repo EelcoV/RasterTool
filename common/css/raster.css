@@ -1080,7 +1080,7 @@ for checklists and threat evaluations.
 	height: 25px;
 }
 
-.threatdomain {
+.clusternodelist {
 /*    height: 450px; is now set in SizeDOMElements() */
     margin-top: 5px;
 
