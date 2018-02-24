@@ -94,10 +94,10 @@ NodeCluster.addnode_threat = function(pid,nid,threattitle,threattype,duplicateok
 		nc.settitle(threattitle);
 //console.debug("Creating cluster with node "+nid+" as cluster "+nc.id+" ["+threattitle+"|"+threattype+":"+nc.project+"]");
 		nc.addthrass();
-		addTDomElements(nc);
+		addClusterElements(nc);
 	}
 	nc.addchildnode(nid);
-	repaintTDom(nc.id);
+	repaintCluster(nc.id);
 };
 NodeCluster.addcomponent_threat = function(pid,cid,threattitle,threattype,duplicateok) {
 	var cm = Component.get(cid);
@@ -115,7 +115,7 @@ NodeCluster.addcomponent_threat = function(pid,cid,threattitle,threattype,duplic
 		nc.setproject(pid);
 		nc.settitle(threattitle);
 		nc.addthrass();
-		addTDomElements(nc);
+		addClusterElements(nc);
 	}
 	for (var i=0; i<(cm.single?1:cm.nodes.length); i++) {
 		if (nc.containsnode(cm.nodes[i])) {
@@ -124,7 +124,7 @@ NodeCluster.addcomponent_threat = function(pid,cid,threattitle,threattype,duplic
 		}
 		nc.addchildnode(cm.nodes[i]);
 	}
-	repaintTDom(nc.id);
+	repaintCluster(nc.id);
 };
 NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,notexistok) {
 	// Locate the corresponding cluster in the project. 
@@ -150,7 +150,7 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 		nc.removechildnode(cm.nodes[i]);
 	}
 	nc.normalize();
-	repaintTDom(nc.id);
+	repaintCluster(nc.id);
 	return nc;
 };
 

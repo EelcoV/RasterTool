@@ -41,7 +41,7 @@ x- addVuln					[paintSingleFailures: function addhandler]
 
 NodeCluster:
 - move node or cluster		[nodeClusterReorder: ("Create cluster", "Move node from cluster", "Remove cluster", "Move cluster")]
-- rename cluster			[reallyRepaintTDom: $('.litext').editInPlace callback]
+- rename cluster			[reallyRepaintCluster: $('.litext').editInPlace callback]
 - set frequency				[as for Component]
 - set impact				[as for Component]
 - set remark				[as for Component]
