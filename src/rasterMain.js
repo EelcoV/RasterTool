@@ -3663,8 +3663,6 @@ function clickCollapseHandler(ev) {
         ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
         cluster.setaccordionopened(true);
         ul.children().slice(1).slideDown('fast');
-        // Make sure any hidden nodes stay hidden
-		$('.Hl' + CCFMinOpt).hide();
     }
 }
 
@@ -3897,10 +3895,6 @@ function AddAllClusters() {
 				<input type="radio" id="ccfsort_thrt" name="ccfsort"><label for="ccfsort_thrt">_O3_</label>\n\
 			</fieldset>\n\
 		  </div>\n\
-          <div class="displayopt">\n\
-			<span class="displayoptlabel">_L3_</span><br>\n\
-			<select id="ccfminV"></select>\n\
-		  </div>\n\
 		</div>\
     ';
     snippet = snippet.replace(/_LP_/g, _("Project"));
@@ -3915,7 +3909,6 @@ function AddAllClusters() {
     snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
     snippet = snippet.replace(/_O2_/g, _("by Type"));
     snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
-    snippet = snippet.replace(/_L3_/g, _("Filter minimum:"));
     snippet = snippet.replace(/_PJ_/g, Project.cid);
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     $('#ccfs_body').append(snippet);
@@ -3924,21 +3917,6 @@ function AddAllClusters() {
 	$('#collapseallccf').button({icon: 'ui-icon-minus'});
     $('#someccf input[type=radio]').checkboxradio({icon: false});
     $('#someccf fieldset').controlgroup();
-    var selectoptions = "";
-    selectoptions += '<option value="-">_ALL_</option>\n';
-	selectoptions = selectoptions.replace(/_ALL_/g, _("(Show all)"));
-    for (var i=ThreatAssessment.valueindex['U']; i<=ThreatAssessment.valueindex['H']; i++) {
-        selectoptions += '<option value="_V_">_D_</option>\n';
-        selectoptions = selectoptions.replace(/_V_/g, ThreatAssessment.values[i]);
-        selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
-    }
-    $('#ccfminV').html(selectoptions).selectmenu({
-    	select: function(event,ui) {
-			CCFMinOpt = $('#ccfminV').val();
-			$('.HlU,.HlL,.HlM,.HlH').show();
-			$('.Hl' + CCFMinOpt).hide();
-    	}
-	}).val(CCFMinOpt).selectmenu('refresh');
 
     // create list of all vulnerabilities
     // for each vulnerability, list the nested list / vulnerability-domain-tree
@@ -4246,27 +4224,9 @@ function listFromCluster(nc) {
     for (i=0; i<node.length; i++) {
         var rn = Node.get(node[i]);
         var sv = Service.get(rn.service);
-
-		var cm = Component.get(rn.component);
-		var rc = NodeCluster.get(nc.root());
-		var ta;
-		for (var j=0; j<cm.thrass.length; j++) {
-			ta = ThreatAssessment.get(cm.thrass[j]);
-			if (ta.title==rc.title && ta.type==rc.type)
-				break;
-		}
-		var mi = ThreatAssessment.valueindex[ta.impact];
-
-		var classlist = '';
-		if ("-ULMH".indexOf(ta.impact)!=-1) {
-			for (j=ThreatAssessment.valueindex[ta.impact]+1; j<=ThreatAssessment.valueindex['V']; j++) {
-				classlist += 'Hl'+ThreatAssessment.values[j]+' ';
-			}
-		}
-        str += '<li id="linode_NI___CI_" title="_SV_" class="tlistitem childnode _CL_" style="display: _DI_;">\n';
+        str += '<li id="linode_NI___CI_" title="_SV_" class="tlistitem childnode" style="display: _DI_;">\n';
         str = str.replace(/_NI_/g, rn.id);
         str = str.replace(/_CI_/g, nc.id);
-        str = str.replace(/_CL_/g, classlist);
         str = str.replace(/_SV_/g, H(sv.title));
         str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
 
@@ -4277,12 +4237,6 @@ function listFromCluster(nc) {
             str += '<div class="ccflabelgroup"><div class="smallblock B_CO_"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
             str = str.replace(/_CO_/g, rn.color);
         }
-
-		str += '<div id="ccfmag_NI_" class="ccfMagnitude M_LV_" title="_DE_">_TX_</div>';
-		str = str.replace(/_NI_/, rn.id);
-		str = str.replace(/_LV_/, mi);
-		str = str.replace(/_TX_/, ta.impact);
-		str = str.replace(/_DE_/, _("Impact")+' '+ThreatAssessment.descr[mi]);
 
         str += '</li>\n';
     }

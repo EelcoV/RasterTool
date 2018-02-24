@@ -1157,17 +1157,10 @@ for checklists and threat evaluations.
 }
 .ccflabelgroup {
     position: absolute;
-    right: 30px;
+    right: 20px;
     top: 0;
 }
-.ccfMagnitude {
-    float: right;
-    width: 20px;
-    border: 1px solid grey;
-    border-radius: 3px;
-    color: black;
-    text-align: center;
-}
+
 .litext {
     cursor: text;
 }

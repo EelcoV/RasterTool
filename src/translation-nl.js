@@ -363,6 +363,5 @@ _t["Paper size:"] = "Papiergrootte:";
 _t["Scale:"] = "Schaal:";
 _t["Settings for PDF"] = "Instellingen voor PDF";
 
- _t["Fold:"] = "Uitvouwen:";
-_t["Filter minimum:"] = "Filter ondergrens:";
-_t["(Show all)"] = "(Laat alles zien)";
+_t["Fold:"] = "Uitvouwen:";
+
