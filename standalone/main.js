@@ -537,7 +537,7 @@ MenuTemplate = [{
 		}
 	}, {
 		label: _("Save as..."),
-		accelerator: 'Shift+CmdOrCtrl+Z',
+		accelerator: 'Shift+CmdOrCtrl+S',
 		click: function (item, focusedWindow) {
 			if (focusedWindow) focusedWindow.webContents.send('document-start-saveas');
 		}
@@ -674,6 +674,7 @@ MenuTemplate = [{
 	role: 'help',
 	submenu: [{
 		label: _("Quick guide..."),
+		accelerator: 'F1',
 		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('help-show'); }
 	}, {
 		label: _("About..."),

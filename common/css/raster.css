@@ -726,6 +726,9 @@ div.node {
     -moz-user-select: none;
     -webkit-user-select: none;
 }
+div.node:focus {
+	outline: none;
+}
 div.nodeheader {
     position: absolute;
     width: 100%;
