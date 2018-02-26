@@ -687,11 +687,17 @@ function freqIndicatorUpdate(anim) {
 	}
 	pp = pp - obH;
 
+	var fuzz;
+#ifdef SERVER
+	fuzz = 23;
+#else
+	fuzz = 22;
+#endif
 	if (anim===false) {
-		$('#result').css("left",pp+23);
+		$('#result').css("left",pp+fuzz);
 	} else {
 		$('#result').stop().animate({
-			left: pp + 23
+			left: pp + fuzz
 		});
 	}
 }
@@ -4475,7 +4481,17 @@ function appendAllThreats(nc,domid,prefix) {
 			$('#impacthint').html(str);
 
 			var otop = 10;
-			var top = event.originalEvent.y-75;
+			var fuzz;
+#ifdef SERVER
+			fuzz = 75;
+#else
+			fuzz = 40;
+#endif
+			var top = event.originalEvent.y-fuzz;
+			if (top<5) {
+				otop -= 5-top;
+				top = 5;
+			}
 			if (top>250) {
 				otop += top-250;
 				top = 250;
