@@ -343,12 +343,70 @@ $(function() {
 #endif
 
     $('body').on('keydown', function(evt){
-        if (evt.keyCode==8) { // Backspace, unfortunately, is bound in the browser to 'Return to previous page'
+    	// Backspace, unfortunately, is bound in the browser to 'Return to previous page'
+        if (evt.key=='Backspace') {
             if (!$(evt.target).is('input:not([readonly]):not([type=radio]):not([type=checkbox]), textarea, [contentEditable], [contentEditable=true]'))
                 // Only when focus is NOT on input or textarea
                 evt.preventDefault();
+                return;
         }
-    });
+#ifdef SERVER
+        // F1 (mostly for Windows): to trigger the Help panel
+        if (evt.key=='F1') {
+			$('#helpbutton img').trigger('click');
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-F for MacOS or Ctrl-F for Windows: to trigger the Find panel
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='f') {
+			$('#findbutton img').trigger('click');
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-L for MacOS or Ctrl-L for Windows: to trigger the Library panel
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='l') {
+			$('#libraryactivator').trigger('click');
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-O for MacOS or Ctrl-O for Windows: to trigger the Options panel
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='o') {
+			$('#optionsactivator').trigger('click');
+        	evt.preventDefault();
+        	return;
+        }
+#endif
+        // Cmd-1 for MacOS or Ctrl-1 for Windows: to trigger the Diagrams screen
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='1') {
+			forceSelectVerticalTab(0);
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-2 for MacOS or Ctrl-2 for Windows: to trigger the Diagrams screen
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='2') {
+			forceSelectVerticalTab(1);
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-3 for MacOS or Ctrl-3 for Windows: to trigger the Diagrams screen
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='3') {
+			forceSelectVerticalTab(2);
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-4 for MacOS or Ctrl-4 for Windows: to trigger the Diagrams screen
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='4') {
+			forceSelectVerticalTab(3);
+        	evt.preventDefault();
+        	return;
+        }
+//		console.log("key pressed: "
+//			+ (evt.metaKey ? "Cmd-" : "")
+//			+ (evt.ctrlKey ? "Ctrl-" : "")
+//			+ (evt.shiftKey ? "Shft-" : "")
+//			+ evt.key
+//			+ ' (keycode '+ evt.keyCode+')');
+	});
     $('body').on('contextmenu', function(e) {
         e.preventDefault();
     });
