@@ -514,6 +514,15 @@ div.th_del input { padding: 1px; }
 .th_descr span { cursor: text; }
 .th_name .inplace_field { width: 8em; } /* Less than width of column, to account for tree structure lines */
 .th_descr .inplace_field { width: 46em; }
+.errImpact {
+}
+.errImpact > span::after {
+	color: rgb(255,102,0); /* Same as .incomplete */
+	content: " !";
+}
+.errImpactM > span::after {	content: " < M"; }
+.errImpactH > span::after {	content: " < H"; }
+.errImpactV > span::after {	content: " < V"; }
 
 /* Dialog: checklist */
 .checklist { display: none; }

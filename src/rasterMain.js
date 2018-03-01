@@ -4437,68 +4437,6 @@ function appendAllThreats(nc,domid,prefix) {
 			spaces += '&nbsp;'; // spacer between corner line and text
 	 	spaces += '</span>';
 		th.addtablerow(domid,prefix,false, spaces,'');
-		$('#dth_'+prefix + 'impact' + th.id).on('click', function(event) {
-			// Add a hint: the impact probably should be at least that of the highest impact of its member nodes.
-			var rc = NodeCluster.get(nc.root());
-			var nct = ThreatAssessment.get(nc.thrass);
-			var highscore = '-';
-			var highnodes = [];
-			for (var i=0; i<nc.childnodes.length; i++) {
-				// Find the impact for this cluster's vulnerability in the component of the node
-				var cm = Component.get( Node.get(nc.childnodes[i]).component );
-				var t;
-				for (var j=0; j<cm.thrass.length; j++) {
-					t = ThreatAssessment.get(cm.thrass[j]);
-					if (t.title==rc.title && t.type==rc.type) break;
-				}
-				if (j==cm.thrass.length) {
-					bugreport("Vulnerability not found", "appendAllThreats");
-				}
-				if (t.impact == highscore) {
-					// Add to the list
-					highnodes.push(nc.childnodes[i]);
-				} else if (ThreatAssessment.sum(highscore,t.impact) != highscore) {
-					highscore = t.impact;
-					highnodes = [ nc.childnodes[i] ];
-				}
-			}
-
-			var str;
-			str  = _("The impact should be at least %%, because the following nodes have that impact on %% for single failures.",
-				ThreatAssessment.descr[ThreatAssessment.valueindex[highscore]],
-				rc.title);
-			str += '<br><ul>\n';
-
-			for (j=0; j<highnodes.length; j++) {
-				var n = Node.get(highnodes[j]);
-				str += '<li>' + n.htmltitle() + '</li>\n';
-			}
-			str += '</ul>';
-			if (highscore == '-') {
-				str = "No hints today.";
-			}
-
-			$('#impacthint').html(str);
-
-			var otop = 10;
-			var fuzz;
-#ifdef SERVER
-			fuzz = 75;
-#else
-			fuzz = 40;
-#endif
-			var top = event.originalEvent.y-fuzz;
-			if (top<5) {
-				otop -= 5-top;
-				top = 5;
-			}
-			if (top>250) {
-				otop += top-250;
-				top = 250;
-			}
-			$('#hintpoint').animate({top: top});
-			$('#outerimpacthint').animate({top: otop}).show();
-		});
     } else {
         // If less than two children, then this thrass must not contribute to the cluster total.
         //
