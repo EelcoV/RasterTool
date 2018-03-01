@@ -77,7 +77,7 @@ function createWindow(filename) {
 	var win = new BrowserWindow({
 		x: pos.x,
 		y: pos.y,
-		width: 1082,
+		width: 1240,
 		height: 600,
 		show: false
 	});
