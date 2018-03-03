@@ -587,6 +587,13 @@ ServiceIterator.prototype = {
 	next: function() {this.index++;},
 	notlast: function() {return (this.index < this.item.length);},
 	getservice: function() {return Service.get( this.item[this.index] );},
-	getserviceid: function() {return this.item[this.index];}
+	getserviceid: function() {return this.item[this.index];},
+	sortByName: function() {
+		this.item.sort( function(a,b) {
+			var na = Service.get(a);
+			var nb = Service.get(b);
+			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
+		});
+	}
 };
 
