@@ -3499,12 +3499,12 @@ function paintSingleFailures(s) {
             snippet = snippet.replace(/_LB_/, '');
         }
 
-snippet += "<div class='sfa_sortable'>\n";
+		snippet += "<div class='sfa_sortable'>\n";
         for (i=0; i<cm.thrass.length; i++) {
             var te = ThreatAssessment.get(cm.thrass[i]);
             snippet += te.addtablerow_textonly("sfa"+s.id+'_'+cm.id);
         }
-snippet += "</div>\n";
+		snippet += "</div>\n";
         snippet += '\n\
              <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="_BA_">\n\
              <input id="sfacopy_SV___ID_" class="copybutton" type="button" value="_BC_">\n\
@@ -3581,7 +3581,7 @@ snippet += "</div>\n";
             active: (cm.accordionopened ? 0 : false)
         });
         
-        $(acc.selector + ' .sfa_sortable').sortable({
+        $('#' + acc[0].id + ' .sfa_sortable').sortable({
             containment: 'parent',
             helper: 'clone',
             cursor: 'ns-resize',
