@@ -3,11 +3,12 @@ See LICENSE.md
 
 Beta 2.2
 ========
-* A hint or suggested value is shown when editing the impact of a node cluster. If
+* A hint or suggested value is shown when editing the impact of a node cluster. E.g: if
   one of the nodes in that cluster scored High impact on Physical Damage, than the
   cluster containing that node should also have at least High impact.
 * On the Analysis screen, the Single Failures by level are now shown in a
   histogram graph as well as numerically.
+* The Help window contains an aid to determining the Frequency class of incidents.
 * Keyboard shortcuts added for several interactions (see manual).
 * On the standalone app, hardware acceleration is now enabled by default. There is
   nu UI for changing it, but if need be it can be disabled by editing the preference

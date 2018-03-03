@@ -560,11 +560,16 @@ div.th_remark {
 
 .displayoptsarea {
 	border: 1px solid #ccccff;
-    border-radius: 5px;
-    background: whitesmoke;
-	margin: 10px 0 15px 0px;
-	padding: 0 0 15px 10px;
-    width: 800px; /* width of .ccfaccordion - left padding - right padding */
+    border-radius: 0 0 5px 5px;
+    background: rgba(240,240,240,0.95);
+	margin: 0;
+	padding: 0 0 0 10px;
+    width: 819px; /* width of .ccfaccordion, plus overhang left and right */
+	position: fixed;
+	top: 45px;
+	left: 43px;
+	height: 65px;
+	z-index: 2000;
 }
 .displayopt {
 	display: inline-block;
@@ -575,6 +580,15 @@ div.th_remark {
 .displayoptlabel {
 	font-style: italic;
 	line-height: 20px;
+}
+.headroom {
+    transition: height 200ms linear;
+    overflow: hidden;
+}
+.headroom--pinned {
+}
+.headroom--unpinned {
+    height: 2px !important;
 }
 .collapseall {
 	margin-left: 10px;
@@ -1016,6 +1030,9 @@ div.tNOTheader {
 #servaddbuttonsf {
     position: absolute;
 }
+.sfacclist {
+	margin-top: 80px;
+}
 
 .firstp {
     margin-top: 22px;
@@ -1063,9 +1080,10 @@ for checklists and threat evaluations.
     margin-left: 15px;
     margin-top: 22px;
 }
-
 #someccf {
-	margin-left: 15px;
+}
+#ccfacclist {
+	margin-top: 80px;
 }
 #outerimpacthint {
 	position: absolute;
@@ -1248,6 +1266,7 @@ for checklists and threat evaluations.
 .ana_nodeccfblock {
 	display: inline-block;
 	vertical-align: top;
+	padding-top: 80px;
 }
 #ana_nodethreattable table {
     table-layout: fixed;
@@ -1343,5 +1362,6 @@ for checklists and threat evaluations.
 #ana_reports { margin-left: 20px; }
 
 #longlist {
+	margin-top: 80px;
     margin-bottom: 30px;
 }

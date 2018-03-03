@@ -29,6 +29,7 @@
 		491CD6D1187D98070028B84D /* tNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOT.png; sourceTree = "<group>"; };
 		491CD6D2187D980F0028B84D /* tNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOT.png; sourceTree = "<group>"; };
 		491CD6D3187DA7600028B84D /* dropedit.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dropedit.png; sourceTree = "<group>"; };
+		49248D7D204985DD00958983 /* headroom.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = headroom.min.js; sourceTree = "<group>"; };
 		493AA22F1A7419A9005DDFFB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		49434429203A021400043E80 /* jquery-ui.min.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "jquery-ui.min.css"; sourceTree = "<group>"; };
 		4943442B203A021400043E80 /* ui-icons_f7a50d_256x240.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ui-icons_f7a50d_256x240.png"; sourceTree = "<group>"; };
@@ -340,6 +341,7 @@
 		494B6F6618796E9D00400328 /* js */ = {
 			isa = PBXGroup;
 			children = (
+				49248D7D204985DD00958983 /* headroom.min.js */,
 				494B0117202822CA001EDED2 /* jsplumb-2.6.6.min.js */,
 				49044A5E20249EC5002AEFCB /* jquery-3.3.1.min.js */,
 				494B6F6918796E9D00400328 /* encodedecode.js */,
@@ -620,16 +622,16 @@
 		49F279FE1F91DB3E003F360B /* doc */ = {
 			isa = PBXGroup;
 			children = (
+				494B6F6718796E9D00400328 /* Bugs and Features.txt */,
+				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
 				4962CD6F1FCAD79700EBD886 /* Handleiding methode NL v2.0.epub */,
 				4962CD6E1FCAD79700EBD886 /* Handleiding methode NL v2.0.pdf */,
 				4962CD6C1FCAD79700EBD886 /* User manual EN v2.0.epub */,
 				4962CD6D1FCAD79700EBD886 /* User manual EN v2.0.pdf */,
 				499A6BA01A72DC080047E182 /* LICENSE.md */,
-				494B6F6718796E9D00400328 /* Bugs and Features.txt */,
 				494B6F6818796E9D00400328 /* designAtomicActions.txt */,
 				494B6F8818796E9D00400328 /* Testcase.txt */,
 				494B6F7A18796E9D00400328 /* layout.odg */,
-				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
 				49CD587F1F93922E00A9F17F /* Object data structure.txt */,
 				4918F0BE1FBEBF13008A6208 /* Build and Install.md */,
 			);
