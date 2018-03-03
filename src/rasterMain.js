@@ -137,6 +137,7 @@ $(function() {
 	$('#helpbutton').hide();
 	$('.workouter').css('top', '0px');
 	$('#templates').removeClass('ui-state-default').css('background','rgba(200,200,200,0.8)');
+	modifyCSS('.displayoptsarea','top','3px');
 
 	// PDF print options dialog
     $('#pdf_orientation span').html(_("Orientation:"));
@@ -780,6 +781,25 @@ function loadDefaultProject() {
     s.paintall();
 }
 
+function modifyCSS(selector,property,newvalue) {
+    /* Find a CSS-rule for the given selector, then set the rule
+     * for property to newvalue.
+     */
+	var css=document.getElementById('maincssfile').sheet;
+	var rule=null;
+	for (var i=0; i<css.cssRules.length; i++) {
+		if (css.cssRules[i].selectorText==selector) {
+			rule = css.cssRules[i];
+			break;
+		}
+	}
+	if (!rule) {
+		bugreport('cannot locate css rule for '+selector,'modifyCSS');
+	} else {
+		rule.style[property] = newvalue;
+	}
+}
+
 /* SizeDOMElements()
  * Set the size of various containers, based on the size of the browser window.
  */
@@ -815,23 +835,8 @@ function SizeDOMElements() {
     $('#templates').css('left',tl+'px');
 #endif
     $('.workouter').css('padding','0px');
-    
-    /* Find a CSS-rule with the exact name ".clusternodelist", then
-     * modify that rule on the fly.
-     */
-	var css=document.getElementById('maincssfile').sheet;
-	var rule=null;
-	for (var i=0; i<css.cssRules.length; i++) {
-		if (css.cssRules[i].selectorText=='.clusternodelist') {
-			rule = css.cssRules[i];
-			break;
-		}
-	}
-	if (!rule) {
-		bugreport('cannot locate css rule for .clusternodelist width','SizeDOMElements');
-	} else {
-		rule.style.height= (wh-250) + 'px';
-	}
+
+    modifyCSS('.clusternodelist', 'height', (wh-250) + 'px');
 
     $('#servaddbuttondia').removeClass('ui-corner-all').addClass('ui-corner-bottom');
     $('.tabs-bottom > .ui-tabs-nav').width(ww-82);
@@ -3377,6 +3382,8 @@ function paintSingleFailures(s) {
 			</fieldset>\n\
 		  </div>\n\
 		</div>\
+		<div id="sfacclist_SV_" class="sfacclist">\
+		</div>\
     ';
     snippet = snippet.replace(/_L1_/g, _("Fold:"));
     snippet = snippet.replace(/_EA_/g, _("Expand all"));
@@ -3390,6 +3397,13 @@ function paintSingleFailures(s) {
     snippet = snippet.replace(/_PN_/g, H(Project.get(s.project).title));
     snippet = snippet.replace(/_PJ_/g, s.project);
     $('#singlefs_workspace'+s.id).append(snippet);
+    $('#somesf'+s.id).headroom({
+    	scroller: document.querySelector('#singlefs_workspace'+s.id),
+		tolerance : {
+			up : 20,
+			down : 20
+		}
+    });
 
 	$('#expandallsf'+s.id).button({icon: 'ui-icon-plus'});
 	$('#collapseallsf'+s.id).button({icon: 'ui-icon-minus'});
@@ -3397,9 +3411,11 @@ function paintSingleFailures(s) {
     $('#somesf'+s.id+' fieldset').controlgroup();
 
     $('#expandallsf'+s.id).on('click',  function(evt){
+        $('#singlefs_workspace'+s.id).scrollTop(0);
         expandAllSingleF(nid2id(evt.target.id));
     });
     $('#collapseallsf'+s.id).on('click',  function(evt){
+        $('#singlefs_workspace'+s.id).scrollTop(0);
         collapseAllSingleF(nid2id(evt.target.id));
     });
 
@@ -3509,7 +3525,7 @@ snippet += "</div>\n";
     
     appendstring += '<br><br>\n';
     // Insert the bulk of the new DOM elements
-    $('#singlefs_workspace'+s.id).append(appendstring);
+    $('#sfacclist'+s.id).append(appendstring);
     
     // Now loop again, add vulnerabilities and behaviour.
     for (it.first(); it.notlast(); it.next()) {
@@ -3961,6 +3977,8 @@ function AddAllClusters() {
 			</fieldset>\n\
 		  </div>\n\
 		</div>\
+		<div id="ccfacclist">\
+		</div>\
     ';
     snippet = snippet.replace(/_LP_/g, _("Project"));
     snippet = snippet.replace(/_LCCF_/g, _("Common Cause Failures"));
@@ -3977,6 +3995,13 @@ function AddAllClusters() {
     snippet = snippet.replace(/_PJ_/g, Project.cid);
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     $('#ccfs_body').append(snippet);
+    $('#someccf').headroom({
+    	scroller: document.querySelector('#ccfs_body'),
+		tolerance : {
+			up : 20,
+			down : 20
+		}
+    });
 
 	$('#expandallccf').button({icon: 'ui-icon-plus'});
 	$('#collapseallccf').button({icon: 'ui-icon-minus'});
@@ -4014,9 +4039,11 @@ function AddAllClusters() {
     $('#noccf').css('display', 'none');
     $('#someccf').css('display', 'block');
     $('#expandallccf').on('click',  function(evt){
+        $('#ccfs_body').scrollTop(0);
         expandAllCCF(nid2id(evt.target.id));
     });
     $('#collapseallccf').on('click',  function(evt){
+        $('#ccfs_body').scrollTop(0);
         collapseAllCCF(nid2id(evt.target.id));
     });
     var create_ccf_sortfunc = function(opt) {
@@ -4052,7 +4079,7 @@ function addClusterElements(nc) {
     snippet = snippet.replace(/_ID_/g, nc.id);
     snippet = snippet.replace(/_TI_/g, H(nc.title));
     snippet = snippet.replace(/_TY_/g, Rules.nodetypes[nc.type]);
-    $('#ccfs_body').append(snippet);
+    $('#ccfacclist').append(snippet);
 
     var acc = $('#ccfaccordion'+nc.id);
     acc.accordion({
@@ -4728,6 +4755,13 @@ function paintNodeThreatTables() {
     snippet = snippet.replace(/_Q1_/g, _("show Quick Wins"));
     snippet = snippet.replace(/_Q2_/g, _("clear exclusions"));
     $('#at1').html(snippet);
+    $('#ana_nodevuln').headroom({
+    	scroller: document.querySelector('#at1'),
+		tolerance : {
+			up : 20,
+			down : 20
+		}
+    });
 
 	$('#ana_nodevuln input[type=button]').button();
     $('#ana_nodevuln input[type=radio]').checkboxradio({icon: false});
@@ -5698,7 +5732,6 @@ function paintLonglist() {
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     
     snippet += '\n\
-        <p class="firstp"><b>_INS_</b></p>\n\
         <div id="lloptions" class="displayoptsarea donotprint">\n\
 		  <div class="displayopt">\n\
 			<span class="displayoptlabel">_L1_</span><br>\n\
@@ -5712,7 +5745,6 @@ function paintLonglist() {
 		</div>\n\
 		<div id="longlist"></div>\
     ';
-    snippet = snippet.replace(/_INS_/g, _("Set the criteria for risks on the longlist.") );
     snippet = snippet.replace(/_L1_/g, _("Include:") );
     snippet = snippet.replace(/_LU_/g, _("Unknown") );
     snippet = snippet.replace(/_LA_/g, _("Ambiguous") );
@@ -5725,6 +5757,14 @@ function paintLonglist() {
         selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
     }
     $('#at5').html(snippet);
+    $('#lloptions').headroom({
+    	scroller: document.querySelector('#at5'),
+		tolerance : {
+			up : 20,
+			down : 20
+		}
+    });
+
     $('#minV').html(selectoptions).selectmenu({
     	select: function(event,ui) {
 			MinValue = $('#minV').val();

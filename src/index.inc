@@ -29,6 +29,7 @@ See LICENSE.md
 <script type="text/javascript" src="../js/jsplumb-2.6.6.min.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>
 <script type="text/javascript" src="../js/encodedecode.js"></script>
+<script type="text/javascript" src="../js/headroom.min.js"></script>
 #ifdef SERVER
 <script type="text/javascript">$.localise('../js/translation', {async: false, language: "<?= LANGUAGE ?>".replace(/(;.+)/,'').replace(/,.+/,'')});</script>
 #else
