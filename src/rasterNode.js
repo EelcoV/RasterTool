@@ -777,10 +777,11 @@ Node.prototype = {
 			rn._showpopupmenu(e.clientX+2,e.clientY-5);
 			return false;
 		}).on('keydown', function(evt){
-			var rn, i;
+			var rn = Node.get(nid2id(this.id));
+			if (rn.editinprogress()) return;
+			var i;
 			// Previous label
 			if (evt.key=='<') {
-				rn = Node.get(nid2id(this.id));
 				i = Project.colors.indexOf(rn.color);
 				i = (i-1+Project.colors.length) % Project.colors.length; // add devisor to prevent negative result
 				rn.setlabel(Project.colors[i]);
@@ -789,7 +790,6 @@ Node.prototype = {
 			}
 			// Next label
 			if (evt.key=='>') {
-				rn = Node.get(nid2id(this.id));
 				i = Project.colors.indexOf(rn.color);
 				i = (i+1) % Project.colors.length;
 				rn.setlabel(Project.colors[i]);
@@ -798,14 +798,12 @@ Node.prototype = {
 			}
 			// Rename
 			if (evt.key=='F2') {
-				rn = Node.get(nid2id(this.id));
 				$('#titlemain'+rn.id).trigger('click');
 				evt.preventDefault();
 				return;
 			}
 			// Open vulnerabilities dialog
 			if (evt.key=='Enter') {
-				rn = Node.get(nid2id(this.id));
 				Node.MenuNode = rn.id;
 				if (rn.type=='tNOT') {
 					$('#titlemain'+rn.id).trigger('click');
@@ -818,7 +816,6 @@ Node.prototype = {
 			}
 			// Delete, after confirmation
 			if (evt.key=='Delete' || evt.key=='Backspace') {
-				rn = Node.get(nid2id(this.id));
 				Node.MenuNode = rn.id;
 				$('#mi_de').trigger('mouseup');
 				evt.preventDefault();
