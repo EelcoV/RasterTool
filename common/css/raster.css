@@ -482,8 +482,7 @@ div.thr_header {
 div.threat {
     display: table-row;
 }
-.sfa_sortable .threat { cursor: ns-resize; }
-.checklist .threat { cursor: ns-resize; }
+.ui-sortable .threat { cursor: ns-resize; }
 .th_col {
     display: block;
     float: left;
