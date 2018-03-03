@@ -589,6 +589,9 @@ div.th_remark {
 .headroom--unpinned {
     height: 2px !important;
 }
+.ui-selectmenu-open {
+	z-index: 2000 !important;
+}
 .collapseall {
 	margin-left: 10px;
 }
@@ -1357,7 +1360,25 @@ for checklists and threat evaluations.
 }
 
 .thinrow { height: 5px; vertical-align: bottom;}
-
+#svulns_tabs {
+	width: 75em;
+}
+#svulns_tabs li {
+	padding: 0 8em 0 0;
+}
+#svulns_tabs li a {
+	padding: 0.5em 11em 0.5em 1em;
+}
+#svulns_tabs .ui-tabs-nav {
+	position: auto;
+	bottom: auto;
+	width: 100% !important;
+	left: -1px !important;
+	top: -1px;
+}
+#svulns_tabs .ui-tabs-panel {
+	height: auto;
+}
 #ana_reports { margin-left: 20px; }
 
 #longlist {

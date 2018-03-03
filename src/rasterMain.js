@@ -5176,6 +5176,9 @@ function ClusterMagnitudeWithExclusions(cl,list) {
 }
 
 function paintVulnsTable() {
+    var freq_snippet = paintVulnsTableType(1);
+    var impact_snippet;
+    var total_snippet;
     var snippet = '\
         <h1 class="printonly underlay">_LTT_</h1>\
         <h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
@@ -5186,24 +5189,45 @@ function paintVulnsTable() {
     snippet = snippet.replace(/_LD_/g, _("Vulnerability assessment details") );
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     $('#at2').html(snippet);
-    // Frequency
-    snippet = paintVulnsTableType(1);
 
     // If the table would be empty, then don't paint row and column headers
     // but show a message instead
-    if (snippet=="") {
+    if (freq_snippet=="") {
         snippet = '<p style="margin-left:3em; margin-top:4em; width:50em;">'
             + _("This space will show an overview of all vulnerabilities and their severities. ")
             + _("Since all service diagrams are empty, there is nothing to see here yet. ")
             + _("Add some nodes to the diagrams first.");
-    } else {
-        // Impact
-        snippet += paintVulnsTableType(2);
-        // Total
-        snippet += paintVulnsTableType(0);
+	    $('#at2').append(snippet);
+	    return;
     }
 
+	impact_snippet = paintVulnsTableType(2);
+	total_snippet = paintVulnsTableType(0);
+
+	snippet = '\
+		<div id="svulns_tabs">\
+			<ul>\
+				<li><a href="#freq_acc">_LF_</a></li>\
+				<li><a href="#impact_acc">_LI_</a></li>\
+				<li><a href="#total_acc">_LO_</a></li>\
+			</ul>\
+			<div id="freq_acc"></div>\
+			<div id="impact_acc"></div>\
+			<div id="total_acc"></div>\
+		</div>\
+  	';
+    snippet = snippet.replace(/_LF_/g, _("Frequencies"));
+    snippet = snippet.replace(/_LI_/g, _("Impacts"));
+    snippet = snippet.replace(/_LO_/g, _("Overall levels"));
     $('#at2').append(snippet);
+
+    $('#freq_acc').append(freq_snippet);
+    $('#impact_acc').append(impact_snippet);
+    $('#total_acc').append(total_snippet);
+    $('#svulns_tabs').tabs({
+    	event: 'mouseenter',
+    	heightStyle: 'content'
+    });
 }
 
 /* paintVulnsTableType(t): create HTML code for vulnerabilities tables
@@ -5260,7 +5284,6 @@ function paintVulnsTableType(tabletype) {
         
     // Do the header
     var snippet = '\n\
-    <a name="frag__TT_"><br><br>_LJ_</a>&nbsp;<a href="#frag_frequencies">_LF_</a>&nbsp;&nbsp;<a href="#frag_impacts">_LI_</a>&nbsp;&nbsp;<a href="#frag_levels">_LO_</a><br>\n\
     <table class="SFvulnstable" style="width:57em">\n\
     <colgroup><col span="1" style="width:30em"></colgroup>\n\
     <colgroup><col span="9" style="width:3em"></colgroup>\n\
@@ -5373,7 +5396,6 @@ function paintVulnsTableType(tabletype) {
     </tr>\n\
     </tbody>\n\
     </table>\n\
-    <br><br>\n\
     ';
     const MAXCOLH = 30;
     snippet = snippet.replace(/_2_/, 5 + MAXCOLH*v_U['__TOTAL__']/max);
