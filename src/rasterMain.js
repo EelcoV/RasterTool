@@ -5393,6 +5393,7 @@ function paintNodeTypeStats() {
     var tTot = 0;
     var numservice = 0;
     var sit = new ServiceIterator(Project.cid);
+	sit.sortByName();
 
     $('#at3').empty();
 
@@ -5433,18 +5434,20 @@ function paintNodeTypeStats() {
             var rn = nit.getnode();
             var cm = Component.get(rn.component);
             sStats[rn.type]++;
-            sTot++;
+            if (rn.type!='tNOT') sTot++;
             // Count 'single' node classes only once
             if (rn.component==null || !cm.single || cm.nodes[0]==rn.id) {
                 tStats[rn.type]++;
-                tTot++;
+                if (rn.type!='tNOT') tTot++;
             }
         }
         for (typ in Rules.nodetypes) {
-            snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+sStats[typ]+'</td></tr>';
+        	if (typ=='tNOT') continue;
+            snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+sStats[typ]+'</td></tr>\n';
         }
-        snippet += '\n\
-        <tr><td class="statstype">_LT_</td><td class="statsnum">'+sTot+'</td></tr>\n\
+        snippet += '<tr><td class="statstype">_LT_</td><td class="statsnum">'+sTot+'</td></tr>\n';
+		snippet += '<tr><td class="statstype">('+Rules.nodetypes['tNOT']+'</td><td class="statsnum">'+sStats['tNOT']+')</td></tr>\n';
+        snippet += '\
         </tbody></table></div>\n\
         </td>\n\
         ';
@@ -5470,10 +5473,12 @@ function paintNodeTypeStats() {
     snippet = snippet.replace(/_LT_/g, _("Type") );
     snippet = snippet.replace(/_LN_/g, _("Num") );
     for (typ in Rules.nodetypes) {
+		if (typ=='tNOT') continue;
         snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+tStats[typ]+'</td></tr>';
     }
     snippet += '\n\
     <tr><td class="statstype">_LT_</td><td class="statsnum">'+tTot+'</td></tr>\n\
+    <tr><td class="statstype">('+Rules.nodetypes['tNOT']+'</td><td class="statsnum">'+tStats['tNOT']+')</td></tr>\n\
     </tbody></table></div>\n\
     </td>\n\
     ';

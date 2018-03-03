@@ -3,7 +3,6 @@ See LICENSE.md
 
 
 BUGS
-Analysis tools | node counts: services should be alphabetical.
 In Diagrams view, reordering vulnerabilities in popup windows works, but does not show the drag-cursor; in Single Failures view the cursor shows, but dragging does not work.
 On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
