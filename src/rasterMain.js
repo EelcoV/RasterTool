@@ -311,7 +311,7 @@ $(function() {
             $('#helptabs ul').width($('#helppanel').width()-14);
         },
         resize: function(event,ui) {
-            $('#helptabs ul').width(ui.size.width-36);
+            $('#helptabs ul').width($('#helppanel').width()-14);
         }
     });
     $('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
