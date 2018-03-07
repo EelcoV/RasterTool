@@ -10,9 +10,8 @@ Beta 2.2
   histogram graph as well as numerically.
 * The Help window contains an aid to determining the Frequency class of incidents.
 * Keyboard shortcuts added for several interactions (see manual).
-* On the standalone app, hardware acceleration is now enabled by default. There is
-  nu UI for changing it, but if need be it can be disabled by editing the preference
-  file by hand.
+* On the standalone app, hardware acceleration is still disabled by default, but can
+  now enabled by editing the preference file by hand.
   - on MacOS: Library/Application Support/Raster/prefs.json
   - on Windows: c:\Users\<yourusername>\AppData\Roaming\Raster\prefs.json
 * Various other UI improvements.

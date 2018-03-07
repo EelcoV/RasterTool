@@ -42,7 +42,7 @@ const DefaultRasterOptions = {
 	// datetime of last successful check for updates
 	updatechecktime: 0,
 	// Hardware acceleration: there is no UI for this (must edit preference file by hand!)
-	enablehardwareacceleration: true
+	disablehardwareacceleration: true
 };
 
 const prefsDir = app.getPath('userData');
@@ -504,7 +504,7 @@ catch (e) {
 	// ignore silently
 }
 
-if (app.rasteroptions.enablehardwareacceleration===false) {
+if (app.rasteroptions.disablehardwareacceleration==true) {
 	// Disable hardware acceleration for maximum compatibility.
 	app.disableHardwareAcceleration();
 }
