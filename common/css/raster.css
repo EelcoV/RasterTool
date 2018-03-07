@@ -568,7 +568,7 @@ div.th_remark {
 	top: 45px;
 	left: 43px;
 	height: 65px;
-	z-index: 2000;
+	z-index: 1100;
 }
 .displayopt {
 	display: inline-block;
