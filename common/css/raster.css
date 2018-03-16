@@ -54,7 +54,7 @@ body {
 
 /* The content panes to each vertical tab */
 .workouter {position: absolute; left: 35px; top: 42px; margin: 0px; }
-.workinner {overflow: auto; border-radius: 4px 0 4px 0; }
+.workinner {overflow: auto; border-radius: 4px; }
 .workbody h1 {margin-top: 0;}
 
 input.inplace_field, textarea.inplace_field {
@@ -331,7 +331,7 @@ img.tC {
     color: white;
     padding: 5px;
     border-radius: 4px;
-    z-index: 800;
+    z-index: 2100;
     box-shadow: 7px 7px 6px #999;
 }
 .actpanel table { font-size: 11px; width: 100%; }

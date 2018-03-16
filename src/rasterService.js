@@ -196,7 +196,6 @@ Service.prototype = {
 		$(snippet).appendTo( '#diagrams_body .ui-tabs-nav' );
 		
 		/* We have bottom tabs, so have to correct the tab corners */
-		$('#diagrams_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
 		$('a[href^="#diagrams'+this.id+'"]').on('dblclick',  diagramTabEditStart );
 		$('a[href^="#diagrams'+this.id+'"]').on('click',  function(evt,ui) {
 			var s = Service.get(nid2id(this.hash));
@@ -210,7 +209,7 @@ Service.prototype = {
 		
 		/* Add content to the new tab */
 		var snippet = '\n\
-			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
+			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-tl workspace"></div>\n\
 			<div id="scroller_overview_I_" class="scroller_overview">\n\
 				<div id="scroller_region_I_" class="scroller_region"></div>\n\
 			</div>\n\
@@ -345,7 +344,6 @@ Service.prototype = {
 		$(snippet).appendTo( '#singlefs_body .ui-tabs-nav' );
 		
 		/* We have bottom tabs, so have to correct the tab corners */
-		$('#singlefs_body li').removeClass('ui-corner-top').addClass('ui-corner-bottom');
 		$('a[href^="#singlefs'+this.id+'"]').on('dblclick',  diagramTabEditStart );
 		$('a[href^="#singlefs'+this.id+'"]').on('click',  function(evt,ui) {
 			var s = Service.get(nid2id(this.hash));
@@ -358,7 +356,7 @@ Service.prototype = {
 
 		/* Add content to the new tab */
 		var snippet = '\n\
-			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-bottom workspace"></div>\n\
+			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-tl workspace"></div>\n\
 		';
 		snippet = snippet.replace(/_I_/g, this.id);
 		$('#singlefs_body').append(snippet);
