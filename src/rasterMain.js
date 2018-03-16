@@ -2530,7 +2530,13 @@ function initTabDiagrams() {
 
     $('#diagrams_body').tabs({
         activate: bottomTabsShowHandlerDiagrams,
-        create: bottomTabsShowHandlerDiagrams
+        create: bottomTabsShowHandlerDiagrams,
+        classes: {
+			"ui-tabs": "ui-corner-bottom ui-corner-tl",
+			"ui-tabs-nav": "ui-corner-bottom",
+			"ui-tabs-tab": "ui-corner-bottom",
+			"ui-tabs-panel": "ui-corner-asdf"
+		}
     });
     $('#diagrams_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
     $('#bottomtabsdia').on('mouseenter', 'li', function(){
@@ -2539,7 +2545,6 @@ function initTabDiagrams() {
     $('#bottomtabsdia').on('mouseleave', 'li', function(){
         $(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
     });
-    $('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
     $('.th_name.thr_header').html( _("Name") );
     $('.th_descr.thr_header').html( _("Description") );
@@ -3321,7 +3326,13 @@ function arrayJoinAsString(a,str) {
 function initTabSingleFs() {
     $('#singlefs_body').tabs({
         activate: bottomTabsShowHandlerSFaults,
-        create: bottomTabsShowHandlerSFaults
+        create: bottomTabsShowHandlerSFaults,
+        classes: {
+			"ui-tabs": "ui-corner-bottom ui-corner-tl",
+			"ui-tabs-nav": "ui-corner-bottom",
+			"ui-tabs-tab": "ui-corner-bottom",
+			"ui-tabs-panel": "ui-corner-asdf"
+		}
     });
     $('#singlefs_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
     $('#bottomtabssf').on('mouseenter', 'li', function(){
@@ -3330,7 +3341,6 @@ function initTabSingleFs() {
     $('#bottomtabssf').on('mouseleave', 'li', function(){
         $(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
     });
-    $('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
     $('#servaddbuttonsf').on('click',  function() {
         var p = Project.get( Project.cid );
@@ -4691,8 +4701,14 @@ function initTabAnalysis() {
     $("a[href^='#at4']").html(_("Checklist reports"));
     $("a[href^='#at5']").html(_("Longlist"));
 
-    $('#analysis_body').tabs();
-    $('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
+    $('#analysis_body').tabs({
+        classes: {
+			"ui-tabs": "ui-corner-bottom ui-corner-tl",
+			"ui-tabs-nav": "ui-corner-bottom",
+			"ui-tabs-tab": "ui-corner-bottom",
+			"ui-tabs-panel": "ui-corner-tl"
+		}
+    });
 }
 
 function AddAllAnalysis() {
