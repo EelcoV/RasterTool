@@ -4994,8 +4994,9 @@ function paintSFTable() {
         for (tit.first(); tit.notlast(); tit.next()) {
             nc = tit.getNodeCluster();
             // Find the threat assessment for this node
+            var ta = {};
             for (var i=0; i<cm.thrass.length; i++) {
-                var ta = ThreatAssessment.get(cm.thrass[i]);
+                ta = ThreatAssessment.get(cm.thrass[i]);
                 if (ta.title==nc.title && ta.type==nc.type) break;
             }
             if (ta.title==nc.title && ta.type==nc.type) {
