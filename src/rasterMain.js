@@ -2198,7 +2198,7 @@ function checkForErrors(verbose) {
 		}
 	}
 	if (verbose && errors=="")
-		errors = _("There were no errors; all projects are OK.\n");
+		rasterAlert(_("Checked all projects"), _("There were no errors; all projects are OK.\n"));
 	if (errors!="") {
 		rasterAlert(_("Your projects contain errors:"), errors);
 	}
