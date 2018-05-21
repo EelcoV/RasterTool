@@ -1,8 +1,9 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
-Beta 2.2
+May 2.2
 ========
+* Release as 2.2.0 - Spring 2018
 * A hint or suggested value is shown when editing the impact of a node cluster. E.g: if
   one of the nodes in that cluster scored High impact on Physical Damage, than the
   cluster containing that node should also have at least High impact.
