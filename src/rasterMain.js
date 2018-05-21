@@ -4421,7 +4421,7 @@ function computeSpacesMakeup(nc,domid,prefix) {
 function computeRows(nc) {
 	Spaces_row++;
 	SpacesMakeup[Spaces_row] = [];
-	if (nc.childnodes.length>1) {
+//	if (nc.childnodes.length>1) {
 		// With <2 child nodes no vuln assessment will be made, no row painted.
 		var d = nc.depth();
 		// Rule #1
@@ -4435,7 +4435,7 @@ function computeRows(nc) {
 				break;
 			SpacesMakeup[i][d-1] |= 1;
 		}
-	}
+//	}
 	for (i=0; i<nc.childclusters.length; i++) {
 		var cc = NodeCluster.get(nc.childclusters[i]);
 		computeRows(cc);
@@ -4448,7 +4448,7 @@ function appendAllThreats(nc,domid,prefix) {
 	Spaces_row++;
     var th = ThreatAssessment.get(nc.thrass);
     // Only paint threat assessment if at least two child nodes (clusters don't count)
-	if (nc.childnodes.length>1) {
+//	if (nc.childnodes.length>1) {
 	 	var spaces = "";
 	 	spaces += '<span class="linechar">';
 	 	for (var i=0; i<nc.depth(); i++) {
@@ -4474,14 +4474,14 @@ function appendAllThreats(nc,domid,prefix) {
 			spaces += '&nbsp;'; // spacer between corner line and text
 	 	spaces += '</span>';
 		th.addtablerow(domid,prefix,false, spaces,'');
-    } else {
-        // If less than two children, then this thrass must not contribute to the cluster total.
-        //
-        // This logic should probably move into rasterNodeCluster?
-        //
-        th.setfreq('-');
-        th.setimpact('-');
-    }
+//    } else {
+//        // If less than two children, then this thrass must not contribute to the cluster total.
+//        //
+//        // This logic should probably move into rasterNodeCluster?
+//        //
+//        th.setfreq('-');
+//        th.setimpact('-');
+//    }
 	for (i=0; i<nc.childclusters.length; i++) {
         var cc = NodeCluster.get(nc.childclusters[i]);
 		appendAllThreats(cc,domid,prefix);
