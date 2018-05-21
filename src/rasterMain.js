@@ -137,6 +137,7 @@ $(function() {
 	$('#helpbutton').hide();
 	$('.workouter').css('top', '0px');
 	$('#templates').removeClass('ui-state-default').css('background','rgba(200,200,200,0.8)');
+	modifyCSS('.displayoptsarea','top','3px');
 
 	// PDF print options dialog
     $('#pdf_orientation span').html(_("Orientation:"));
@@ -296,6 +297,7 @@ $(function() {
     $('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
     $('#helptabs a').eq(3).attr('href', _("../help/About.html") );
     $('#helptabs li:last-of-type').css("margin-left","10px");
+
     $('#helppanel').dialog({
         title: _("Information on using this tool"),
         autoOpen: false,
@@ -305,15 +307,21 @@ $(function() {
         minWidth: 470,
         maxWidth: 800,
         open: function(event) {
+			initFrequencyTool();
             $('#helptabs ul').width($('#helppanel').width()-14);
         },
         resize: function(event,ui) {
-            $('#helptabs ul').width(ui.size.width-36);
+            $('#helptabs ul').width($('#helppanel').width()-14);
         }
     });
     $('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
     $('#helptabs').tabs({
-        heightStyle: 'content'
+        heightStyle: 'content',
+        load: function(event,ui) {
+        	if ($('#helptabs').tabs('option','active')==0) {
+        		initFrequencyTool();
+			}
+        }
     });
     $('#helpbutton img').on('click',  function() {
         $('#helppanel').dialog('open');
@@ -336,12 +344,70 @@ $(function() {
 #endif
 
     $('body').on('keydown', function(evt){
-        if (evt.keyCode==8) { // Backspace, unfortunately, is bound in the browser to 'Return to previous page'
+    	// Backspace, unfortunately, is bound in the browser to 'Return to previous page'
+        if (evt.key=='Backspace') {
             if (!$(evt.target).is('input:not([readonly]):not([type=radio]):not([type=checkbox]), textarea, [contentEditable], [contentEditable=true]'))
                 // Only when focus is NOT on input or textarea
                 evt.preventDefault();
+                return;
         }
-    });
+#ifdef SERVER
+        // F1 (mostly for Windows): to trigger the Help panel
+        if (evt.key=='F1') {
+			$('#helpbutton img').trigger('click');
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-F for MacOS or Ctrl-F for Windows: to trigger the Find panel
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='f') {
+			$('#findbutton img').trigger('click');
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-L for MacOS or Ctrl-L for Windows: to trigger the Library panel
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='l') {
+			$('#libraryactivator').trigger('click');
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-O for MacOS or Ctrl-O for Windows: to trigger the Options panel
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='o') {
+			$('#optionsactivator').trigger('click');
+        	evt.preventDefault();
+        	return;
+        }
+#endif
+        // Cmd-1 for MacOS or Ctrl-1 for Windows: to trigger the Diagrams screen
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='1') {
+			forceSelectVerticalTab(0);
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-2 for MacOS or Ctrl-2 for Windows: to trigger the Diagrams screen
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='2') {
+			forceSelectVerticalTab(1);
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-3 for MacOS or Ctrl-3 for Windows: to trigger the Diagrams screen
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='3') {
+			forceSelectVerticalTab(2);
+        	evt.preventDefault();
+        	return;
+        }
+        // Cmd-4 for MacOS or Ctrl-4 for Windows: to trigger the Diagrams screen
+        if ((evt.ctrlKey || evt.metaKey) && evt.key=='4') {
+			forceSelectVerticalTab(3);
+        	evt.preventDefault();
+        	return;
+        }
+//		console.log("key pressed: "
+//			+ (evt.metaKey ? "Cmd-" : "")
+//			+ (evt.ctrlKey ? "Ctrl-" : "")
+//			+ (evt.shiftKey ? "Shft-" : "")
+//			+ evt.key
+//			+ ' (keycode '+ evt.keyCode+')');
+	});
     $('body').on('contextmenu', function(e) {
         e.preventDefault();
     });
@@ -352,6 +418,7 @@ $(function() {
 			return;
 		}
         $('#splash').hide();
+        sizeworkspace();
 #ifdef SERVER
         if (
         	localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
@@ -511,6 +578,134 @@ function StartFind() {
 	});
 }
 
+// Functions for the Frequency calculator (inside help/frequency-$LANG.html)
+//
+const Lj = 500; // Once in 500 years
+const Mj = 50;  // Once in 50 years
+const Hj = 5;   // Once in 5 years
+const log10_5 = log10(5);
+
+var vNum = 100;	// Initial number of nodes
+var vNPd = 1;	// Initial number of periods
+var vInc = 2;	// Initial number of incidents in that interval
+var cW = false;
+var cM = false;
+var cY = true;	// Interval is 'year'
+
+function initFrequencyTool() {
+	$('#sNum').slider({
+		min: 0,
+		max: 1000,
+		step: 10,
+		value: vNum,
+		slide: function( event, ui ) {
+			vNum = ui.value;
+			$('#fNum').val( vNum );
+			freqIndicatorUpdate();
+		}
+	});
+	$('#sNPd').slider({
+		min: 1,
+		max: 10,
+		value: vNPd,
+		slide: function( event, ui ) {
+			vNPd = ui.value;
+			$('#fNPd').val( vNPd );
+			freqIndicatorUpdate();
+		}
+	});
+	$('#sInc').slider({
+		min: 1,
+		max: 20,
+		value: vInc,
+		slide: function( event, ui ) {
+			vInc = ui.value;
+			$('#fInc').val( vInc );
+			freqIndicatorUpdate();
+		}
+	});
+	$('#fNum').val( vNum );
+	$('#fNPd').val( vNPd );
+	$('#fInc').val( vInc );
+
+	$('#freqcontrols input[type=radio]').checkboxradio({
+		icon: false
+	});
+	$('#fNum').on('change', function() {
+		vNum = $('#fNum').val();
+		$('#sNum').slider('value', vNum);
+		freqIndicatorUpdate();
+	});
+	$('#fNPd').on('change', function() {
+		vNPd = $('#fNPd').val();
+		$('#sNPd').slider('value', vNPd);
+		freqIndicatorUpdate();
+	});
+	$('#fInc').on('change', function() {
+		vInc = $('#fInc').val();
+		$('#sInc').slider('value', vInc);
+		freqIndicatorUpdate();
+	});
+	$('#freqcontrols fieldset').controlgroup();
+	$('#freqcontrols input[type=radio]').on('change', function() {
+		cW = $('#rWeek').prop('checked');
+		cM = $('#rMnth').prop('checked');
+		cY = $('#rYear').prop('checked');
+		freqIndicatorUpdate();
+	});
+
+	$('#rWeek').prop('checked', cW).checkboxradio('refresh');
+	$('#rMnth').prop('checked', cM).checkboxradio('refresh');
+	$('#rYear').prop('checked', cY).checkboxradio('refresh');
+
+	freqIndicatorUpdate(false);
+}
+
+function freqIndicatorUpdate(anim) {
+	var obH = $('#bH').offset().left;
+	var obM = $('#bM').offset().left;
+	var obL = $('#bL').offset().left;
+	var wbH = $('#bH').width();
+	var p;
+
+	if (cW) {
+		p = (vNum * vNPd / vInc) / 52;
+	}
+	if (cM) {
+		p = (vNum * vNPd / vInc) / 12;
+	}
+	if (cY) {
+		p = vNum * vNPd / vInc;
+	}
+	// Frequency is one per p years.
+	var pp = (obH+wbH/2) + (log10(p) - log10_5) * (obM-obH);
+
+	if (pp < obH - 35) { // Stop at left edge
+		pp = obH - 35;
+	}
+	if (pp > obL + 80) { // Stop at right edge
+		pp = obL + 80;
+	}
+	pp = pp - obH;
+
+	var fuzz;
+#ifdef SERVER
+	fuzz = 23;
+#else
+	fuzz = 22;
+#endif
+	if (anim===false) {
+		$('#result').css("left",pp+fuzz);
+	} else {
+		$('#result').stop().animate({
+			left: pp + fuzz
+		});
+	}
+}
+
+function log10(x) { return Math.LOG10E * Math.log(x); }
+
+
 /* In the code, use _("blue sky") instead of "blue sky"
  * Use
  *        _("I have %% potatoes!", num)
@@ -586,6 +781,25 @@ function loadDefaultProject() {
     s.paintall();
 }
 
+function modifyCSS(selector,property,newvalue) {
+    /* Find a CSS-rule for the given selector, then set the rule
+     * for property to newvalue.
+     */
+	var css=document.getElementById('maincssfile').sheet;
+	var rule=null;
+	for (var i=0; i<css.cssRules.length; i++) {
+		if (css.cssRules[i].selectorText==selector) {
+			rule = css.cssRules[i];
+			break;
+		}
+	}
+	if (!rule) {
+		bugreport('cannot locate css rule for '+selector,'modifyCSS');
+	} else {
+		rule.style[property] = newvalue;
+	}
+}
+
 /* SizeDOMElements()
  * Set the size of various containers, based on the size of the browser window.
  */
@@ -621,25 +835,10 @@ function SizeDOMElements() {
     $('#templates').css('left',tl+'px');
 #endif
     $('.workouter').css('padding','0px');
-    
-    /* Find a CSS-rule with the exact name ".threatdomain", then
-     * modify that rule on the fly.
-     */
-	var css=document.getElementById('maincssfile').sheet;
-	var rule=null;
-	for (var i=0; i<css.cssRules.length; i++) {
-		if (css.cssRules[i].selectorText=='.threatdomain') {
-			rule = css.cssRules[i];
-			break;
-		}
-	}
-	if (!rule) {
-		bugreport('cannot locate css rule for .threatdomain width','SizeDOMElements');
-	} else {
-		rule.style.height= (wh-250) + 'px';
-	}
 
-    $('#servaddbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+    modifyCSS('.clusternodelist', 'height', (wh-250) + 'px');
+
+    $('#servaddbuttondia').removeClass('ui-corner-all').addClass('ui-corner-bottom');
     $('.tabs-bottom > .ui-tabs-nav').width(ww-82);
     // special setting for tab "Analysis"
     $('#analysis_body > .ui-tabs-nav').width(ww-44);
@@ -678,16 +877,28 @@ function sizeworkspace() {
     // #bottomtabsdia or #bottomtabssf height is 27px per row. Double rows possible with many services
     // and/or a narrow window.
     var wh = $(window).height();
-    var bh = $('#bottomtabsdia').height();
-    if (bh==0)
-        bh = $('#bottomtabssf').height();
-    if (bh>0) {
+    var bh;
 #ifdef SERVER
-        $('.workspace').height(wh-77+27-bh);
+	var adj = 77;
 #else
-        $('.workspace').height(wh-35+27-bh);
+	var adj = 35;
 #endif
-        $('.servplusbutton').height(bh-4);
+
+    bh = $('#bottomtabsdia').height();
+    if (bh>0) {
+        $('#diagrams_body .workspace').height(wh-adj+27-bh);
+        $('#diagrams_body .servplusbutton').height(bh-4);
+    }
+
+    bh = $('#bottomtabssf').height();
+    if (bh>0) {
+        $('#singlefs_body .workspace').height(wh-adj+27-bh);
+        $('#singlefs_body .servplusbutton').height(bh-4);
+    }
+
+    bh = $('#bottomtabsana').height();
+    if (bh>0) {
+        $('#analysis_body .workspace').height(wh-adj+27-bh);
     }
 }
 
@@ -1665,9 +1876,9 @@ function vertTabSelected(event, ui) {
     $('#checklist_tWRD').dialog('close');
     $('#checklist_tEQT').dialog('close');
 
+	sizeworkspace();
     switch ($('#tabs').tabs('option','active')) {
     case 0:        // tab Services
-        sizeworkspace();
         $('#templates').show();
         // Switch to the right service. A new service may have been created while working
         // in the Single Failures tab.
@@ -1677,7 +1888,6 @@ function vertTabSelected(event, ui) {
         Preferences.settab(0);
         break;
     case 1:        // tab Single Failures
-        sizeworkspace();
         $('#selectrect').hide();
         $('#templates').hide();
         $('#singlefstabtitle'+Service.cid).trigger('click');
@@ -1988,7 +2198,7 @@ function checkForErrors(verbose) {
 		}
 	}
 	if (verbose && errors=="")
-		errors = _("There were no errors; all projects are OK.\n");
+		rasterAlert(_("Checked all projects"), _("There were no errors; all projects are OK.\n"));
 	if (errors!="") {
 		rasterAlert(_("Your projects contain errors:"), errors);
 	}
@@ -2320,7 +2530,13 @@ function initTabDiagrams() {
 
     $('#diagrams_body').tabs({
         activate: bottomTabsShowHandlerDiagrams,
-        create: bottomTabsShowHandlerDiagrams
+        create: bottomTabsShowHandlerDiagrams,
+        classes: {
+			"ui-tabs": "ui-corner-bottom ui-corner-tl",
+			"ui-tabs-nav": "ui-corner-bottom",
+			"ui-tabs-tab": "ui-corner-bottom",
+			"ui-tabs-panel": "ui-corner-asdf"
+		}
     });
     $('#diagrams_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
     $('#bottomtabsdia').on('mouseenter', 'li', function(){
@@ -2329,7 +2545,6 @@ function initTabDiagrams() {
     $('#bottomtabsdia').on('mouseleave', 'li', function(){
         $(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
     });
-    $('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
     $('.th_name.thr_header').html( _("Name") );
     $('.th_descr.thr_header').html( _("Description") );
@@ -2391,7 +2606,7 @@ function initTabDiagrams() {
         zIndex: 400
     });
 
-    $('#servaddbutton').on('click', function() {
+    $('#servaddbuttondia').on('click', function() {
         var p = Project.get( Project.cid );
         var s = new Service();
         p.addservice(s.id);
@@ -3111,7 +3326,13 @@ function arrayJoinAsString(a,str) {
 function initTabSingleFs() {
     $('#singlefs_body').tabs({
         activate: bottomTabsShowHandlerSFaults,
-        create: bottomTabsShowHandlerSFaults
+        create: bottomTabsShowHandlerSFaults,
+        classes: {
+			"ui-tabs": "ui-corner-bottom ui-corner-tl",
+			"ui-tabs-nav": "ui-corner-bottom",
+			"ui-tabs-tab": "ui-corner-bottom",
+			"ui-tabs-panel": "ui-corner-asdf"
+		}
     });
     $('#singlefs_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
     $('#bottomtabssf').on('mouseenter', 'li', function(){
@@ -3120,7 +3341,6 @@ function initTabSingleFs() {
     $('#bottomtabssf').on('mouseleave', 'li', function(){
         $(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
     });
-    $('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
 
     $('#servaddbuttonsf').on('click',  function() {
         var p = Project.get( Project.cid );
@@ -3133,7 +3353,7 @@ function initTabSingleFs() {
     });
 }
 
-var SFSortOpt = 'alpha';
+var SFSortOpt = 'alph';
 
 function paintSingleFailures(s) {
     var appendstring = "";
@@ -3151,40 +3371,34 @@ function paintSingleFailures(s) {
         return;
     }
     
-    switch (SFSortOpt) {
-    case 'alpha':
-        it.sortByName();
-        break;
-    case "type":
-        it.sortByType();
-        break;
-    case "threat":
-        it.sortByLevel();
-        break;
-    default:
-        bugreport("Unknown node sort option","paintSingleFailures");
-    }
-    
     // Adding elements to the DOM is slow, so it is best to do it all at
     // once, rather than piece by piece.
     // First collect the bulk of the DOM elements to be appended. Then loop
     // over the components again, adding the vulnerabilities to them, and adding
     // behaviour stuff.
     snippet = '\
-        <p class="firstp donotprint">\
-        [+] <span id="expandalls_SV_" class="ui-link">_EA_</span>\
-        &nbsp;&nbsp;&nbsp;&nbsp;\
-        [&minus;] <span id="collapsealls_SV_" class="ui-link">_CA_</span>\
-        <span id="sortalls_SV_" class="sortalls">_LS_ <select id="sfselect_SV_">\n\
-            <option value="alpha">_O1_</option>\n\
-            <option value="type">_O2_</option>\n\
-            <option value="threat">_O3_</option>\n\
-        </select></span>\n\
-        </p>\
+        <div id="somesf_SV_" class="displayoptsarea donotprint">\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_L1_</span><br>\n\
+        	<span id="expandallsf_SV_">_EA_</span>\n\
+	        <span id="collapseallsf_SV_" class="collapseall">_CA_</span>\n\
+		  </div>\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_L2_</span><br>\n\
+			<fieldset>\n\
+				<input type="radio" id="sfsort_alph_SV_" name="sfsort_SV_"><label for="sfsort_alph_SV_">_O1_</label>\n\
+				<input type="radio" id="sfsort_type_SV_" name="sfsort_SV_"><label for="sfsort_type_SV_">_O2_</label>\n\
+				<input type="radio" id="sfsort_thrt_SV_" name="sfsort_SV_"><label for="sfsort_thrt_SV_">_O3_</label>\n\
+			</fieldset>\n\
+		  </div>\n\
+		</div>\
+		<div id="sfacclist_SV_" class="sfacclist">\
+		</div>\
     ';
+    snippet = snippet.replace(/_L1_/g, _("Fold:"));
     snippet = snippet.replace(/_EA_/g, _("Expand all"));
     snippet = snippet.replace(/_CA_/g, _("Collapse all"));
-    snippet = snippet.replace(/_LS_/g, _("Sort:"));
+    snippet = snippet.replace(/_L2_/g, _("Sort:"));
     snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
     snippet = snippet.replace(/_O2_/g, _("by Type"));
     snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
@@ -3192,7 +3406,57 @@ function paintSingleFailures(s) {
     snippet = snippet.replace(/_SV_/g, s.id);
     snippet = snippet.replace(/_PN_/g, H(Project.get(s.project).title));
     snippet = snippet.replace(/_PJ_/g, s.project);
-    appendstring += snippet;
+    $('#singlefs_workspace'+s.id).append(snippet);
+    $('#somesf'+s.id).headroom({
+    	scroller: document.querySelector('#singlefs_workspace'+s.id),
+		tolerance : {
+			up : 20,
+			down : 20
+		}
+    });
+
+	$('#expandallsf'+s.id).button({icon: 'ui-icon-plus'});
+	$('#collapseallsf'+s.id).button({icon: 'ui-icon-minus'});
+    $('#somesf'+s.id+' input[type=radio]').checkboxradio({icon: false});
+    $('#somesf'+s.id+' fieldset').controlgroup();
+
+    $('#expandallsf'+s.id).on('click',  function(evt){
+        $('#singlefs_workspace'+s.id).scrollTop(0);
+        expandAllSingleF(nid2id(evt.target.id));
+    });
+    $('#collapseallsf'+s.id).on('click',  function(evt){
+        $('#singlefs_workspace'+s.id).scrollTop(0);
+        collapseAllSingleF(nid2id(evt.target.id));
+    });
+
+    var create_sf_sortfunc = function(opt,sid) {
+    	return function(evt) {
+			SFSortOpt = opt;
+ 			paintSingleFailures(Service.get(sid));
+        };
+    };
+
+    $('[for=sfsort_alph'+s.id+']').on('click', create_sf_sortfunc('alph',s.id));
+    $('[for=sfsort_type'+s.id+']').on('click', create_sf_sortfunc('type',s.id));
+    $('[for=sfsort_thrt'+s.id+']').on('click', create_sf_sortfunc('thrt',s.id));
+
+    switch (SFSortOpt) {
+    case 'alph':
+		$('#sfsort_alph'+s.id).prop('checked',true);
+        it.sortByName();
+        break;
+    case 'type':
+		$('#sfsort_type'+s.id).prop('checked',true);
+        it.sortByType();
+        break;
+    case 'thrt':
+		$('#sfsort_thrt'+s.id).prop('checked',true);
+        it.sortByLevel();
+        break;
+    default:
+        bugreport("Unknown node sort option","paintSingleFailures");
+    }
+    $('#somesf'+s.id+' fieldset').controlgroup('refresh');
 
     for (it.first(); it.notlast(); it.next()) {
         var i;
@@ -3245,12 +3509,12 @@ function paintSingleFailures(s) {
             snippet = snippet.replace(/_LB_/, '');
         }
 
-snippet += "<div class='sfa_sortable'>\n";
+		snippet += "<div class='sfa_sortable'>\n";
         for (i=0; i<cm.thrass.length; i++) {
             var te = ThreatAssessment.get(cm.thrass[i]);
             snippet += te.addtablerow_textonly("sfa"+s.id+'_'+cm.id);
         }
-snippet += "</div>\n";
+		snippet += "</div>\n";
         snippet += '\n\
              <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="_BA_">\n\
              <input id="sfacopy_SV___ID_" class="copybutton" type="button" value="_BC_">\n\
@@ -3271,7 +3535,7 @@ snippet += "</div>\n";
     
     appendstring += '<br><br>\n';
     // Insert the bulk of the new DOM elements
-    $('#singlefs_workspace'+s.id).append(appendstring);
+    $('#sfacclist'+s.id).append(appendstring);
     
     // Now loop again, add vulnerabilities and behaviour.
     for (it.first(); it.notlast(); it.next()) {
@@ -3327,7 +3591,7 @@ snippet += "</div>\n";
             active: (cm.accordionopened ? 0 : false)
         });
         
-        $(acc.selector + ' .sfa_sortable').sortable({
+        $('#' + acc[0].id + ' .sfa_sortable').sortable({
             containment: 'parent',
             helper: 'clone',
             cursor: 'ns-resize',
@@ -3346,20 +3610,6 @@ snippet += "</div>\n";
             }
         });
     }
-    
-    $('#expandalls'+s.id).on('click',  function(evt){
-        expandAllSingleF(nid2id(evt.target.id));
-    });
-    $('#collapsealls'+s.id).on('click',  function(evt){
-        collapseAllSingleF(nid2id(evt.target.id));
-    });
-    $('#sfselect'+s.id).val(SFSortOpt);
-    $('#sfselect'+s.id).on('change',  function(evt){
-        var id = nid2id(evt.target.id);
-        var selected = $('#sfselect'+id+' option:selected').val();
-        SFSortOpt = selected;
-        paintSingleFailures( Service.get(id) );
-    });
     
     $('#singlefs_body input[type=button]').button();
     $('#singlefs_body input[class~="addthreatbutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
@@ -3660,7 +3910,7 @@ function removeCluster(cluster) {
     cluster.destroy();
     root.normalize();
     root.calculatemagnitude();
-    repaintTDom(root.id);
+    repaintCluster(root.id);
 }
 
 function moveCluster(from_cluster,to_cluster) {
@@ -3672,7 +3922,7 @@ function moveCluster(from_cluster,to_cluster) {
     
     root.normalize();
     root.calculatemagnitude();
-    repaintTDom(root.id);
+    repaintCluster(root.id);
 }
 
 function moveToClusterHandler(ev) {
@@ -3703,7 +3953,7 @@ function moveSelectionToCluster(cluster) {
     });
     root.normalize();
     root.calculatemagnitude();
-    repaintTDom(root.id);
+    repaintCluster(root.id);
     // Wait for the repaint to finish, the new cluster to be painted, then
     // trigger a rename
 	setTimeout(function(){
@@ -3711,95 +3961,127 @@ function moveSelectionToCluster(cluster) {
     },500);
 }
 
-var CCFSortOpt = 'alpha';
+var CCFSortOpt = 'alph';
+var CCFMinOpt = '-';
 
 function AddAllClusters() {
     var snippet = '\
         <h1 class="printonly underlay">_LCCF_</h1>\
         <h2 class="printonly underlay projectname">_LP_: _PN_</h2>\
-        <p id="noshf" class="firstp sfaccordion">_N1_\
+        <p id="noccf" class="firstp sfaccordion">_N1_\
         _N2_\
         _N3_</p>\
-        <p id="someshf" class="firstp donotprint">\
-        [+] <span id="expandallshf" class="ui-link">_EA_</span>\
-        &nbsp;&nbsp;&nbsp;&nbsp;\
-        [&minus;] <span id="collapseallshf" class="ui-link">_CA_</span>\
-        <span id="sortallccf" class="sortalls">_LS_ <select id="ccfselect">\n\
-            <option value="alpha">_O1_</option>\n\
-            <option value="type">_O2_</option>\n\
-            <option value="threat">_O3_</option>\n\
-        </select></span>\n\
-        </p>\
+        <div id="outerimpacthint" style="display:none"><div id="hintpoint"></div><img src="../img/hint.png"><div id="impacthint"></div></div>\
+        <div id="someccf" class="donotprint displayoptsarea">\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_L1_</span><br>\n\
+        	<span id="expandallccf">_EA_</span>\n\
+	        <span id="collapseallccf" class="collapseall">_CA_</span>\n\
+		  </div>\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_L2_</span><br>\n\
+			<fieldset>\n\
+				<input type="radio" id="ccfsort_alph" name="ccfsort"><label for="ccfsort_alph">_O1_</label>\n\
+				<input type="radio" id="ccfsort_type" name="ccfsort"><label for="ccfsort_type">_O2_</label>\n\
+				<input type="radio" id="ccfsort_thrt" name="ccfsort"><label for="ccfsort_thrt">_O3_</label>\n\
+			</fieldset>\n\
+		  </div>\n\
+		</div>\
+		<div id="ccfacclist">\
+		</div>\
     ';
     snippet = snippet.replace(/_LP_/g, _("Project"));
     snippet = snippet.replace(/_LCCF_/g, _("Common Cause Failures"));
     snippet = snippet.replace(/_N1_/g, _("This space will show all vulnerabilities domains for the components in this project."));
     snippet = snippet.replace(/_N2_/g, _("Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet."));
     snippet = snippet.replace(/_N3_/g, _("Add some nodes to the diagrams first."));
+    snippet = snippet.replace(/_L1_/g, _("Fold:"));
     snippet = snippet.replace(/_EA_/g, _("Expand all"));
     snippet = snippet.replace(/_CA_/g, _("Collapse all"));
-    snippet = snippet.replace(/_LS_/g, _("Sort:"));
+    snippet = snippet.replace(/_L2_/g, _("Sort:"));
     snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
     snippet = snippet.replace(/_O2_/g, _("by Type"));
     snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
     snippet = snippet.replace(/_PJ_/g, Project.cid);
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     $('#ccfs_body').append(snippet);
+    $('#someccf').headroom({
+    	scroller: document.querySelector('#ccfs_body'),
+		tolerance : {
+			up : 20,
+			down : 20
+		}
+    });
+
+	$('#expandallccf').button({icon: 'ui-icon-plus'});
+	$('#collapseallccf').button({icon: 'ui-icon-minus'});
+    $('#someccf input[type=radio]').checkboxradio({icon: false});
+    $('#someccf fieldset').controlgroup();
 
     // create list of all vulnerabilities
     // for each vulnerability, list the nested list / vulnerability-domain-tree
     // allow manipulation of nested list
     var it = new NodeClusterIterator({project:Project.cid, isroot:true});
     if (!it.notlast()) {
-        $('#noshf').css('display', 'block');
-        $('#someshf').css('display', 'none');
+        $('#noccf').css('display', 'block');
+        $('#someccf').css('display', 'none');
         return;
     }
     
-    $('#ccfselect').val(CCFSortOpt);
     switch (CCFSortOpt) {
-    case 'alpha':
+    case 'alph':
+		$('#ccfsort_alph').prop('checked',true);
         it.sortByName();
         break;
     case 'type':
+		$('#ccfsort_type').prop('checked',true);
         it.sortByType();
         break;
-    case 'threat':
+    case 'thrt':
+		$('#ccfsort_thrt').prop('checked',true);
         it.sortByLevel();
         break;
     default:
         bugreport("Unknown node sort option","AddAllClusters");
     }
-    
-    $('#noshf').css('display', 'none');
-    $('#someshf').css('display', 'block');
-    $('#expandallshf').on('click',  function(evt){
+    $('#someccf fieldset').controlgroup('refresh');
+
+    $('#noccf').css('display', 'none');
+    $('#someccf').css('display', 'block');
+    $('#expandallccf').on('click',  function(evt){
+        $('#ccfs_body').scrollTop(0);
         expandAllCCF(nid2id(evt.target.id));
     });
-    $('#collapseallshf').on('click',  function(evt){
+    $('#collapseallccf').on('click',  function(evt){
+        $('#ccfs_body').scrollTop(0);
         collapseAllCCF(nid2id(evt.target.id));
     });
-    $('#ccfselect').on('change',  function(){
-        var selected = $('#ccfselect option:selected').val();
-        CCFSortOpt = selected;
-        $('#ccfs_body').empty();
-        AddAllClusters();
-    });
-    
+    var create_ccf_sortfunc = function(opt) {
+    	return function() {
+			CCFSortOpt = opt;
+			$('#ccfs_body').empty();
+			AddAllClusters();
+        };
+    };
+
+    $('[for=ccfsort_alph]').on('click', create_ccf_sortfunc('alph'));
+    $('[for=ccfsort_type]').on('click', create_ccf_sortfunc('type'));
+    $('[for=ccfsort_thrt]').on('click', create_ccf_sortfunc('thrt'));
+
     for (it.first(); it.notlast(); it.next()) {
         var nc = it.getNodeCluster();
-        addTDomElements(nc);
-        repaintTDom(nc.id);
+        addClusterElements(nc);
+        repaintCluster(nc.id);
     }
     $('#ccfs_body').append('<br><br>');
 }
 
-function addTDomElements(nc) {
+function addClusterElements(nc) {
     var snippet = '\n\
-      <div id="shfaccordion_ID_" class="shfaccordion">\n\
-        <h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="shfamark_ID_"></span></a></h3>\n\
-        <div id="shfaccordionbody_ID_" class="shfaccordionbody">\n\
-          <div id="tdom_ID_" class="threatdomain noselect"></div>\n\
+      <div id="ccfaccordion_ID_" class="ccfaccordion">\n\
+        <h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="ccfamark_ID_"></span></a></h3>\n\
+        <div id="ccfaccordionbody_ID_" class="ccfaccordionbody">\n\
+          <div id="clust_ID_" class="clusternodelist noselect"></div>\n\
         </div>\n\
       </div>\n\
     ';
@@ -3807,9 +4089,9 @@ function addTDomElements(nc) {
     snippet = snippet.replace(/_ID_/g, nc.id);
     snippet = snippet.replace(/_TI_/g, H(nc.title));
     snippet = snippet.replace(/_TY_/g, Rules.nodetypes[nc.type]);
-    $('#ccfs_body').append(snippet);
+    $('#ccfacclist').append(snippet);
 
-    var acc = $('#shfaccordion'+nc.id);
+    var acc = $('#ccfaccordion'+nc.id);
     acc.accordion({
         activate: function(event,ui) { nc.setaccordionopened(ui.oldPanel.length===0); },
         heightStyle: 'content',
@@ -3819,9 +4101,9 @@ function addTDomElements(nc) {
     });
     if (nc.childclusters.length + nc.childnodes.length < 2)
         // Just an empty placeholder for a node cluster that is too small
-        $('#shfaccordion'+nc.id).css('display', 'none');
+        $('#ccfaccordion'+nc.id).css('display', 'none');
     else
-        $('#shfaccordion'+nc.id).css('display', 'block');
+        $('#ccfaccordion'+nc.id).css('display', 'block');
 }
 
 function expandAllCCF() {
@@ -3829,7 +4111,7 @@ function expandAllCCF() {
     for (it.first(); it.notlast(); it.next()) {
         var cl = it.getNodeCluster();
         if (cl.isroot()) {
-            var el = $('#shfaccordion'+cl.id);
+            var el = $('#ccfaccordion'+cl.id);
             el.accordion('option','animate',false);
             el.accordion('option','active',0);
             el.accordion('option','animate',true);
@@ -3849,7 +4131,7 @@ function collapseAllCCF() {
     for (it.first(); it.notlast(); it.next()) {
         var cl = it.getNodeCluster();
         if (cl.isroot()) {
-            var el = $('#shfaccordion'+cl.id);
+            var el = $('#ccfaccordion'+cl.id);
             el.accordion('option','animate',false);
             el.accordion('option','active',false);
             el.accordion('option','animate',true);
@@ -3871,23 +4153,23 @@ function collapseAllCCF() {
  */
 var REPAINT_TIMEOUTS=[];
 
-function repaintTDom(elem) {
+function repaintCluster(elem) {
     if (REPAINT_TIMEOUTS[elem])
         clearTimeout(REPAINT_TIMEOUTS[elem]);
-    var func = function(){reallyRepaintTDom(elem);};
+    var func = function(){reallyRepaintCluster(elem);};
     REPAINT_TIMEOUTS[elem] = setTimeout(func,100);
 }
 
-// To remember the scroll position within a .threatdomain div.
+// To remember the scroll position within a .clusternodelist div.
 var ScrollBarPosition;
 
-function reallyRepaintTDom(elem) {
+function reallyRepaintCluster(elem) {
     delete REPAINT_TIMEOUTS[elem];
     var nc = NodeCluster.get(elem);
     if (!nc)
         return;
     if (!nc.isroot())
-        bugreport("Repainting a non-root cluster","repaintTDom");
+        bugreport("Repainting a non-root cluster","repaintCluster");
 
     var snippet = '<div>\
         <div class="threat">\
@@ -3897,23 +4179,23 @@ function reallyRepaintTDom(elem) {
         <div class="th_total th_col thr_header">_LT_</div>\
         <div class="th_remark th_col thr_header">_LR_</div>\
         </div>\
-        <div id="shftable_ID_" class="threats">\
+        <div id="ccftable_ID_" class="threats">\
         </div></div>\n\
-        <div id="tdom_ID_" class="threatdomain noselect"></div>\n';
+        <div id="clust_ID_" class="clusternodelist noselect"></div>\n';
     snippet = snippet.replace(/_LN_/g, _("Name"));
     snippet = snippet.replace(/_LF_/g, _("Freq."));
     snippet = snippet.replace(/_LI_/g, _("Impact"));
     snippet = snippet.replace(/_LT_/g, _("Total"));
     snippet = snippet.replace(/_LR_/g, _("Remark"));
     snippet = snippet.replace(/_ID_/g, nc.id);
-    $('#shfaccordionbody'+nc.id).html( snippet );
-    computeSpacesMakeup(nc,'#shftable'+nc.id,'shf'+nc.id);
+    $('#ccfaccordionbody'+nc.id).html( snippet );
+    computeSpacesMakeup(nc,'#ccftable'+nc.id,'ccf'+nc.id);
     nc.calculatemagnitude();
-    nc.setallmarkeroid('#shfamark');
+    nc.setallmarkeroid('#ccfamark');
 
     if (nc.childclusters.length + nc.childnodes.length < 2) {
         // Just an empty/invisible placeholder for a node cluster that is too small
-        $('#shfaccordion'+nc.id).css('display', 'none');
+        $('#ccfaccordion'+nc.id).css('display', 'none');
         // Check whether there are any cluster remaining visible
         var it = new NodeClusterIterator({project:Project.cid, isroot:true});
         for (it.first(); it.notlast(); it.next()) {
@@ -3922,24 +4204,24 @@ function reallyRepaintTDom(elem) {
                 return;
         }
         // None were visible
-        $('#noshf').css('display', 'block');
-        $('#someshf').css('display', 'none');
+        $('#noccf').css('display', 'block');
+        $('#someccf').css('display', 'none');
         return;
     }
 
-    $('#shfaccordion'+nc.id).css('display', 'block');
+    $('#ccfaccordion'+nc.id).css('display', 'block');
     // Retain scrollbar position
-    $('#tdom'+nc.id).append( listFromCluster(nc) ).scrollTop(ScrollBarPosition);
-    nc.setallmarkeroid('#shfamark');
-    $('#tdom'+nc.id+' .tlistitem').draggable({
-        containment: '#tdom'+nc.id,
+    $('#clust'+nc.id).append( listFromCluster(nc) ).scrollTop(ScrollBarPosition);
+    nc.setallmarkeroid('#ccfamark');
+    $('#clust'+nc.id+' .tlistitem').draggable({
+        containment: '#clust'+nc.id,
         revert: 'invalid',
         revertDuration: 300, // Default is 500 ms
         axis: 'y',
         scrollSensitivity: 40,
         scrollSpeed: 10,
         start: function(event,ui) {
-            ScrollBarPosition = $(this).parents('.threatdomain').scrollTop();
+            ScrollBarPosition = $(this).parents('.clusternodelist').scrollTop();
             $('.li_selected').addClass('ui-draggable-dragging');
             $(this).addClass('li_selected');
         },
@@ -3961,7 +4243,7 @@ function reallyRepaintTDom(elem) {
         callback: function(domid, enteredText) { 
             var nc = NodeCluster.get( nid2id(domid) );
             nc.settitle(enteredText);
-            $('#dth_shf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
+            $('#dthE_ccf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
             transactionCompleted("Rename cluster");
             return H(nc.title);
         }
@@ -3984,7 +4266,7 @@ function listFromCluster(nc) {
             <li id="linode_ID_" class="tlistitem clusternode ui-state-default ui-state-selected">\n\
             <span id="cltrgl_ID_" class="ui-icon ui-icon-triangle-1-_LT_ clustericon"></span>\
             <span id="litext_ID_" class="litext">_TI_</span>\
-            <span id="shfamark_ID_"></span></a>\n\
+            <span id="ccfamark_ID_"></span></a>\n\
             </li>\n\
         ';
     }
@@ -4043,18 +4325,52 @@ function listFromCluster(nc) {
     // Finally insert all child nodes
     for (i=0; i<node.length; i++) {
         var rn = Node.get(node[i]);
-        var sv = Service.get(rn.service);
+		var cm = Component.get(rn.component);
+        var sv = "";
+
+		// Single node classes can (will) be present in multiple services.
+        if (cm.single) {
+			for (var j=0; j<cm.nodes.length; j++) {
+				var n = Node.get(cm.nodes[j]);
+				if (sv!='') sv += '; ';
+				sv += Service.get(n.service).title;
+			}
+        } else {
+        	sv = Service.get(rn.service).title;
+        }
+
         str += '<li id="linode_NI___CI_" title="_SV_" class="tlistitem childnode" style="display: _DI_;">\n';
         str = str.replace(/_NI_/g, rn.id);
         str = str.replace(/_CI_/g, nc.id);
-        str = str.replace(/_SV_/g, H(sv.title));
+        str = str.replace(/_SV_/g, H(sv));
+
         str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
         str += rn.htmltitle();
-        if (Preferences.label && rn.color!='none') {
+
+        if (Preferences.label) {
             var p = Project.get(Project.cid);
-            str += '<div class="shflabelgroup"><div class="smallblock B_CO_"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
-            str = str.replace(/_CO_/g, rn.color);
+			// Single node classes can have multiple labels
+            var labels = [];
+			if (cm.single) {
+				for (j=0; j<cm.nodes.length; j++) {
+					n = Node.get(cm.nodes[j]);
+					if (n.color!='none' && labels.indexOf(n.color)==-1)
+						labels.push(n.color);
+				}
+            } else {
+            	if (rn.color!='none') labels = [rn.color];
+            }
+            if (labels.length==1 ) {
+				str += '<div class="ccflabelgroup"><div class="smallblock B'+rn.color+'"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
+            } else if (labels.length>1) {
+                str += '<div class="ccflabelgroup">';
+                for (j=0; j<labels.length; j++) {
+                    str += '<div class="smallblock B'+labels[j]+'" title="' + H(p.strToLabel(labels[j])) + '"></div>';
+                }
+                str += '</div>';
+            }
         }
+
         str += '</li>\n';
     }
          
@@ -4105,7 +4421,7 @@ function computeSpacesMakeup(nc,domid,prefix) {
 function computeRows(nc) {
 	Spaces_row++;
 	SpacesMakeup[Spaces_row] = [];
-	if (nc.childnodes.length>1) {
+//	if (nc.childnodes.length>1) {
 		// With <2 child nodes no vuln assessment will be made, no row painted.
 		var d = nc.depth();
 		// Rule #1
@@ -4119,7 +4435,7 @@ function computeRows(nc) {
 				break;
 			SpacesMakeup[i][d-1] |= 1;
 		}
-	}
+//	}
 	for (i=0; i<nc.childclusters.length; i++) {
 		var cc = NodeCluster.get(nc.childclusters[i]);
 		computeRows(cc);
@@ -4132,7 +4448,7 @@ function appendAllThreats(nc,domid,prefix) {
 	Spaces_row++;
     var th = ThreatAssessment.get(nc.thrass);
     // Only paint threat assessment if at least two child nodes (clusters don't count)
-	if (nc.childnodes.length>1) {
+//	if (nc.childnodes.length>1) {
 	 	var spaces = "";
 	 	spaces += '<span class="linechar">';
 	 	for (var i=0; i<nc.depth(); i++) {
@@ -4158,14 +4474,14 @@ function appendAllThreats(nc,domid,prefix) {
 			spaces += '&nbsp;'; // spacer between corner line and text
 	 	spaces += '</span>';
 		th.addtablerow(domid,prefix,false, spaces,'');
-    } else {
-        // If less than two children, then this thrass must not contribute to the cluster total.
-        //
-        // This logic should probably move into rasterNodeCluster?
-        //
-        th.setfreq('-');
-        th.setimpact('-');
-    }
+//    } else {
+//        // If less than two children, then this thrass must not contribute to the cluster total.
+//        //
+//        // This logic should probably move into rasterNodeCluster?
+//        //
+//        th.setfreq('-');
+//        th.setimpact('-');
+//    }
 	for (i=0; i<nc.childclusters.length; i++) {
         var cc = NodeCluster.get(nc.childclusters[i]);
 		appendAllThreats(cc,domid,prefix);
@@ -4264,7 +4580,7 @@ function nodeClusterReorder(event,ui) {
             drag_cluster.addchildcluster( nc.id );
             root_cluster.calculatemagnitude();
             root_cluster.normalize();
-            repaintTDom(root_cluster.id);
+            repaintCluster(root_cluster.id);
             transactionCompleted("Create cluster");
         } else if (drop_n!=null && drag!=drop) {
             bugreport("Node dropped on node of a different cluster","nodeClusterReorder");
@@ -4282,7 +4598,7 @@ function nodeClusterReorder(event,ui) {
             });
             root_cluster.normalize();
             root_cluster.calculatemagnitude();
-            repaintTDom(root_cluster.id);
+            repaintCluster(root_cluster.id);
             transactionCompleted("Move node from cluster");
         }
     } else {
@@ -4385,8 +4701,14 @@ function initTabAnalysis() {
     $("a[href^='#at4']").html(_("Checklist reports"));
     $("a[href^='#at5']").html(_("Longlist"));
 
-    $('#analysis_body').tabs();
-    $('.tabs-bottom .ui-tabs-nav, .tabs-bottom .ui-tabs-nav > *' ).removeClass('ui-corner-all ui-corner-top').addClass('ui-corner-bottom');
+    $('#analysis_body').tabs({
+        classes: {
+			"ui-tabs": "ui-corner-bottom ui-corner-tl",
+			"ui-tabs-nav": "ui-corner-bottom",
+			"ui-tabs-tab": "ui-corner-bottom",
+			"ui-tabs-panel": "ui-corner-tl"
+		}
+    });
 }
 
 function AddAllAnalysis() {
@@ -4397,7 +4719,7 @@ function AddAllAnalysis() {
     paintLonglist();
 }
 
-var FailureThreatSortOpt = {node: "threat", threat: 'alpha'};
+var FailureThreatSortOpt = {node: 'thrt', threat: 'type'};
 
 function paintNodeThreatTables() {
     ComponentExclusions = {};
@@ -4414,47 +4736,76 @@ function paintNodeThreatTables() {
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     
     snippet += '\n\
-        <table id="ana_nodethreattop" class="donotprint"><tr>\n\
-        <td id="ana_nodesort">_LS1_ <select id="ana_nodeselect">\n\
-            <option value="threat">_O3_</option>\n\
-            <option value="alpha">_O1_</option>\n\
-            <option value="type">_O2_</option>\n\
-        </select></td>\n\
-        <td id="ana_failuresort">_LS2_ <select id="ana_failureselect">\n\
-            <option value="alpha">_O1_</option>\n\
-            <option value="type">_O2_</option>\n\
-            <!--option value="threat">_O3_</option-->\n\
-        </select></td>\n\
-        <td id="ana_exclusions">\n\
-        <input type="button" id="quickwinslink" value="_Q1_">\n\
-        <input type="button" id="clearexclusions" value="_Q2_"><br>\n\
-        <p class="donotprint">_Q3_</p>\n\
-        </td></tr></table>\n\
-        <div id="ana_nodethreattable"></div>\n\
-        <div id="ana_ccftable"></div>\n\
+        <div id="ana_nodevuln" class="displayoptsarea donotprint">\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_LS1_</span><br>\n\
+			<fieldset>\n\
+				<input type="radio" id="ana_nodesort_alph" name="ana_nodesort"><label for="ana_nodesort_alph">_O1_</label>\n\
+				<input type="radio" id="ana_nodesort_type" name="ana_nodesort"><label for="ana_nodesort_type">_O2_</label>\n\
+				<input type="radio" id="ana_nodesort_thrt" name="ana_nodesort"><label for="ana_nodesort_thrt">_O3_</label>\n\
+			</fieldset>\n\
+		  </div>\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_LS2_</span><br>\n\
+			<fieldset>\n\
+				<input type="radio" id="ana_failsort_alph" name="ana_failsort"><label for="ana_failsort_alph">_O1_</label>\n\
+				<input type="radio" id="ana_failsort_type" name="ana_failsort"><label for="ana_failsort_type">_O2_</label>\n\
+			</fieldset>\n\
+		  </div>\n\
+          <div class="displayopt">\n\
+			<span class="displayoptlabel">_LS3_</span><br>\n\
+			<input type="button" id="quickwinslink" value="_Q1_">\n\
+			<input type="button" id="clearexclusions" value="_Q2_"><br>\n\
+		  </div>\n\
+		</div>\n\
+        <div id="ana_nodethreattable" class="ana_nodeccfblock"></div>\n\
+        <div id="ana_ccftable" class="ana_nodeccfblock"></div>\n\
     ';
     snippet = snippet.replace(/_L1_/g, _("Single & Common Cause Failures versus Vulnerabilities"));
     snippet = snippet.replace(/_LS1_/g, _("Sort nodes and clusters:"));
     snippet = snippet.replace(/_LS2_/g, _("Sort vulnerabilities:"));
+    snippet = snippet.replace(/_LS3_/g, _("Click cells to include/exclude them."));
     snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
     snippet = snippet.replace(/_O2_/g, _("by Type"));
     snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
     snippet = snippet.replace(/_Q1_/g, _("show Quick Wins"));
     snippet = snippet.replace(/_Q2_/g, _("clear exclusions"));
-    snippet = snippet.replace(/_Q3_/g, _("Click a coloured cell to include/exclude a failure or CCF"));
     $('#at1').html(snippet);
-    $('#ana_nodeselect').on('change',  function(){
-        var selected = $('#ana_nodeselect option:selected').val();
-        FailureThreatSortOpt.node = selected;
-        paintSFTable();
-        paintCCFTable();
+    $('#ana_nodevuln').headroom({
+    	scroller: document.querySelector('#at1'),
+		tolerance : {
+			up : 20,
+			down : 20
+		}
     });
-    $('#ana_failureselect').on('change',  function(){
-        var selected = $('#ana_failureselect option:selected').val();
-        FailureThreatSortOpt.threat = selected;
-        paintSFTable();
-        paintCCFTable();
-    });
+
+	$('#ana_nodevuln input[type=button]').button();
+    $('#ana_nodevuln input[type=radio]').checkboxradio({icon: false});
+	$('#ana_nodesort_'+FailureThreatSortOpt.node).prop('checked',true);
+	$('#ana_failsort_'+FailureThreatSortOpt.threat).prop('checked',true);
+    $('#ana_nodevuln fieldset').controlgroup();
+
+    var create_ananode_sortfunc = function(opt) {
+    	return function() {
+			FailureThreatSortOpt.node = opt;
+			paintSFTable();
+			paintCCFTable();
+        };
+    };
+    $('[for=ana_nodesort_alph]').on('click', create_ananode_sortfunc('alph'));
+    $('[for=ana_nodesort_type]').on('click', create_ananode_sortfunc('type'));
+    $('[for=ana_nodesort_thrt]').on('click', create_ananode_sortfunc('thrt'));
+
+    var create_anafail_sortfunc = function(opt) {
+    	return function() {
+			FailureThreatSortOpt.threat = opt;
+			paintSFTable();
+			paintCCFTable();
+        };
+    };
+    $('[for=ana_failsort_alph]').on('click', create_anafail_sortfunc('alph'));
+    $('[for=ana_failsort_type]').on('click', create_anafail_sortfunc('type'));
+
     $('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
         var exclCm = computeComponentQuickWins();
         var exclCl = computeClusterQuickWins();
@@ -4478,9 +4829,6 @@ function paintNodeThreatTables() {
     
     paintSFTable();
     paintCCFTable();
-
-    $('#ana_nodeselect').val(FailureThreatSortOpt.node);
-    $('#ana_failureselect').val(FailureThreatSortOpt.threat);
 }
 
 // Two associative arrays that record the single failures and CCFs that have been
@@ -4568,13 +4916,13 @@ function paintSFTable() {
     var cit = new ComponentIterator({project: Project.cid});
         
     switch (FailureThreatSortOpt.node) {
-    case 'alpha':
+    case 'alph':
         cit.sortByName();
         break;
-    case "type":
+    case 'type':
         cit.sortByType();
         break;
-    case "threat":
+    case 'thrt':
         cit.sortByLevel();
         break;
     default:
@@ -4582,15 +4930,12 @@ function paintSFTable() {
     }
     
     switch (FailureThreatSortOpt.threat) {
-    case 'alpha':
+    case 'alph':
         tit.sortByName();
         break;
-    case "type":
+    case 'type':
         tit.sortByType();
         break;
-//    case "threat":
-//        tit.sortByLevel();
-//        break;
     default:
         bugreport("Unknown threat sort option","paintSFTable");
     }
@@ -4649,8 +4994,9 @@ function paintSFTable() {
         for (tit.first(); tit.notlast(); tit.next()) {
             nc = tit.getNodeCluster();
             // Find the threat assessment for this node
+            var ta = {};
             for (var i=0; i<cm.thrass.length; i++) {
-                var ta = ThreatAssessment.get(cm.thrass[i]);
+                ta = ThreatAssessment.get(cm.thrass[i]);
                 if (ta.title==nc.title && ta.type==nc.type) break;
             }
             if (ta.title==nc.title && ta.type==nc.type) {
@@ -4679,7 +5025,7 @@ function paintSFTable() {
     // Do the ending/closing
     snippet += '\n\
         </tbody>\n\
-        </table>\n\
+        </table><p></p>\n\
     ';
     $('#ana_nodethreattable').html(snippet);
 
@@ -4702,28 +5048,28 @@ function paintCCFTable() {
     var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
     
     switch (FailureThreatSortOpt.node) {
-    case 'alpha':
+    case 'alph':
         ncit.sortByName();
         break;
     case 'type':
         ncit.sortByType();
         break;
-    case 'threat':
+    case 'thrt':
         ncit.sortByLevel();
         break;
     default:
-        bugreport("Unknown node sort option","paintSFTable");
+        bugreport("Unknown node sort option","paintCCFTable");
     }
     
     switch (FailureThreatSortOpt.threat) {
-        case 'alpha':
+        case 'alph':
             tit.sortByName();
             break;
         case 'type':
             tit.sortByType();
             break;
         default:
-            bugreport("Unknown threat sort option","paintSFTable");
+            bugreport("Unknown threat sort option","paintCCFTable");
     }
 
     $('#ana_ccftable').empty();
@@ -4753,9 +5099,9 @@ function paintCCFTable() {
     snippet = snippet.replace(/_NT_/, numthreats+1);
     for (tit.first(); tit.notlast(); tit.next()) {
         var nc = tit.getNodeCluster();
-        snippet += '<td class="printonlycell headercell">'+H(nc.title)+'</td>\n';
+        snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
     }    
-    snippet += '<td class="printonlycell headercell"><b>_OV_</b></td>\n\
+    snippet += '<td class="headercell"><b>_OV_</b></td>\n\
          </tr>\n\
         </thead>\n\
         <tbody>\n\
@@ -4847,6 +5193,9 @@ function ClusterMagnitudeWithExclusions(cl,list) {
 }
 
 function paintVulnsTable() {
+    var freq_snippet = paintVulnsTableType(1);
+    var impact_snippet;
+    var total_snippet;
     var snippet = '\
         <h1 class="printonly underlay">_LTT_</h1>\
         <h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
@@ -4857,24 +5206,45 @@ function paintVulnsTable() {
     snippet = snippet.replace(/_LD_/g, _("Vulnerability assessment details") );
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     $('#at2').html(snippet);
-    // Frequency
-    snippet = paintVulnsTableType(1);
 
     // If the table would be empty, then don't paint row and column headers
     // but show a message instead
-    if (snippet=="") {
+    if (freq_snippet=="") {
         snippet = '<p style="margin-left:3em; margin-top:4em; width:50em;">'
             + _("This space will show an overview of all vulnerabilities and their severities. ")
             + _("Since all service diagrams are empty, there is nothing to see here yet. ")
             + _("Add some nodes to the diagrams first.");
-    } else {
-        // Impact
-        snippet += paintVulnsTableType(2);
-        // Total
-        snippet += paintVulnsTableType(0);
+	    $('#at2').append(snippet);
+	    return;
     }
 
+	impact_snippet = paintVulnsTableType(2);
+	total_snippet = paintVulnsTableType(0);
+
+	snippet = '\
+		<div id="svulns_tabs">\
+			<ul>\
+				<li><a href="#freq_acc">_LF_</a></li>\
+				<li><a href="#impact_acc">_LI_</a></li>\
+				<li><a href="#total_acc">_LO_</a></li>\
+			</ul>\
+			<div id="freq_acc"></div>\
+			<div id="impact_acc"></div>\
+			<div id="total_acc"></div>\
+		</div>\
+  	';
+    snippet = snippet.replace(/_LF_/g, _("Frequencies"));
+    snippet = snippet.replace(/_LI_/g, _("Impacts"));
+    snippet = snippet.replace(/_LO_/g, _("Overall levels"));
     $('#at2').append(snippet);
+
+    $('#freq_acc').append(freq_snippet);
+    $('#impact_acc').append(impact_snippet);
+    $('#total_acc').append(total_snippet);
+    $('#svulns_tabs').tabs({
+    	event: 'mouseenter',
+    	heightStyle: 'content'
+    });
 }
 
 /* paintVulnsTableType(t): create HTML code for vulnerabilities tables
@@ -4901,14 +5271,10 @@ function paintVulnsTableType(tabletype) {
     tit.sortByType();
     
     // Precompute all numbers
-    // Iterate over all non-actor nodes
-    var nit = new NodeIterator({project: Project.cid, match: 'tUNK'});
-    for (nit.first(); nit.notlast(); nit.next()) {
-        var node = nit.getnode();
-        var cm = Component.get(node.component);
-        // Count 'single' node classes only once
-        if (cm.single && cm.nodes[0]!=node.id)
-            continue;
+    // Iterate over all components
+    var cit = new ComponentIterator({project: Project.cid});
+    for (cit.first(); cit.notlast(); cit.next()) {
+        var cm = cit.getcomponent();
         for (var i=0; i<cm.thrass.length; i++) {
             var ta = ThreatAssessment.get(cm.thrass[i]);
             var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
@@ -4935,7 +5301,6 @@ function paintVulnsTableType(tabletype) {
         
     // Do the header
     var snippet = '\n\
-    <a name="frag__TT_"><br><br>_LJ_</a>&nbsp;<a href="#frag_frequencies">_LF_</a>&nbsp;&nbsp;<a href="#frag_impacts">_LI_</a>&nbsp;&nbsp;<a href="#frag_levels">_LO_</a><br>\n\
     <table class="SFvulnstable" style="width:57em">\n\
     <colgroup><col span="1" style="width:30em"></colgroup>\n\
     <colgroup><col span="9" style="width:3em"></colgroup>\n\
@@ -5023,23 +5388,41 @@ function paintVulnsTableType(tabletype) {
     snippet += '<td>'+grandtotal+'</td>\n';
     snippet += '</tr>\n';
 
+	var max = Math.max(
+		v_U['__TOTAL__'],
+		v_L['__TOTAL__'],
+		v_M['__TOTAL__'],
+		v_H['__TOTAL__'],
+		v_V['__TOTAL__'],
+		v_X['__TOTAL__'],
+		v_A['__TOTAL__']
+	);
+
     // Do the ending/closing
     snippet += '\n\
     <tr class="thinrow">\n\
       <td></td>\n\
-      <td class="M2"></td>\n\
-      <td class="M3"></td>\n\
-      <td class="M4"></td>\n\
-      <td class="M5"></td>\n\
-      <td class="M6"></td>\n\
-      <td class="M7"></td>\n\
-      <td class="M1"></td>\n\
-      <td class="M0" style="border:1px solid grey;"></td>\n\
+      <td><div class="M2" style="height: _2_px"></div></td>\n\
+      <td><div class="M3" style="height: _3_px"></div></td>\n\
+      <td><div class="M4" style="height: _4_px"></div></td>\n\
+      <td><div class="M5" style="height: _5_px"></div></td>\n\
+      <td><div class="M6" style="height: _6_px"></div></td>\n\
+      <td><div class="M7" style="height: _7_px"></div></td>\n\
+      <td><div class="M1" style="height: _1_px"></div></td>\n\
+      <td><div class="M0" style="height: 4px; border:1px solid grey;"></div></td>\n\
     </tr>\n\
     </tbody>\n\
     </table>\n\
-    <br><br>\n\
     ';
+    const MAXCOLH = 30;
+    snippet = snippet.replace(/_2_/, 5 + MAXCOLH*v_U['__TOTAL__']/max);
+    snippet = snippet.replace(/_3_/, 5 + MAXCOLH*v_L['__TOTAL__']/max);
+    snippet = snippet.replace(/_4_/, 5 + MAXCOLH*v_M['__TOTAL__']/max);
+    snippet = snippet.replace(/_5_/, 5 + MAXCOLH*v_H['__TOTAL__']/max);
+    snippet = snippet.replace(/_6_/, 5 + MAXCOLH*v_V['__TOTAL__']/max);
+    snippet = snippet.replace(/_7_/, 5 + MAXCOLH*v_X['__TOTAL__']/max);
+    snippet = snippet.replace(/_1_/, 5 + MAXCOLH*v_A['__TOTAL__']/max);
+
     return snippet;
 }
 
@@ -5049,6 +5432,7 @@ function paintNodeTypeStats() {
     var tTot = 0;
     var numservice = 0;
     var sit = new ServiceIterator(Project.cid);
+	sit.sortByName();
 
     $('#at3').empty();
 
@@ -5089,18 +5473,20 @@ function paintNodeTypeStats() {
             var rn = nit.getnode();
             var cm = Component.get(rn.component);
             sStats[rn.type]++;
-            sTot++;
+            if (rn.type!='tNOT') sTot++;
             // Count 'single' node classes only once
             if (rn.component==null || !cm.single || cm.nodes[0]==rn.id) {
                 tStats[rn.type]++;
-                tTot++;
+                if (rn.type!='tNOT') tTot++;
             }
         }
         for (typ in Rules.nodetypes) {
-            snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+sStats[typ]+'</td></tr>';
+        	if (typ=='tNOT') continue;
+            snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+sStats[typ]+'</td></tr>\n';
         }
-        snippet += '\n\
-        <tr><td class="statstype">_LT_</td><td class="statsnum">'+sTot+'</td></tr>\n\
+        snippet += '<tr><td class="statstype">_LT_</td><td class="statsnum">'+sTot+'</td></tr>\n';
+		snippet += '<tr><td class="statstype">('+Rules.nodetypes['tNOT']+'</td><td class="statsnum">'+sStats['tNOT']+')</td></tr>\n';
+        snippet += '\
         </tbody></table></div>\n\
         </td>\n\
         ';
@@ -5126,10 +5512,12 @@ function paintNodeTypeStats() {
     snippet = snippet.replace(/_LT_/g, _("Type") );
     snippet = snippet.replace(/_LN_/g, _("Num") );
     for (typ in Rules.nodetypes) {
+		if (typ=='tNOT') continue;
         snippet += '<tr><td class="statstype">'+Rules.nodetypes[typ]+'</td><td class="statsnum">'+tStats[typ]+'</td></tr>';
     }
     snippet += '\n\
     <tr><td class="statstype">_LT_</td><td class="statsnum">'+tTot+'</td></tr>\n\
+    <tr><td class="statstype">('+Rules.nodetypes['tNOT']+'</td><td class="statsnum">'+tStats['tNOT']+')</td></tr>\n\
     </tbody></table></div>\n\
     </td>\n\
     ';
@@ -5388,18 +5776,23 @@ function paintLonglist() {
     snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
     
     snippet += '\n\
-        <div id="lloptions" class="donotprint">\n\
-        <b>_INS_</b><br>\n\
-        <label for="incX">_LU_:</label> <span class="itemll"><input type="checkbox" id="incX" checked></span><br>\n\
-        <label for="incA">_LA_:</label> <span class="itemll"><input type="checkbox" id="incA" checked></span><br>\n\
-        <label for="minV">_LV_:</label> <span class="itemll"><select id="minV"></select></span><br>\n\
-        </div>\n\
-        <div id="longlist"></div>\
+        <div id="lloptions" class="displayoptsarea donotprint">\n\
+		  <div class="displayopt">\n\
+			<span class="displayoptlabel">_L1_</span><br>\n\
+			<input type="checkbox" id="incX" checked><label for="incX">_LU_</label><br>\n\
+			<input type="checkbox" id="incA" checked><label for="incA">_LA_</label>\n\
+		  </div>\n\
+		  <div class="displayopt">\n\
+			<span class="displayoptlabel">_L2_</span><br>\n\
+			<select id="minV"></select>\n\
+		  </div>\n\
+		</div>\n\
+		<div id="longlist"></div>\
     ';
-    snippet = snippet.replace(/_INS_/g, _("Set the criteria for risks on the longlist.") );
-    snippet = snippet.replace(/_LU_/g, _("Include Unknown") );
-    snippet = snippet.replace(/_LA_/g, _("Include Ambiguous") );
-    snippet = snippet.replace(/_LV_/g, _("Minimum value") );
+    snippet = snippet.replace(/_L1_/g, _("Include:") );
+    snippet = snippet.replace(/_LU_/g, _("Unknown") );
+    snippet = snippet.replace(/_LA_/g, _("Ambiguous") );
+    snippet = snippet.replace(/_L2_/g, _("Minimum value:") );
 
     var selectoptions = "";
     for (var i=ThreatAssessment.valueindex['U']; i<=ThreatAssessment.valueindex['V']; i++) {
@@ -5408,17 +5801,25 @@ function paintLonglist() {
         selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
     }
     $('#at5').html(snippet);
-    $('#minV').html(selectoptions);
-    $('#minV').val(MinValue);
+    $('#lloptions').headroom({
+    	scroller: document.querySelector('#at5'),
+		tolerance : {
+			up : 20,
+			down : 20
+		}
+    });
+
+    $('#minV').html(selectoptions).selectmenu({
+    	select: function(event,ui) {
+			MinValue = $('#minV').val();
+	        $('#longlist').html(listSelectedRisks());
+    	}
+	}).val(MinValue).selectmenu('refresh');
+
     $('#incX').on('change',  function() {
         $('#longlist').html(listSelectedRisks());
     });
     $('#incA').on('change',  function() {
-        $('#longlist').html(listSelectedRisks());
-    });
-    $('#minV').on('change',  function() {
-        // Remember the new cut-off point for longlist
-        MinValue = $('#minV option:selected').val();
         $('#longlist').html(listSelectedRisks());
     });
 

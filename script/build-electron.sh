@@ -21,7 +21,7 @@ CreateAppVersion()
 
 	echo "{\"name\":\"Raster\",\"version\":\"$RASTERVERSION ($RASTERSEASON)\",\"main\":\"main.js\"}" >$BUILDDIR/package.json
 
-	for srcfile in src/raster*.js
+	for srcfile in src/*.js
 	do
 		destfile=$BUILDDIR/js/`basename $srcfile`
 		if [ $srcfile -nt $destfile ]; then
@@ -88,11 +88,11 @@ CreateMacOSVersion()
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR
 
-	if [ script/electron.iconset -nt build/raster.icns ]; then
-		iconutil --convert icns --output build/raster.icns script/electron.iconset
+	if [ script/electron.iconset -nt cache/raster.icns ]; then
+		iconutil --convert icns --output cache/raster.icns script/electron.iconset
 	fi
 	rm -f $APPDIR/../electron.icns
-	cp build/raster.icns $APPDIR/../raster.icns
+	cp cache/raster.icns $APPDIR/../raster.icns
 	# This is silly, but it works to force an icon refresh onto the Finder
 	mkdir $BASEDIR/Raster.app/junk
 	rmdir $BASEDIR/Raster.app/junk
@@ -209,6 +209,7 @@ CreateAll()
 	CreateAppVersion $LANG
 	CreateMacOSVersion $LANG
 	CreateWin32Version $LANG
+	rm -fr $BUILDDIR
 }
 
 CreateAll "EN"

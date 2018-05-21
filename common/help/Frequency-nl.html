@@ -2,6 +2,63 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
  -->
+<table id="freqcontrols">
+	<tr>
+		<td class="tdaright">
+			Ik heb
+		</td>
+		<td>
+			<input id="fNum" type=text><div id="sNum" class="range"></div>
+		</td>
+		<td class="tdend">
+			identieke componenten, en
+		</td>
+	<tr>
+	<tr>
+		<td class="tdaright">
+			elke
+		</td>
+		<td>
+			<input id="fNPd" type=text><div id="sNPd" class="range"></div>
+		</td>
+		<td class="tdend">
+			<fieldset>
+			  <input id="rWeek" type=radio name="period" value="pweek"><label for="rWeek">week</label>
+			  <input id="rMnth" type=radio name="period" value="pmnth"><label for="rMnth">maand</label>
+			  <input id="rYear" type=radio name="period" value="pyear"><label for="rYear">jaar</label>
+			</fieldset>
+		</td>
+	<tr>
+	<tr>
+		<td class="tdaright">
+			ondervinden
+		</td>
+		<td>
+			<input id="fInc" type=text><div id="sInc" class="range"></div>
+		</td>
+		<td class="tdend">
+			daarvan een incident.
+		</td>
+	<tr>
+</table>
+<div id="resultarea">
+	<div id="result"></div>
+</div>
+<div id="boxes">
+	<div id="bV" class="box"></div>
+	<div id="bH" class="box"></div>
+	<div id="b1" class="box"></div>
+	<div id="bM" class="box"></div>
+	<div id="b2" class="box"></div>
+	<div id="bL" class="box"></div>
+	<div id="bU" class="box"></div>
+</div>
+<div id="boxlabels">
+	<span id="lH" class="label">Hoog</span>
+	<span id="lM" class="label">Matig</span>
+	<span id="lL" class="label">Laag</span>
+</div>
+
 <TABLE BORDER=1 BORDERCOLOR="#000000" CELLPADDING=0 CELLSPACING=0 FRAME=HSIDES RULES=ROWS>
 	<TR VALIGN=TOP>
 		<TD>
@@ -32,7 +89,7 @@ See LICENSE.md
 		</TD>
 		<TD>
 			<P>Eens per 50 jaar, of:</P>
-			<P>met 100  identieke componenten, 1 à 2 incidenten per jaar.</P>
+			<P>met 100  identieke componenten, 2 incidenten per jaar.</P>
 		</TD>
 		<TD>
 			<div class="exampleMagnitude M4">M</div>
@@ -44,7 +101,7 @@ See LICENSE.md
 		</TD>
 		<TD>
 			<P>Eens per 500 jaar, of:</P>
-			<P>met 1000 identieke componenten, 2 incidenten per jaar.</P>
+			<P>met 100 identieke componenten, 1 incidenten per 5 jaar.</P>
 		</TD>
 		<TD>
 			<div class="exampleMagnitude M3">L</div>

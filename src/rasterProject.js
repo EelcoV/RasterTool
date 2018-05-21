@@ -82,6 +82,7 @@ Project.get = function(id) { return Project._all[id]; };
 Project.cid = 0;
 Project._all = [];
 Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Purple"), _("Grey")];
+Project.colors = ["none","red","orange","yellow","green","blue","purple","grey"];
 
 // Check wether there is a project with name 'str' and group ToolGroup
 Project.withTitle = function(str) {
@@ -516,27 +517,13 @@ Project.prototype = {
 
 
 	strToLabel: function(str) {
-		switch (str) {
-		case 'none':
-			return "";
-		case 'red':
-			return this.labels[0];
-		case 'orange':
-			return this.labels[1];
-		case 'yellow':
-			return this.labels[2];
-		case 'green':
-			return this.labels[3];
-		case 'blue':
-			return this.labels[4];
-		case 'purple':
-			return this.labels[5];
-		case 'grey':
-			return this.labels[6];
-		default:
+		var i = Project.colors.indexOf(str);
+		if (i==-1) {
 			bugreport("Invalid color code","Project.strToLabel;");
 			return "";
 		}
+		if (i==0) return "";
+		return this.labels[i-1];
 	},
 	
 	_stringify: function() {

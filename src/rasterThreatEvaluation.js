@@ -28,6 +28,8 @@
  *	description: description of the threat (100 chars max)
  *	freq: frequency
  *	impact: magnitude of effects
+ *  minimpact: minimum value for impact; if less than this, highlight the field.
+ *  _impactoid: object id of the impact <div> on which edit-in-place is possible.
  *	total: overall magnitude of this threat evaluation
  *	remark: free form text (200 chars max)
  * Methods:
@@ -39,6 +41,9 @@
  *	setdescription(str): sets the full description text to 'str'.
  *	setfreq(v): sets the frequency to 'v'
  *	setimpact(v): sets the impact to 'v'
+ *	setminimpact(v): (re-)format the UI element showing the impact; lowest permissible impact value is 'v'
+ *  computeminimpact(): if this.cluster!=null, compute the appropriate value for minimpact, and return
+ *		the list of all childnodes that have that impact.
  *	computetotal: update total based on current freq and impact, and update component and node cluster.
  *	setremark(str): sets the remark to 'str'
  *	addtablerow_textonly(prefix,interact): create the HTML code visually representing this threat assessment.
@@ -61,6 +66,8 @@ var ThreatAssessment = function(type,id) {
 	this.description = "";
 	this.freq='-';
 	this.impact='-';
+	this.minimpact='-';
+	this._impactoid=null;
 	this.total='-';
 	this.remark="";
 	
@@ -211,6 +218,49 @@ ThreatAssessment.prototype = {
 		this.store();
 	},
 
+	setminimpact: function(v) {
+		this.minimpact = (ThreatAssessment.values.indexOf(v)>-1 ? v : 'X');
+		if (this._impactoid!=null) {
+			if (this.impact!='-' && ThreatAssessment.sum(this.minimpact,this.impact) != this.impact) {
+				$(this._impactoid).addClass('errImpact errImpact'+this.minimpact);
+			} else {
+				$(this._impactoid).removeClass();
+				$(this._impactoid).addClass('th_impact th_col');
+			}
+		}
+		this.store();
+	},
+
+	computeminimpact: function() {
+		if (this.cluster==null) return null;
+		var nc = NodeCluster.get(this.cluster);
+		var rc = NodeCluster.get(nc.root());
+		var highscore = '-';
+		var highnodes = [];
+		for (var i=0; i<nc.childnodes.length; i++) {
+			// Find the impact for this cluster's vulnerability in the component of the node
+			var cm = Component.get( Node.get(nc.childnodes[i]).component );
+			var t;
+			for (var j=0; j<cm.thrass.length; j++) {
+				t = ThreatAssessment.get(cm.thrass[j]);
+				if (t.title==rc.title && t.type==rc.type) break;
+			}
+			if (j==cm.thrass.length) {
+				bugreport("Vulnerability not found", "computeminimpact");
+			}
+			if (t.impact == highscore) {
+				// Add to the list
+				highnodes.push(nc.childnodes[i]);
+			// only for 'real' impact values
+			} else if ("ULMHV".indexOf(t.impact)!=-1 && ThreatAssessment.sum(highscore,t.impact) != highscore) {
+				highscore = t.impact;
+				highnodes = [ nc.childnodes[i] ];
+			}
+		}
+		this.setminimpact(highscore);
+		return highnodes;
+	},
+
 	computetotal: function() {
 		this.total = ThreatAssessment.combine(this.freq,this.impact);
 		if (this.component!=null)
@@ -246,6 +296,7 @@ ThreatAssessment.prototype = {
 		snippet = snippet.replace(/_DF_/g, this.freq);
 		snippet = snippet.replace(/_DI_/g, this.impact);
 		snippet = snippet.replace(/_DR_/g, H(this.remark));
+		this._impactoid = '#dth_'+prefix+'impact'+this.id;
 		return snippet;
 	},
 	
@@ -303,35 +354,86 @@ ThreatAssessment.prototype = {
 				return H(te.title);
 			}
 		});
-		$('#dth_'+prefix+"freq"+this.id).editInPlace({
+		$('#dth_'+prefix+'freq'+this.id).editInPlace({
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
-			field_type: "select",
+			field_type: 'select',
 			select_options: selectoptions,
 			select_text: "",
 			callback: function(oid, enteredText) {
 				te.setfreq(enteredText);
-				$('#dth_'+prefix+"total"+te.id).text(te.total);
+				$('#dth_'+prefix+'total'+te.id).text(te.total);
 				c.setmarker();
 				transactionCompleted("Vuln setfreq");
-				return enteredText; 
+				return '<span>'+enteredText+'</span>';
 			}
 		});
-		$('#dth_'+prefix+"impact"+this.id).editInPlace({
+
+		this.computeminimpact(); // Ignore return value
+		$('#dth_'+prefix+'impact'+this.id).editInPlace({
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
-			field_type: "select",
+			field_type: 'select',
 			select_options: selectoptions,
-			select_text: "",
+			select_text: '',
+			save_if_nothing_changed: true, // make sure callback is called even if no change
+			preinit: function() {
+				// Add a hint: the impact probably should be at least that of the highest impact of its member nodes.
+				var highnodes = te.computeminimpact();
+
+				$(this).removeClass();
+				$(this).addClass('th_impact th_col');
+				// Only warn of the impact should be at least Medium
+				if ("MHV".indexOf(te.minimpact)==-1)
+					return;
+
+				var str;
+				str  = _("The impact should be at least %%, because the following nodes have that impact for single failures.",
+					ThreatAssessment.descr[ThreatAssessment.valueindex[te.minimpact]] );
+				str += '<br><ul>\n';
+
+				for (var j=0; j<highnodes.length; j++) {
+					var n = Node.get(highnodes[j]);
+					str += '<li>' + n.htmltitle() + '</li>\n';
+				}
+				str += '</ul>';
+				$('#impacthint').html(str);
+
+#ifdef SERVER
+				var fuzz = 60;
+				var ofuzz = 45;
+#else
+				var fuzz = 15;
+				var ofuzz = 3;
+#endif
+				$('#outerimpacthint').show();
+				var otop = $('#outerimpacthint').offset().top-ofuzz;
+				var top = $(this).offset().top-fuzz-otop;
+				if (top<5) {
+					otop -= 5-top;
+					top = 5;
+				}
+				if (top>250) {
+					otop += top-250;
+					top = 250;
+				}
+				$('#hintpoint').animate({top: top});
+				$('#outerimpacthint').animate({top: otop});
+			},
+			postclose: function() {
+				$('#outerimpacthint').hide();	// When editing impact of CCFs
+			},
 			callback: function(oid, enteredText) {
 				te.setimpact(enteredText);
-				$('#dth_'+prefix+"total"+te.id).text(te.total);
+				$('#dth_'+prefix+'total'+te.id).text(te.total);
+				te.setminimpact(te.minimpact);
 				c.setmarker();
 				transactionCompleted("Vuln setimpact");
-				return enteredText; 
+				return '<span>'+enteredText+'</span>';
 			}
 		});
-		$('#dth_'+prefix+"remark"+this.id).editInPlace({
+
+		$('#dth_'+prefix+'remark'+this.id).editInPlace({
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
-			default_text: "-",
+			default_text: '-',
 			callback: function(oid, enteredText) {
 				te.setremark(enteredText);
 				transactionCompleted("Vuln setremark");
@@ -374,6 +476,7 @@ ThreatAssessment.prototype = {
 		data.d=this.description;
 		data.p=this.freq;
 		data.i=this.impact;
+		// this.minimpact does not need to be stored, but is recomputed.
 		data.r=this.remark;
 		return JSON.stringify(data);
 	},

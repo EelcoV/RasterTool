@@ -54,7 +54,7 @@ body {
 
 /* The content panes to each vertical tab */
 .workouter {position: absolute; left: 35px; top: 42px; margin: 0px; }
-.workinner {overflow: auto; border-radius: 4px 0 4px 0; }
+.workinner {overflow: auto; border-radius: 4px; }
 .workbody h1 {margin-top: 0;}
 
 input.inplace_field, textarea.inplace_field {
@@ -196,6 +196,72 @@ img.tC {
     width: 2em;
     text-align: center;
 }
+#freqcontrols input[type=text] {
+	width: 3em;
+	margin-right: 2em;
+}
+.range {
+	display: inline-block;
+	width: 130px;
+	padding-left: 30px;
+}
+#freqcontrols fieldset {
+	border: none;
+	padding: 0;
+}
+
+#resultarea {
+	position: relative;
+	height: 35px;
+}
+#result {
+	position: absolute;
+	bottom: -18px;
+	left: 237px;
+	width: 0;
+	height: 0;
+	border: 22px solid rgba(0,0,255,0.5);
+	box-shadow: blue 0px 0px 8px;
+	z-index: 2;
+	border-radius: 22px;
+}
+
+#freqcontrols {
+	background: whitesmoke;
+	border: 1px solid grey;
+	width: 525px;
+}
+.tdaright {
+	text-align: right;
+}
+
+.box {
+	border: 1px solid grey;
+	position: absolute;
+	height: 6px;
+	background: #f8f8f8;
+}
+#bV {left: 10px; width:50px;}
+#bH {left: 61px; width:48px;background:red;}
+#b1 {left:110px; width:140px;}
+#bM {left:251px; width:48px;background:orange;}
+#b2 {left:300px; width:140px;}
+#bL {left:441px; width:48px;background:green;}
+#bU {left:490px; width:50px;}
+
+#boxlabels {
+	position: relative;
+	height: 40px;
+}
+.label{
+	position: relative;
+	top: 10px;
+}
+#lH {left: 60px;}
+#lM {left:210px;}
+#lL {left:360px;}
+
+
 
 #findbutton {
     position: absolute;
@@ -254,7 +320,7 @@ img.tC {
 
 
 
-/* Common settings for all three panels */
+/* Common settings for all panels */
 .actpanel {
     display: none;
     position: absolute;
@@ -265,7 +331,7 @@ img.tC {
     color: white;
     padding: 5px;
     border-radius: 4px;
-    z-index: 800;
+    z-index: 2100;
     box-shadow: 7px 7px 6px #999;
 }
 .actpanel table { font-size: 11px; width: 100%; }
@@ -352,6 +418,7 @@ div.popupmenuitem {
     border: 1px solid grey;
     border-radius: 6px;
     margin-right: 10px;
+    margin-top: 2px;
 }
 .tinyblock {
     display: inline-block;
@@ -398,7 +465,7 @@ div.popupmenuitem {
 	width: 220px;
 }
 div.popupmenuitemdisabled {
-    color: #aaa;
+    color: #aaa !important;
 }
 #form_editlabels input {margin-bottom: 5px; }
 
@@ -415,8 +482,7 @@ div.thr_header {
 div.threat {
     display: table-row;
 }
-.sfa_sortable .threat { cursor: ns-resize; }
-.checklist .threat { cursor: ns-resize; }
+.ui-sortable .threat { cursor: ns-resize; }
 .th_col {
     display: block;
     float: left;
@@ -447,6 +513,15 @@ div.th_del input { padding: 1px; }
 .th_descr span { cursor: text; }
 .th_name .inplace_field { width: 8em; } /* Less than width of column, to account for tree structure lines */
 .th_descr .inplace_field { width: 46em; }
+.errImpact {
+}
+.errImpact > span::after {
+	color: rgb(255,102,0); /* Same as .incomplete */
+	content: " !";
+}
+.errImpactM > span::after {	content: " < M"; }
+.errImpactH > span::after {	content: " < H"; }
+.errImpactV > span::after {	content: " < V"; }
 
 /* Dialog: checklist */
 .checklist { display: none; }
@@ -482,6 +557,44 @@ div.th_remark {
 	width: 30em;
 }
 
+.displayoptsarea {
+	border: 1px solid #ccccff;
+    border-radius: 0 0 5px 5px;
+    background: rgba(240,240,240,0.95);
+	margin: 0;
+	padding: 0 0 0 10px;
+    width: 819px; /* width of .ccfaccordion, plus overhang left and right */
+	position: fixed;
+	top: 45px;
+	left: 43px;
+	height: 65px;
+	z-index: 1100;
+}
+.displayopt {
+	display: inline-block;
+	margin-right: 25px;
+	margin-top: 5px;
+	vertical-align: top;
+}
+.displayoptlabel {
+	font-style: italic;
+	line-height: 20px;
+}
+.headroom {
+    transition: height 200ms linear;
+    overflow: hidden;
+}
+.headroom--pinned {
+}
+.headroom--unpinned {
+    height: 2px !important;
+}
+.ui-selectmenu-open {
+	z-index: 2000 !important;
+}
+.collapseall {
+	margin-left: 10px;
+}
 
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *|         DIAGRAMS        |* * * * * * * * * * * * * * * * */
@@ -532,17 +645,8 @@ div.th_remark {
     width: 13em;
     padding-bottom: 1px !important;
 }
-.tabs-bottom li .inplace_field { /* is this still used? */
-    width: 20em;
-    font-size: 11px;
-    font-weight: bold;
-    border: 0;
-    padding: 0;
-    background: rgb(255,204,102);
-    z-index: 9999;
-}
 .tabtitle { width: 9em; }
-#servaddbutton {
+#servaddbuttondia {
     position: absolute;
 }
 .servplusbutton {
@@ -646,6 +750,9 @@ div.node {
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
+}
+div.node:focus {
+	outline: none;
 }
 div.nodeheader {
     position: absolute;
@@ -925,6 +1032,9 @@ div.tNOTheader {
 #servaddbuttonsf {
     position: absolute;
 }
+.sfacclist {
+	margin-top: 80px;
+}
 
 .firstp {
     margin-top: 22px;
@@ -943,11 +1053,6 @@ for checklists and threat evaluations.
 .incomplete {
     margin-left: 2em;
     color: rgb(255,102,0);
-}
-.disabled {
-    margin-left: 2em;
-    color: rgb(255,102,0);
-    text-transform: uppercase;
 }
 
 .Magnitude {
@@ -977,21 +1082,58 @@ for checklists and threat evaluations.
     margin-left: 15px;
     margin-top: 22px;
 }
-
-.expandcollapse {
+#someccf {
 }
-
-#filter {
-    margin-left: 40px;
+#ccfacclist {
+	margin-top: 80px;
 }
-
-.shfaccordion {
+#outerimpacthint {
+	position: absolute;
+	width: 260px;
+	height: 300px;
+	left: 835px;
+	top: 10px;
+	border: 3px solid grey;
+	background: whitesmoke;
+	border-radius: 15px;
+}
+#outerimpacthint img {
+	position: absolute;
+	width: 64px;
+	height: 74px;
+	top: -20px;
+	right: -47px;
+}
+#hintpoint {
+	position: absolute;
+	width: 0;
+	height: 0;
+	left: -40px;
+	top: 135px;
+	border: 20px solid grey;
+	border-color: transparent grey transparent transparent;
+}
+#impacthint {
+	position: relative;
+	top: 0;
+	left: 0;
+	width: 240px;
+	height: 280px;
+	overflow: hidden;
+	padding: 10px;
+	line-height: 1.5em;
+}
+#impacthint ul {
+	padding-left: 25px;
+	line-height: 1.7em;
+}
+.ccfaccordion {
     width: 810px !important;
     margin-left: 15px !important;
     margin-bottom: 3px !important;
 }
 
-.shfaccordionbody {
+.ccfaccordionbody {
     padding-top: 0px !important;
     padding-right: 0px !important;
 }
@@ -1009,7 +1151,7 @@ for checklists and threat evaluations.
 	height: 25px;
 }
 
-.threatdomain {
+.clusternodelist {
 /*    height: 450px; is now set in SizeDOMElements() */
     margin-top: 5px;
 
@@ -1085,10 +1227,11 @@ for checklists and threat evaluations.
     white-space: nowrap;
     width: 150px;
 }
-.shflabelgroup {
+.ccflabelgroup {
     position: absolute;
     right: 20px;
     top: 0;
+    width: 175px;
 }
 
 .litext {
@@ -1116,10 +1259,17 @@ for checklists and threat evaluations.
 }
 #analysis_body input { margin-top: 0px; margin-bottom: 0.5em; margin-right: 1em; padding: 2px; }
 
-#ana_nodethreattop { margin: 15px 0 0; }
-#ana_nodethreattop td {vertical-align: top; padding-right: 3em;}
+#ana_nodevuln {
+	width: 900px;
+}
+
 #ana_exclusions {width: 40em;}
 
+.ana_nodeccfblock {
+	display: inline-block;
+	vertical-align: top;
+	padding-top: 80px;
+}
 #ana_nodethreattable table {
     table-layout: fixed;
 }
@@ -1129,10 +1279,15 @@ for checklists and threat evaluations.
 }
 #ana_ccftable table {
     table-layout: fixed;
+    margin-left: 2em;
 }
 #ana_ccftable td {
     white-space: nowrap;
     text-align: center;
+}
+#at1 {
+	/* Make sure single failures and CCFs are side by side */
+	white-space: nowrap;
 }
 #at2 table {
     table-layout: fixed;
@@ -1204,23 +1359,29 @@ for checklists and threat evaluations.
     border-bottom: 1px solid black;
 }
 
-.thinrow { height: 5px; }
-
+.thinrow { height: 5px; vertical-align: bottom;}
+#svulns_tabs {
+	width: 75em;
+}
+#svulns_tabs li {
+	padding: 0 8em 0 0;
+}
+#svulns_tabs li a {
+	padding: 0.5em 11em 0.5em 1em;
+}
+#svulns_tabs .ui-tabs-nav {
+	position: auto;
+	bottom: auto;
+	width: 100% !important;
+	left: -1px !important;
+	top: -1px;
+}
+#svulns_tabs .ui-tabs-panel {
+	height: auto;
+}
 #ana_reports { margin-left: 20px; }
 
-.itemll { left: 140px; position: absolute; }
-
-#lloptions {
-    margin-top: 10px;
-    margin-right: 20px;
-    margin-bottom: 20px;
-    line-height: 25px;
-    background: lightgrey;
-    padding-bottom: 10px;
-    padding-left: 5px;
-    width: 800px;
-}
-
 #longlist {
+	margin-top: 80px;
     margin-bottom: 30px;
 }
