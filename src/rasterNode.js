@@ -53,6 +53,7 @@
  *	addtonodeclusters(): for each of the threats to this component, insert the 
  *		node into the corresponding node cluster.
  *	removefromnodeclusters(): remove this node from all node clusters.
+ *  editinprogress(): true iff the title is being edited in place.
  *	paint(effect): create and show the HTML document object for this node, but 
  *		not its connections. Fade-in if effect==true.
  *	unpaint: hide and remove the HTML document object for this node, including
@@ -618,6 +619,10 @@ Node.prototype = {
 		return (no.left>=left && no.left+nw<=left+w
 			&& no.top>=top && no.top+nh<=top+h);
 	},
+
+	editinprogress: function() {
+		return $('#titlemain'+this.id).hasClass('editInPlace-active');
+	},
 	
 	paint: function(effect) {
 		var jsP = Service.get(this.service)._jsPlumb;
@@ -629,7 +634,7 @@ Node.prototype = {
 		 	this.store();
 		 }
 		var str = '\n\
-			<div id="node_ID_" class="node _TY_">\n\
+			<div id="node_ID_" class="node _TY_" tabindex="2">\n\
 				<div id="nodecontents_ID_" class="nodecontent _TY_content"><img src="../img/_CO_/_TY_.png" class="contentimg"></div>\n\
 				<div id="nodeheader_ID_" class="nodeheader _TY_header _CO_">\n\
 				  <div id="nodetitle_ID_" class="nodetitle _TY_title"><span id="titlemain_ID_"></span><span id="titlesuffix_ID_"></span></div>\n\
@@ -752,24 +757,72 @@ Node.prototype = {
 				if (evt.which!=0) return;
 			}
 			var id = nid2id(this.id);
+			var rn = Node.get(id);
+			if (!rn.editinprogress()) this.focus();
 			$('#nodeC'+id).css({visibility: 'visible'});
-			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: 'visible'});
+			if (rn.dragpoint) $(rn.dragpoint.canvas).css({visibility: 'visible'});
 			if (Preferences.emsize=='em_none')
 				$('#nodeMagnitude'+id).addClass('doshow'); 
 		}).on('mouseleave',function() {
 			var id = nid2id(this.id);
+			var rn = Node.get(id);
+			this.blur();
+			if (!rn.editinprogress()) this.blur();
 			$('#nodeC'+id).css({visibility: 'hidden'});
-			if (Node.get(id).dragpoint) $(Node.get(id).dragpoint.canvas).css({visibility: 'hidden'});
+			if (rn.dragpoint) $(rn.dragpoint.canvas).css({visibility: 'hidden'});
 			$('#nodeMagnitude'+id).removeClass('doshow'); 
-		});
-		
-		$(this.jnid).on('contextmenu', function(e) {
+		}).on('contextmenu', function(e) {
 			e.preventDefault();
 			var rn = Node.get(nid2id(this.id));
 			rn._showpopupmenu(e.clientX+2,e.clientY-5);
 			return false;
+		}).on('keydown', function(evt){
+			var rn = Node.get(nid2id(this.id));
+			if (rn.editinprogress()) return;
+			var i;
+			// Previous label
+			if (evt.key=='<') {
+				i = Project.colors.indexOf(rn.color);
+				i = (i-1+Project.colors.length) % Project.colors.length; // add devisor to prevent negative result
+				rn.setlabel(Project.colors[i]);
+				evt.preventDefault();
+				return;
+			}
+			// Next label
+			if (evt.key=='>') {
+				i = Project.colors.indexOf(rn.color);
+				i = (i+1) % Project.colors.length;
+				rn.setlabel(Project.colors[i]);
+				evt.preventDefault();
+				return;
+			}
+			// Rename
+			if (evt.key=='F2') {
+				$('#titlemain'+rn.id).trigger('click');
+				evt.preventDefault();
+				return;
+			}
+			// Open vulnerabilities dialog
+			if (evt.key=='Enter') {
+				Node.MenuNode = rn.id;
+				if (rn.type=='tNOT') {
+					$('#titlemain'+rn.id).trigger('click');
+				} else {
+					Node.MenuNode = rn.id;
+					$('#mi_th').trigger('mouseup');
+				}
+				evt.preventDefault();
+				return;
+			}
+			// Delete, after confirmation
+			if (evt.key=='Delete' || evt.key=='Backspace') {
+				Node.MenuNode = rn.id;
+				$('#mi_de').trigger('mouseup');
+				evt.preventDefault();
+				return;
+			}
 		});
-		
+
 		$('#nodeC'+this.id).on('mousedown',  function(e){
 			var rn = Node.get(nid2id(this.id));
 			var offset = $(this).offset();

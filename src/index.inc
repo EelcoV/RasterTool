@@ -29,6 +29,7 @@ See LICENSE.md
 <script type="text/javascript" src="../js/jsplumb-2.6.6.min.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>
 <script type="text/javascript" src="../js/encodedecode.js"></script>
+<script type="text/javascript" src="../js/headroom.min.js"></script>
 #ifdef SERVER
 <script type="text/javascript">$.localise('../js/translation', {async: false, language: "<?= LANGUAGE ?>".replace(/(;.+)/,'').replace(/,.+/,'')});</script>
 #else
@@ -318,7 +319,7 @@ See LICENSE.md
 
 <div id="tab_diagrams" class="workbody workouter">
   <div id="diagrams_body" class="tabs-bottom">
-    <input id="servaddbutton" class="servplusbutton" type="button" value=" + ">
+    <input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
     <ul id="bottomtabsdia">
     </ul>
   </div>    
@@ -342,7 +343,7 @@ See LICENSE.md
 
 <div id="tab_analysis" class="workbody workouter">
   <div id="analysis_body" class="tabs-bottom tabs-flushleft">
-  <ul>
+  <ul id="bottomtabsana">
      <li class="longtab"><a class="longlink" href="#at1">Failures and Vulnerabilities</a></li>
      <li class="longtab"><a class="longlink" href="#at2">Single failures by level</a></li>
      <li class="longtab"><a class="longlink" href="#at3">Node counts</a></li>

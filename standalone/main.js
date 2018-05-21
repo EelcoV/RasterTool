@@ -40,7 +40,9 @@ const DefaultRasterOptions = {
 	// scale factor in percentage (80 means a factor 0.8)
 	pdfscale: 80,
 	// datetime of last successful check for updates
-	updatechecktime: 0
+	updatechecktime: 0,
+	// Hardware acceleration: there is no UI for this (must edit preference file by hand!)
+	disablehardwareacceleration: true
 };
 
 const prefsDir = app.getPath('userData');
@@ -75,7 +77,7 @@ function createWindow(filename) {
 	var win = new BrowserWindow({
 		x: pos.x,
 		y: pos.y,
-		width: 1082,
+		width: 1240,
 		height: 600,
 		show: false
 	});
@@ -474,9 +476,6 @@ app.on('open-file', function(event,file)  {
 
 /***************************************************************************************************/
 
-// Disable hardware accelerationfor maximum compatibility. Could be an option.
-app.disableHardwareAcceleration();
-
 // Create a directory to store preferences in
 try {
 	fs.mkdirSync(prefsDir);
@@ -503,6 +502,11 @@ try {
 }
 catch (e) {
 	// ignore silently
+}
+
+if (app.rasteroptions.disablehardwareacceleration==true) {
+	// Disable hardware acceleration for maximum compatibility.
+	app.disableHardwareAcceleration();
 }
 
 // On Windows, the file to be opened is in argv[1]
@@ -533,7 +537,7 @@ MenuTemplate = [{
 		}
 	}, {
 		label: _("Save as..."),
-		accelerator: 'Shift+CmdOrCtrl+Z',
+		accelerator: 'Shift+CmdOrCtrl+S',
 		click: function (item, focusedWindow) {
 			if (focusedWindow) focusedWindow.webContents.send('document-start-saveas');
 		}
@@ -670,6 +674,7 @@ MenuTemplate = [{
 	role: 'help',
 	submenu: [{
 		label: _("Quick guide..."),
+		accelerator: 'F1',
 		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('help-show'); }
 	}, {
 		label: _("About..."),
