@@ -51,8 +51,11 @@
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
  *	storeOnServer(): save this project onto the server.
+ *  storeIfNotPresent():
  *	deleteFromServer(): remove this project from the server.
  *	getDate(): retrieve last saved date of this project.
+ *  refreshIfNecessary():
+ *  dorefresh():
  */
 var Project = function(id,asstub) {
 	if (id!=null && Project._all[id]!=null)
@@ -117,6 +120,7 @@ Project.firstProject = function() {
 Project.merge = function(intoproject,otherproject) {
 	// Save a copy of the file that is merged
 	var savedcopy = exportProject(otherproject.id);
+	var saveddate = otherproject.date;
 	// Move each of the services over, one by one
 	for (var i=0; i<otherproject.services.length; i++) {
 		var s = Service.get(otherproject.services[i]);
@@ -166,9 +170,15 @@ Project.merge = function(intoproject,otherproject) {
 	otherproject.services = [];
 	otherproject.destroy();
 	// Now resurrect the other project
-	otherproject = loadFromString(savedcopy,true,false,'Merge');
-	if (otherproject==null)
+	i = loadFromString(savedcopy,true,false,'Merge');
+	if (i==null)
 		bugreport("Failed to resurrect merged project", "Project.Merge");
+	otherproject = Project.get(i);
+	otherproject.date = saveddate;
+
+	if (intoproject.shared) {
+		intoproject.storeOnServer(false,exportProject(intoproject.id),{});
+	}
 };
 
 #ifdef SERVER
