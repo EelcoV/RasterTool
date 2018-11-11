@@ -2282,6 +2282,8 @@ function ShowDetails(p) {
 						// Stop watching the project, or we will notify ourselves about its deletion
 						stopWatching(p.id);
 						p.setshared(becomesShared,true);
+					} else if (p.shared && becomesShared) {
+						p.storeOnServer(false,exportProject(p.id),{});
 					}
 #endif
 					$(this).dialog('close');
