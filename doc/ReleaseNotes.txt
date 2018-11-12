@@ -1,7 +1,15 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
-May 2.2
+November 2018
+=============
+* Release as 2.2.1 - Winter 2018 (Intranet version only)
+* When merging a shared project, that project would lose its last-saved timestamp,
+  leading to an error when activating that project.
+* Changes to the Details of a project would sometimes not be saved to the server.
+* UI improvements on Details window and other modal popups.
+
+May 2018
 ========
 * Release as 2.2.0 - Spring 2018
 * A hint or suggested value is shown when editing the impact of a node cluster. E.g: if

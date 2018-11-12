@@ -12,14 +12,11 @@ Be consistent: cloud, unknown link, unexplored link. Decision: use "unknwon link
 When printing CCF, the accordions are not always all expanded.
 SizeDOMElements is not called when browser goes fullscreen. The bottom tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?
 Opening threats/nodereport dialogs: looks ugly when the diagram is moved out of the viewport. Move towards the center?
-When a project is changed from Private to Shared and then a different project is selected without changing the shared project, no version is uploaded. When re-activating the shared project an error message indicates that the project was deleted from the server. It was never uploaded.
-Third party cookies must be enabled for localStorage to function. This is a concern, perhaps, when never versions of Firefox disable third party cookies by default.
 Change details of a project on the server but not active: function not implemented.
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
 Change node shapes from image to SVG, helps for cleaner resizes.
-Feature: on selection use Del to delete. Other menu shortcuts? E.g. F2 to rename on Windows.
 Try IndexDB instead of localStorage. This will benefit concurrent use in multiple tabs, and may ease the implementation of Undo and concurrent use across computers.
 When renaming a node, split at the ^ sign and treat the latter part as the suffix?
 CCF view: make each vulnerability a bottom tab?
