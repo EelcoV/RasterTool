@@ -10,7 +10,7 @@
 !define RASTERNUMVERSION "2.2.2b"
 
 # This is the size (in kB) of all the files copied into "Program Files"
-!define INSTALLSIZE 107000
+!define INSTALLSIZE 134000
 
 BrandingText "Raster"
 
