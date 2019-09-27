@@ -106,6 +106,7 @@ section "uninstall"
 	# Remove files
 	rmdir /r $INSTDIR\locales
 	rmdir /r $INSTDIR\resources
+	rmdir /r $INSTDIR\swiftshader
 	delete $INSTDIR\*.*
 
 	# Always delete uninstaller as the last action
