@@ -164,7 +164,7 @@
 		494B702918796E9D00400328 /* share.inc */ = {isa = PBXFileReference; explicitFileType = text.script.php; path = share.inc; sourceTree = "<group>"; };
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
-		4954ADED1F954398002A6FBC /* base.EN.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.EN.dmg; sourceTree = "<group>"; };
+		4954ADED1F954398002A6FBC /* base.EN.dmg */ = {isa = PBXFileReference; lastKnownFileType = text; path = base.EN.dmg; sourceTree = "<group>"; };
 		4962CD6C1FCAD79700EBD886 /* User manual EN v2.0.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "User manual EN v2.0.epub"; sourceTree = "<group>"; };
 		4962CD6D1FCAD79700EBD886 /* User manual EN v2.0.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "User manual EN v2.0.pdf"; sourceTree = "<group>"; };
 		4962CD6E1FCAD79700EBD886 /* Handleiding methode NL v2.0.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Handleiding methode NL v2.0.pdf"; sourceTree = "<group>"; };
@@ -751,6 +751,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 494B6F5E18796DD000400328;

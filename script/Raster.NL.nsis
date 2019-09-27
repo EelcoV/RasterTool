@@ -6,8 +6,8 @@
 # These three must be integers
 !define VERSIONMAJOR 2
 !define VERSIONMINOR 2
-!define VERSIONBUILD 0
-!define RASTERNUMVERSION "2.2.0"
+!define VERSIONBUILD 2
+!define RASTERNUMVERSION "2.2.2b"
 
 # This is the size (in kB) of all the files copied into "Program Files"
 !define INSTALLSIZE 107000

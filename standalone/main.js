@@ -75,6 +75,13 @@ function createWindow(filename) {
 
 	// Create the browser window.
 	var win = new BrowserWindow({
+		webPreferences: {
+			/* Node integration is disabled by default since 5.0.0. Because we do ipc-calls from within almost
+			 * all Raster objects, simply preloading the ipc-calls from a separate Javascript file is not
+			 * feasible. We *know* that we only load our own scripts, so Node integration should not pose a danger.
+			 */
+			nodeIntegration: true
+		},
 		x: pos.x,
 		y: pos.y,
 		width: 1240,
@@ -116,6 +123,8 @@ function createWindow(filename) {
 			delete Win[win.id];
 	});
 }
+/* This workaround was made unnecessary in August 2018.
+ * See https://github.com/electron/libchromiumcontent/pull/503
 
 function ForceWindowRepaint() {
 	// At least on "plain" Windows (e.g. without Aero desktop effects enabled), the window is not
@@ -138,6 +147,7 @@ function ForceWindowRepaint() {
 		win.setSize(bounds.width, bounds.height);
 	}
 }
+*/
 
 function ReadFileAndLoad(win,filename) {
 	try {
@@ -169,7 +179,7 @@ function RecordFilename(win,filename) {
 	win.documentIsModified = false;
 	win.setDocumentEdited(false);
 	win.webContents.send('document-save-success',docname);
-	ForceWindowRepaint();
+	//ForceWindowRepaint();
 }
 
 /* Returns false if current document was modified and should be saved. */
@@ -177,7 +187,7 @@ function checkSaveModifiedDocument(win) {
 	if (!win.documentIsModified)
 		return true;
 
-	var buttonval = dialog.showMessageBox(win, {
+	var buttonval = dialog.showMessageBoxSync(win, {
 		type: 'warning',
 		buttons: [_("Cancel"), _("Discard changes")],
 		cancelID: 0,
@@ -190,23 +200,21 @@ function checkSaveModifiedDocument(win) {
 }
 
 function doSaveAs(win,str) {
-	dialog.showSaveDialog(win, {
-			title: _("Save project"),
-			filters: [{
-				name: _("Raster project"),
-				extensions: ['raster']
-			}]
-		},
-		function(filename) {
-			if (filename) {
-				try {
-					fs.writeFileSync(filename, str);
-					RecordFilename(win,filename);
-				} catch (e) {
-					dialog.showErrorBox(_("Project was not saved"), _("System notification:") +"\n"+e);
-				}
-			}
-		});
+	var filename = dialog.showSaveDialogSync(win, {
+		title: _("Save project"),
+		filters: [{
+			name: _("Raster project"),
+			extensions: ['raster']
+		}]
+	});
+	if (filename) {
+		try {
+			fs.writeFileSync(filename, str);
+			RecordFilename(win,filename);
+		} catch (e) {
+			dialog.showErrorBox(_("Project was not saved"), _("System notification:") +"\n"+e);
+		}
+	}
 }
 
 function doSave(win,str) {
@@ -223,7 +231,7 @@ function doSave(win,str) {
 }
 
 function doOpen(win) {
-	var filenames = dialog.showOpenDialog(win, {
+	var filenames = dialog.showOpenDialogSync(win, {
 		title: _("Open project"),
 		filters: [{
 				name: _("Raster project"),
@@ -250,7 +258,7 @@ function doNew() {
 }
 
 function doPrint(win) {
-	var filename = dialog.showSaveDialog(win, {
+	var filename = dialog.showSaveDialogSync(win, {
 		title: _("Opslaan als PDF"),
 		filters: [{
 				name: _("PDF files"),
@@ -370,7 +378,7 @@ function CheckForUpdates(win) {
 				// Use only the first line
 				body = body.replace(/$.*/m, '');
 				if (body != appversion) {
-					dialog.showMessageBox({
+					dialog.showMessageBoxSync({
 						title: _("Update available"),
 						message: _("An update of this tool is available."),
 						detail: _("Version %% is available; you have version %%.", body, appversion)
@@ -472,6 +480,14 @@ app.on('window-all-closed', function()  {
 app.on('open-file', function(event,file)  {
 	if (fs.existsSync(file))
 		FileToBeOpened = file;
+});
+
+// Prevent all navigation
+// See https://electronjs.org/docs/tutorial/security#12-disable-or-limit-navigation
+app.on('web-contents-created', function(event, contents) {
+	contents.on('will-navigate', function () {
+		event.preventDefault();
+	});
 });
 
 /***************************************************************************************************/
@@ -680,7 +696,7 @@ MenuTemplate = [{
 		label: _("About..."),
 		click: function (item, focusedWindow) {
 			if (!focusedWindow) return;
-			dialog.showMessageBox(focusedWindow, {
+			dialog.showMessageBoxSync(focusedWindow, {
 				type: 'none',
 				buttons: [_("OK")],
 				title: _("About this program"),

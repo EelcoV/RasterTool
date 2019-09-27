@@ -117,6 +117,7 @@ CreateMacOSVersion()
 		exit 1
 	fi
 	hdiutil attach build/temp.dmg
+	rm -fr "$VOLDIR/Raster.app"
 	cp -R -p $BASEDIR/Raster.app "$VOLDIR"
 	sync && sync
 	hdiutil detach "$VOLDIR"
