@@ -10,7 +10,7 @@ var PreferencesObject = function() {
 		this.theme = theme;
 		var cssLink = $('<link href="../css/'+theme+'-1.12.1/jquery-ui.min.css" type="text/css" rel="stylesheet" class="ui-theme">');
 		$('head').append(cssLink);
-		$('link.ui-theme:first').remove();
+		$('link.ui-theme').first().remove();
 		$('ul.rot-neg-90 li').css('float','right');
 		this.store();
 	};

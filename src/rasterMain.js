@@ -3748,11 +3748,11 @@ function clickCollapseHandler(ev) {
         return;
     
     if (cluster.accordionopened) {
-        ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e');
+        ul.find('.ui-icon').first().removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e');
         cluster.setaccordionopened(false);
         ul.children().slice(1).slideUp('fast');
     } else {
-        ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
+        ul.find('.ui-icon').first().removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
         cluster.setaccordionopened(true);
         ul.children().slice(1).slideDown('fast');
     }
@@ -4120,7 +4120,7 @@ function expandAllCCF() {
         } else {
             if (!cl.accordionopened) {
                 var ul = $('#tlist'+cl.id);
-                ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
+                ul.find('.ui-icon').first().removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
                 cl.setaccordionopened(true);
                 ul.children().slice(1).show();
             }
@@ -4140,7 +4140,7 @@ function collapseAllCCF() {
         } else {
             if (cl.accordionopened) {
                 var ul = $('#tlist'+cl.id);
-                ul.find('.ui-icon:first').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e');
+                ul.find('.ui-icon').first().removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e');
                 cl.setaccordionopened(false);
                 ul.children().slice(1).hide();
             }
