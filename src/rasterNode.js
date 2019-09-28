@@ -97,7 +97,7 @@ Node.get = function(id) { return Node._all[id]; };
 Node.projecthastitle = function(pid,str) {
 	for (var i=0,alen=Node._all.length; i<alen; i++) {
 		if (!Node._all[i]) continue;
-		if (Node._all[i].title==str) {
+		if (isSameString(Node._all[i].title,str)) {
 			var cm = Component.get(Node._all[i].component);
 			if (cm.project==pid) return i;
 		}
@@ -107,7 +107,7 @@ Node.projecthastitle = function(pid,str) {
 Node.servicehastitle = function(sid,str) {
 	for (var i=0,alen=Node._all.length; i<alen; i++) {
 		if (!Node._all[i]) continue;
-		if (Node._all[i].title==str && Node._all[i].service==sid) return i;
+		if (isSameString(Node._all[i].title,str) && Node._all[i].service==sid) return i;
 	}
 	return -1;
 };
@@ -301,6 +301,10 @@ Node.prototype = {
 			c.adddefaultthreatevaluations(this.component);
 			c.addnode(this.id);
 			c.settitle(str);
+		} else if (n==prevcomponent.id) {
+			// New title is strictly different, but case-insensitive identical
+			prevcomponent.settitle(str);
+			prevcomponent = null; 
 		} else {
 			// The new name of this node matches an existing Component.
 			// add this node to that component
@@ -1049,7 +1053,7 @@ Node.prototype = {
 		// If this node is member of a singlular component, and it is not the first node of that component,
 		// then this node should not appear in any node cluster
 		var cm = Component.get(this.component);
-		if (cm && cm.title!=this.title) {
+		if (cm && !isSameString(cm.title,this.title)) {
 			errors += "Node "+this.id+" has title ("+this.title+") that differs from its component ("+cm.title+").\n";
 		}
 		if (cm && cm.single && cm.nodes[0]!=this.id) {
