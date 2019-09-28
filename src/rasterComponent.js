@@ -587,6 +587,11 @@ Component.prototype = {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  * ComponentIterator: iterate over all components of a project
  *
+ * opt: object with options to restrict the iteration to specified items only.
+ *		Specify project (ID), service (ID), type (string), and/or match (string).
+ * Option 'match' is similar to 'type'; 'type' looks for equality, but 'match'
+ * looks for either equality or a cloud-type.
+ *
  * usage:
  * 		var it = new ComponentIterator({project: ppppp, service: sssss, type: ttttt});
  * 		for (it.first(); it.notlast(); it.next()) {
@@ -608,6 +613,12 @@ var ComponentIterator = function(opt) {
 		}
 		if (ok && opt.type!=null) {
 			ok = ok && (cm.type==opt.type);
+		}
+		if (ok && opt.match!=null) {
+			ok = ok && (cm.type==opt.match
+			 || cm.type=='tUNK'
+			 || opt.match=='tUNK'
+			);
 		}
 		if (ok && opt.service!=null) {
 			occurs=false;

@@ -4,9 +4,14 @@ See LICENSE.md
 October 2019
 ============
 * Release as x.x.x - Winter 2019
-* Breaking change: names of components, services and vulnerabilities are now case
+* Breaking change: names of components, services and vulnerabilities are case
   insensitive. This means that "ethernet" and "EtherNet" can no longer be separate
   components. Projects are automatically upgraded to the new internal format.
+* Working with templates is a lot easier:
+  - Add/remove a vulnerability from a template: applies to all future components,
+    and optionally to existing components as well.
+  - Add/remove a vulnerability from a component: applies to this component only.
+  - Rename a vulnerability: applies to the template and all existing components.
 * Internal changes (library upgrades) and small bug fixes.
 
 November 2018
