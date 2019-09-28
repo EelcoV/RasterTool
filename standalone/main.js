@@ -259,7 +259,7 @@ function doNew() {
 
 function doPrint(win) {
 	var filename = dialog.showSaveDialogSync(win, {
-		title: _("Opslaan als PDF"),
+		title: _("Save as PDF"),
 		filters: [{
 				name: _("PDF files"),
 				extensions: ['pdf']
