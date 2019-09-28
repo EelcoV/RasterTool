@@ -181,7 +181,7 @@ ThreatAssessment.prototype = {
 			for (var i=0; i<cm.thrass.length; i++) {
 				if (cm.thrass[i]==this.id) continue;
 				var ta = ThreatAssessment.get(cm.thrass[i]);
-				if (ta.title==t && ta.type==this.type)
+				if (isSameString(ta.title,t) && ta.type==this.type)
 					// silently ignore
 					return;
 			}
@@ -243,7 +243,7 @@ ThreatAssessment.prototype = {
 			var t;
 			for (var j=0; j<cm.thrass.length; j++) {
 				t = ThreatAssessment.get(cm.thrass[j]);
-				if (t.title==rc.title && t.type==rc.type) break;
+				if (isSameString(t.title,rc.title) && t.type==rc.type) break;
 			}
 			if (j==cm.thrass.length) {
 				bugreport("Vulnerability not found", "computeminimpact");
@@ -565,7 +565,7 @@ Threat.prototype = {
 		for (it.first(); it.notlast(); it.next()) {
 			var th = it.getthreat();
 			if (th.id==this.id) continue;
-			if (th.title==t) return;
+			if (isSameString(th.title,t)) return;
 		}
 		this.title = t;
 		this.store();

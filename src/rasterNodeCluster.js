@@ -418,7 +418,7 @@ NodeCluster.prototype = {
 				errors += offender+"has a member vuln assessment "+ta.id+" that also refers to a component.\n";
 			if (ta.type!=this.type)
 				errors += offender+"has a member vuln assessment "+ta.id+" with a non-matching type.\n";
-			if (ta.title!=this.title)
+			if (!isSameString(ta.title,this.title))
 				errors += offender+"has a member vuln assessment "+ta.id+" with a different title.\n";
 		}
 
@@ -441,7 +441,7 @@ NodeCluster.prototype = {
 			// The component of each child node must have a threat assessment that matches this cluster
 			for (j=0; j<cm.thrass.length; j++) {
 				ta = ThreatAssessment.get(cm.thrass[j]);
-				if (ta && ta.title==rc.title && ta.type==rc.type)
+				if (ta && isSameString(ta.title,rc.title) && ta.type==rc.type)
 					break;
 			}
 			if (j==cm.thrass.length) {
@@ -476,7 +476,7 @@ var NodeClusterIterator = function(opt) {
 		if (opt && opt.isstub!=undefined && (nc.childnodes.length+nc.childclusters.length<2)!=opt.isstub) continue;
 		if (opt && opt.isempty!=undefined && (nc.childnodes.length+nc.childclusters.length==0)!=opt.isempty) continue;
 		if (opt && opt.type!=undefined && nc.type!=opt.type) continue;
-		if (opt && opt.title!=undefined && nc.title!=opt.title) continue;
+		if (opt && opt.title!=undefined && !isSameString(nc.title,opt.title)) continue;
 		this.item.push(i);
 	}
 	this.itemlength = this.item.length;
