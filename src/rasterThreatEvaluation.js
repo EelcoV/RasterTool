@@ -342,14 +342,16 @@ ThreatAssessment.prototype = {
 		if (!nc_isroot) $('#dthE_'+prefix+'name'+this.id).editInPlace({
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			callback: function(oid, enteredText) {
+				var old_t = te.title;
 				te.settitle(enteredText);
-				te.setdescription(""); // Description from checklist does not apply anymore now.
-				$('#dthE_'+prefix+'name'+te.id).attr('title', '');
-				if (c.parentcluster != undefined) {
-					// c is a nodecluster, not a component
-					c.settitle(te.title);
-					$('#litext'+c.id).html(H(te.title));
-				}
+				globalChangeThreatOrDescription(Project.cid, te.type, old_t, te.title, null, null);
+//				te.setdescription(""); // Description from checklist does not apply anymore now.
+//				$('#dthE_'+prefix+'name'+te.id).attr('title', '');
+//				if (c.parentcluster != undefined) {
+//					// c is a nodecluster, not a component
+//					c.settitle(te.title);
+//					$('#litext'+c.id).html(H(te.title));
+//				}
 				transactionCompleted("Vuln rename");
 				return H(te.title);
 			}
@@ -492,6 +494,53 @@ ThreatAssessment.prototype = {
 	}
 };
 
+/* globalChangeThreatOrDescription: replace title/description of vulnerabilities
+ * over all templates and components.
+ *
+ * pid: id of the project
+ * type: tWLS, tWRD or tEQT
+ * old_t, new_t: title old_t will be replaced by new_t (may be identical)
+ * old_d, new_d: description old_d will be replaced by new_d (may be identical)
+ *
+ * Either old_t or old_d may be null, indicating that title/description does not need
+ * to be considered/changed.
+ */
+function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
+	var it;
+
+	if (typ!='tWLS' && typ!='tWRD' && typ!='tEQT') {
+		bugreport("invalid type","globalChangeThreatOrDescription");
+		return;
+	}
+
+	it = new ThreatIterator(pid,typ);
+	for (it.first(); it.notlast(); it.next()) {
+		var th = it.getthreat();
+		if (old_t && isSameString(th.title,old_t)) {
+			th.settitle(new_t);
+			// Must update the template text field (after editing a node's vulnerability list)
+			$('#thname'+th.id).html(H(new_t));
+		}
+		if (old_d && isSameString(th.description,old_d)) {
+			// Must update the template description field
+			th.setdescription(new_d);
+			$('#thdesc'+th.id).html(H(new_d));
+		}
+	}
+
+	it = new ComponentIterator({project: pid, match: typ});
+	for (it.first(); it.notlast(); it.next()) {
+		var cm = it.getcomponent();
+		for (var i=0; i<cm.thrass.length; i++) {
+			var ta = ThreatAssessment.get(cm.thrass[i]);
+			if (old_t && isSameString(ta.title,old_t))
+				ta.settitle(new_t);
+			if (old_d && isSameString(ta.description,old_d))
+				ta.setdescription(new_d);
+		}
+	}
+}
+
 var DefaultThreats = [
 /* [ type , title , description ] */
 ["tWLS",_("Interference"),		_("Unintentional interference by a radio source using the same frequency band.")],
@@ -589,7 +638,9 @@ Threat.prototype = {
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			callback: function(domid, enteredText) { 
 				var th = Threat.get( nid2id(domid) );
+				var old_t = th.title;
 				th.settitle(enteredText);
+				globalChangeThreatOrDescription(th.project, th.type, old_t, th.title, null, null);
 				transactionCompleted("Checklist rename");
 				return H(th.title); 
 			}
@@ -598,7 +649,9 @@ Threat.prototype = {
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			callback: function(domid, enteredText) { 
 				var th = Threat.get( nid2id(domid) );
+				var old_d = th.description;
 				th.setdescription(enteredText);
+				globalChangeThreatOrDescription(th.project, th.type, null, null, old_d, th.description);
 				transactionCompleted("Checklist description");
 				return H(th.description); 
 			}
@@ -606,11 +659,36 @@ Threat.prototype = {
 		$('#thdel'+this.id).on('click',  function() {
 			var th = Threat.get(nid2id(this.id));
 			newRasterConfirm(_("Delete vulnerability?"),
-				_("Do you want to delete the vulnerability '%%' for '%%' nodes?", H(th.title), Rules.nodetypes[th.type]),
+				_("Do you want to delete the vulnerability '%%' for future %% nodes?", H(th.title), Rules.nodetypes[th.type]),
 				_("Remove"),_("Cancel")
 			)
 			.done(function() {
-				Project.get(th.project).removethreat(th.id); 
+				Project.get(th.project).removethreat(th.id);
+				// Count how many components have this threat
+				var count = 0;
+				var it = new ComponentIterator({project: th.project, match: th.type});
+				for (it.first(); it.notlast(); it.next()) {
+					var cm = it.getcomponent();
+					for (var i=0; i<cm.thrass.length; i++) {
+						var ta = ThreatAssessment.get(cm.thrass[i]);
+						if (isSameString(ta.title,th.title)) {
+							count++;
+						}
+					}
+				}
+				if (count>0) rasterConfirm(_("Apply to all?"),_("Should this vulnerability be removed from %% current components as well?",count),_("Remove"),_("Keep"),function(){
+					$('#componentthreats').dialog('close');
+					for (it.first(); it.notlast(); it.next()) {
+						cm = it.getcomponent();
+						NodeCluster.removecomponent_threat(Project.cid,cm.id,th.title,th.type,true);
+						for (i=0; i<cm.thrass.length; i++) {
+							var ta = ThreatAssessment.get(cm.thrass[i]);
+							if (isSameString(ta.title,th.title)) {
+								cm.removethrass(ta.id);
+							}
+						}
+					}
+				});
 				transactionCompleted("Checklist remove");
 			});
 		});

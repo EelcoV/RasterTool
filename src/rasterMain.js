@@ -2750,7 +2750,7 @@ function initTabDiagrams() {
         $('#'+this.id).css({visibility: 'hidden'});
         // this.id is of the form "tC_YYY", and we need to know YYY
         var ctype = this.id.substr(3);
-        displayChecklistsDialog(ctype);        
+        displayChecklistsDialog(ctype);
         return false;
     });
     
@@ -3097,6 +3097,17 @@ function initTabDiagrams() {
             var p = Project.get( Project.cid );
             p.addthreat(t.id);
             t.addtablerow("#"+typ+"threats");
+			rasterConfirm(_("Apply to all?"),_("Should this vulnerability be added to existing components as well?"),_("Add to all"),_("Don't add"),function(){
+				$('#componentthreats').dialog('close');
+				var it = new ComponentIterator({project: p.id, match: typ});
+				for (it.first(); it.notlast(); it.next()) {
+					var cm = it.getcomponent();
+					var ta = new ThreatAssessment(typ);
+					ta.settitle(t.title);
+					ta.setdescription(t.description);
+					cm.addthrass(ta);
+				}
+			});
             transactionCompleted("Checklist vuln add");
         };
     };
