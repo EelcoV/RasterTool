@@ -3,8 +3,8 @@
 #
 
 ELECTRONVERSION="6.0.10"
-RASTERNUMVERSION="2.2.2b"
-RASTERVERSION="2.2.2 beta"
+RASTERNUMVERSION="3.0.0b"
+RASTERVERSION="3.0.0 beta"
 RASTERSEASON="Winter 2019"
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
