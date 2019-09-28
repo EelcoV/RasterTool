@@ -94,7 +94,7 @@ Project.withTitle = function(str) {
 		var p = Project._all[i];
 		if (p==null || p.stub)
 			continue;
-		found=(p.title==str  && (!p.shared || p.group==ToolGroup));
+		found=(isSameString(p.title,str)  && (!p.shared || p.group==ToolGroup));
 	}
 	return (found ? i-1 : null);
 };
@@ -138,7 +138,7 @@ Project.merge = function(intoproject,otherproject) {
 			for (it2.first(); it2.notlast(); it2.next()) {
 				var cm2 = it2.getcomponent();
 				if (cm2.id==cm.id) continue;
-				if (cm2.title!=cm.title) continue;
+				if (!isSameString(cm2.title,cm.title)) continue;
 				// There is already a component in this project with title cm.title
 				// cm needs to be merged into cm2.
 				cm2.absorbe(cm);
@@ -972,7 +972,7 @@ var ProjectIterator = function(opt) {
 		var p =  Project._all[i];
 		var ok = true;
 		if (opt && opt.title!=null) {
-			ok = ok && (p.title===opt.title);
+			ok = ok && (isSameString(p.title,opt.title));
 		}
 		if (opt && opt.group!=null) {
 			ok = ok && (!p.shared || p.group===opt.group);

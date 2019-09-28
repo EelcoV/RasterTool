@@ -17,7 +17,7 @@
  *	id: unique number
  *	title: retrieve current title
  *	project: project to which this component belongs
- *	thrass[]: array of ThrEvalation id's, holding the threat estimates
+ *	thrass[]: array of ThreatAssessment id's, holding the threat estimates
  *	nodes[]: array of Node objects that share this component.
  *	magnitude: overall vulnerability of this component
  *	single: true iff the component has a single physical existence (i.s.o. multiple identical copies)
@@ -71,7 +71,7 @@ Component.get = function(id) { return Component._all[id]; };
 Component.hasTitleTypeProject = function(str,typ,pid) {
 	for (var i=0; i<Component._all.length; i++) {
 		if (!Component._all[i]) continue;
-		if (Component._all[i].title==str 
+		if (isSameString(Component._all[i].title,str)
 		 && Component._all[i].type==typ
 		 && Component._all[i].project==pid) return i;
 	}
@@ -94,9 +94,9 @@ Component.prototype = {
 			var ta =  ThreatAssessment.get(cm.thrass[i]);
 			for (var j=0; j<this.thrass.length; j++) {
 				var ta2 = ThreatAssessment.get(this.thrass[j]);
-				if (ta2.title==ta.title) break;
+				if (isSameString(ta2.title,ta.title)) break;
 			}
-			if (ta.title==ta2.title) {
+			if (isSameString(ta.title,ta2.title)) {
 				// This component has a threat ta2 with the same name as the one absorbed.
 				ta2.setfreq( ThreatAssessment.worst(ta.freq,ta2.freq) );
 				ta2.setimpact( ThreatAssessment.worst(ta.impact,ta2.impact) );
@@ -140,7 +140,7 @@ Component.prototype = {
 			// Break as soon as we find a match.
 			for (var i=0; i<this.thrass.length; i++) {
 				var te = ThreatAssessment.get(this.thrass[i]);
-				if (ThreatAssessment.Clipboard[j].t==te.title
+				if (isSameString(ThreatAssessment.Clipboard[j].t,te.title)
 				 && (this.type!='tUNK' || ThreatAssessment.Clipboard[j].y==te.type)
 				) break;
 			}
@@ -254,7 +254,7 @@ Component.prototype = {
 		var it = new NodeIterator({project: Project.cid});
 		for (it.first(); it.notlast(); it.next()) {
 			var rn = it.getnode();
-			if (rn.title==str)
+			if (rn.component!=this.id && isSameString(rn.title,str))
 				return;
 		}
 		this.settitle(str);
@@ -505,6 +505,10 @@ Component.prototype = {
 			}
 			if (rn.component!=this.id) {
 				errors += offender+"has a member node "+rn.id+" that doesn't refer back.\n";
+				continue;
+			}
+			if (!isSameString(rn.title,this.title)) {
+				errors += offender+"has a member node "+rn.id+" that has a different title.\n";
 				continue;
 			}
 			for (j=0; j<i; j++) {
