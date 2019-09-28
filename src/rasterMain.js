@@ -12,7 +12,7 @@ var DEBUG = true;  // set to false for production version
  * previous versions and perform an upgrade.
  */
 var LS_prefix = 'raster';
-var LS_version = 1;
+var LS_version = 2;
 var LS = LS_prefix+':'+LS_version+':';
 
 /* Global preferences */
@@ -62,6 +62,7 @@ ipc && ipc.on('document-start-open', function(event,str) {
 	if (newp!=null) {
 		switchToProject(newp);
 		checkForErrors(false);
+		checkUpgradeDone();
 	}
 	clearModified();
 });
@@ -238,14 +239,22 @@ $(function() {
 #ifdef SERVER
     /* Loading data from localStorage. Tweaked for perfomance.
      */
+	var todelete = [];
     var strArr = [];
     for (var i=0, alen=localStorage.length; i<alen; i++) {  
         var key = localStorage.key(i);
         if (key=='RasterToolIsLoaded')
         	continue;
+		todelete.push(key);
         strArr.push(key+'\t');
         strArr.push(localStorage[key]+'\n');
-    } 
+    }
+    // Delete all localstorage items that we are about to parse.
+    // They will be recreated anyway, but may have to be upgraded to a newer version along te way.
+	alen=todelete.length;
+	for (i=0; i<alen; i++) {
+		localStorage.removeItem(todelete[i]);
+	}
     var str = strArr.join("");
     if (
       loadFromString(str,true,true,"Browser local storage")!=null) {
@@ -440,6 +449,7 @@ $(function() {
             return;
         } else
             localStorage.RasterToolIsLoaded = window.name;
+		checkUpgradeDone();
 #endif
     }));
 #ifdef SERVER
@@ -981,6 +991,12 @@ function prependIfMissing(a,b) {
         return (b.indexOf(a)==-1 ? a+' '+b : b);
 }
 
+/* Test whether two strings are identical in a case-insensitive way.
+*/
+function isSameString(a,b) {
+	return a.toUpperCase()===b.toUpperCase();
+}
+
 /* nextUnusedIndex: return first index that doesn't exist or is null
  */
 function nextUnusedIndex(arr) {
@@ -1236,6 +1252,8 @@ function transactionCompleted(transaction) {
  *
  * Returns the id of one of the projects loaded, or null on failure.
  */
+var Flag_Upgrade_Done = false;
+
 function loadFromString(str,showerrors,allowempty,strsource) {
     var lProject = [];
     var lService = [];
@@ -1246,6 +1264,9 @@ function loadFromString(str,showerrors,allowempty,strsource) {
     var lThrEval = [];
     
     var res, key, val;
+    var upgrade_1_2 = false;
+
+	Flag_Upgrade_Done = false;
     var patt = new RegExp(/^([^\t\n]+)\t([^\n]+)\n/);
     res=patt.exec(str);
     try {
@@ -1256,7 +1277,12 @@ function loadFromString(str,showerrors,allowempty,strsource) {
             if (!key || key[0]!=LS_prefix)
                 throw new Error('Invalid key');
             if (key[1]!=LS_version) {
-				throw new Error("The file has version ("+key[1]+"); expected version ("+LS_version+"). You must use a more recent version of the Raster tool.");
+                if (key[1]==1) {
+                    // Can upgrade from version 1 to version 2
+                    upgrade_1_2 = true;
+                } else {
+					throw new Error("The file has version ("+key[1]+"); expected version ("+LS_version+"). You must use a more recent version of the Raster tool.");
+				}
             }
             val = JSON.parse(urlDecode(res[2]));
             val.id = parseInt(key[3],10);
@@ -1643,15 +1669,73 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         var ls = lService[i];
         s = new Service(ls.id);
         s.project = ls.p;
-        s.settitle(ls.l);
+        if (upgrade_1_2) {
+        	// Check if there is another service in this project with the same case-insensitive name
+        	for (j=i+1; j<lServicelen; j++) {
+        		if (ls.p==lService[j].p && isSameString(ls.l,lService[j].l)) {
+        			// Append a sequence number to the title of lService[j],
+        			// or increase the number it it already had one.
+        			var seq = lService[j].l.match(/^(.+) \((\d+)\)$/);
+        			if (seq==null) {
+        				lService[j].l = lService[j].l + ' (1)';
+        			} else {
+        				seq[2]++;
+        				lService[j].l = seq[1] + ' (' + seq[2] + ')';
+        			}
+        			Flag_Upgrade_Done = true;
+        		}
+        	}
+        }
+     	s.settitle(ls.l);
     }
     for (i=0; i<lThreatlen; i++) {
         var lth = lThreat[i];
         var th = new Threat(lth.t,lth.id);
         th.setproject(lth.p);
-        th.settitle(lth.l);
         th.setdescription(lth.d);
-        th.store();
+        if (upgrade_1_2) {
+        	// Check if there is another threat in this project with the same type and case-insensitive name
+        	for (j=i+1; j<lThreatlen; j++) {
+        		if (lth.p==lThreat[j].p && lth.t==lThreat[j].t && isSameString(lth.l,lThreat[j].l)) {
+        			var oldtitle, newtitle;
+        			oldtitle = lThreat[j].l;
+        			// Append a sequence number to the title of lThreat[j],
+        			// or increase the number it it already had one.
+        			seq = oldtitle.match(/^(.+) \((\d+)\)$/);
+        			if (seq==null) {
+        				newtitle = oldtitle + ' (1)';
+        			} else {
+        				seq[2]++;
+        				newtitle = seq[1] + ' (' + seq[2] + ')';
+        			}
+        			lThreat[j].l = newtitle;
+
+        			// Now change this title too in the ThreatAssessments of all Components in this project,
+        			// and in all top-level NodeClusters of this project.
+					for (k=0; k<lComponentlen; k++) {
+						if (lComponent[k].p!=lth.p) continue;
+						for (n=0; n<lThrEvallen; n++) {
+							if (lComponent[k].e.indexOf(lThrEval[n].id)==-1) continue;
+							if (lThrEval[n].l==oldtitle)
+								lThrEval[n].l = newtitle;
+						}
+					}
+					for (k=0; k<lNodeClusterlen; k++) {
+						if (lNodeCluster[k].p==lth.p && lNodeCluster[k].u==null && lNodeCluster[k].l==oldtitle) {
+							lNodeCluster[k].l = newtitle;
+							// The evaluation of this cluster must have the same name as this cluster
+							for (n=0; n<lThrEvallen; n++) {
+								if (lThrEval[n].id==lNodeCluster[k].e)
+									lThrEval[n].l = newtitle;
+							}
+						}
+					}
+
+        			Flag_Upgrade_Done = true;
+        		}
+        	}
+        }
+        th.settitle(lth.l);
     }
     for (i=0; i<lProjectlen; i++) {
         var lp = lProject[i];
@@ -1690,16 +1774,36 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         cm.nodes = lc.n;
         cm.single = (lc.s===true);
         cm.accordionopened = (lc.o===true);
-        if (!lc.p) {
-            // project wasn't stored, because we upgraded from a version 1 localStorage.
-            // Get the project of the service of the first node.
-            // First, locate the first node
-            for (j=0; j<lNodelen && lNode[j].id!=lc.n[0]; j++) { /*jsl:pass*/ }
-            // Second, locate that node's service
-            for (k=0; k<lServicelen && lService[k].id!=lNode[j].s; k++) { /*jsl:pass*/ }
-            lc.p = lService[k].p;
-        }
+//        if (!lc.p) {
+//            // project wasn't stored, because we upgraded from a version 1 localStorage.
+//            // Get the project of the service of the first node.
+//            // First, locate the first node
+//            for (j=0; j<lNodelen && lNode[j].id!=lc.n[0]; j++) { /*jsl:pass*/ }
+//            // Second, locate that node's service
+//            for (k=0; k<lServicelen && lService[k].id!=lNode[j].s; k++) { /*jsl:pass*/ }
+//            lc.p = lService[k].p;
+//        }
         cm.project = lc.p;
+        if (upgrade_1_2) {
+        	// Check if there is another Component in this project with the same case-insensitive name
+        	for (j=i+1; j<lComponentlen; j++) {
+        		if (lc.p==lComponent[j].p && isSameString(lc.l,lComponent[j].l)) {
+        			// Append a sequence number to the title of lComponent[j],
+        			// or increase the number it it already had one.
+        			oldtitle = lComponent[j].l;
+        			seq = oldtitle.match(/^(.+) \((\d+)\)$/);
+        			if (seq==null) {
+        				newtitle = oldtitle + ' (1)';
+        			} else {
+        				seq[2]++;
+        				newtitle = seq[1] + ' (' + seq[2] + ')';
+        			}
+        			lComponent[j].l = newtitle;
+        			// Als change the title on all nodes sharing this component
+        			Flag_Upgrade_Done = true;
+        		}
+        	}
+        }
         cm.settitle(lc.l);
         // Delay calculation until ThrEvals have been loaded
         //cm.calculatemagnitude();
@@ -1741,6 +1845,16 @@ function loadFromString(str,showerrors,allowempty,strsource) {
     }
 
     return lProject[0].id;
+}
+
+/* Warn if the project has been upgraded and modified during import.
+*/
+function checkUpgradeDone() {
+	if (!Flag_Upgrade_Done) return;
+	rasterAlert(
+		_("Your project was updated"),
+		_("Your project was updated to a newer version. Some names of components and other items have been altered.")
+	);
 }
 
 /* Find the lowest unused number in arr. Array arr must not contain negative numbers.
@@ -2106,6 +2220,7 @@ function initLibraryPanel() {
             // Import checks are not as thorough as the internal consistency checks on components.
             // Therefore, force a check after load.
 			checkForErrors(false);
+			checkUpgradeDone();
         };
         reader.readAsText(files[0]);
     });

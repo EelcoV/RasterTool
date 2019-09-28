@@ -366,3 +366,5 @@ _t["Fold:"] = "Uitvouwen:";
 
 _t["The impact should be at least %%, because the following nodes have that impact for single failures."] = "De impact zou tenminste %% moeten zijn, omdat de volgende componenten die impact hebben bij Enkele Fouten.";
 
+_t["Your project was updated"] = "Uw project is bijgewerkt";
+_t["Your project was updated to a newer version. Some names of components and other items have been altered."] = "Uw project is bijgewerkt naar een nieuwere versie. De namen van sommige componenten en andere items zijn aangepast.";
