@@ -1851,6 +1851,9 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 */
 function checkUpgradeDone() {
 	if (!Flag_Upgrade_Done) return;
+#ifdef STANDALONE
+	setModified();
+#endif
 	rasterAlert(
 		_("Your project was updated"),
 		_("Your project was updated to a newer version. Some names of components and other items have been altered.")
