@@ -75,7 +75,7 @@ Service.titleisused = function(projectid,str,except) {
 	for (var i=0; !found && i<Service._all.length; i++) {
 		if (i==except) continue;
 		if (Service._all[i]!=null && Service._all[i].project==projectid)
-			found=(Service._all[i].title==str);
+			found=(isSameString(Service._all[i].title,str));
 	}
 	return found;
 };
