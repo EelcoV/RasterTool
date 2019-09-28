@@ -90,7 +90,7 @@
 		494B6F7D18796E9D00400328 /* jsl */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = jsl; sourceTree = "<group>"; };
 		494B6F7E18796E9D00400328 /* jsl.default.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = jsl.default.conf; sourceTree = "<group>"; };
 		494B6F7F18796E9D00400328 /* rasterComponent.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterComponent.js; sourceTree = "<group>"; wrapsLines = 0; };
-		494B6F8118796E9D00400328 /* rasterMain.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = rasterMain.js; sourceTree = "<group>"; };
+		494B6F8118796E9D00400328 /* rasterMain.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = rasterMain.js; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.javascript; };
 		494B6F8218796E9D00400328 /* rasterNode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterNode.js; sourceTree = "<group>"; };
 		494B6F8318796E9D00400328 /* rasterNodeCluster.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterNodeCluster.js; sourceTree = "<group>"; };
 		494B6F8418796E9D00400328 /* rasterPreferencesObject.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterPreferencesObject.js; sourceTree = "<group>"; };

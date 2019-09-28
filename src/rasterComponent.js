@@ -17,7 +17,7 @@
  *	id: unique number
  *	title: retrieve current title
  *	project: project to which this component belongs
- *	thrass[]: array of ThrEvalation id's, holding the threat estimates
+ *	thrass[]: array of ThreatAssessment id's, holding the threat estimates
  *	nodes[]: array of Node objects that share this component.
  *	magnitude: overall vulnerability of this component
  *	single: true iff the component has a single physical existence (i.s.o. multiple identical copies)
@@ -505,6 +505,10 @@ Component.prototype = {
 			}
 			if (rn.component!=this.id) {
 				errors += offender+"has a member node "+rn.id+" that doesn't refer back.\n";
+				continue;
+			}
+			if (!isSameString(rn.title,this.title)) {
+				errors += offender+"has a member node "+rn.id+" that has a different title.\n";
 				continue;
 			}
 			for (j=0; j<i; j++) {
