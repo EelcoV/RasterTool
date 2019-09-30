@@ -1253,6 +1253,7 @@ function transactionCompleted(transaction) {
  * Returns the id of one of the projects loaded, or null on failure.
  */
 var Flag_Upgrade_Done = false;
+var Upgrade_Description = "";
 
 function loadFromString(str,showerrors,allowempty,strsource) {
     var lProject = [];
@@ -1267,6 +1268,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
     var upgrade_1_2 = false;
 
 	Flag_Upgrade_Done = false;
+	Upgrade_Description = "";
     var patt = new RegExp(/^([^\t\n]+)\t([^\n]+)\n/);
     res=patt.exec(str);
     try {
@@ -1683,6 +1685,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         				lService[j].l = seq[1] + ' (' + seq[2] + ')';
         			}
         			Flag_Upgrade_Done = true;
+        			Upgrade_Description += "<LI>Service '" + ls.l + "' and '" + lService[j].l + "'";
         		}
         	}
         }
@@ -1732,6 +1735,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 					}
 
         			Flag_Upgrade_Done = true;
+					Upgrade_Description += "<LI>Vulnerability '" + oldtitle + "' and '" + newtitle + "'";
         		}
         	}
         }
@@ -1801,6 +1805,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         			lComponent[j].l = newtitle;
         			// Als change the title on all nodes sharing this component
         			Flag_Upgrade_Done = true;
+        			Upgrade_Description += "<LI>Component '" + lc.l + "' and '" + lComponent[j].l + "'";
         		}
         	}
         }
@@ -1857,6 +1862,7 @@ function checkUpgradeDone() {
 	rasterAlert(
 		_("Your project was updated"),
 		_("Your project was updated to a newer version. Some names of components and other items have been altered.")
+		+ '<UL>' + Upgrade_Description + '</UL>'
 	);
 }
 
