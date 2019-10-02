@@ -1685,7 +1685,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         				lService[j].l = seq[1] + ' (' + seq[2] + ')';
         			}
         			Flag_Upgrade_Done = true;
-        			Upgrade_Description += "<LI>Service '" + ls.l + "' and '" + lService[j].l + "'";
+        			Upgrade_Description += '<LI>' + _("Services '%%' and '%%'.", ls.l, lService[j].l);
         		}
         	}
         }
@@ -1735,7 +1735,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 					}
 
         			Flag_Upgrade_Done = true;
-					Upgrade_Description += "<LI>Vulnerability '" + oldtitle + "' and '" + newtitle + "'";
+        			Upgrade_Description += '<LI>' + _("Vulnerabilities '%%' and '%%'.", oldtitle, newtitle);
         		}
         	}
         }
@@ -1805,7 +1805,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         			lComponent[j].l = newtitle;
         			// Als change the title on all nodes sharing this component
         			Flag_Upgrade_Done = true;
-        			Upgrade_Description += "<LI>Component '" + lc.l + "' and '" + lComponent[j].l + "'";
+        			Upgrade_Description += '<LI>' + _("Components '%%' and '%%'.", lc.l, lComponent[j].l);
         		}
         	}
         }
