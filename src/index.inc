@@ -251,6 +251,7 @@ See LICENSE.md
       <div id="mi_ccyellow" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Byellow"></div><span class="labeltext">Yellow</span></div>
       <div id="mi_ccgreen" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgreen"></div><span class="labeltext">Green</span></div>
       <div id="mi_ccblue" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bblue"></div><span class="labeltext">Blue</span></div>
+      <div id="mi_ccpink" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpink"></div><span class="labeltext">Pink</span></div>
       <div id="mi_ccpurple" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpurple"></div><span class="labeltext">Purple</span></div>
       <div id="mi_ccgrey" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgrey"></div><span class="labeltext">Grey</span></div>
       <div id="mi_ccedit" class="popupmenuitem popupsubmenuitem labelmenuitem"><span class="plainlabel">Edit labels ...</span></div>
@@ -267,6 +268,7 @@ See LICENSE.md
       <div id="mi_scyellow" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Byellow"></div><span class="labeltext">Yellow</span></div>
       <div id="mi_scgreen" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgreen"></div><span class="labeltext">Green</span></div>
       <div id="mi_scblue" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bblue"></div><span class="labeltext">Blue</span></div>
+      <div id="mi_scpink" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpink"></div><span class="labeltext">Pink</span></div>
       <div id="mi_scpurple" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpurple"></div><span class="labeltext">Purple</span></div>
       <div id="mi_scgrey" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgrey"></div><span class="labeltext">Grey</span></div>
       <div id="mi_scedit" class="popupmenuitem popupsubmenuitem labelmenuitem"><span class="plainlabel">Edit labels ...</span></div>

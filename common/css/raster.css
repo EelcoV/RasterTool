@@ -444,7 +444,8 @@ div.popupmenuitem {
 .Byellow {background: rgb(248,255,140);}
 .Bgreen {background: rgb(204,255,144);}
 .Bblue {background: rgb(193,238,255);}
-.Bpurple {background: rgb(239,169,224);}
+.Bpink {background: rgb(254,188,251);}
+.Bpurple {background: rgb(190,148,208);}
 .Bgrey {background: rgb(177,177,177);}
 .labeltext {
     display: inline-block;
@@ -778,7 +779,8 @@ div.nodeheader {
 .yellow {color: black !important;}
 .green {color: darkgreen !important;}
 .blue {color: darkblue !important;}
-.purple {color: black !important;}
+.pink {color: black !important;}
+.purple {color: white !important;}
 .grey {color: #aaa !important;}
 .Chide {color: black !important;}
 div.nodeheader input.inplace_field {

@@ -12,6 +12,7 @@ October 2019
     and optionally to existing components as well.
   - Add/remove a vulnerability from a component: applies to this component only.
   - Rename a vulnerability: applies to the template and all existing components.
+* An additional label colour was added, for those who need more labels.
 * Internal changes (library upgrades) and small bug fixes.
 
 November 2018
