@@ -117,7 +117,6 @@
 		494B6FEF18796E9D00400328 /* tUNK.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tUNK.png; sourceTree = "<group>"; };
 		494B6FF018796E9D00400328 /* tWLS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWLS.png; sourceTree = "<group>"; };
 		494B6FF118796E9D00400328 /* tWRD.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWRD.png; sourceTree = "<group>"; };
-		494B6FF218796E9D00400328 /* disable.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = disable.png; sourceTree = "<group>"; };
 		494B6FF318796E9D00400328 /* dropdown.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dropdown.png; sourceTree = "<group>"; };
 		494B6FF518796E9D00400328 /* tACT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tACT.png; sourceTree = "<group>"; };
 		494B6FF618796E9D00400328 /* tEQT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tEQT.png; sourceTree = "<group>"; };
@@ -129,8 +128,6 @@
 		494B6FFD18796E9D00400328 /* tUNK.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tUNK.png; sourceTree = "<group>"; };
 		494B6FFE18796E9D00400328 /* tWLS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWLS.png; sourceTree = "<group>"; };
 		494B6FFF18796E9D00400328 /* tWRD.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWRD.png; sourceTree = "<group>"; };
-		494B700018796E9D00400328 /* info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = info.png; sourceTree = "<group>"; };
-		494B700118796E9D00400328 /* list.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = list.png; sourceTree = "<group>"; };
 		494B700218796E9D00400328 /* nolabel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nolabel.png; sourceTree = "<group>"; };
 		494B700418796E9D00400328 /* tACT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tACT.png; sourceTree = "<group>"; };
 		494B700518796E9D00400328 /* tEQT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tEQT.png; sourceTree = "<group>"; };
@@ -153,7 +150,6 @@
 		494B701918796E9D00400328 /* tUNK.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tUNK.png; sourceTree = "<group>"; };
 		494B701A18796E9D00400328 /* tWLS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWLS.png; sourceTree = "<group>"; };
 		494B701B18796E9D00400328 /* tWRD.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWRD.png; sourceTree = "<group>"; };
-		494B701C18796E9D00400328 /* selected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = selected.png; sourceTree = "<group>"; };
 		494B701D18796E9D00400328 /* tACTicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tACTicon.png; sourceTree = "<group>"; };
 		494B701E18796E9D00400328 /* tEQTicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tEQTicon.png; sourceTree = "<group>"; };
 		494B701F18796E9D00400328 /* tUNKicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tUNKicon.png; sourceTree = "<group>"; };
@@ -415,12 +411,9 @@
 				499804E4187F29D10063E8C5 /* qm-lo.png */,
 				491CD6D3187DA7600028B84D /* dropedit.png */,
 				494B6FEC18796E9D00400328 /* blue */,
-				494B6FF218796E9D00400328 /* disable.png */,
 				494B6FF318796E9D00400328 /* dropdown.png */,
 				494B6FF418796E9D00400328 /* green */,
 				494B6FFA18796E9D00400328 /* grey */,
-				494B700018796E9D00400328 /* info.png */,
-				494B700118796E9D00400328 /* list.png */,
 				494B700218796E9D00400328 /* nolabel.png */,
 				494B700318796E9D00400328 /* none */,
 				494B700918796E9D00400328 /* orange */,
@@ -428,7 +421,6 @@
 				494B700F18796E9D00400328 /* purple */,
 				494B701518796E9D00400328 /* Raster.png */,
 				494B701618796E9D00400328 /* red */,
-				494B701C18796E9D00400328 /* selected.png */,
 				494B701D18796E9D00400328 /* tACTicon.png */,
 				494B701E18796E9D00400328 /* tEQTicon.png */,
 				491CD6CA187D97B60028B84D /* tNOTicon.png */,
