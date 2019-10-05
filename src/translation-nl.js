@@ -179,6 +179,7 @@ _t["Orange"] = "Oranje";
 _t["Yellow"] = "Geel";
 _t["Green"] = "Groen";
 _t["Blue"] = "Blauw";
+_t["Pink"] = "Roze";
 _t["Purple"] = "Paars";
 _t["Grey"] = "Grijs";
 _t["Server is offline"] = "De server is off-line";

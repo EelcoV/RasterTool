@@ -16,6 +16,12 @@
 		4915A6361FA116CF00B4B205 /* fillcache.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = fillcache.sh; sourceTree = "<group>"; };
 		4915A6371FA1178D00B4B205 /* Versions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Versions.sh; sourceTree = "<group>"; };
 		4915A63D1FA126E600B4B205 /* nsis.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = nsis.zip; sourceTree = "<group>"; };
+		491732D123489303001C8534 /* tWRD.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWRD.png; sourceTree = "<group>"; };
+		491732D223489303001C8534 /* tACT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tACT.png; sourceTree = "<group>"; };
+		491732D323489303001C8534 /* tEQT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tEQT.png; sourceTree = "<group>"; };
+		491732D423489303001C8534 /* tUNK.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tUNK.png; sourceTree = "<group>"; };
+		491732D523489303001C8534 /* tWLS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWLS.png; sourceTree = "<group>"; };
+		491732D623489303001C8534 /* tNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOT.png; sourceTree = "<group>"; };
 		4918F0BE1FBEBF13008A6208 /* Build and Install.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Build and Install.md"; sourceTree = "<group>"; };
 		49196E2F1F85408F00097E97 /* jquery-ui-1.12.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.12.1.min.js"; sourceTree = "<group>"; };
 		491CD6CA187D97B60028B84D /* tNOTicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tNOTicon.png; sourceTree = "<group>"; };
@@ -213,6 +219,19 @@
 			path = css;
 			sourceTree = "<group>";
 		};
+		491732D023489303001C8534 /* pink */ = {
+			isa = PBXGroup;
+			children = (
+				491732D123489303001C8534 /* tWRD.png */,
+				491732D223489303001C8534 /* tACT.png */,
+				491732D323489303001C8534 /* tEQT.png */,
+				491732D423489303001C8534 /* tUNK.png */,
+				491732D523489303001C8534 /* tWLS.png */,
+				491732D623489303001C8534 /* tNOT.png */,
+			);
+			path = pink;
+			sourceTree = "<group>";
+		};
 		493AA22E1A7419A9005DDFFB /* SharedProjects */ = {
 			isa = PBXGroup;
 			children = (
@@ -405,6 +424,7 @@
 				494B700218796E9D00400328 /* nolabel.png */,
 				494B700318796E9D00400328 /* none */,
 				494B700918796E9D00400328 /* orange */,
+				491732D023489303001C8534 /* pink */,
 				494B700F18796E9D00400328 /* purple */,
 				494B701518796E9D00400328 /* Raster.png */,
 				494B701618796E9D00400328 /* red */,

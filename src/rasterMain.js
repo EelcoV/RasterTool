@@ -1752,7 +1752,13 @@ function loadFromString(str,showerrors,allowempty,strsource) {
         for (k=0; k<lp.s.length; k++)
             p.addservice(lp.s[k]);
         p.threats = lp.t;
-        if (lp.c && lp.c.length==7)
+        // Upgrade from version 1 to version 2: an additional color was added
+        if (upgrade_1_2 && lp.c && lp.c.length==7) {
+        	lp.c[7] = lp.c[6];
+        	lp.c[6] = lp.c[5];
+        	lp.c[5] = _("Pink");
+        }
+        if (lp.c && lp.c.length==8)
             p.labels = lp.c;
         p.store();
     }
@@ -2999,6 +3005,7 @@ function initTabDiagrams() {
     $('#mi_ccyellow').on('mouseup', colorfunc('yellow') );
     $('#mi_ccgreen').on('mouseup', colorfunc('green') );
     $('#mi_ccblue').on('mouseup', colorfunc('blue') );
+    $('#mi_ccpink').on('mouseup', colorfunc('pink') );
     $('#mi_ccpurple').on('mouseup', colorfunc('purple') );
     $('#mi_ccgrey').on('mouseup', colorfunc('grey') );
     $('#mi_ccedit').on('mouseup', showLabelEditForm );
@@ -3093,6 +3100,7 @@ function initTabDiagrams() {
     $('#mi_scyellow').on('mouseup', selcolorfunc('yellow') );
     $('#mi_scgreen').on('mouseup', selcolorfunc('green') );
     $('#mi_scblue').on('mouseup', selcolorfunc('blue') );
+    $('#mi_scpink').on('mouseup', selcolorfunc('pink') );
     $('#mi_scpurple').on('mouseup', selcolorfunc('purple') );
     $('#mi_scgrey').on('mouseup', selcolorfunc('grey') );
     $('#mi_scedit').on('mouseup', showLabelEditForm );
@@ -3198,16 +3206,18 @@ function populateLabelMenu() {
     $('#mi_ccyellow .labeltext').html( '"' + H(p.labels[2]) + '"' );
     $('#mi_ccgreen .labeltext').html( '"' + H(p.labels[3]) + '"' );
     $('#mi_ccblue .labeltext').html( '"' + H(p.labels[4]) + '"' );
-    $('#mi_ccpurple .labeltext').html( '"' + H(p.labels[5]) + '"' );
-    $('#mi_ccgrey .labeltext').html( '"' + H(p.labels[6]) + '"' );
+    $('#mi_ccpink .labeltext').html( '"' + H(p.labels[5]) + '"' );
+    $('#mi_ccpurple .labeltext').html( '"' + H(p.labels[6]) + '"' );
+    $('#mi_ccgrey .labeltext').html( '"' + H(p.labels[7]) + '"' );
     
     $('#mi_scred .labeltext').html( '"' + H(p.labels[0]) + '"' );
     $('#mi_scorange .labeltext').html( '"' + H(p.labels[1]) + '"' );
     $('#mi_scyellow .labeltext').html( '"' + H(p.labels[2]) + '"' );
     $('#mi_scgreen .labeltext').html( '"' + H(p.labels[3]) + '"' );
     $('#mi_scblue .labeltext').html( '"' + H(p.labels[4]) + '"' );
-    $('#mi_scpurple .labeltext').html( '"' + H(p.labels[5]) + '"' );
-    $('#mi_scgrey .labeltext').html( '"' + H(p.labels[6]) + '"' );
+    $('#mi_scpink .labeltext').html( '"' + H(p.labels[5]) + '"' );
+    $('#mi_scpurple .labeltext').html( '"' + H(p.labels[6]) + '"' );
+    $('#mi_scgrey .labeltext').html( '"' + H(p.labels[7]) + '"' );
 }
 
 function showLabelEditForm() {
@@ -3221,6 +3231,7 @@ function showLabelEditForm() {
         <div class="smallblock Byellow"></div><input id="field_yellow" class="field_label_text" name="fld_yellow" type="text" value="_YELLOW_"><br>\
         <div class="smallblock Bgreen"></div><input id="field_green" class="field_label_text" name="fld_green" type="text" value="_GREEN_"><br>\
         <div class="smallblock Bblue"></div><input id="field_blue" class="field_label_text" name="fld_blue" type="text" value="_BLUE_"><br>\
+        <div class="smallblock Bpink"></div><input id="field_pink" class="field_label_text" name="fld_pink" type="text" value="_PINK_"><br>\
         <div class="smallblock Bpurple"></div><input id="field_purple" class="field_label_text" name="fld_purple" type="text" value="_PURPLE_"><br>\
         <div class="smallblock Bgrey"></div><input id="field_grey" class="field_label_text" name="fld_grey" type="text" value="_GREY_"><br>\
         </form>\
@@ -3230,8 +3241,9 @@ function showLabelEditForm() {
     snippet = snippet.replace(/_YELLOW_/g, H(p.labels[2]));
     snippet = snippet.replace(/_GREEN_/g, H(p.labels[3]));
     snippet = snippet.replace(/_BLUE_/g, H(p.labels[4]));
-    snippet = snippet.replace(/_PURPLE_/g, H(p.labels[5]));
-    snippet = snippet.replace(/_GREY_/g, H(p.labels[6]));
+    snippet = snippet.replace(/_PINK_/g, H(p.labels[5]));
+    snippet = snippet.replace(/_PURPLE_/g, H(p.labels[6]));
+    snippet = snippet.replace(/_GREY_/g, H(p.labels[7]));
     dialog.append(snippet);
     var dbuttons = [];
     dbuttons.push({
@@ -3248,9 +3260,10 @@ function showLabelEditForm() {
                 p.labels[2] = trimwhitespace(String($('#field_yellow').val())).substr(0,50);
                 p.labels[3] = trimwhitespace(String($('#field_green').val())).substr(0,50);
                 p.labels[4] = trimwhitespace(String($('#field_blue').val())).substr(0,50);
-                p.labels[5] = trimwhitespace(String($('#field_purple').val())).substr(0,50);
-                p.labels[6] = trimwhitespace(String($('#field_grey').val())).substr(0,50);
-                for (var i=0; i<=6; i++) {
+                p.labels[5] = trimwhitespace(String($('#field_pink').val())).substr(0,50);
+                p.labels[6] = trimwhitespace(String($('#field_purple').val())).substr(0,50);
+                p.labels[7] = trimwhitespace(String($('#field_grey').val())).substr(0,50);
+                for (var i=0; i<=7; i++) {
                     if (p.labels[i]=="")
                         p.labels[i] = Project.defaultlabels[i];
                 }
@@ -3264,7 +3277,7 @@ function showLabelEditForm() {
         title: _("Edit labels"),
         modal: true,
         width: 285,
-        height: 290,
+        height: 320,
         buttons: dbuttons
     });
 }
@@ -4453,6 +4466,7 @@ function listFromCluster(nc) {
     node = node.concat(sortednodeswithcolor('yellow',nc.childnodes));
     node = node.concat(sortednodeswithcolor('green',nc.childnodes));
     node = node.concat(sortednodeswithcolor('blue',nc.childnodes));
+    node = node.concat(sortednodeswithcolor('pink',nc.childnodes));
     node = node.concat(sortednodeswithcolor('purple',nc.childnodes));
     node = node.concat(sortednodeswithcolor('grey',nc.childnodes));
     node = node.concat(sortednodeswithcolor('none',nc.childnodes));

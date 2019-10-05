@@ -84,8 +84,8 @@ var Project = function(id,asstub) {
 Project.get = function(id) { return Project._all[id]; };
 Project.cid = 0;
 Project._all = [];
-Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Purple"), _("Grey")];
-Project.colors = ["none","red","orange","yellow","green","blue","purple","grey"];
+Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Pink"), _("Purple"), _("Grey")];
+Project.colors = ["none","red","orange","yellow","green","blue","pink","purple","grey"];
 
 // Check wether there is a project with name 'str' and group ToolGroup
 Project.withTitle = function(str) {
