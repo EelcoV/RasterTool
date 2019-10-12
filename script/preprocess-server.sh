@@ -5,6 +5,10 @@
 PREPROCESS="filepp -pb"
 #PREPROCESS="cpp -E -P -C -w"
 
+# Set $ESLINT to blank to skip the verification.
+ESLINT="/usr/local/bin/eslint"
+#ESLINT=""
+
 BUILDDIR=build/server
 echo "Building server version $RASTERVERSION into $BUILDDIR..."
 
@@ -23,8 +27,10 @@ do
 	destfile=$BUILDDIR/js/`basename $srcfile`
 	if [ $srcfile -nt $destfile ]; then
 		$PREPROCESS -DSERVER $srcfile > $destfile
-		# Check whether the sources are correct, and correctly preprocessed
-		script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process "$destfile" || exit 1
+		if [ -n "$ESLINT" ]; then
+			# Check whether the sources are correct, and correctly preprocessed
+			$ESLINT --config script/eslintrc --format script/eslint-xcode-format.js "$destfile" || { rm "$destfile";exit 1; }
+		fi
 	fi
 done
 

@@ -2,6 +2,10 @@
  * See LICENSE.md
  */
 
+/* globals
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, ThreatAssessment, _, arrayJoinAsString, bugreport, isSameString, nextUnusedIndex, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace
+ */
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Node: an element in a telecom service diagram
@@ -70,8 +74,9 @@
  *	store(): store the object into localStorage.
  */
 var Node = function(type, id) {
-	if (id!=null && Node._all[id]!=null)
+	if (id!=null && Node._all[id]!=null) {
 		bugreport("Node with id "+id+" already exists","Node.constructor");
+	}
 	this.id = (id==null ? nextUnusedIndex(Node._all) : id);
 	this.type = type;
 	this.nid = 'node'+this.id;
@@ -99,7 +104,7 @@ Node.projecthastitle = function(pid,str) {
 		if (!Node._all[i]) continue;
 		if (isSameString(Node._all[i].title,str)) {
 			var cm = Component.get(Node._all[i].component);
-			if (cm.project==pid) return i;
+			if (cm.project==pid)  return i;
 		}
 	}
 	return -1;
@@ -107,7 +112,7 @@ Node.projecthastitle = function(pid,str) {
 Node.servicehastitle = function(sid,str) {
 	for (var i=0,alen=Node._all.length; i<alen; i++) {
 		if (!Node._all[i]) continue;
-		if (isSameString(Node._all[i].title,str) && Node._all[i].service==sid) return i;
+		if (isSameString(Node._all[i].title,str) && Node._all[i].service==sid)  return i;
 	}
 	return -1;
 };
@@ -121,8 +126,9 @@ Node.nodesinselection = function() {
 	var ni = new NodeIterator({service: Service.cid});
 	for (ni.first(); ni.notlast(); ni.next()) {
 		var rn = ni.getnode();
-		if (rn.iscontainedin(sl,st,sw,sh)) 
+		if (rn.iscontainedin(sl,st,sw,sh)) {
 			a.push(rn.id);
+		}
 	}
 	return a;
 };
@@ -145,10 +151,12 @@ Node.prototype = {
 			this.component = null;
 		}
 
-		if (this.id==Node.DialogNode) 
+		if (this.id==Node.DialogNode) {
 			$('#nodereport').dialog('close');
-		if (this.component==Component.ThreatsComponent) 
+		}
+		if (this.component==Component.ThreatsComponent) {
 			$('#componentthreats').dialog('close');
+		}
 		var neighbours = this.connect.slice(0); // duplicate the array
 		for (var i=0; i<neighbours.length; i++) {
 			var nb = Node.get(neighbours[i]);
@@ -162,19 +170,20 @@ Node.prototype = {
 		this.hidemarker();  // Make it disappear before the animation starts
 		$('#tinynode'+this.id).remove();
 		Node._all[this.id]=null;
-		if (effect==undefined || effect==true)
+		if (effect==undefined || effect==true) {
 			$(this.jnid).effect('explode', 500, function() {
 				var id = nid2id(this.id);
 				jsP.remove('node'+id);
 			});
-		else {
+		} else {
 			jsP.remove(this.nid);
 		}
 	},
 	
 	changetype: function(typ) {
-		if (this.type=='tNOT')
+		if (this.type=='tNOT') {
 			bugreport("Attempt to change the type of a note","Node.changetype");
+		}
 		var i;
 		var newn = new Node(typ);
 		newn.position.x = this.position.x;
@@ -188,22 +197,24 @@ Node.prototype = {
 		newn.changetitle(this.title);
 		newn.store();
 		newn.paint(false);
-		for (i=0; i<this.connect.length; i++)
+		for (i=0; i<this.connect.length; i++) {
 			newn.attach_center( Node.get(this.connect[i]) );
+		}
 		newn.setmarker();
 		this.destroy(false);
 	},
 	
 	setposition: function(px,py,snaptogrid) {
 		var jsP = Service.get(this.service)._jsPlumb;
-		var r = $('#tab_diagrams').position();
+//		var r = $('#tab_diagrams').position();
 		var fh = $('.fancyworkspace').height();
 		var fw = $('.fancyworkspace').width();
 		var oh = $('#scroller_overview'+this.service).height();
 		var ow = $('#scroller_overview'+this.service).width();
 		var dO = {};
-		if (snaptogrid==null)
+		if (snaptogrid==null) {
 			snaptogrid = true;
+		}
 		
 		if (px<0) px=0;
 		if (py<10) py=10;
@@ -232,26 +243,30 @@ Node.prototype = {
 	},
 	
 	setcomponent: function(c) {
-		if (this.type=='tNOT')
+		if (this.type=='tNOT') {
 			bugreport("Attempt to attach component to a note","Node.setcomponent");
+		}
 		this.component = c;
 		this.store();
 	},
 	
 	autosettitle: function(newtitle) {
-		if (!newtitle)
+		if (!newtitle) {
 			newtitle = Rules.nodetypes[this.type];
+		}
 		var targettitle = newtitle;
 		var n=0;
 		if (this.type=='tNOT') {
 			this.settitle(targettitle);
 		} else if (this.type=='tACT') {
-			while (Node.servicehastitle(Service.cid,targettitle)!=-1)
+			while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
 				targettitle = newtitle + ' (' + (++n) + ')';
+			}
 			this.settitle(targettitle);
 		} else {
-			while (Node.projecthastitle(Project.cid,targettitle)!=-1)
+			while (Node.projecthastitle(Project.cid,targettitle)!=-1) {
 				targettitle = newtitle + ' (' + (++n) + ')';
+			}
 			var c = new Component(this.type);
 			c.adddefaultthreatevaluations();
 			c.addnode(this.id);
@@ -261,8 +276,8 @@ Node.prototype = {
 
 	changetitle: function(str) {
 		str = trimwhitespace(str);
-		if (str==this.title)
-			return;
+		if (str==this.title)  return;
+
 		if (str=="") {
 			// Blank title is not allowed. Retain current title.
 			return;
@@ -280,7 +295,6 @@ Node.prototype = {
 			// to "abc" should not result in a name "abc (2)"
 			this.title='NoSuchNameNoSuchNameNoSuchNameNoSuchName';
 			while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
-				// dummy comment
 				targettitle = str + ' (' + (++i) + ')';
 			}
 			this.settitle(targettitle);
@@ -289,8 +303,9 @@ Node.prototype = {
 		}
 		var prevcomponent = null;
 		if (this.component!=null) {
-			if (!Component.get(this.component))
+			if (!Component.get(this.component)) {
 				bugreport("no such component","Node.changetitle");
+			}
 			prevcomponent = Component.get(this.component);
 		}
 		// See if there is an existing component with this title & type
@@ -345,15 +360,15 @@ Node.prototype = {
 	
 	changesuffix: function(str) {
 		str = trimwhitespace(str);
-		if (str==this.suffix || str=="")
-			return;
+		if (str==this.suffix || str=="")  return;
+
 		var cm = Component.get(this.component);
 		for (var i=0; i<cm.nodes.length; i++) {
-			if (cm.nodes[i]==this.id)
-				continue;
+			if (cm.nodes[i]==this.id) continue;
 			var nn = Node.get(cm.nodes[i]);
-			if (nn.suffix==str)
+			if (nn.suffix==str) {
 				nn.settitle(nn.title,this.suffix);
+			}
 		}
 		this.settitle(this.title,str);
 	},
@@ -400,9 +415,9 @@ Node.prototype = {
 			var conns = plural(_("connection"),_("connections"),minhave);
 			report.push( 
 				(unlimited ? _("Must have at least %% %% ", minhave,conns) : _("Must have %% %% ", minhave,conns))
-				 + (C['TOTAL']>0 ? _(" (you only have %%). ",C['TOTAL']) : _("(you have none)."))
-				 + " "
-				 + _("Add %% %% to a %%.", toolittle, plural(_("connection"),_("connections"),toolittle), options)
+					+ (C['TOTAL']>0 ? _(" (you only have %%). ",C['TOTAL']) : _("(you have none)."))
+					+ " "
+					+ _("Add %% %% to a %%.", toolittle, plural(_("connection"),_("connections"),toolittle), options)
 			);
 		}
 		if (C['TOTAL']>Rules.totaledgeMax[this.type]) {
@@ -445,22 +460,17 @@ Node.prototype = {
 	
 	_connectionsOK: function() {
 		var C = this._edgecount();
-		if (C['TOTAL']<Rules.totaledgeMin[this.type])
-			return false;
-		if (C['TOTAL']>Rules.totaledgeMax[this.type] && Rules.totaledgeMax[this.type]>-1)
-			return false;
+		if (C['TOTAL']<Rules.totaledgeMin[this.type])  return false;
+		if (C['TOTAL']>Rules.totaledgeMax[this.type] && Rules.totaledgeMax[this.type]>-1)  return false;
 		for (var j in C) {
-			if (C[j]<Rules.edgeMin[this.type][j])
-				return false;
-			if (C[j]>Rules.edgeMax[this.type][j] && Rules.edgeMax[this.type][j]>-1)
-				return false;
+			if (C[j]<Rules.edgeMin[this.type][j])  return false;
+			if (C[j]>Rules.edgeMax[this.type][j] && Rules.edgeMax[this.type][j]>-1)  return false;
 		}
 		return true;
 	},
 	
 	setmarker: function() {
-		if (this.type=='tNOT')
-			return;
+		if (this.type=='tNOT')  return;
 		if (!this._connectionsOK()) {
 			$('#nodeMagnitude'+this.id).hide();
 			this.showmarker();
@@ -490,17 +500,17 @@ Node.prototype = {
 		this.color = str;
 		this.store();
 		$('#nodeheader'+this.id).addClass(this.color);
-		if (Preferences.label) 
+		if (Preferences.label) {
 			$('#nodecontents'+this.id+' img').attr('src', '../img/'+this.color+'/'+this.type+'.png');
-		else
+		} else {
 			$('#nodeheader'+this.id).addClass('Chide');
+		}
 	},
 	
 	try_attach_center: function(dst) {
 		// Never attach a node to itself. This only applies to Unknown Links, as no other type
 		// can be connected to a node of that same type.
-		if (this.id==dst.id)
-			return;
+		if (this.id==dst.id)  return;
 		var Csrc = this._edgecount();
 		var Cdst = dst._edgecount();
 		// The node counts do not included the intended connection from this to dst.
@@ -520,24 +530,24 @@ Node.prototype = {
 		  	 */
 			null;
 		} else if (
-			 Csrc['TOTAL']>Rules.totaledgeMax[this.type]
-		  || Cdst['TOTAL']>Rules.totaledgeMax[dst.type]
-		  || Csrc[dst.type]>Rules.edgeMax[this.type][dst.type]
-		  || Cdst[this.type]>Rules.edgeMax[dst.type][this.type]
-		  ) {
-		  	/* detach the newly attached connection, and flash the element for
-		  	 * visual feedback.
-		  	 */
-		  	$(this.jnid).effect('pulsate', { times:2 }, 800);
-		  	$(dst.jnid).effect('pulsate', { times:2 }, 800);
+			Csrc['TOTAL']>Rules.totaledgeMax[this.type]
+			|| Cdst['TOTAL']>Rules.totaledgeMax[dst.type]
+			|| Csrc[dst.type]>Rules.edgeMax[this.type][dst.type]
+			|| Cdst[this.type]>Rules.edgeMax[dst.type][this.type]
+		) {
+			/* detach the newly attached connection, and flash the element for
+			 * visual feedback.
+			 */
+			$(this.jnid).effect('pulsate', { times:2 }, 800);
+			$(dst.jnid).effect('pulsate', { times:2 }, 800);
 		} else {
-		 	/* Move the begin and endpoints to the center points */
-		  	this.attach_center(dst);
+			/* Move the begin and endpoints to the center points */
+			this.attach_center(dst);
 			this.setmarker();
 			dst.setmarker();
 			RefreshNodeReportDialog();
 			transactionCompleted("Node connect");
-		 }
+		}
 	},
 	
 	attach_center: function(dst) {
@@ -551,7 +561,7 @@ Node.prototype = {
 					label: '⊗',
 					cssClass: 'connbutton',
 					events: {
-						click: function(labelOverlay, originalEvent) {
+						click: function(labelOverlay /*, originalEvent*/) {
 							var node1 = labelOverlay.component.sourceId;
 							var node2 = labelOverlay.component.targetId;
 							var src = Node.get(nid2id(node1));
@@ -579,12 +589,14 @@ Node.prototype = {
 	detach_center: function(dst) {
 		var i;
 		i = this.connect.indexOf(dst.id);
-		if (i==-1)
+		if (i==-1) {
 			bugreport('incorrect connection info (A)','Node.detach_center');
+		}
 		this.connect.splice( i,1 );
 		i = dst.connect.indexOf(this.id);
-		if (i==-1)
+		if (i==-1) {
 			bugreport('incorrect connection info (B)','Node.detach_center');
+		}
 		dst.connect.splice( i,1 );		
 		this.store();
 		dst.store();
@@ -594,8 +606,9 @@ Node.prototype = {
 	},
 
 	addtonodeclusters: function() {
-		if (this.component==null)
+		if (this.component==null) {
 			bugreport("Node's component has not been set","Node.addtonodeclusters");
+		}
 		var cm = Component.get(this.component);
 		for (var i=0; i<cm.thrass.length; i++) {
 			var ta = ThreatAssessment.get(cm.thrass[i]);
@@ -610,8 +623,9 @@ Node.prototype = {
 			if (nc.containsnode(this.id)) {
 				nc.removechildnode(this.id);
 				nc.normalize();
-				if (nc.childclusters.length==0 && nc.childnodes.length==0 && nc.parentcluster==null)
+				if (nc.childclusters.length==0 && nc.childnodes.length==0 && nc.parentcluster==null) {
 					nc.destroy();
+				}
 			}
 		}		
 	},
@@ -631,12 +645,12 @@ Node.prototype = {
 	paint: function(effect) {
 		var jsP = Service.get(this.service)._jsPlumb;
 		if (this.position.x<0 || this.position.y<0
-		 || this.position.x>3000 || this.position.y>3000) {
-		 	bugreport("extreme values of node '"+H(this.title)+"' corrected", "Node.paint");
-		 	this.position.x = 100;
-		 	this.position.y = 100;
-		 	this.store();
-		 }
+			|| this.position.x>3000 || this.position.y>3000) {
+			bugreport("extreme values of node '"+H(this.title)+"' corrected", "Node.paint");
+			this.position.x = 100;
+			this.position.y = 100;
+			this.store();
+		}
 		var str = '\n\
 			<div id="node_ID_" class="node _TY_" tabindex="2">\n\
 				<div id="nodecontents_ID_" class="nodecontent _TY_content"><img src="../img/_CO_/_TY_.png" class="contentimg"></div>\n\
@@ -676,12 +690,13 @@ Node.prototype = {
 		$('#titlemain'+this.id).html(H(this.title));
 		$('#titlesuffix'+this.id).html(this.suffix=='' ? '' : '&thinsp;<sup>'+H(this.suffix)+'</sup>');
 		
-		if (effect==undefined || effect==true)
+		if (effect==undefined || effect==true) {
 			$(this.jnid).fadeIn(500);
-		else
+		} else {
 			$(this.jnid).css('display', 'block');
+		}
 		this.setposition(this.position.x, this.position.y, false);
-		var containmentarr = [];
+//		var containmentarr = [];
 		/* This is *not* jQuery's draggable, but Katavorio's!
 		 * See https://github.com/jsplumb/katavorio/wiki
 		 */
@@ -756,17 +771,18 @@ Node.prototype = {
 			// On Firefox, .which appears to be 1 always.
 			// Return is a mouse button is down.
 			if (evt.buttons!=null) {
-				if (evt.buttons!=0) return;
+				if (evt.buttons!=0)  return;
 			} else {
-				if (evt.which!=0) return;
+				if (evt.which!=0)  return;
 			}
 			var id = nid2id(this.id);
 			var rn = Node.get(id);
 			if (!rn.editinprogress()) this.focus();
 			$('#nodeC'+id).css({visibility: 'visible'});
 			if (rn.dragpoint) $(rn.dragpoint.canvas).css({visibility: 'visible'});
-			if (Preferences.emsize=='em_none')
-				$('#nodeMagnitude'+id).addClass('doshow'); 
+			if (Preferences.emsize=='em_none') {
+				$('#nodeMagnitude'+id).addClass('doshow');
+			}
 		}).on('mouseleave',function() {
 			var id = nid2id(this.id);
 			var rn = Node.get(id);
@@ -782,7 +798,7 @@ Node.prototype = {
 			return false;
 		}).on('keydown', function(evt){
 			var rn = Node.get(nid2id(this.id));
-			if (rn.editinprogress()) return;
+			if (rn.editinprogress())  return;
 			var i;
 			// Previous label
 			if (evt.key=='<') {
@@ -827,13 +843,13 @@ Node.prototype = {
 			}
 		});
 
-		$('#nodeC'+this.id).on('mousedown',  function(e){
+		$('#nodeC'+this.id).on('mousedown',  function(/*event*/){
 			var rn = Node.get(nid2id(this.id));
 			var offset = $(this).offset();
 			rn._showpopupmenu(offset.left+16,offset.top+5);
 			return false;
 		});
-		$('#nodeC'+this.id).on('click',  function(e){ return false; });
+		$('#nodeC'+this.id).on('click',  function(/*event*/){ return false; });
 		
 		$('#nodeW'+this.id).on('click', function(e) {
 			// this.id is like "nodeWxxx", where xxx is the node id number
@@ -842,13 +858,14 @@ Node.prototype = {
 			var report = rn._getreport();
 			var s;
 			
-			if (report.length==0)
+			if (report.length==0) {
 				s = _("Node is OK; there are no warnings.");
-			else {
+			} else {
 				s = report.join('<p>');
 			}
-			if ($('#nodereport').dialog('isOpen'))
+			if ($('#nodereport').dialog('isOpen')) {
 				$('#nodereport').dialog('close');
+			}
 			$('#nodereport').html( s );
 			$('#nodereport').dialog({
 				title: _("Warning report on %%", rn.title+' '+rn.suffix),
@@ -883,18 +900,18 @@ Node.prototype = {
 			},
 			/* Make sure that the editor is above all node decorations. */
 			delegate: {
-				shouldOpenEditInPlace: function(aDOMNode, aSettingsDict, triggeringEvent) {
+				shouldOpenEditInPlace: function(aDOMNode /*, aSettingsDict, triggeringEvent*/) {
 					var id = nid2id(aDOMNode[0].id);
 					var rn = Node.get(id);
 					return (rn.dragging != true);
 				},
-				didOpenEditInPlace: function(aDOMNode, aSettingsDict) {
+				didOpenEditInPlace: function(aDOMNode /*, aSettingsDict*/) {
 					var id = nid2id(aDOMNode[0].id);
 					$('#node'+id).css('z-index','1001');
 					$('#nodeheader'+id).css('z-index','1001');
 					$('#nodetitle'+id+' span:last-child').css('display','none');
 				},
-				didCloseEditInPlace: function (aDOMNode, aSettingsDict) {
+				didCloseEditInPlace: function (aDOMNode /*, aSettingsDict*/) {
 					var id = nid2id(aDOMNode[0].id);
 					$('#node'+id).css('z-index',"");
 					$('#nodeheader'+id).css('z-index','');
@@ -941,8 +958,9 @@ Node.prototype = {
 		this.centerpoint=null;
 		this.dragpoint=null;
 
-		if (this.id==Node.DialogNode) 
+		if (this.id==Node.DialogNode) {
 			$('#nodereport').dialog('close');
+		}
 		$(this.jnid).remove();
 		$('#tinynode'+this.id).remove();
 	},
@@ -963,20 +981,23 @@ Node.prototype = {
 			$('#mi_th').addClass('popupmenuitemdisabled');
 			$('#mi_cl').addClass('popupmenuitemdisabled');
 		}
-		if (cm==null || cm.nodes.length<2)
+		if (cm==null || cm.nodes.length<2) {
 			$('#mi_cl').addClass('popupmenuitemdisabled');
-		if (cm!=null && cm.single)
+		}
+		if (cm!=null && cm.single) {
 			$('#mi_sx').addClass('popupmenuitemdisabled');
+		}
 		$('#mi_sm').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
 		if (cm!=null && cm.single) {
 			$('#mi_du').addClass('popupmenuitemdisabled');
 		}
 		populateLabelMenu();
 		var s=p.strToLabel(this.color);
-		if (s=='')
+		if (s=='') {
 			s = _("Label");
-		else
+		} else {
 			s = '"' + s + '"';
+		}
 		$('#mi_cc .labeltext').html(s);
 		$('#nodemenu').css('display', 'block');
 		// Remove any previous custom style
@@ -986,7 +1007,7 @@ Node.prototype = {
 		if (o.top + $('#nodemenu').height() > limit) {
 			// -5 to make the node menu not the same distance from the bottom of the screen as the label submenu
 			o.top = limit - $('#nodemenu').height() - 5;
-		 	$('#nodemenu').offset(o);
+			$('#nodemenu').offset(o);
 		} 
 		Node.MenuNode = this.id;
 	},
@@ -1024,10 +1045,12 @@ Node.prototype = {
 		if (Rules.nodetypes[this.type]==undefined) {
 			errors += "Node "+this.id+" has weird type-value "+this.type+".\n";
 		}
-		if ((this.type=='tACT' || this.type=='tNOT') && this.component!=null)
+		if ((this.type=='tACT' || this.type=='tNOT') && this.component!=null) {
 			errors += "Node "+this.id+" has a component, but should have none.\n";
-		if (this.component!=null && Component.get(this.component)==null)
+		}
+		if (this.component!=null && Component.get(this.component)==null) {
 			errors += "Node "+this.id+" has invalid component.\n";
+		}
 		if (this.position.x<0 || this.position.x>9999 || this.position.y<0 || this.position.y>9999) {
 			errors += "Node "+this.id+" has weird position.\n";
 		}
@@ -1060,8 +1083,9 @@ Node.prototype = {
 			var it = new NodeClusterIterator({isroot: true});
 			for (it.first(); it.notlast(); it.next()) {
 				var nc = it.getNodeCluster();
-				if (nc.containsnode(this.id))
+				if (nc.containsnode(this.id)) {
 					errors += "Node "+this.id+" is member of a singular class, yet appears in cluster '"+nc.title+"'.\n";
+				}
 			}
 		} 
 		return errors;
@@ -1069,15 +1093,15 @@ Node.prototype = {
 };
 
 function RefreshNodeReportDialog() {
-	if (! $('#nodereport').dialog('isOpen')) return;
+	if (! $('#nodereport').dialog('isOpen'))  return;
 	// Refresh the contents
 	var rn = Node.get(Node.DialogNode);
 	var report = rn._getreport();
 	var s;
 				
-	if (report.length==0)
+	if (report.length==0) {
 		s = _("Connections are OK; no warnings.");
-	else {
+	} else {
 		s = report.join('<p>');
 	}
 	$('#nodereport').html( s );
@@ -1118,11 +1142,11 @@ var NodeIterator = function(opt) {
 		if (opt.service!=undefined && rn.service!=opt.service) continue;
 		if (opt.type!=undefined && rn.type!=opt.type) continue;
 		if (opt.match!=undefined && 
-			!(rn.type==opt.match 
-			 || rn.type=='tUNK' 
-			 || (rn.type!='tACT' && rn.type!='tNOT' && 'tUNK'==opt.match)
+			!(rn.type==opt.match
+				|| rn.type=='tUNK'
+				|| (rn.type!='tACT' && rn.type!='tNOT' && 'tUNK'==opt.match)
 			)
-		   ) continue;
+		) continue;
 		this.item.push(i);
 	}
 	if (opt.type=='tACT') bugreport('type-option Actor specified','NodeIterator'); 
@@ -1148,8 +1172,8 @@ NodeIterator.prototype = {
 		this.item.sort( function(a,b) {
 			var na = Node.get(a);
 			var nb = Node.get(b);
-			if (na.type<nb.type) return -1;
-			if (na.type>nb.type) return 1;
+			if (na.type<nb.type)  return -1;
+			if (na.type>nb.type)  return 1;
 			// When types are equal, sort alphabetically
 			var ta = na.title+na.suffix;
 			var tb = nb.title+nb.suffix;
@@ -1164,10 +1188,9 @@ NodeIterator.prototype = {
 			var cb = Component.get(nb.component);
 			var va = ThreatAssessment.valueindex[ca.magnitude];
 			var vb = ThreatAssessment.valueindex[cb.magnitude];
-			if (va==1) va=8; // Ambiguous
-			if (vb==1) vb=8;
-			if (va!=vb)
-				return vb - va;
+			if (va==1)  va=8; // Ambiguous
+			if (vb==1)  vb=8;
+			if (va!=vb)  return vb - va;
 			// When levels are equal, sort alphabetically
 			var ta = na.title+na.suffix;
 			var tb = nb.title+nb.suffix;
@@ -1243,41 +1266,36 @@ var Rules = {
 			return rv;
 		}
 		
-		if (Rules.totaledgeMin[t] > Rules.totaledgeMax[t])
-			return false;
+		if (Rules.totaledgeMin[t] > Rules.totaledgeMax[t])  return false;
 		for (i in Rules.nodetypes) {
-			if (Rules.edgeMin[t][i] > Rules.edgeMax[t][i])
-				return false;
-			if (Rules.edgeMax[t][i] > Rules.totaledgeMax[t])
-				return false;
+			if (Rules.edgeMin[t][i] > Rules.edgeMax[t][i])  return false;
+			if (Rules.edgeMax[t][i] > Rules.totaledgeMax[t])  return false;
 			if ((Rules.edgeMax[t][i]==0 || Rules.edgeMax[i][t]==0) &&
-				Rules.edgeMax[t][i] != Rules.edgeMax[i][t])
+				Rules.edgeMax[t][i] != Rules.edgeMax[i][t]) {
 				return false;
+			}
 		}
 			
 		var edgeMinT = 0;
 		for (i in Rules.nodetypes) edgeMinT += Rules.edgeMin[t][i];
-		if (edgeMinT > Rules.totaledgeMin[t])
-			return false;
+		if (edgeMinT > Rules.totaledgeMin[t])  return false;
 
 		var edgeMaxT = 0;
 		for (i in Rules.nodetypes) {
 			if (edgeMaxT<99) {
-				if (Rules.edgeMax[t][i]<99)
+				if (Rules.edgeMax[t][i]<99) {
 					edgeMaxT += Rules.edgeMax[t][i];
-				else
+				} else {
 					edgeMaxT = 99;
+				}
 			}
 		}
 		
-		if (edgeMaxT < Rules.totaledgeMax[t])
-			return false;
+		if (edgeMaxT < Rules.totaledgeMax[t])  return false;
 
-		if (edgeMinT > edgeMaxT)
-			return false;
+		if (edgeMinT > edgeMaxT)  return false;
 
-		if (edgeMaxT==99 && Rules.totaledgeMax[t]<99)
-			return false;
+		if (edgeMaxT==99 && Rules.totaledgeMax[t]<99)  return false;
 			
 		return true;	
 	}

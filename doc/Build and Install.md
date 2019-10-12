@@ -6,6 +6,7 @@ are Mac-centered. However, it should be possible to build the tools on other Uni
 You need:
 1. XCode. Not essential, but useful and free. MacOS only.
 2. filepp (http://www-users.york.ac.uk/%7Edm26/filepp/). If not available, the standard C-Preprocessor can be used.
+3.The ESLint utility to check JavaScript code. Optional.
 
 There is one build script for the server. From the root of the Raster tools project, run 'script/preprocess-server.sh'. This will create a 'server' directory under the 'build' directory containing all the server files.
 

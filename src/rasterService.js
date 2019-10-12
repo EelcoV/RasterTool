@@ -2,6 +2,10 @@
  * See LICENSE.md
  */
 
+/* globals
+ H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, _, bugreport, isSameString, jsPlumb, nextUnusedIndex, nid2id, removetransientwindows, transactionCompleted, trimwhitespace, workspacedrophandler
+*/
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Service: object representing one service.
@@ -40,8 +44,9 @@
  *	store(): store the object into localStorage.
  */
 var Service = function(id) {
-	if (id!=null && Service._all[id]!=null)
+	if (id!=null && Service._all[id]!=null) {
 		bugreport("Service with id "+id+" already exists","Service.constructor");
+	}
 	this.id = (id==null ? nextUnusedIndex(Service._all) : id);
 	this.project = Project.cid;
 	this.title = "";
@@ -74,32 +79,35 @@ Service.titleisused = function(projectid,str,except) {
 	var found=false;
 	for (var i=0; !found && i<Service._all.length; i++) {
 		if (i==except) continue;
-		if (Service._all[i]!=null && Service._all[i].project==projectid)
+		if (Service._all[i]!=null && Service._all[i].project==projectid) {
 			found=(isSameString(Service._all[i].title,str));
+		}
 	}
 	return found;
 };
 
 Service.prototype = {
 	destroy: function() {
-		if (Project.cid==this.project)
+		if (Project.cid==this.project) {
 			this.unload();
+		}
 		var it = new NodeIterator({service: this.id});
-		for (it.first(); it.notlast(); it.next())
-			it.getnode().destroy(false);		
+		for (it.first(); it.notlast(); it.next()) {
+			it.getnode().destroy(false);
+		}
 		localStorage.removeItem(LS+'S:'+this.id);
 		Service._all[this.id]=null;
 	},
 	
 	settitle: function(newtitle) {
 		newtitle = trimwhitespace(String(newtitle)).substr(0,50);
-		if (newtitle=='') return;
+		if (newtitle=='')  return;
 		var targettitle = newtitle;
 		if (Service.titleisused(this.project,targettitle,this.id)) {
 			var n=0;
-			do 
+			do {
 				targettitle = newtitle + " (" + (++n) + ")";
-			while (Service.titleisused(this.project,targettitle,this.id));
+			} while (Service.titleisused(this.project,targettitle,this.id));
 		}
 		this.title = targettitle;
 		$('.servicename'+this.id).html(H(this.title));
@@ -131,8 +139,9 @@ Service.prototype = {
 		// Remove the bottom tab (the one that controls div#tabprefix+sid)
 		$('#'+tabprefix+'_body').find('li[aria-controls='+tabprefix+this.id+']').remove();
 		$('#'+tabprefix+'_body').tabs('refresh');
-		if (tabprefix=='diagrams')
+		if (tabprefix=='diagrams') {
 			$('#scroller_overview'+this.id).remove();
+		}
 	},
 
 	load: function() {
@@ -140,7 +149,7 @@ Service.prototype = {
 		this.addtabdiagrams();
 		this.addtabsinglefs();
 		$('#bottomtabsdia').sortable({
-			stop: function(evt,ui) {
+			stop: function(/*evt,ui*/) {
 				var p = Project.get(Project.cid);
 				// Set the new order of services
 				var arr = $('#bottomtabsdia').sortable('toArray');
@@ -148,7 +157,7 @@ Service.prototype = {
 				p.services = arr;
 				// Remove all service tabs on Single Failures, and re-create.
 				$('#bottomtabssf').empty();
-				arr.forEach(function(v,i,a) {
+				arr.forEach(function(v/*,i,a*/) {
 					var s = Service.get(v);
 					s._addtabsinglefs_tabonly();
 				});
@@ -159,7 +168,7 @@ Service.prototype = {
 			}
 		});
 		$('#bottomtabssf').sortable({
-			stop: function(evt,ui) {
+			stop: function(/*evt,ui*/) {
 				var p = Project.get(Project.cid);
 				// Set the new order of services
 				var arr = $('#bottomtabssf').sortable('toArray');
@@ -167,7 +176,7 @@ Service.prototype = {
 				p.services = arr;
 				// Remove all service tabs on Diagrams, and re-create.
 				$('#bottomtabsdia').empty();
-				arr.forEach(function(v,i,a) {
+				arr.forEach(function(v/*,i,a*/) {
 					var s = Service.get(v);
 					s._addtabdiagrams_tabonly();
 				});
@@ -197,7 +206,7 @@ Service.prototype = {
 		
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('a[href^="#diagrams'+this.id+'"]').on('dblclick',  diagramTabEditStart );
-		$('a[href^="#diagrams'+this.id+'"]').on('click',  function(evt,ui) {
+		$('a[href^="#diagrams'+this.id+'"]').on('click',  function(/*evt,ui*/) {
 			var s = Service.get(nid2id(this.hash));
 			Preferences.setservice(s.title);
 		} );
@@ -234,8 +243,8 @@ Service.prototype = {
 		$('#diagrams_body ul li').removeClass('ui-corner-top');
 
 		// Update the scroll_region when the workspace is scrolled.
-		$('#diagrams'+this.id).on('scroll', function(event){
-			if (ScrollerDragging) return;
+		$('#diagrams'+this.id).on('scroll', function(/*event*/){
+			if (ScrollerDragging)  return;
 			var wst = $('#diagrams'+serviceid).scrollTop();
 			var wsl = $('#diagrams'+serviceid).scrollLeft();
 			var fh = $('.fancyworkspace').height();
@@ -246,7 +255,7 @@ Service.prototype = {
 		});
 
 		$('#scroller_overview'+this.id).draggable({
-			stop: function(event,ui){
+			stop: function(/*event,ui*/){
 				var l = $('#scroller_overview'+serviceid).position().left;
 				var w = $('#diagrams'+serviceid).width();
 				$('#scroller_overview'+serviceid).css('right', (w-l) + 'px').css('left','');
@@ -255,13 +264,14 @@ Service.prototype = {
 			cursor: 'move'
 		});
 		$('#diagrams_workspace'+this.id).on('mousedown', function(evt) {
-			if (evt.button!=0) return; // only do left mousebutton
-			if (evt.eventPhase==Event.BUBBLING_PHASE) return; // Only direct events
+			if (evt.button!=0)  return; // only do left mousebutton
+			if (evt.eventPhase==Event.BUBBLING_PHASE)  return; // Only direct events
 			RectDragOrigin = {left: evt.pageX, top: evt.pageY};
 			$('#selectrect').show().offset({left: evt.pageX, top: evt.pageY}).width(0).height(0);
 			$('#diagrams_workspace'+serviceid).on('mousemove', function(evt) {
-				if (evt.button!=0 || evt.shiftKey || evt.ctrlKey || evt.altKey || evt.metaKey) 
-					return; // only do plain left mousebutton drags
+				// only do plain left mousebutton drags
+				if (evt.button!=0 || evt.shiftKey || evt.ctrlKey || evt.altKey || evt.metaKey)  return;
+
 				// If any text was selected (accidentally, most likely), then deselect it.
 				window.getSelection().removeAllRanges();
 				var w = evt.pageX-RectDragOrigin.left;
@@ -284,13 +294,14 @@ Service.prototype = {
 			removetransientwindows();
 		});
 		$('#diagrams_workspace'+this.id).on('mouseup',  function(evt) {
-			if (evt.button!=0) 
-				return; // only do plain left mousebutton drags
-			if (evt.target.id=="") return; // Only direct events, or drag-stops
+			// only do plain left mousebutton drags
+			if (evt.button!=0)  return;
+			if (evt.target.id=="")  return; // Only direct events, or drag-stops
 			// Direct click on the workspace, steal the focus from wherever it was.
 			$( document.activeElement ).trigger('blur');
-			if (Node.nodesinselection().length==0)
+			if (Node.nodesinselection().length==0) {
 				$('#selectrect').hide();
+			}
 			// If any text was selected (accidentally, most likely), then deselect it.
 			window.getSelection().removeAllRanges();
 			//console.debug("Stole the focus");
@@ -300,7 +311,7 @@ Service.prototype = {
 		$('#scroller_region'+this.id).draggable({
 			cursor: 'move',
 			containment: 'parent',
-			drag: function(event, ui) {
+			drag: function(/*event, ui*/) {
 				var rO = $('#scroller_region'+serviceid).position();
 				var fh = $('.fancyworkspace').height();
 				var fw = $('.fancyworkspace').width();
@@ -345,7 +356,7 @@ Service.prototype = {
 		
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('a[href^="#singlefs'+this.id+'"]').on('dblclick',  diagramTabEditStart );
-		$('a[href^="#singlefs'+this.id+'"]').on('click',  function(evt,ui) {
+		$('a[href^="#singlefs'+this.id+'"]').on('click',  function(/*evt,ui*/) {
 			var s = Service.get(nid2id(this.hash));
 			Preferences.setservice(s.title);
 		} );
@@ -378,19 +389,21 @@ Service.prototype = {
 
 	unpaintall: function() {
 		$('#scroller_overview'+this.id).hide();
-		if (!this._painted) return;
-		if (this.id==Service.cid)
+		if (!this._painted)  return;
+		if (this.id==Service.cid) {
 			$('#nodereport').hide();
+		}
 		// Be sure to only remove nodes from this service.
 		var it = new NodeIterator({service: this.id});
-		for (it.first(); it.notlast(); it.next())
+		for (it.first(); it.notlast(); it.next()) {
 			it.getnode().unpaint();
+		}
 		this._jsPlumb.reset();
 		this._painted=false;
 	},
 	
 	paintall: function() {
-		if (!this._loaded) return;
+		if (!this._loaded)  return;
 		// For some reason, the mouseup event on #selectrect is only fired consistently when
 		// the #selectrect div is inside the workspace. If the div is inside diagrams_body or
 		// inside the main <body>, the mouseup is almost always 'lost'. We therefore have to
@@ -422,7 +435,7 @@ Service.prototype = {
 					n.setposition(n.position.x+dx,n.position.y+dy,false);
 				}
 			},
-			stop: function(event,ui) {
+			stop: function(/*event,ui*/) {
 				for (var i=0; i<NodesBeingDragged.length; i++) {
 					var n = Node.get(NodesBeingDragged[i]);
 					n.setposition(n.position.x,n.position.y);
@@ -432,15 +445,16 @@ Service.prototype = {
 			cursor: 'move'
 		});
 		
-		if (this._painted) return;
+		if (this._painted)  return;
 
 		this._jsPlumb.setContainer('diagrams_workspace'+this.id);
 		// Delay all jsPlumb paint operations
 		this._jsPlumb.setSuspendDrawing(true);
 		/* First paint all the nodes, before drawing the connectors */
 		var it = new NodeIterator({service: this.id});
-		for (it.first(); it.notlast(); it.next())
+		for (it.first(); it.notlast(); it.next()) {
 			it.getnode().paint(false);
+		}
 		
 		/* All nodes exist, now draw connectors. When node X is connected to
 		 * node Y, then also node Y is connected to node X. However, we must
@@ -451,10 +465,12 @@ Service.prototype = {
 			var rn = it.getnode();
 			for (var j=0; j<rn.connect.length; j++) {
 				var dst = Node.get(rn.connect[j]);
-				if (DEBUG && dst.service!=this.id) 
+				if (dst.service!=this.id) {
 					bugreport('inconsistency in connections between nodes','Service.paintall');
-				if (rn.id<dst.id)
+				}
+				if (rn.id<dst.id) {
 					rn.attach_center(dst);
+				}
 			}
 		}
 		for (it.first(); it.notlast(); it.next()) {
@@ -511,7 +527,7 @@ var ScrollerDragging = false;
 var NodesBeingDragged = [];
 
 
-function diagramTabEditStart(event) {
+function diagramTabEditStart(/*event*/) {
 	var s = Service.get(nid2id(this.hash));
 	var dialog = $('<div></div>');
 	var snippet ='\
@@ -553,7 +569,7 @@ function diagramTabEditStart(event) {
 				transactionCompleted("Service rename");
 			});
 		},
-		close: function(event, ui) {
+		close: function(/*event, ui*/) {
 			dialog.remove();
 		}
 	});
@@ -576,8 +592,9 @@ var ServiceIterator = function(pid) {
 	for (var i=0; i<Service._all.length; i++) {
 		if (Service._all[i]==null) continue;
 		var s =  Service._all[i];
-		if (s.project == pid)
+		if (s.project == pid) {
 			this.item.push(i);
+		}
 	}
 };
 ServiceIterator.prototype = {

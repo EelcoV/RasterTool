@@ -2,6 +2,10 @@
  * See LICENSE.md
  */
 
+/* globals
+bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm
+*/
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * ThreatAssessment: evaluation of a threat for some component or NodeCluster
@@ -54,10 +58,12 @@
  *	store(): store the object into localStorage.
  */
 var ThreatAssessment = function(type,id) {
-	if (id!=null && ThreatAssessment._all[id]!=null)
+	if (id!=null && ThreatAssessment._all[id]!=null) {
 		bugreport("ThreatAssessment with id "+id+" already exists","ThreatAssessment.constructor");
-	if (type=='tACT' || type=='tUNK' || type=='tNOT')
+	}
+	if (type=='tACT' || type=='tUNK' || type=='tNOT') {
 		bugreport("ThreatAssessment with id "+id+" has illegal type "+type,"ThreatAssessment.constructor");
+	}
 	this.id = (id==null ? nextUnusedIndex(ThreatAssessment._all) : id);
 	this.type = type;
 	this.component = null;
@@ -150,30 +156,33 @@ ThreatAssessment.worst = ThreatAssessment.sum;
 ThreatAssessment.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS + 'E:' + this.id);
-		if (Component.ThreatsComponent==this.component)
+		if (Component.ThreatsComponent==this.component) {
 			$('#dth'+this.id).remove();
+		}
 		ThreatAssessment._all[this.id]=null;
 	},
 	
 	setcomponent: function(id) {
 		this.component = id;
-		if (this.cluster!=null)
+		if (this.cluster!=null) {
 			bugreport("threat evaluation belongs to both a component and a NodeCluster", "ThreatAssessment.setcomponent");
+		}
 		this.store();
 	},
 	
 	setcluster: function(id) {
 		this.cluster = id;
-		if (this.component!=null)
+		if (this.component!=null) {
 			bugreport("threat evaluation belongs to both a component and a NodeCluster", "ThreatAssessment.setcluster");
+		}
 		this.store();
 	},
 	
 	settitle: function(t) {
 		t = trimwhitespace(String(t)).substr(0,50);
-		if (t=="")
-			// Silently ignore an attempt to set a blank title
-			return;
+		// Silently ignore an attempt to set a blank title
+		if (t=="")  return;
+
 		if (this.component!=null) {
 			// If the component already contains a threat with title "t" and the same type,
 			// then silently revert to the old title.
@@ -181,9 +190,8 @@ ThreatAssessment.prototype = {
 			for (var i=0; i<cm.thrass.length; i++) {
 				if (cm.thrass[i]==this.id) continue;
 				var ta = ThreatAssessment.get(cm.thrass[i]);
-				if (isSameString(ta.title,t) && ta.type==this.type)
-					// silently ignore
-					return;
+				// silently ignore
+				if (isSameString(ta.title,t) && ta.type==this.type)  return;
 			}
 			NodeCluster.removecomponent_threat(Project.cid,this.component,this.title,this.type,true);
 			this.title = t;
@@ -195,10 +203,12 @@ ThreatAssessment.prototype = {
 	},
 	
 	_setparentmarker: function() {
-		if (this.component!=null)
+		if (this.component!=null) {
 			Component.get(this.component).setmarker();
-		if (this.cluster!=null)
+		}
+		if (this.cluster!=null) {
 			NodeCluster.get(NodeCluster.get(this.cluster).root()).setmarker();
+		}
 	},
 
 	setdescription: function(t) {
@@ -232,7 +242,7 @@ ThreatAssessment.prototype = {
 	},
 
 	computeminimpact: function() {
-		if (this.cluster==null) return null;
+		if (this.cluster==null)  return null;
 		var nc = NodeCluster.get(this.cluster);
 		var rc = NodeCluster.get(nc.root());
 		var highscore = '-';
@@ -263,10 +273,12 @@ ThreatAssessment.prototype = {
 
 	computetotal: function() {
 		this.total = ThreatAssessment.combine(this.freq,this.impact);
-		if (this.component!=null)
+		if (this.component!=null) {
 			Component.get(this.component).calculatemagnitude();
-		if (this.cluster!=null)
+		}
+		if (this.cluster!=null) {
 			NodeCluster.get(NodeCluster.get(this.cluster).root()).calculatemagnitude();
+		}
 	},
 	
 	setremark: function(t) {
@@ -284,8 +296,9 @@ ThreatAssessment.prototype = {
 			<div id="dth__PF_impact_TI_" class="th_impact th_col"><span>_DI_</span></div>\
 			<div id="dth__PF_total_TI_" class="th_total th_col">_TO_</div>\
 			<div id="dth__PF_remark_TI_" class="th_remark th_col"><span>_DR_</span></div>';
-		if (interact)
+		if (interact) {
 			snippet += '<div class="th_del th_col"><input id="dth__PF_del_TI_" type="button" value="&minus;"></div>';
+		}
 		snippet += '</div>\n';
 		snippet = snippet.replace(/_TI_/g, this.id);
 		snippet = snippet.replace(/_BS_/g, beforestring);
@@ -320,8 +333,7 @@ ThreatAssessment.prototype = {
 		
 		var selectoptions = '';
 		for (var i=0; i<ThreatAssessment.values.length; i++) {
-			if (selectoptions!='')
-				selectoptions += ',';
+			if (selectoptions!='')  selectoptions += ',';
 			selectoptions += '_L_ _D_:_L_';
 			selectoptions = selectoptions.replace(/_L_/g, ThreatAssessment.values[i]);
 			selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
@@ -329,33 +341,30 @@ ThreatAssessment.prototype = {
 		var te = this;
 		var c;
 
-		if (this.component==null && this.cluster==null)
+		if (this.component==null && this.cluster==null) {
 			bugreport('neither .component nor .cluster is set','this.addtablerow');
-		if (this.component!=null)
+		}
+		if (this.component!=null) {
 			c = Component.get(this.component);
+		}
 		var nc_isroot = false;
 		if (this.cluster!=null) {
 			c = NodeCluster.get(this.cluster);
 			nc_isroot = c.isroot();
 		}
 		
-		if (!nc_isroot) $('#dthE_'+prefix+'name'+this.id).editInPlace({
-			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
-			callback: function(oid, enteredText) {
-				var old_t = te.title;
-				te.settitle(enteredText);
-				globalChangeThreatOrDescription(Project.cid, te.type, old_t, te.title, null, null);
-//				te.setdescription(""); // Description from checklist does not apply anymore now.
-//				$('#dthE_'+prefix+'name'+te.id).attr('title', '');
-//				if (c.parentcluster != undefined) {
-//					// c is a nodecluster, not a component
-//					c.settitle(te.title);
-//					$('#litext'+c.id).html(H(te.title));
-//				}
-				transactionCompleted("Vuln rename");
-				return H(te.title);
-			}
-		});
+		if (!nc_isroot) {
+			$('#dthE_'+prefix+'name'+this.id).editInPlace({
+				bg_out: '#eee', bg_over: 'rgb(255,204,102)',
+				callback: function(oid, enteredText) {
+					var old_t = te.title;
+					te.settitle(enteredText);
+					globalChangeThreatOrDescription(Project.cid, te.type, old_t, te.title, null, null);
+					transactionCompleted("Vuln rename");
+					return H(te.title);
+				}
+			});
+		}
 		$('#dth_'+prefix+'freq'+this.id).editInPlace({
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			field_type: 'select',
@@ -384,8 +393,7 @@ ThreatAssessment.prototype = {
 				$(this).removeClass();
 				$(this).addClass('th_impact th_col');
 				// Only warn of the impact should be at least Medium
-				if ("MHV".indexOf(te.minimpact)==-1)
-					return;
+				if ("MHV".indexOf(te.minimpact)==-1)  return;
 
 				var str;
 				str  = _("The impact should be at least %%, because the following nodes have that impact for single failures.",
@@ -443,30 +451,34 @@ ThreatAssessment.prototype = {
 			}
 		});
 	
-		if (interact) $('#dth_'+prefix+"del"+this.id).on('click',  function() {
-			var th = ThreatAssessment.get(nid2id(this.id));
-			var c;
-			if (th.component!=null) {
-				c = Component.get(th.component);
-			} else
-				bugreport("Was expecting a Component","ThreatAssessment.addtablerow");
-			var dokill = function() {
-				c.removethrass(th.id);
-				var nc = NodeCluster.removecomponent_threat(Project.cid,th.component,th.title,th.type);
-				// Remove the node cluster if it became empty
-				if (nc.isempty())
-					nc.destroy();
-				$('#dth'+prefix+'_'+th.id).remove();
-				c.setmarker();
-				transactionCompleted("Vuln delete");
-			};
-			newRasterConfirm(_("Delete vulnerability?"),
-				_("Vulnerabilities should only be deleted when physically impossible.")+
-				'<br>\n'+
-				_("Are you sure that '%%' for '%%' is nonsensical?", H(th.title),H(c.title)),
-				_("It's impossible"),_("Cancel")
-			).done(dokill);
-		});
+		if (interact) {
+			$('#dth_'+prefix+"del"+this.id).on('click',  function() {
+				var th = ThreatAssessment.get(nid2id(this.id));
+				var c;
+				if (th.component!=null) {
+					c = Component.get(th.component);
+				} else {
+					bugreport("Was expecting a Component","ThreatAssessment.addtablerow");
+				}
+				var dokill = function() {
+					c.removethrass(th.id);
+					var nc = NodeCluster.removecomponent_threat(Project.cid,th.component,th.title,th.type);
+					// Remove the node cluster if it became empty
+					if (nc.isempty()) {
+						nc.destroy();
+					}
+					$('#dth'+prefix+'_'+th.id).remove();
+					c.setmarker();
+					transactionCompleted("Vuln delete");
+				};
+				newRasterConfirm(_("Delete vulnerability?"),
+					_("Vulnerabilities should only be deleted when physically impossible.")+
+					'<br>\n'+
+					_("Are you sure that '%%' for '%%' is nonsensical?", H(th.title),H(c.title)),
+					_("It's impossible"),_("Cancel")
+				).done(dokill);
+			});
+		}
 	},
 
 	_stringify: function() {
@@ -533,10 +545,12 @@ function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
 		var cm = it.getcomponent();
 		for (var i=0; i<cm.thrass.length; i++) {
 			var ta = ThreatAssessment.get(cm.thrass[i]);
-			if (old_t && isSameString(ta.title,old_t))
+			if (old_t && isSameString(ta.title,old_t)) {
 				ta.settitle(new_t);
-			if (old_d && isSameString(ta.description,old_d))
+			}
+			if (old_d && isSameString(ta.description,old_d)) {
 				ta.setdescription(new_d);
+			}
 		}
 	}
 }
@@ -579,8 +593,9 @@ var DefaultThreats = [
  *	store(): store the object into localStorage.
  */
 var Threat = function(type,id) {
-	if (id!=null && Threat._all[id]!=null)
+	if (id!=null && Threat._all[id]!=null) {
 		bugreport("Vulnerability with id "+id+" already exists","Threat.constructor");
+	}
 	this.id = (id==null ? nextUnusedIndex(Threat._all) : id);
 	this.type = type;
 	this.project = Project.cid;
@@ -606,15 +621,15 @@ Threat.prototype = {
 
 	settitle: function(t) {
 		t = trimwhitespace(String(t)).substr(0,50);
-		if (t=="")
-			// Silently ignore a blank title
-			return;
+		// Silently ignore a blank title
+		if (t=="")  return;
+
 		// See if this title already exists. If so, silently ignore
 		var it = new ThreatIterator(this.project,this.type);
 		for (it.first(); it.notlast(); it.next()) {
 			var th = it.getthreat();
 			if (th.id==this.id) continue;
-			if (isSameString(th.title,t)) return;
+			if (isSameString(th.title,t))  return;
 		}
 		this.title = t;
 		this.store();
@@ -676,19 +691,21 @@ Threat.prototype = {
 						}
 					}
 				}
-				if (count>0) rasterConfirm(_("Apply to all?"),_("Should this vulnerability be removed from %% current components as well?",count),_("Remove"),_("Keep"),function(){
-					$('#componentthreats').dialog('close');
-					for (it.first(); it.notlast(); it.next()) {
-						cm = it.getcomponent();
-						NodeCluster.removecomponent_threat(Project.cid,cm.id,th.title,th.type,true);
-						for (i=0; i<cm.thrass.length; i++) {
-							var ta = ThreatAssessment.get(cm.thrass[i]);
-							if (isSameString(ta.title,th.title)) {
-								cm.removethrass(ta.id);
+				if (count>0) {
+					rasterConfirm(_("Apply to all?"),_("Should this vulnerability be removed from %% current components as well?",count),_("Remove"),_("Keep"),function(){
+						$('#componentthreats').dialog('close');
+						for (it.first(); it.notlast(); it.next()) {
+							cm = it.getcomponent();
+							NodeCluster.removecomponent_threat(Project.cid,cm.id,th.title,th.type,true);
+							for (i=0; i<cm.thrass.length; i++) {
+								var ta = ThreatAssessment.get(cm.thrass[i]);
+								if (isSameString(ta.title,th.title)) {
+									cm.removethrass(ta.id);
+								}
 							}
 						}
-					}
-				});
+					});
+				}
 				transactionCompleted("Checklist remove");
 			});
 		});
@@ -734,9 +751,11 @@ var ThreatIterator = function(pid,t) {
 	this.item = [];
 	for (var i=0,alen=Threat._all.length; i<alen; i++) {
 		if (Threat._all[i]!=null 
-		 && Threat._all[i].project==pid 
-		 && (t=='tUNK' || t==Threat._all[i].type)) 
+			&& Threat._all[i].project==pid
+			&& (t=='tUNK' || t==Threat._all[i].type))
+		{
 			this.item.push(i);
+		}
 	}
 	this.itemlength=this.item.length;
 };
