@@ -5,6 +5,10 @@
 PREPROCESS="filepp -pb"
 #PREPROCESS="cpp -E -P -C -w"
 
+# Set $ESLINT to blank to skip the verification.
+ESLINT="/usr/local/bin/eslint"
+#ESLINT=""
+
 CreateAppVersion()
 {
 	LANG=$1
@@ -26,8 +30,10 @@ CreateAppVersion()
 		destfile=$BUILDDIR/js/`basename $srcfile`
 		if [ $srcfile -nt $destfile ]; then
 			$PREPROCESS -DSTANDALONE $srcfile > $destfile
-			# Check whether the sources are correct, and correctly preprocessed
-			script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process "$destfile" || exit 1
+			if [ -n "$ESLINT" ]; then
+				# Check whether the sources are correct, and correctly preprocessed
+				$ESLINT --config script/eslintrc --format script/eslint-xcode-format.js "$destfile" || { rm "$destfile";exit 1; }
+			fi
 		fi
 	done
 
@@ -63,7 +69,9 @@ CreateMacOSVersion()
 
 	echo "************************** Building $LANG version for MacOS..."
 
-	script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process standalone/main.js || exit 1
+	if [ -n "$ESLINT" ]; then
+		$ESLINT --config script/eslintrc --format script/eslint-xcode-format.js standalone/main.js || exit 1
+	fi
 
 	if [ ! -d $BUILDDIR ]; then
 		echo "Build directory $BUILDDIR does not exist." && exit 1
@@ -140,7 +148,9 @@ CreateWin32Version()
 
 	echo "************************** Building $LANG version for Win32..."
 
-	script/lint/jsl -nologo -nosummary -conf script/lint/jsl.default.conf -process standalone/main.js || exit 1
+	if [ -n "$ESLINT" ]; then
+		$ESLINT --config script/eslintrc --format script/eslint-xcode-format.js standalone/main.js || exit 1
+	fi
 
 	if [ ! -d $BUILDDIR ]; then
 		echo "Build directory $BUILDDIR does not exist." && exit 1

@@ -2,6 +2,8 @@
  * See LICENSE.md
  */
 
+/* globals bugreport, nextUnusedIndex, Rules, Project, _, isSameString, LS, Threat, ThreatAssessment, NodeCluster, NodeClusterIterator, prependIfMissing, trimwhitespace, H */
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Component: a physical component, or class of identical components
@@ -46,12 +48,15 @@
  *	store(): store the object into localStorage.
 */
 var Component = function(type, id) {
-	if (type=='tACT')
+	if (type=='tACT') {
 		bugreport("attempt to create component for actor node","Component.constructor");
-	if (type=='tNOT')
+	}
+	if (type=='tNOT') {
 		bugreport("attempt to create component for a note","Component.constructor");
-	if (id!=null && Component._all[id]!=null)
+	}
+	if (id!=null && Component._all[id]!=null) {
 		bugreport("Component with id "+id+" already exists","Component.constructor");
+	}
 	this.id = (id==null ? nextUnusedIndex(Component._all) : id);
 	this.type = type;
 	this.project = Project.cid;
@@ -72,18 +77,20 @@ Component.hasTitleTypeProject = function(str,typ,pid) {
 	for (var i=0; i<Component._all.length; i++) {
 		if (!Component._all[i]) continue;
 		if (isSameString(Component._all[i].title,str)
-		 && Component._all[i].type==typ
-		 && Component._all[i].project==pid) return i;
+			&& Component._all[i].type==typ
+			&& Component._all[i].project==pid)  return i;
 	}
 	return -1;
 };
 Component.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS+'C:'+this.id);
-		if (this.id==Component.ThreatsComponent)
+		if (this.id==Component.ThreatsComponent) {
 			$('#componentthreats').dialog('close');
-		for (var i=0; i<this.thrass.length; i++)
+		}
+		for (var i=0; i<this.thrass.length; i++) {
 			ThreatAssessment.get(this.thrass[i]).destroy();
+		}
 		Component._all[this.id]=null;
 	},
 
@@ -132,8 +139,9 @@ Component.prototype = {
 	mergeclipboard: function() {
 		var newte = [];
 		for (var j=0; j<ThreatAssessment.Clipboard.length; j++) {
-			if (ThreatAssessment.Clipboard[j].y=='tUNK')
+			if (ThreatAssessment.Clipboard[j].y=='tUNK') {
 				bugreport("Wrong type in clipboard data","Component.mergeclipboard");
+			}
 			// Try to find an identically named threat in our current list. If we are an
 			// unknown link, then also the type must match. For types wireless/wired/eqt the
 			// type will be converted to this.type anyway, so don't require the types to match.
@@ -141,7 +149,7 @@ Component.prototype = {
 			for (var i=0; i<this.thrass.length; i++) {
 				var te = ThreatAssessment.get(this.thrass[i]);
 				if (isSameString(ThreatAssessment.Clipboard[j].t,te.title)
-				 && (this.type!='tUNK' || ThreatAssessment.Clipboard[j].y==te.type)
+					&& (this.type!='tUNK' || ThreatAssessment.Clipboard[j].y==te.type)
 				) break;
 			}
 			if (i==this.thrass.length) {
@@ -163,18 +171,22 @@ Component.prototype = {
 				// If neither one is set, the result will be '-'.
 				// If one is '-' but the other isn't, the result will be that non '-' value.
 				// If both are set, the result will be the worst of both.
-				if (te.freq=='-')
+				if (te.freq=='-') {
 					te.setfreq(ThreatAssessment.Clipboard[j].p);
-				else if (ThreatAssessment.Clipboard[j].p=='-')
-					{ /* Do nothing */ /*jsl:pass*/ }
-				else
+				} else if (ThreatAssessment.Clipboard[j].p=='-') {
+					/* Do nothing */
+				} else {
 					te.setfreq( ThreatAssessment.worst(ThreatAssessment.Clipboard[j].p,te.freq) );
-				if (te.impact=='-')
+				}
+
+				if (te.impact=='-') {
 					te.setimpact(ThreatAssessment.Clipboard[j].i);
-				else if (ThreatAssessment.Clipboard[j].i=='-')
-					{ /* Do nothing */ /*jsl:pass*/ }
-				else
+				} else if (ThreatAssessment.Clipboard[j].i=='-') {
+					/* Do nothing */
+				} else {
 					te.setimpact( ThreatAssessment.worst(ThreatAssessment.Clipboard[j].i,te.impact) );
+				}
+				
 				te.remark = prependIfMissing(ThreatAssessment.Clipboard[j].r, te.remark);
 			}
 		}
@@ -184,11 +196,11 @@ Component.prototype = {
 
 	_setalltitles: function() {
 		var len = this.nodes.length;
-		if (len==0)
-			return;
-		else if (len==1)
+		if (len==0)  return;
+
+		if (len==1) {
 			Node.get(this.nodes[0]).settitle(this.title,"");
-		else {
+		} else {
 			// Collect all current suffixes for members of this component
 			var i, j;
 			var sfx = [];
@@ -198,16 +210,14 @@ Component.prototype = {
 			var findNewSuffix = function(prefix) {
 				for (j=0; j<26; j++) {
 					var chr = String.fromCharCode(String('a').charCodeAt(0)+j);
-					if (sfx.indexOf(prefix+chr)==-1)
-						break;
+					if (sfx.indexOf(prefix+chr)==-1) break;
 				}
 				if (j==26) {
 					// This is silly. There are more than 26 members in the node class!
 					// Find a random number to fit.
 					for (;;) {
 						chr = '#' + Math.floor(Math.random()*100000);
-						if (sfx.indexOf(prefix+chr)==-1)
-							break;
+						if (sfx.indexOf(prefix+chr)==-1) break;
 					}
 				}
 				return prefix+chr;
@@ -224,8 +234,7 @@ Component.prototype = {
 				} else {
 					// Check if another node already has this suffix
 					for (j=0; j<i; j++) {
-						if (sfx[j]==sfx[i])
-							break;
+						if (sfx[j]==sfx[i]) break;
 					}
 					if (j==i) {
 						// Keep existing suffix
@@ -245,17 +254,16 @@ Component.prototype = {
 
 	changetitle: function(str) {
 		str = trimwhitespace(str);
-		if (str==this.title)
-			return;
-		if (str=="") {
-			// Blank title is not allowed. Retain current title.
-			return;
-		}
+		if (str==this.title)  return;
+		// Blank title is not allowed. Retain current title.
+		if (str=="")  return;
+
 		var it = new NodeIterator({project: Project.cid});
 		for (it.first(); it.notlast(); it.next()) {
 			var rn = it.getnode();
-			if (rn.component!=this.id && isSameString(rn.title,str))
+			if (rn.component!=this.id && isSameString(rn.title,str)) {
 				return;
+			}
 		}
 		this.settitle(str);
 	},
@@ -277,33 +285,38 @@ Component.prototype = {
 	},
 	
 	addnode: function(id) {
-		if (this.nodes.indexOf(id)!=-1)
+		if (this.nodes.indexOf(id)!=-1) {
 			bugreport('node already belongs to component','Component.addnode');
+		}
 		this.nodes.push(id);
 		var nd = Node.get(id);
-		if (!nd)
+		if (!nd) {
 			bugreport('no such node','Component.addnode');
+		}
 		nd.setcomponent(this.id);
 		// Since the list of vulns on 'nd' may be different from those of 'this' component,
 		// remove 'nd' from all node clusters, and re-add it to the ones it should belong to,
 		// based on the new nd.component. Unless the component is singular.
 		nd.removefromnodeclusters();
-		if (!this.single)
+		if (!this.single) {
 			// If this is a 'single' node cluster, then only this.nodes[0] must be
 			// present in the clusters.
 			nd.addtonodeclusters();
+		}
 		this._setalltitles();
 		this.store();
-		if (this.id==Component.ThreatsComponent)
+		if (this.id==Component.ThreatsComponent) {
 			$('#componentthreats').dialog('option', 'title',
 				_("Vulnerability assessment for '%%'", H(this.title)) +
 				(this.nodes.length>1 ? _(" (%% nodes)",this.nodes.length) : "")
 			);
+		}
 	},
 	
 	removenode: function(id) {
-		if (this.nodes.indexOf(id)==-1)
+		if (this.nodes.indexOf(id)==-1) {
 			bugreport('node does not belong to component','Component.removenode');
+		}
 		// When this component is 'single', only nodes[0] will be present in the NodeClusters.
 		// If nodes[0] is removed, another node must be inserted as placeholder for the Component
 		// in the node clusters.
@@ -322,23 +335,25 @@ Component.prototype = {
 			var rn = Node.get(this.nodes[0]);
 			rn.addtonodeclusters();
 		}
-		if (this.nodes.length==0)
+		if (this.nodes.length==0) {
 			this.destroy();
-		else {
+		} else {
 			this.store();
-			if (this.id==Component.ThreatsComponent)
+			if (this.id==Component.ThreatsComponent) {
 				$('#componentthreats').dialog('option', 'title',
 					_("Vulnerability assessment for '%%'", H(this.title)) +
 					(this.nodes.length>1 ? _(" (%% nodes)",this.nodes.length) : "")
 				);
+			}
 		}
 	},
 	
 	addthrass: function(te) {
 		this.thrass.push(te.id);
 		te.setcomponent(this.id);
-		for (var i=0; i<(this.single?1:this.nodes.length); i++)
+		for (var i=0; i<(this.single?1:this.nodes.length); i++) {
 			NodeCluster.addnode_threat(this.project,this.nodes[i],te.title,te.type,false);
+		}
 		this.calculatemagnitude();
 		this.store();
 	},
@@ -354,8 +369,9 @@ Component.prototype = {
 		var mustdoevals=0;
 		for (var i=0; i<this.thrass.length; i++) {
 			if (ThreatAssessment.get(this.thrass[i]).freq=='-' ||
-				ThreatAssessment.get(this.thrass[i]).impact=='-')
+				ThreatAssessment.get(this.thrass[i]).impact=='-') {
 				mustdoevals++;
+			}
 		}
 		return mustdoevals;
 	},
@@ -382,8 +398,7 @@ Component.prototype = {
 			var p = Project.get(Project.cid);
 			for (i=0; i<p.threats.length; i++) {
 				var th = Threat.get(p.threats[i]);
-				if (th.type!=this.type && this.type!='tUNK')
-					continue;
+				if (th.type!=this.type && this.type!='tUNK') continue;
 				// ThreatAssessments on a node/component of type tUNK will have the type of
 				// the Threat, not tUNK. So a tUNK component will have TAs with a type that
 				// differs from the node/component itself.
@@ -404,13 +419,15 @@ Component.prototype = {
 			return;
 		}
 		this.magnitude = ThreatAssessment.get(this.thrass[0]).total;
-		for (var i=1; i<this.thrass.length; i++)
+		for (var i=1; i<this.thrass.length; i++) {
 			this.magnitude = ThreatAssessment.sum(
 				this.magnitude,
 				ThreatAssessment.get(this.thrass[i]).total
 			);
-		for (i=0; i<this.nodes.length; i++)
+		}
+		for (i=0; i<this.nodes.length; i++) {
 			Node.get(this.nodes[i]).setmarker();
+		}
 	},
 	
 	setsingle: function(single) {
@@ -445,8 +462,9 @@ Component.prototype = {
 			}
 		} else if (this.single != (single===true)) {
 			// Disallow change, flash all visible nodes
-			for (i=0; i<this.nodes.length; i++)
-			  	$('#node'+this.nodes[i]).effect('pulsate', { times:2 }, 800);
+			for (i=0; i<this.nodes.length; i++) {
+				$('#node'+this.nodes[i]).effect('pulsate', { times:2 }, 800);
+			}
 			return;
 		} else {
 			// No change
@@ -463,12 +481,13 @@ Component.prototype = {
 	},
 	
 	setmarker: function() {
-		if (this._markeroid==null) return;
+		if (this._markeroid==null)  return;
 		var str = '<span class="Magnitude M'
 				+ThreatAssessment.valueindex[this.magnitude]
 				+'" title="'+ThreatAssessment.descr[ThreatAssessment.valueindex[this.magnitude]]+'">'+this.magnitude+'</span>';
-		if (this.threatsnotevaluated()!=0)
+		if (this.threatsnotevaluated()!=0) {
 			str = '<span class="incomplete">' + _("Incomplete") + '</span>' + str;
+		}
 		$(this._markeroid).html(str);
 	},
 
@@ -522,8 +541,7 @@ Component.prototype = {
 			sfx.push(Node.get(this.nodes[i]).suffix);
 		}
 		for (i=0; i<this.nodes.length; i++) {
-			if (sfx[i]=="")
-				continue;
+			if (sfx[i]=="") continue;
 			rn = Node.get(this.nodes[i]);
 			j = sfx.indexOf(rn.suffix);
 			if (i!=j) {
@@ -568,8 +586,9 @@ Component.prototype = {
 			var cc = it.getNodeCluster();
 			cc = NodeCluster.get(cc.root());
 			for (j=0; j<(this.single? 1 : this.nodes.length); j++) {
-				if (!cc.containsnode(this.nodes[j]))
+				if (!cc.containsnode(this.nodes[j])) {
 					errors += offender+"has a node "+rn.id+" that does not appear in the node cluster for "+H(ta.title)+" ("+H(ta.type)+").\n";
+				}
 			}
 		}
 		// Check all nodes that claim to belong to this component
@@ -577,8 +596,9 @@ Component.prototype = {
 		for (it.first(); it.notlast(); it.next()) {
 			rn = it.getnode();
 			if (rn.component!=this.id) continue;
-			if (this.nodes.indexOf(rn.id)==-1)
+			if (this.nodes.indexOf(rn.id)==-1) {
 				errors += "Node "+rn.id+" claims to belong to component "+this.id+" but doesn't appear in the list.\n";
+			}
 		}
 		return errors;
 	}
@@ -616,18 +636,18 @@ var ComponentIterator = function(opt) {
 		}
 		if (ok && opt.match!=null) {
 			ok = ok && (cm.type==opt.match
-			 || cm.type=='tUNK'
-			 || opt.match=='tUNK'
+				|| cm.type=='tUNK'
+				|| opt.match=='tUNK'
 			);
 		}
 		if (ok && opt.service!=null) {
 			occurs=false;
-			for (j=0; !occurs && j<cm.nodes.length; j++)
+			for (j=0; !occurs && j<cm.nodes.length; j++) {
 				occurs = (Node.get(cm.nodes[j]).service==opt.service);
+			}
 			ok = ok && occurs;
 		}
-		if (ok)
-			this.item.push(i);
+		if (ok) this.item.push(i);
 	}
 };
 ComponentIterator.prototype = {
@@ -647,8 +667,8 @@ ComponentIterator.prototype = {
 		this.item.sort( function(a,b) {
 			var ca = Component.get(a);
 			var cb = Component.get(b);
-			if (ca.type<cb.type) return -1;
-			if (ca.type>cb.type) return 1;
+			if (ca.type<cb.type)  return -1;
+			if (ca.type>cb.type)  return 1;
 			// When types are equal, sort alphabetically
 			return ca.title.toLocaleLowerCase().localeCompare(cb.title.toLocaleLowerCase());
 		});
@@ -661,8 +681,9 @@ ComponentIterator.prototype = {
 			var vb = ThreatAssessment.valueindex[cb.magnitude];
 			if (va==1) va=8; // Ambiguous
 			if (vb==1) vb=8;
-			if (va!=vb)
+			if (va!=vb) {
 				return vb - va;
+			}
 			// When levels are equal, sort alphabetically
 			return ca.title.toLocaleLowerCase().localeCompare(cb.title.toLocaleLowerCase());
 		});

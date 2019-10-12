@@ -2,6 +2,10 @@
  * See LICENSE.md
  */
 
+/* global
+ Component, ComponentIterator, DefaultThreats, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, NodeClusterIterator, Preferences, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, _, bugreport, exportProject, isSameString, loadFromString, newRasterConfirm, nextUnusedIndex, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, transactionCompleted, trimwhitespace, urlEncode
+*/
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Project: object representing a project
@@ -58,8 +62,9 @@
  *  dorefresh():
  */
 var Project = function(id,asstub) {
-	if (id!=null && Project._all[id]!=null)
+	if (id!=null && Project._all[id]!=null) {
 		bugreport("Project with id "+id+" already exists","Project.constructor");
+	}
 	this.id = (id==null ? nextUnusedIndex(Project._all) : id);
 	this.title = "?";
 	this.group = ToolGroup;
@@ -71,10 +76,11 @@ var Project = function(id,asstub) {
 	this.date = "";
 #ifdef SERVER
 	this.shared = false;
-	if (asstub==null)
+	if (asstub==null) {
 		this.stub = false;
-	else
+	} else {
 		this.stub = (asstub===true);
+	}
 #else
 	this.stub = false;
 #endif
@@ -92,8 +98,8 @@ Project.withTitle = function(str) {
 	var found=false;
 	for (var i=0; !found && i<Project._all.length; i++) {
 		var p = Project._all[i];
-		if (p==null || p.stub)
-			continue;
+		if (p==null || p.stub) continue;
+
 		found=(isSameString(p.title,str)  && (!p.shared || p.group==ToolGroup));
 	}
 	return (found ? i-1 : null);
@@ -106,15 +112,11 @@ Project.firstProject = function() {
 	while (i<Project._all.length) {
 		p = Project._all[i];
 		i++;
-		if (p==null || p.stub)
-			continue;
-		if (!p.shared || p.group==ToolGroup)
-			break;
+		if (p==null || p.stub) continue;
+		if (!p.shared || p.group==ToolGroup) break;
 	}
-	if (i==Project._all.length)
-		return 0;
-	else
-		return p;
+	if (i==Project._all.length)  return 0;
+	else return p;
 };
 
 Project.merge = function(intoproject,otherproject) {
@@ -139,6 +141,7 @@ Project.merge = function(intoproject,otherproject) {
 				var cm2 = it2.getcomponent();
 				if (cm2.id==cm.id) continue;
 				if (!isSameString(cm2.title,cm.title)) continue;
+
 				// There is already a component in this project with title cm.title
 				// cm needs to be merged into cm2.
 				cm2.absorbe(cm);
@@ -150,13 +153,13 @@ Project.merge = function(intoproject,otherproject) {
 		it = new NodeIterator({service: s.id});
 		for (it.first(); it.notlast(); it.next()) {
 			var rn = it.getnode();
-			if (rn.type=='tACT' || rn.type=='tNOT')
-				continue;
+			if (rn.type=='tACT' || rn.type=='tNOT') continue;
+
 			cm = Component.get(rn.component);
 			// If the node was added to a singular component, it doesn't need to added,
 			// unless it is the first node in the singular class.
-			if (cm.single && cm.nodes[0]!=rn.id)
-				continue;
+			if (cm.single && cm.nodes[0]!=rn.id) continue;
+
 			for (var j=0; j<cm.thrass.length; j++) {
 				var ta = ThreatAssessment.get(cm.thrass[j]);
 				// During absorbe() in the loop above rn may already have been added to the
@@ -171,8 +174,9 @@ Project.merge = function(intoproject,otherproject) {
 	otherproject.destroy();
 	// Now resurrect the other project
 	i = loadFromString(savedcopy,true,false,'Merge');
-	if (i==null)
+	if (i==null) {
 		bugreport("Failed to resurrect merged project", "Project.Merge");
+	}
 	otherproject = Project.get(i);
 	otherproject.date = saveddate;
 
@@ -190,16 +194,17 @@ var updateStubsInProgress=false;
  * project that is shared, as stub projects.
  */
 Project.updateStubs = function(doWhenReady) {
-	if (!Preferences.online) return; // No actions when offline
+	if (!Preferences.online)  return; // No actions when offline
 	// Ignore if we already have a request running.
-	if (updateStubsInProgress)
+	if (updateStubsInProgress) {
 		return;
+	}
 	updateStubsInProgress=true;
 	// Fire off request to server
 	$.ajax({
 		url: 'share.php?op=list',
 		dataType: 'json',
-		success: function(data,x,y,z) {
+		success: function(data) {
 			// Remove all current stub projects
 			var it = new ProjectIterator({stubsonly: true});
 			for (it.first(); it.notlast(); it.next()) {
@@ -209,8 +214,8 @@ Project.updateStubs = function(doWhenReady) {
 				var rp = data[i];
 				// Skip the server version if we are already sharing this project (avoid duplicate)
 				var p = Project.withTitle(rp.name);
-				if (p!=null && Project.get(p).shared==true)
-					continue;
+				if (p!=null && Project.get(p).shared==true) continue;
+
 				p = new Project(null,true);
 				p.shared = true;
 				p.title = rp.name;
@@ -218,19 +223,21 @@ Project.updateStubs = function(doWhenReady) {
 				p.date = rp.date;
 				p.description = unescapeNewlines(rp.description);
 			}
-			if (doWhenReady)
+			if (doWhenReady) {
 				doWhenReady(data);
+			}
 		},
-		error: function(jqXHR, textStatus, errorThrown) {
+		error: function(jqXHR, textStatus) {
 			if (textStatus=="timeout") {
 				Preferences.setonline(false);
 				rasterAlert(_("Server is offline"),
 					_("The server appears to be unreachable. The tool is switching to working offline.")
 				); 
-			} else
+			} else {
 				rasterAlert(_("A request to the server failed"),
 					_("Could not retrieve the list of remote projects.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
 				);
+			}
 		},
 		complete: function() {
 			updateStubsInProgress=false;
@@ -241,9 +248,9 @@ Project.updateStubs = function(doWhenReady) {
 var retrieveInProgress=false;
 
 Project.retrieve = function(pid,doWhenReady,doOnError) {
-	if (!Preferences.online) return; // No actions when offline
-	if (retrieveInProgress)
-		return;
+	if (!Preferences.online)  return; // No actions when offline
+	if (retrieveInProgress)  return;
+
 	var p = Project.get(pid);
 	if (!p.stub) {
 		bugreport("Retrieving a project that is not a stub","Project.retrieve");
@@ -263,18 +270,20 @@ Project.retrieve = function(pid,doWhenReady,doOnError) {
 				np.date = p.date;
 				np.shared = true;
 				np.store();
-				if (doWhenReady)
+				if (doWhenReady) {
 					doWhenReady(newp);
+				}
 			} else {
 				// Retrieve succeeded, but it still counts as an error because no valid project was found.
 				// Duplicate the code for 'error:' below
 				if (doOnError) {
 					var jqXHR = {responseText: "Invalid project received from server."};
 					doOnError(jqXHR, jqXHR.responseText, jqXHR.responseText);
-				} else
+				} else {
 					rasterAlert(_("Invalid project received from server"),
-						 _("An invalid project was received from the server.")
+						_("An invalid project was received from the server.")
 					);
+				}
 			}
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
@@ -283,15 +292,17 @@ Project.retrieve = function(pid,doWhenReady,doOnError) {
 				rasterAlert(_("Server is offline"),
 					_("The server appears to be unreachable. The tool is switching to working offline.")
 				);
-				if (doOnError)
+				if (doOnError) {
 					doOnError(jqXHR, textStatus, errorThrown);
+				}
 			} else {
-				if (doOnError)
+				if (doOnError) {
 					doOnError(jqXHR, textStatus, errorThrown);
-				else
+				} else {
 					rasterAlert(_("A request to the server failed"),
 						_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
 					);
+				}
 			}
 		},
 		complete: function() {
@@ -301,27 +312,29 @@ Project.retrieve = function(pid,doWhenReady,doOnError) {
 };
 
 Project.getProps = function(pname,doWhenReady) {
-	if (!Preferences.online) return; // No actions when offline
+	if (!Preferences.online)  return; // No actions when offline
 	$.ajax({
 		url: 'share.php?op=getprops'+'&name=' + urlEncode(pname),
 		dataType: 'json',
 		success: function (data) {
 			if (doWhenReady) {
-				if (data && data.description)
+				if (data && data.description) {
 					data.description = unescapeNewlines(data.description);
+				}
 				doWhenReady(data);
 			}
 		},
-		error: function(jqXHR, textStatus, errorThrown) {
+		error: function(jqXHR, textStatus /*, errorThrown*/) {
 			if (textStatus=="timeout") {
 				Preferences.setonline(false);
 				rasterAlert(_("Server is offline"),
 					_("The server appears to be unreachable. The tool is switching to working offline.")
 				); 
-			} else
+			} else {
 				rasterAlert(_("A request to the server failed"),
-					 _("Could not retrieve properties the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
+					_("Could not retrieve properties the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
 				);
+			}
 		},
 		complete: function() {
 		}
@@ -331,13 +344,16 @@ Project.getProps = function(pname,doWhenReady) {
 
 Project.prototype = {
 	destroy: function() {
-		for (var i=0; i<this.threats.length; i++)
-			Threat.get(this.threats[i]).destroy();		
-		for (i=0; i<this.services.length; i++)
+		for (var i=0; i<this.threats.length; i++) {
+			Threat.get(this.threats[i]).destroy();
+		}
+		for (i=0; i<this.services.length; i++) {
 			Service.get(this.services[i]).destroy();
+		}
 		var it = new NodeClusterIterator({project: this.id});
- 		for (it.first(); it.notlast(); it.next())
- 			it.getNodeCluster().destroy();
+		for (it.first(); it.notlast(); it.next()) {
+			it.getNodeCluster().destroy();
+		}
 		localStorage.removeItem(LS+'P:'+this.id);
 		Project._all[this.id]=null;
 	},
@@ -351,14 +367,14 @@ Project.prototype = {
 	
 	settitle: function(newtitle) {
 		newtitle = trimwhitespace(String(newtitle)).substr(0,50);
-		if (newtitle==this.title) return;
-		if (newtitle=='') return;
+		if (newtitle==this.title)  return;
+		if (newtitle=='')  return;
 		var targettitle = newtitle;
 		if (Project.withTitle(targettitle)!=null) {
 			var n=0;
-			do 
+			do {
 				targettitle = newtitle + " (" + (++n) + ")";
-			while (Project.withTitle(targettitle)!=null);
+			} while (Project.withTitle(targettitle)!=null);
 		}
 		this.title = targettitle;
 		this.store();
@@ -371,16 +387,17 @@ Project.prototype = {
 #ifdef SERVER
 	setshared: function(b,updateServer) {
 		var newstatus = (b===true);
-		if (this.shared==newstatus)
-			return;
+		if (this.shared==newstatus)  return;
+
 		this.group = ToolGroup;
 		if (updateServer==undefined || updateServer==true) {
 			if (newstatus==true) {
 				// Project was private, now becomes shared.
 				this.storeOnServer(false,exportProject(this.id),{});
-			} else 
+			} else {
 				// Project was shared, now becomes private.
 				this.deleteFromServer();
+			}
 		}
 		this.shared = newstatus;
 		this.store();
@@ -400,8 +417,9 @@ Project.prototype = {
 	
 	addservice: function(id) {
 		var s = Service.get(id);
-		if (this.services.indexOf(s.id)!=-1)
+		if (this.services.indexOf(s.id)!=-1) {
 			bugreport("service already added","Project.addservice");
+		}
 		s.setproject(this.id);
 		this.services.push(s.id);
 		this.store();
@@ -409,8 +427,9 @@ Project.prototype = {
 	
 	removeservice: function(id) {
 		var s = Service.get(id);
-		if (this.services.indexOf(s.id)==-1)
+		if (this.services.indexOf(s.id)==-1) {
 			bugreport("no such service","Project.removeservice");
+		}
 		this.services.splice( this.services.indexOf(s.id),1 );
 		s.destroy();
 		this.store();
@@ -418,8 +437,9 @@ Project.prototype = {
 
 	addthreat: function(id) {
 		var th = Threat.get(id);
-		if (this.threats.indexOf(th.id)!=-1)
+		if (this.threats.indexOf(th.id)!=-1) {
 			bugreport("threat already added","Project.addthreat");
+		}
 		th.setproject(this.id);
 		this.threats.push(th.id);
 		this.store();
@@ -427,8 +447,9 @@ Project.prototype = {
 	
 	removethreat: function(id) {
 		var th = Threat.get(id);
-		if (this.threats.indexOf(th.id)==-1)
+		if (this.threats.indexOf(th.id)==-1) {
 			bugreport("no such threat","Project.removethreat");
+		}
 		this.threats.splice( this.threats.indexOf(th.id),1 );
 		th.destroy();
 		this.store();
@@ -467,7 +488,7 @@ Project.prototype = {
 		}
 
 		var pid = this.id;
-		var sortfunc = function(e,ui) {
+		var sortfunc = function(/*event,ui*/) {
 			var p = Project.get(pid);
 			var newlist = [];
 			$('#tWLSthreats .threat').each( function(index,elem) {
@@ -479,8 +500,9 @@ Project.prototype = {
 			$('#tEQTthreats .threat').each( function(index,elem) {
 				newlist.push( nid2id(elem.id) );
 			});
-			if (newlist.length != p.threats.length)
+			if (newlist.length != p.threats.length) {
 				bugreport("internal error in sorting default vulnerabilities","Project.load");
+			}
 			p.threats = newlist;
 			p.store();
 			transactionCompleted("Project threats reordered "+pid);
@@ -532,7 +554,7 @@ Project.prototype = {
 			bugreport("Invalid color code","Project.strToLabel;");
 			return "";
 		}
-		if (i==0) return "";
+		if (i==0)  return "";
 		return this.labels[i-1];
 	},
 	
@@ -555,15 +577,14 @@ Project.prototype = {
 	},
 	
 	store: function() {
-		if (this.stub)
-			return;
+		if (this.stub)  return;
 		var key = LS+'P:'+this.id;
 		localStorage[key] = this._stringify();
 	},
 
 #ifdef SERVER
 	storeOnServer: function(auto,exportstring,callback) {
-		if (!Preferences.online) return; // No actions when offline
+		if (!Preferences.online)  return; // No actions when offline
 		var thisp = this;
 		// First, check that no other browser has touched the versions since we last
 		// retrieved it.
@@ -584,26 +605,28 @@ Project.prototype = {
 				success: function(datestamp) {
 					// Update the timestamp of the project, as indicated by the server
 					thisp.setdate(datestamp);
-					if (callback.onUpdate)
+					if (callback.onUpdate) {
 						callback.onUpdate();
+					}
 				},
-				error: function(jqXHR, textStatus, errorThrown) {
+				error: function(jqXHR, textStatus /*, errorThrown*/) {
 					if (textStatus=="timeout") {
 						Preferences.setonline(false);
 						rasterAlert(_("Server is offline"),
 							_("The server appears to be unreachable. The tool is switching to working offline.")
 						); 
-					} else
+					} else {
 						rasterAlert(_("A request to the server failed"),
-							 _("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
+							_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
 						);
+					}
 				}
 			});
 		});
 	},
 
 	storeIfNotPresent: function(exportstring,callback) {
-		if (!Preferences.online) return; // No actions when offline
+		if (!Preferences.online)  return; // No actions when offline
 		var thisp = this;
 		// First, check that no other browser has touched the versions since we last
 		// retrieved it.
@@ -624,33 +647,35 @@ Project.prototype = {
 				success: function(datestamp) {
 					// Update the timestamp of the project, as indicated by the server
 					thisp.setdate(datestamp);
-					if (callback.onUpdate)
+					if (callback.onUpdate) {
 						callback.onUpdate();
+					}
 				},
-				error: function(jqXHR, textStatus, errorThrown) {
+				error: function(jqXHR, textStatus /*, errorThrown*/) {
 					if (textStatus=="timeout") {
 						Preferences.setonline(false);
 						rasterAlert(_("Server is offline"),
 							_("The server appears to be unreachable. The tool is switching to working offline.")
 						); 
-					} else
+					} else {
 						rasterAlert(_("A request to the server failed"),
-							 _("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
+							_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
 						);
+					}
 				}
 			});
 		});
 	},
 
 	deleteFromServer: function() {
-		if (!Preferences.online) return; // No actions when offline
+		if (!Preferences.online)  return; // No actions when offline
 		var thisp = this;
 		Project.getProps(this.title,function(details){
-			if (details==null)
-				// Project is not on server
-				return;
-			if (this.date=="")
+			if (details==null)  return; // Project is not on server
+
+			if (this.date=="") {
 				bugreport("Project does not have a date","deleteFromServer");
+			}
 			if (thisp.date < details.date) {
 				rasterAlert(_("Cannot remove project from server"),
 					_("Project '%%' has been stored on the server by user '%%' on '%%'. ", H(thisp.title), H(details.creator), H(details.date))
@@ -667,29 +692,32 @@ Project.prototype = {
 					'&date=' + urlEncode(details.date),
 				type: 'POST',
 				success: function() {},
-				error: function(jqXHR, textStatus, errorThrown) {
+				error: function(jqXHR, textStatus /*, errorThrown*/) {
 					if (textStatus=="timeout") {
 						Preferences.setonline(false);
 						rasterAlert(_("Server is offline"),
 							_("The server appears to be unreachable. The tool is switching to working offline.")
 						); 
-					} else
+					} else {
 						rasterAlert(_("A request to the server failed"),
 							_("Could not delete the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
 						);
+					}
 				}
 			});				
 		});
 	},
 	
 	getDate: function(doWhenReady) {
-		if (!Preferences.online) return; // No actions when offline
+		if (!Preferences.online)  return; // No actions when offline
 		var thisp = this;
 		Project.getProps(this.title,function(props){
-			if (props && props.creator==Preferences.creator)
+			if (props && props.creator==Preferences.creator) {
 				thisp.setdate(props.date);
-			if (doWhenReady)
+			}
+			if (doWhenReady) {
 				doWhenReady(props);
+			}
 		});
 	},
 	
@@ -709,57 +737,62 @@ Project.prototype = {
 	refreshIfNecessary: function(auto,callbacks) {
 		if (!this.shared || !Preferences.online) {
 			// No actions when offline
-			if (callbacks.onNoupdate)
+			if (callbacks.onNoupdate) {
 				callbacks.onNoupdate();
+			}
 			return;
 		}
-		if (this.date=="")
+		if (this.date=="") {
 			bugreport("Project has no date","refreshIfNecessary");
+		}
 		var p = this;
 		Project.getProps(this.title,function(props){
 			if (props==null) {
 				// Not on the server
 				p.setshared(false,false);
-				if (callbacks.onNotfound)
+				if (callbacks.onNotfound) {
 					callbacks.onNotfound();
-			} else {
-				// Project is on server. Check remote date
-				if (p.date!="" && props.date > p.date) {
-					var doUpdate = function(){
-						var newp = new Project(null,true);
-						newp.shared = true;
-						newp.title = props.name;
-						newp.creator = props.creator;
-						newp.date = props.date;
-						newp.description = props.description;
-						Project.retrieve(newp.id,
-							callbacks.onUpdate,
-							function(jqXHR, textStatus, errorThrown) {
-								p.setshared(false,false);
-								if (callbacks.onError)
-									callbacks.onError(jqXHR.responseText);
-						});
-					};
-					if (auto) {
-						// Update without asking permission
-						doUpdate();
-					} else {
-						newRasterConfirm(_("Update project?"),
-							_("There is a more recent version of this project available. ")+
-							_("You should update your project. ")+
-							_("If you want to continue using this version, you must make it into a private project."),
-							_("Make private"),_("Update")
-						).done(function() {
-							// Make private
+				}
+				return;
+			}
+			// Project is on server. Check remote date
+			if (p.date!="" && props.date > p.date) {
+				var doUpdate = function(){
+					var newp = new Project(null,true);
+					newp.shared = true;
+					newp.title = props.name;
+					newp.creator = props.creator;
+					newp.date = props.date;
+					newp.description = props.description;
+					Project.retrieve(newp.id,
+						callbacks.onUpdate,
+						function(jqXHR, /* textStatus, errorThrown*/) {
 							p.setshared(false,false);
-						})
-						.fail(doUpdate);
-					} 
+							if (callbacks.onError) {
+								callbacks.onError(jqXHR.responseText);
+							}
+					});
+				};
+				if (auto) {
+					// Update without asking permission
+					doUpdate();
 				} else {
-					// Our local version is more (at least as) recent.
-					// No need to do anything special.
-					if (callbacks.onNoupdate)
-						callbacks.onNoupdate();
+					newRasterConfirm(_("Update project?"),
+						_("There is a more recent version of this project available. ")+
+						_("You should update your project. ")+
+						_("If you want to continue using this version, you must make it into a private project."),
+						_("Make private"),_("Update")
+					).done(function() {
+						// Make private
+						p.setshared(false,false);
+					})
+					.fail(doUpdate);
+				}
+			} else {
+				// Our local version is more (at least as) recent.
+				// No need to do anything special.
+				if (callbacks.onNoupdate) {
+					callbacks.onNoupdate();
 				}
 			}
 		});
@@ -767,14 +800,15 @@ Project.prototype = {
 	
 	dorefresh: function(auto) {
 		var p = this;
-		if (this.id!=Project.cid)
+		if (this.id!=Project.cid) {
 			bugreport("Project.dorefresh called on inactive project","Project.dorefresh");
+		}
 		this.refreshIfNecessary(auto, {
-			onNotfound: function(){
+			onNotfound: function() {
 				rasterAlert(_("Project has been made private"),
 					_("Project '%%' has been deleted from the server by someone. ", H(p.title))+
 					_("Your local version of the project will now be marked as private. ")+
-					_("If you wish to share your project again, you must set it\'s details to 'Shared' yourself.")+
+					_("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
 					"<br><p><i>"+
 					_("Your changes are not shared with others anymore.")+
 					"</i>"
@@ -797,7 +831,7 @@ Project.prototype = {
 				rasterAlert(_("Project has been made private"),
 					_("Project '%%' could not be retrieved from the server. ", H(p.title))+
 					_("Your local version of the project will now be marked as private. ")+
-					_("If you wish to share your project again, you must set it\'s details to 'Shared' yourself.")+
+					_("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
 					"<br><p><i>"+
 					_("Your changes are not shared with others anymore.")+
 					"</i><p>"+
@@ -811,10 +845,12 @@ Project.prototype = {
 	internalCheck: function() {
 		var errors = "";
 		var it;
-		if (this.stub && this.services.length>0)
+		if (this.stub && this.services.length>0) {
 			errors += "Project is marked as a stub, but does have services.\n";
-		if (!this.stub && this.services.length==0)
+		}
+		if (!this.stub && this.services.length==0) {
 			errors += "Project is has no services.\n";
+		}
 		// Check each service, and all nodes in each service
 		for (var i=0; i<this.services.length; i++) {
 			var s = Service.get(this.services[i]);
@@ -834,39 +870,42 @@ Project.prototype = {
 		}
 		// Check all services that claim to belong to this project
 		it = new ServiceIterator({project: this.id});
-  		for (it.first(); it.notlast(); it.next()) {
- 			s = it.getservice();
- 			if (this.services.indexOf(s.id)==-1)
- 				errors += "Service "+s.id+" claims to belong to project "+this.id+" but is not known as a member.\n";
- 				
-  		}
+		for (it.first(); it.notlast(); it.next()) {
+			s = it.getservice();
+			if (this.services.indexOf(s.id)==-1) {
+				errors += "Service "+s.id+" claims to belong to project "+this.id+" but is not known as a member.\n";
+			}
+		}
 		// Check all node clusters
 		it = new NodeClusterIterator({project: this.id});
-		if (this.stub && it.notlast())
+		if (this.stub && it.notlast()) {
 			errors += "Project is marked as a stub, but does have node clusters.\n";
-  		for (it.first(); it.notlast(); it.next()) {
- 			var nc = it.getNodeCluster();
+		}
+		for (it.first(); it.notlast(); it.next()) {
+			var nc = it.getNodeCluster();
 			if (!nc) {
 				errors += "Node cluster "+it.getNodeClusterid()+" does not exist.\n";
 				continue;
 			}
 			errors += nc.internalCheck();
-  		}
+		}
 		// Check all components
 		it = new ComponentIterator({project: this.id});
-		if (this.stub && it.notlast())
+		if (this.stub && it.notlast()) {
 			errors += "Project is marked as a stub, but does have components.\n";
-  		for (it.first(); it.notlast(); it.next()) {
- 			var cm = it.getcomponent();
+		}
+		for (it.first(); it.notlast(); it.next()) {
+			var cm = it.getcomponent();
 			if (!cm) {
 				errors += "Component "+it.getcomponentid()+" does not exist.\n";
 				continue;
 			}
 			errors += cm.internalCheck();
-  		}
+		}
 		// Check all threats on this project
-		if (this.stub && this.threats.length>0)
+		if (this.stub && this.threats.length>0) {
 			errors += "Project is marked as a stub, but does have a threats array.\n";
+		}
 		for (i=0; i<this.threats.length; i++) {
 			var t = Threat.get(this.threats[i]);
 			if (!t) {
@@ -879,15 +918,16 @@ Project.prototype = {
 		}
 		// Check all threats
 		it = new ThreatIterator(this.id,'tUNK');
-		if (this.stub && it.notlast())
+		if (this.stub && it.notlast()) {
 			errors += "Project is marked as a stub, but does have threats.\n";
-  		for (it.first(); it.notlast(); it.next()) {
- 			t = it.getthreat();
+		}
+		for (it.first(); it.notlast(); it.next()) {
+			t = it.getthreat();
 			if (!t) {
 				errors += "Component "+it.getthreatid()+" does not exist.\n";
 				continue;
 			}
-  		}
+		}
 		return errors;
 	}
 };
@@ -985,8 +1025,9 @@ var ProjectIterator = function(opt) {
 		} else {
 			ok = ok && (p.stub || !(opt && opt.stubsonly));
 		}
-		if (ok)
+		if (ok) {
 			this.item.push(i);
+		}
 	}
 };
 ProjectIterator.prototype = {

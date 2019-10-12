@@ -2,6 +2,8 @@
  * See LICENSE.md
  */
 
+/* global nid2id, AddAllClusters, bugreport, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+
 /*
  *
  */
@@ -19,7 +21,7 @@ var PreferencesObject = function() {
 		this.label = (labelonoff===true);
 		if (this.label) {
 			$('.nodeheader').removeClass('Chide');
-			$('.contentimg').each(function(index,element){
+			$('.contentimg').each(function(){
 				var rn = Node.get(nid2id(this.parentElement.id));
 				var src=$(this).attr('src');
 				src = src.replace(/\/img\/.+\//, '/img/'+rn.color+'/');
@@ -27,7 +29,7 @@ var PreferencesObject = function() {
 			});
 		} else {
 			$('.nodeheader').addClass('Chide');
-			$('.contentimg').each(function(index,element){
+			$('.contentimg').each(function(){
 				var src=$(this).attr('src');
 				src = src.replace(/\/img\/.+\//, '/img/none/');
 				$(this).attr('src', src);
@@ -94,15 +96,17 @@ var PreferencesObject = function() {
 
 	this.setcreator = function(cr) {
 		this.creator = trimwhitespace(String(cr)).substr(0,100);
-		if (this.creator=='')
+		if (this.creator=='') {
 			this.creator=_("Anonymous");
+		}
 		this.store();
 	};
 	
 	this.setonline = function(o) {
 		var newstatus = (o===true);
-		if (this.online==newstatus)
+		if (this.online==newstatus) {
 			return;
+		}
 		this.online = newstatus;
 		if (!this.online) {
 			$('#networkactivity').removeClass('activityyes activityno').addClass('activityoff');

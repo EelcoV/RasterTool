@@ -1,0 +1,30 @@
+{
+	"env": {
+		"browser": true,
+		"es6": true,
+		"jquery": true,
+		"node": true
+	},
+	"extends": "eslint:recommended",
+	"globals": {
+		"Atomics": "readonly",
+		"SharedArrayBuffer": "readonly"
+	},
+	"parserOptions": {
+		"ecmaVersion": 2018,
+		"sourceType": "module"
+	},
+	"rules": {
+		"linebreak-style": ["error","unix"],
+		"semi": ["error","always"],
+		"consistent-return": ["error"],
+		"curly": ["error", "multi-line"],
+		"no-mixed-spaces-and-tabs": ["warn"],
+		"no-unused-vars": ["warn", {"args": "after-used"}],
+		"no-useless-return": ["warn"],
+		"brace-style": ["warn", "1tbs", {"allowSingleLine": true}],
+		"no-bitwise": ["error"],
+		"no-lonely-if": ["warn"],
+		"no-negated-condition": ["off"]
+	}
+}

@@ -2,6 +2,8 @@
  * See LICENSE.md
  */
 
+/* global bugreport, nextUnusedIndex, _, addClusterElements, repaintCluster, Component, DEBUG, LS, ThreatAssessment, H, isSameString */
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * NodeCluster: a group of nodes that share a threat, and form a threat-domain.
@@ -54,8 +56,9 @@
  *	store(): store the object into localStorage.
 */
 var NodeCluster = function(type, id) {
-	if (id!=null && NodeCluster._all[id]!=null)
+	if (id!=null && NodeCluster._all[id]!=null) {
 		bugreport("NodeCluster with id "+id+" already exists","NodeCluster.constructor");
+	}
 	this.id = (id==null ? nextUnusedIndex(NodeCluster._all) : id);
 	this.type = type;
 	this.title = _("New cluster")+' '+this.id;
@@ -78,14 +81,16 @@ NodeCluster.addnode_threat = function(pid,nid,threattitle,threattype,duplicateok
 	// Locate the corresponding cluster in the project. 
 	// There should be at most one.
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
-	if (it.itemlength>1)
+	if (it.itemlength>1) {
 		bugreport("Multiple matches","NodeCluster.addnode_threat");
+	}
 	if (it.notlast()) {
 		var nc = it.getNodeCluster();
 //console.debug("Adding node "+nid+" to cluster "+nc.id+" ["+threattitle+"|"+threattype+":"+nc.project+"]");
 		if (nc.containsnode(nid)) {
-			if (duplicateok!=true)
+			if (duplicateok!=true) {
 				bugreport("Duplicate node in cluster","NodeCluster.addnode_threat");
+			}
 			return;
 		}
 	} else {
@@ -101,13 +106,15 @@ NodeCluster.addnode_threat = function(pid,nid,threattitle,threattype,duplicateok
 };
 NodeCluster.addcomponent_threat = function(pid,cid,threattitle,threattype,duplicateok) {
 	var cm = Component.get(cid);
-	if (!cm)
+	if (!cm) {
 		bugreport("No such component","NodeCluster.addcomponent_threat");
+	}
 	// Locate the corresponding cluster in the project. 
 	// There should be at most one.
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
-	if (it.itemlength>1)
+	if (it.itemlength>1) {
 		bugreport("Multiple matching clusters","NodeCluster.addcomponent_threat");
+	}
 	if (it.notlast()) {
 		var nc = it.getNodeCluster();
 	} else {
@@ -130,17 +137,19 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 	// Locate the corresponding cluster in the project. 
 	// There should be at most one.
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
-	if (it.itemlength>1)
+	if (it.itemlength>1) {
 		bugreport("Multiple matching clusters","NodeCluster.removecomponent_threat");
-	else if (it.itemlength==0) {
-		if (!notexistok)
+	} else if (it.itemlength==0) {
+		if (!notexistok) {
 			bugreport("No matching cluster","NodeCluster.removecomponent_threat");
+		}
 		return null;
 	}
 	var nc = it.getNodeCluster();
 	var cm = Component.get(cid);
-	if (!cm)
+	if (!cm) {
 		bugreport("No such component","NodeCluster.removecomponent_threat");
+	}
 	// If the node cluster is 'singular' then remove only the first node.
 	for (var i=0; i< (cm.single?1:cm.nodes.length); i++) {
 		if (!nc.containsnode(cm.nodes[i])) {
@@ -173,20 +182,23 @@ NodeCluster.prototype = {
 
 	settitle: function(str) {
 		var it = new NodeClusterIterator({project: this.project, isroot: true, type: this.type, title: str});
-		if (it.notlast())
+		if (it.notlast()) {
 			bugreport("Already exists","NodeCluster.settitle");
+		}
 		if (this.thrass!=null) {
 			var ta = ThreatAssessment.get(this.thrass);
 			ta.settitle(str);
 			this.title=ta.title;
-		} else
+		} else {
 			this.title=str;
+		}
 		this.store();
 	},
 	
 	addchildcluster: function(childid) {
-		if (DEBUG && this.childclusters.indexOf(childid)!=-1)
+		if (DEBUG && this.childclusters.indexOf(childid)!=-1) {
 			bugreport("NodeCluster already contains that child cluster","NodeCluster.addchildcluster");
+		}
 		this.childclusters.push(childid);
 		NodeCluster.get(childid).setparent(this.id);
 		this.store();
@@ -194,15 +206,17 @@ NodeCluster.prototype = {
 	
 	removechildcluster: function(childid) {
 		var pos = this.childclusters.indexOf(childid);
-		if (DEBUG && pos==-1)
+		if (DEBUG && pos==-1) {
 			bugreport("NodeCluster does not contain that child cluster","NodeCluster.removechildcluster");
+		}
 		this.childclusters.splice(pos,1);
 		this.store();
 	},
 	
 	addchildnode: function(childid) {
-		if (DEBUG && this.childnodes.indexOf(childid)!=-1)
+		if (DEBUG && this.childnodes.indexOf(childid)!=-1) {
 			bugreport("NodeCluster already contains that child node","NodeCluster.addchildnode");
+		}
 		this.childnodes.push(childid);
 		this.store();
 	},
@@ -213,39 +227,44 @@ NodeCluster.prototype = {
 			this.childnodes.splice(pos,1);
 			this.store();
 		} else {
-			for (var i=0; i<this.childclusters.length; i++)
+			for (var i=0; i<this.childclusters.length; i++) {
 				NodeCluster.get(this.childclusters[i]).removechildnode(childid);
+			}
 		}
 	},
 
 	containsnode: function(nid) {
-		if (this.childnodes.indexOf(nid)>-1)
+		if (this.childnodes.indexOf(nid)>-1) {
 			return true;
+		}
 		var contains=false;
-		for (var i=0; !contains && i<this.childclusters.length; i++)
+		for (var i=0; !contains && i<this.childclusters.length; i++) {
 			contains = NodeCluster.get(this.childclusters[i]).containsnode(nid);
+		}
 		return contains;
 	},
 	
 	hasdescendant: function(ncid){
-		if (this.childclusters.indexOf(ncid)!=-1) return true;
+		if (this.childclusters.indexOf(ncid)!=-1)  return true;
 		for (var i=0; i<this.childclusters.length; i++) {
-			if (NodeCluster.get(this.childclusters[i]).hasdescendant(ncid)) return true;
+			if (NodeCluster.get(this.childclusters[i]).hasdescendant(ncid))  return true;
 		}
 		return false;
 	},
 	
 	allnodes: function() {
 		var arr = [].concat(this.childnodes);
-		for (var i=0; i<this.childclusters.length; i++)
+		for (var i=0; i<this.childclusters.length; i++) {
 			arr = arr.concat(NodeCluster.get(this.childclusters[i]).allnodes());
+		}
 		return arr;
 	},
 	
 	allclusters: function() {
 		var arr = [this.id];
-		for (var i=0; i<this.childclusters.length; i++)
+		for (var i=0; i<this.childclusters.length; i++) {
 			arr = arr.concat(NodeCluster.get(this.childclusters[i]).allclusters());
+		}
 		return arr;
 	},
 	
@@ -285,8 +304,9 @@ NodeCluster.prototype = {
 					grandchild.parentcluster = this.id;
 					grandchild.store();
 				}
-				if (cc.childnodes[0])
+				if (cc.childnodes[0]) {
 					this.childnodes.push(cc.childnodes[0]);
+				}
 				this.removechildcluster(cc.id);	// Includes this.store()
 				cc.destroy();
 			}
@@ -324,12 +344,12 @@ NodeCluster.prototype = {
 	isincomplete: function() {
 		var ta = ThreatAssessment.get(this.thrass);
 //		if ((ta.freq=="-" || ta.impact=="-") && this.childnodes.length>1)
-		if (ta.freq=="-" || ta.impact=="-")
+		if (ta.freq=="-" || ta.impact=="-") {
 			return true;
+		}
 		for (var i=0; i<this.childclusters.length; i++) {
 			var cc = NodeCluster.get(this.childclusters[i]);
-			if (cc.isincomplete())
-				return true;
+			if (cc.isincomplete())  return true;
 		}
 		return false;
 	},
@@ -340,12 +360,13 @@ NodeCluster.prototype = {
 	},
 	
 	setmarker: function() {
-		if (this._markeroid==null) return;
+		if (this._markeroid==null)  return;
 		var str = '<span class="Magnitude M'
 				+ThreatAssessment.valueindex[this.magnitude]
 				+'" title="'+ThreatAssessment.descr[ThreatAssessment.valueindex[this.magnitude]]+'">'+this.magnitude+'</span>';
-		if (this.isroot() && this.isincomplete())
+		if (this.isroot() && this.isincomplete()) {
 			str = '<span class="incomplete">' + _("Incomplete") + '</span>' + str;
+		}
 		$(this._markeroid).html(str);
 	},
 	
@@ -395,8 +416,9 @@ NodeCluster.prototype = {
 				errors += offender+"contains a non-existing child cluster "+this.childclusters[i]+".\n";
 				continue;
 			}
-			if (cc.parentcluster != this.id)
+			if (cc.parentcluster != this.id) {
 				errors += offender+"contains a child cluster "+this.childclusters[i]+" that does not refer back to it.\n";
+			}
 			errors += cc.internalCheck();
 			for (j=0; j<i; j++) {
 				if (this.childclusters[i]==this.childclusters[j]) {
@@ -406,20 +428,17 @@ NodeCluster.prototype = {
 		}
 
 		var rc = NodeCluster.get(this.root());
-		if (!rc)
+		if (!rc) {
 			errors += offender+"does not have proper root.\n";
+		}
 		var ta = ThreatAssessment.get(this.thrass);
 		if (!ta) {
 			errors += offender+"contains an nonexisting vuln assessment "+this.thrass+".\n";
 		} else {
-			if (ta.cluster!=this.id)
-				errors += offender+"has a member vuln assessment "+ta.id+" that doesn't refer back.\n";
-			if (ta.component)
-				errors += offender+"has a member vuln assessment "+ta.id+" that also refers to a component.\n";
-			if (ta.type!=this.type)
-				errors += offender+"has a member vuln assessment "+ta.id+" with a non-matching type.\n";
-			if (!isSameString(ta.title,this.title))
-				errors += offender+"has a member vuln assessment "+ta.id+" with a different title.\n";
+			if (ta.cluster!=this.id)	errors += offender+"has a member vuln assessment "+ta.id+" that doesn't refer back.\n";
+			if (ta.component)			errors += offender+"has a member vuln assessment "+ta.id+" that also refers to a component.\n";
+			if (ta.type!=this.type)		errors += offender+"has a member vuln assessment "+ta.id+" with a non-matching type.\n";
+			if (!isSameString(ta.title,this.title))	errors += offender+"has a member vuln assessment "+ta.id+" with a different title.\n";
 		}
 
 		for (i=0; i<this.childnodes.length; i++) {
@@ -441,8 +460,9 @@ NodeCluster.prototype = {
 			// The component of each child node must have a threat assessment that matches this cluster
 			for (j=0; j<cm.thrass.length; j++) {
 				ta = ThreatAssessment.get(cm.thrass[j]);
-				if (ta && isSameString(ta.title,rc.title) && ta.type==rc.type)
+				if (ta && isSameString(ta.title,rc.title) && ta.type==rc.type) {
 					break;
+				}
 			}
 			if (j==cm.thrass.length) {
 				errors += offender+"has a child node "+rn.id+" that does not have vulnerability of this kind.\n";
@@ -498,8 +518,8 @@ NodeClusterIterator.prototype = {
 		this.item.sort( function(a,b) {
 			var na = NodeCluster.get(a);
 			var nb = NodeCluster.get(b);
-			if (na.type<nb.type) return -1;
-			if (na.type>nb.type) return 1;
+			if (na.type<nb.type)  return -1;
+			if (na.type>nb.type)  return 1;
 			// When types are equal, sort alphabetically
 			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
 		});
@@ -516,8 +536,7 @@ NodeClusterIterator.prototype = {
 			var vb = ThreatAssessment.valueindex[nb.magnitude];
 			if (va==1) va=8; // Ambiguous
 			if (vb==1) vb=8;
-			if (va!=vb)
-				return vb - va;
+			if (va!=vb)  return vb - va;
 			// When levels are equal, sort alphabetically
 			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
 		});

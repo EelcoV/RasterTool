@@ -10,7 +10,6 @@ const BrowserWindow = electron.BrowserWindow;
 const app = electron.app;
 const dialog = electron.dialog;
 const ipc = electron.ipcMain;
-const shell = electron.ipcMain;
 
 const lang = require('./e-translation.js');
 // This is a convenient shortcut, identical to the function in the other Raster javascript files.
@@ -116,11 +115,12 @@ function createWindow(filename) {
 	});
 
 	win.on('close', function(e)  {
-		if (!checkSaveModifiedDocument(win))
+		if (!checkSaveModifiedDocument(win)) {
 			e.preventDefault();
-		else
+		} else {
 			// Allow garbage collection to remove the window
 			delete Win[win.id];
+		}
 	});
 }
 /* This workaround was made unnecessary in August 2018.
@@ -170,7 +170,7 @@ function RecordFilename(win,filename) {
 			docname = filename.match(/[^\\]+$/)[0];
 			win.setTitle(docname + ' - Raster');
 		} else {
-			docname = filename.match(/[^\/]+$/)[0];
+			docname = filename.match(/[^/]+$/)[0];
 			win.setTitle(docname);
 		}
 	} else {
@@ -184,8 +184,7 @@ function RecordFilename(win,filename) {
 
 /* Returns false if current document was modified and should be saved. */
 function checkSaveModifiedDocument(win) {
-	if (!win.documentIsModified)
-		return true;
+	if (!win.documentIsModified)  return true;
 
 	var buttonval = dialog.showMessageBoxSync(win, {
 		type: 'warning',
@@ -298,8 +297,7 @@ function debug(msg) {
 }
 
 function EnableMenuItems(val)  {
-	if (process.platform !== 'darwin')
-		return;
+	if (process.platform !== 'darwin')  return;
 	// MacOS. Grey out the several menu items when no windows are open
 	var menuitems = Menu.getApplicationMenu().items;
 	var fileMenu = menuitems[1].submenu.items;
@@ -343,7 +341,7 @@ function AllWindowsSetVulnlevel(val) {
 	SavePreferences();
 }
 
-function SavePreferences(win) {
+function SavePreferences(/*win*/) {
 	try {
 		fs.writeFileSync(prefsFile, JSON.stringify(app.rasteroptions));
 	}
@@ -395,7 +393,7 @@ function CheckForUpdates(win) {
 				/*jsl:pass*/
 			}
 		});
-	}).on('error', function(e) {
+	}).on('error', function() {
 		// Ignore silently
 		//debug('Got error: ' + e.message);
 	});
@@ -406,8 +404,8 @@ function CheckForUpdates(win) {
 
 ipc.on('pdfoption-modified', function(event,id,opt,val) {
 	var win = BrowserWindow.fromId(id);
-	if (!win)
-		return;
+	if (!win)  return;
+
 	switch (opt) {
 	case 'pdforientation':
 		app.rasteroptions.pdforientation = val;
@@ -426,23 +424,23 @@ ipc.on('pdfoption-modified', function(event,id,opt,val) {
 
 ipc.on('document-modified', function(event,id) {
 	var win = BrowserWindow.fromId(id);
-	if (!win)
-		return;
+	if (!win)  return;
+
 	win.documentIsModified = true;
 	win.setDocumentEdited(true);
 });
 
 ipc.on('document-save', function(event,id,str) {
 	var win = BrowserWindow.fromId(id);
-	if (!win)
-		return;
+	if (!win)  return;
+
 	doSave(win,str);
 });
 
 ipc.on('document-saveas', function(event,id,str) {
 	var win = BrowserWindow.fromId(id);
-	if (!win)
-		return;
+	if (!win)  return;
+	
 	doSaveAs(win,str);
 });
 
@@ -459,8 +457,9 @@ app.on('ready', function() {
 
 	// On MacOS, the project is given through an open-file event.
 	app.on('open-file', function(event,file)  {
-		if (fs.existsSync(file))
+		if (fs.existsSync(file)) {
 			createWindow(file);
+		}
 	});
 });
 
@@ -478,8 +477,9 @@ app.on('window-all-closed', function()  {
 // On the Mac, the file to be opened is provided through the open-file event
 // Save the filename, because the app is not yet ready to create a BrowserWindow
 app.on('open-file', function(event,file)  {
-	if (fs.existsSync(file))
+	if (fs.existsSync(file)) {
 		FileToBeOpened = file;
+	}
 });
 
 // Prevent all navigation
@@ -502,7 +502,7 @@ catch (e) {
 
 app.rasteroptions = {};
 // Copy default options into app.rasteroptions
-Object.keys(DefaultRasterOptions).forEach(function(key,i,a) {
+Object.keys(DefaultRasterOptions).forEach(function(key/*,i,a*/) {
 	app.rasteroptions[key] = DefaultRasterOptions[key];
 });
 
@@ -510,7 +510,7 @@ Object.keys(DefaultRasterOptions).forEach(function(key,i,a) {
 try {
 	var str = fs.readFileSync(prefsFile);
 	var raw_pref = JSON.parse(str);
-	Object.keys(DefaultRasterOptions).forEach(function(key,i,a) {
+	Object.keys(DefaultRasterOptions).forEach(function(key/*,i,a*/) {
 		if (raw_pref && raw_pref[key]!=undefined) {
 			app.rasteroptions[key] = raw_pref[key];
 		}
@@ -526,8 +526,9 @@ if (app.rasteroptions.disablehardwareacceleration==true) {
 }
 
 // On Windows, the file to be opened is in argv[1]
-if (process.argv.length>1 && fs.existsSync(process.argv[1]))
+if (process.argv.length>1 && fs.existsSync(process.argv[1])) {
 	FileToBeOpened = process.argv[1];
+}
 
 // Menu template:
 // 0 : File
@@ -606,14 +607,14 @@ MenuTemplate = [{
 		label: _("Show labels"),
 		type: 'radio',
 		checked: (app.rasteroptions.labels==true),
-		click: function (item, focusedWindow) {
+		click: function (/*item, focusedWindow*/) {
 			AllWindowsSetLabels(true);
 		}
 	}, {
 		label: _("Hide labels"),
 		type: 'radio',
 		checked: (app.rasteroptions.labels==false),
-		click: function (item, focusedWindow) {
+		click: function (/*item, focusedWindow*/) {
 			AllWindowsSetLabels(false);
 		}
 	}, {
@@ -622,21 +623,21 @@ MenuTemplate = [{
 		label: _("Small vulnerability levels"),
 		type: 'radio',
 		checked: (app.rasteroptions.vulnlevel==1),
-		click: function (item, focusedWindow) {
+		click: function (/*item, focusedWindow*/) {
 			AllWindowsSetVulnlevel(1);
 		}
 	}, {
 		label: _("Large vulnerability levels"),
 		type: 'radio',
 		checked: (app.rasteroptions.vulnlevel==2),
-		click: function (item, focusedWindow) {
+		click: function (/*item, focusedWindow*/) {
 			AllWindowsSetVulnlevel(2);
 		}
 	}, {
 		label: _("No vulnerability levels"),
 		type: 'radio',
 		checked: (app.rasteroptions.vulnlevel==0),
-		click: function (item, focusedWindow) {
+		click: function (/*item, focusedWindow*/) {
 			AllWindowsSetVulnlevel(0);
 		}
 	}, {

@@ -93,8 +93,6 @@
 		494B6F6A18796E9D00400328 /* eventsource.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = eventsource.js; sourceTree = "<group>"; };
 		494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.editinplace-2.2.1.js"; sourceTree = "<group>"; };
 		494B6F7A18796E9D00400328 /* layout.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = layout.odg; sourceTree = "<group>"; };
-		494B6F7D18796E9D00400328 /* jsl */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = jsl; sourceTree = "<group>"; };
-		494B6F7E18796E9D00400328 /* jsl.default.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = jsl.default.conf; sourceTree = "<group>"; };
 		494B6F7F18796E9D00400328 /* rasterComponent.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterComponent.js; sourceTree = "<group>"; wrapsLines = 0; };
 		494B6F8118796E9D00400328 /* rasterMain.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = rasterMain.js; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.javascript; };
 		494B6F8218796E9D00400328 /* rasterNode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterNode.js; sourceTree = "<group>"; };
@@ -203,6 +201,8 @@
 		49E402BE1F99381700978B5C /* icon_512x512@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_512x512@2x.png"; sourceTree = "<group>"; };
 		49E402BF1F99381700978B5C /* icon_128x128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_128x128@2x.png"; sourceTree = "<group>"; };
 		49F29A2620420DEC002A2E1E /* hint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hint.png; sourceTree = "<group>"; };
+		49F827AA2351B37A00EAE982 /* eslintrc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = eslintrc; sourceTree = "<group>"; };
+		49F827AB2351CF7600EAE982 /* eslint-xcode-format.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "eslint-xcode-format.js"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -365,15 +365,6 @@
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,
 			);
 			path = js;
-			sourceTree = "<group>";
-		};
-		494B6F7B18796E9D00400328 /* lint */ = {
-			isa = PBXGroup;
-			children = (
-				494B6F7D18796E9D00400328 /* jsl */,
-				494B6F7E18796E9D00400328 /* jsl.default.conf */,
-			);
-			path = lint;
 			sourceTree = "<group>";
 		};
 		494B6FA218796E9D00400328 /* css */ = {
@@ -608,14 +599,16 @@
 		49F279FD1F91DB23003F360B /* script */ = {
 			isa = PBXGroup;
 			children = (
-				49E402C11F99383100978B5C /* electron.iconset */,
-				49E402A91F99378B00978B5C /* RasterIcon.odg */,
-				49E402A81F99378B00978B5C /* Untitled 1.odg */,
 				4915A6371FA1178D00B4B205 /* Versions.sh */,
 				4915A6361FA116CF00B4B205 /* fillcache.sh */,
 				4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */,
 				4999EB5F1F9004D0009BBF18 /* clean.sh */,
 				4999EB651F9007CE009BBF18 /* build-electron.sh */,
+				49F827AB2351CF7600EAE982 /* eslint-xcode-format.js */,
+				49F827AA2351B37A00EAE982 /* eslintrc */,
+				49E402C11F99383100978B5C /* electron.iconset */,
+				49E402A91F99378B00978B5C /* RasterIcon.odg */,
+				49E402A81F99378B00978B5C /* Untitled 1.odg */,
 				4954ADED1F954398002A6FBC /* base.EN.dmg */,
 				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
 				4915A6301FA0482800B4B205 /* raster.ico */,
@@ -626,7 +619,6 @@
 				4915A6321FA113D900B4B205 /* FileAssociation.nsh */,
 				494AF84D1FA3BCBF00356A28 /* 7z.zip */,
 				4915A62E1F9E819300B4B205 /* rcedit-x86.exe */,
-				494B6F7B18796E9D00400328 /* lint */,
 			);
 			path = script;
 			sourceTree = "<group>";
