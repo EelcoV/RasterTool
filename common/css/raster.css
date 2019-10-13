@@ -1088,6 +1088,22 @@ for checklists and threat evaluations.
 /* * * * * * * * * * * * * * * * *|  COMMON CAUSE FAILURES  |* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
+#ccfs_body {
+    width: 854px !important;
+	border-right: none;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+#ccfs_details {
+	width: calc(100% - 866px) !important;
+	position: absolute;
+	top: 0;
+	right: 0;
+	padding-left: 10px;
+	border-left: none;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
 #ccfs_body p {
     margin-left: 15px;
     margin-top: 22px;
@@ -1106,6 +1122,7 @@ for checklists and threat evaluations.
 	border: 3px solid grey;
 	background: whitesmoke;
 	border-radius: 15px;
+	z-index: 1200;
 }
 #outerimpacthint img {
 	position: absolute;

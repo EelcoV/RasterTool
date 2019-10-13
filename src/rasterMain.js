@@ -686,10 +686,13 @@ function freqIndicatorUpdate(anim) {
 	var p;
 
 	if (cW) {
-		p = (vNum * vNPd / vInc) / 52;
+		// Avoid 2 divisons on the same line, because they look like a regex to Xcode
+		p = (vNum * vNPd / vInc)
+			/ 52;
 	}
 	if (cM) {
-		p = (vNum * vNPd / vInc) / 12;
+		p = (vNum * vNPd / vInc)
+			/ 12;
 	}
 	if (cY) {
 		p = vNum * vNPd / vInc;
@@ -3841,18 +3844,23 @@ function collapseAllSingleF(sid) {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+// Time for submenu
 var ccfmsm_timer;
+// The cluster for which details are currently displayed on the right-hand side.
+var CurrentCluster;
 
 function initTabCCFs() {
+	CurrentCluster = null;
+
 	// Localise user interface
 	$('#mi_ccfc').html( _("Create new cluster") );
 	$('#mi_ccfm span').html( _("Move to") );
 
 	// Event handlers for mouse actions
-	$('#ccfs_body').on('click', '.childnode', clickSelectHandler);
-	$('#ccfs_body').on('click', '.clusternode', clickCollapseHandler);
-	$('#ccfs_body').on('contextmenu', '.tlistitem', contextMenuHandler);
-	$('#ccfs_body').on('click',  function() {
+	$('#ccfs_details').on('click', '.childnode', clickSelectHandler);
+	$('#ccfs_details').on('click', '.clusternode', clickCollapseHandler);
+	$('#ccfs_details').on('contextmenu', '.tlistitem', contextMenuHandler);
+	$('#ccfs_details').on('click',  function() {
 		$('.li_selected').removeClass('li_selected');
 	});
 
@@ -4022,7 +4030,7 @@ function contextMenuHandler(ev) {
 		}
 		$(this).addClass('li_selected');
 
-		if ($('#ccfs_body .li_selected').length<2) {
+		if ($('#ccfs_details .li_selected').length<2) {
 			$('#mi_ccfc').addClass('popupmenuitemdisabled');
 		} else {
 			$('#mi_ccfc').removeClass('popupmenuitemdisabled');
@@ -4088,6 +4096,7 @@ function removeCluster(cluster) {
 	root.normalize();
 	root.calculatemagnitude();
 	repaintCluster(root.id);
+	repaintClusterDetails(root);
 }
 
 function moveCluster(from_cluster,to_cluster) {
@@ -4100,6 +4109,7 @@ function moveCluster(from_cluster,to_cluster) {
 	root.normalize();
 	root.calculatemagnitude();
 	repaintCluster(root.id);
+	repaintClusterDetails(root);
 }
 
 function moveToClusterHandler(/*event*/) {
@@ -4131,6 +4141,7 @@ function moveSelectionToCluster(cluster) {
 	root.normalize();
 	root.calculatemagnitude();
 	repaintCluster(root.id);
+	repaintClusterDetails(root);
 	// Wait for the repaint to finish, the new cluster to be painted, then
 	// trigger a rename
 	setTimeout(function(){
@@ -4205,22 +4216,7 @@ function AddAllClusters() {
 		return;
 	}
 
-	switch (CCFSortOpt) {
-	case 'alph':
-		$('#ccfsort_alph').prop('checked',true);
-		it.sortByName();
-		break;
-	case 'type':
-		$('#ccfsort_type').prop('checked',true);
-		it.sortByType();
-		break;
-	case 'thrt':
-		$('#ccfsort_thrt').prop('checked',true);
-		it.sortByLevel();
-		break;
-	default:
-		bugreport("Unknown node sort option","AddAllClusters");
-	}
+	sortClustersToCurrentOrder(it);
 	$('#someccf fieldset').controlgroup('refresh');
 
 	$('#noccf').css('display', 'none');
@@ -4249,8 +4245,31 @@ function AddAllClusters() {
 		var nc = it.getNodeCluster();
 		addClusterElements(nc);
 		repaintCluster(nc.id);
+		// Show the details of the first open accordion
+		if (nc.accordionopened && CurrentCluster==null) {
+			repaintClusterDetails(nc);
+		}
 	}
 	$('#ccfs_body').append('<br><br>');
+}
+
+function sortClustersToCurrentOrder(it) {
+	switch (CCFSortOpt) {
+	case 'alph':
+		$('#ccfsort_alph').prop('checked',true);
+		it.sortByName();
+		break;
+	case 'type':
+		$('#ccfsort_type').prop('checked',true);
+		it.sortByType();
+		break;
+	case 'thrt':
+		$('#ccfsort_thrt').prop('checked',true);
+		it.sortByLevel();
+		break;
+	default:
+		bugreport("Unknown node sort option","AddAllClusters");
+	}
 }
 
 function addClusterElements(nc) {
@@ -4258,7 +4277,6 @@ function addClusterElements(nc) {
 	  <div id="ccfaccordion_ID_" class="ccfaccordion">\n\
 		<h3><a href="#">_LCCF_ "_TI_" (_TY_) <span id="ccfamark_ID_"></span></a></h3>\n\
 		<div id="ccfaccordionbody_ID_" class="ccfaccordionbody">\n\
-		  <div id="clust_ID_" class="clusternodelist noselect"></div>\n\
 		</div>\n\
 	  </div>\n\
 	';
@@ -4270,7 +4288,43 @@ function addClusterElements(nc) {
 
 	var acc = $('#ccfaccordion'+nc.id);
 	acc.accordion({
-		activate: function(event,ui) { nc.setaccordionopened(ui.oldPanel.length===0); },
+		beforeActivate: function() {
+			if (!acc.accordion('option','animate')) {
+				// Activated programatically. Assume we know what we're doing.
+				return true;
+			}
+			if (!nc.accordionopened) {
+				// Open this accordion (which is closed), and paint its details
+				return true;
+			} else if (CurrentCluster && CurrentCluster!=nc.id) {
+				// Reactivate this cluster (which was already open)
+				repaintClusterDetails(nc);
+				return false;	// prevent the default action = to close the accordion
+			} else {
+				// Close this accordion, and reactivate the first open accordion
+				var it = new NodeClusterIterator({project:Project.cid, isroot:true, isstub: false});
+				sortClustersToCurrentOrder(it);
+				$('#ccfs_details').empty();
+				CurrentCluster = null;
+				for (it.first(); it.notlast(); it.next()) {
+					var cl = it.getNodeCluster();
+					if (cl.id==nc.id)  continue;
+					if (cl.accordionopened) {
+						repaintClusterDetails(cl);
+						break;
+					}
+				}
+				return true; // Close the accordion
+			}
+		},
+		activate: function(event,ui) {
+			nc.setaccordionopened(ui.oldPanel.length===0);
+			if (nc.accordionopened && acc.accordion('option','animate')) {
+				// If animation is off, then opening/closing is done programmatically.
+				// Therefore do not paint the details.
+				repaintClusterDetails(nc);
+			}
+		},
 		heightStyle: 'content',
 		collapsible: true,
 		animate: 300,
@@ -4286,6 +4340,7 @@ function addClusterElements(nc) {
 
 function expandAllCCF() {
 	var it = new NodeClusterIterator({project: Project.cid});
+
 	for (it.first(); it.notlast(); it.next()) {
 		var cl = it.getNodeCluster();
 		if (cl.isroot()) {
@@ -4302,9 +4357,17 @@ function expandAllCCF() {
 			}
 		}
 	}
+
+	// Show the details of the first cluster
+	it = new NodeClusterIterator({project: Project.cid, isroot:true, isstub: false});
+	sortClustersToCurrentOrder(it);
+	it.first;
+	repaintClusterDetails(it.getNodeCluster());
 }
 
 function collapseAllCCF() {
+	$('#ccfs_details').empty();
+	CurrentCluster = null;
 	var it = new NodeClusterIterator({project: Project.cid});
 	for (it.first(); it.notlast(); it.next()) {
 		var cl = it.getNodeCluster();
@@ -4324,26 +4387,7 @@ function collapseAllCCF() {
 	}
 }
 
-/* Repainting shared failures takes a lot of time. When we trigger a repaint, we often
- * lack information on whether the repaint can be batched. Therefore, we schedule the
- * repaint, but delay execution for a short while. This way, we avoid unnecessary
- * repaints.
- */
-var REPAINT_TIMEOUTS=[];
-
 function repaintCluster(elem) {
-	if (REPAINT_TIMEOUTS[elem]) {
-		clearTimeout(REPAINT_TIMEOUTS[elem]);
-	}
-	var func = function(){reallyRepaintCluster(elem);};
-	REPAINT_TIMEOUTS[elem] = setTimeout(func,100);
-}
-
-// To remember the scroll position within a .clusternodelist div.
-var ScrollBarPosition;
-
-function reallyRepaintCluster(elem) {
-	delete REPAINT_TIMEOUTS[elem];
 	var nc = NodeCluster.get(elem);
 	if (!nc)  return;
 	if (!nc.isroot()) {
@@ -4359,8 +4403,7 @@ function reallyRepaintCluster(elem) {
 		<div class="th_remark th_col thr_header">_LR_</div>\
 		</div>\
 		<div id="ccftable_ID_" class="threats">\
-		</div></div>\n\
-		<div id="clust_ID_" class="clusternodelist noselect"></div>\n';
+		</div></div>\n';
 	snippet = snippet.replace(/_LN_/g, _("Name"));
 	snippet = snippet.replace(/_LF_/g, _("Freq."));
 	snippet = snippet.replace(/_LI_/g, _("Impact"));
@@ -4390,18 +4433,22 @@ function reallyRepaintCluster(elem) {
 	}
 
 	$('#ccfaccordion'+nc.id).css('display', 'block');
-	// Retain scrollbar position
-	$('#clust'+nc.id).append( listFromCluster(nc) ).scrollTop(ScrollBarPosition);
 	nc.setallmarkeroid('#ccfamark');
-	$('#clust'+nc.id+' .tlistitem').draggable({
-		containment: '#clust'+nc.id,
+}
+
+function repaintClusterDetails(nc) {
+	CurrentCluster = nc.id;
+	$('#ccfs_details').empty().scrollTop(0);
+	$('#ccfs_details').append( listFromCluster(nc) );
+
+	$('#ccfs_details .tlistitem').draggable({
+		containment: '#ccfs_details',
 		revert: 'invalid',
 		revertDuration: 300, // Default is 500 ms
 		axis: 'y',
 		scrollSensitivity: 40,
 		scrollSpeed: 10,
 		start: function(/*event,ui*/) {
-			ScrollBarPosition = $(this).parents('.clusternodelist').scrollTop();
 			$('.li_selected').addClass('ui-draggable-dragging');
 			$(this).addClass('li_selected');
 		},
@@ -4420,6 +4467,7 @@ function reallyRepaintCluster(elem) {
 	});
 	$('.litext').editInPlace({
 		bg_over: 'rgb(255,204,102)',
+		text_size: 40,
 		callback: function(domid, enteredText) {
 			var nc = NodeCluster.get( nid2id(domid) );
 			nc.settitle(enteredText);
@@ -4774,6 +4822,7 @@ function nodeClusterReorder(event,ui) {
 			root_cluster.calculatemagnitude();
 			root_cluster.normalize();
 			repaintCluster(root_cluster.id);
+			repaintClusterDetails(root_cluster);
 			transactionCompleted("Create cluster");
 		} else if (drop_n!=null && drag!=drop) {
 			bugreport("Node dropped on node of a different cluster","nodeClusterReorder");
@@ -4792,6 +4841,7 @@ function nodeClusterReorder(event,ui) {
 			root_cluster.normalize();
 			root_cluster.calculatemagnitude();
 			repaintCluster(root_cluster.id);
+			repaintClusterDetails(root_cluster);
 			transactionCompleted("Move node from cluster");
 		}
 	} else {
