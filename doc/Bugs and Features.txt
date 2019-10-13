@@ -7,7 +7,6 @@ On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
 When removing the last vulnerability on a component, the overall vulnerability level should be set to Extremely Low.
-After upgrade, scrolling within large CCFs is weird. Two competing scroll bars??
 Be consistent: cloud, unknown link, unexplored link. Decision: use "unknwon link" as the official term, with "cloud" as a possible informal nickname.
 When printing CCF, the accordions are not always all expanded.
 SizeDOMElements is not called when browser goes fullscreen. The bottom tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?

@@ -766,7 +766,7 @@ Project.prototype = {
 					newp.description = props.description;
 					Project.retrieve(newp.id,
 						callbacks.onUpdate,
-						function(jqXHR, /* textStatus, errorThrown*/) {
+						function(jqXHR /*, textStatus, errorThrown*/) {
 							p.setshared(false,false);
 							if (callbacks.onError) {
 								callbacks.onError(jqXHR.responseText);

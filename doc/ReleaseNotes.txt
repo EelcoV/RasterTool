@@ -12,6 +12,8 @@ October 2019
     and optionally to existing components as well.
   - Add/remove a vulnerability from a component: applies to this component only.
   - Rename a vulnerability: applies to the template and all existing components.
+* Common Cause Failures now has a split view: vulnerabilities on the left, and
+  components on the right. As a result, a relatively wide monitor is needed.
 * An additional label colour was added, for those who need more labels.
 * Internal changes (library upgrades) and small bug fixes.
 

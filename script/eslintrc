@@ -25,6 +25,13 @@
 		"brace-style": ["warn", "1tbs", {"allowSingleLine": true}],
 		"no-bitwise": ["error"],
 		"no-lonely-if": ["warn"],
-		"no-negated-condition": ["off"]
+		"no-negated-condition": ["off"],
+		"comma-dangle": ["error", {
+			"arrays": "never",
+			"objects": "never",
+			"imports": "never",
+			"exports": "never",
+			"functions": "never"
+		}]
 	}
 }

@@ -417,9 +417,9 @@ ThreatAssessment.prototype = {
 				$('#outerimpacthint').show();
 				var otop = $('#outerimpacthint').offset().top-ofuzz;
 				var top = $(this).offset().top-fuzz-otop;
-				if (top<5) {
-					otop -= 5-top;
-					top = 5;
+				if (top<10) {
+					otop -= 10-top;
+					top = 10;
 				}
 				if (top>250) {
 					otop += top-250;

@@ -338,8 +338,8 @@ See LICENSE.md
 
 
 <div id="tab_ccfs" class="workbody workouter">
-  <div id="ccfs_body" class="workbody workinner ui-widget-content">
-  </div>
+  <div id="ccfs_body" class="workbody workinner ui-widget-content"></div>
+  <div id="ccfs_details" class="workbody workinner ui-widget-content"></div>
 </div>
 
 
