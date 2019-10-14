@@ -176,7 +176,9 @@ Node.prototype = {
 				jsP.remove('node'+id);
 			});
 		} else {
-			jsP.remove(this.nid);
+			// Prevent an error when jsPlumb is asked to remove a node that is not part of the DOM (anymore)
+			var node = $(this.jnid);
+			if (node.length>0)  jsP.remove(this.nid);
 		}
 	},
 	
