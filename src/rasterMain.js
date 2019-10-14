@@ -951,6 +951,9 @@ function switchToProject(pid,dorefresh) {
 	$('#checklist_tWRD').dialog('close');
 	$('#checklist_tEQT').dialog('close');
 	removetransientwindowsanddialogs();
+	$('#ccfs_details').empty();
+	CurrentCluster = null;
+
 	if (Project.get(Project.cid)!=null) {
 		// Project might have been deleted by libdel button
 		Project.get(Project.cid).unload();
