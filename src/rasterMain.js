@@ -1832,6 +1832,18 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	}
 	for (i=0; i<lNodeClusterlen; i++) {
 		var lnc = lNodeCluster[i];
+		/* For some reason, some project contain empty cluster (root, no nodes and no subclusters).
+		 * Do not create such a useless cluster, and if its ThreatEvaluation has been created
+		 * already then delete that.
+		 */
+		if (lnc.u==null && lnc.c.length==0 && lnc.n.length==0) {
+			te = ThreatAssessment.get(lnc.e);
+			if (te && te.cluster==lnc.id) {
+				te.destroy();
+			}
+			continue;
+		}
+
 		var nc = new NodeCluster(lnc.t,lnc.id);
 		nc.title = lnc.l;
 		nc.project = lnc.p;
@@ -1849,7 +1861,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	}
 	for (i=0; i<lNodeClusterlen; i++) {
 		nc = NodeCluster.get( lNodeCluster[i].id );
-		nc.calculatemagnitude();
+		if (nc)  nc.calculatemagnitude();
 	}
 
 	return lProject[0].id;
