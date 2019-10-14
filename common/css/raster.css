@@ -1096,6 +1096,7 @@ for checklists and threat evaluations.
 }
 #ccfs_details {
 	width: calc(100% - 866px) !important;
+	min-width: 500px;
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -1103,6 +1104,7 @@ for checklists and threat evaluations.
 	border-left: none;
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
+	z-index: 1150;
 }
 #ccfs_body p {
     margin-left: 15px;
