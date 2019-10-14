@@ -316,7 +316,7 @@ Node.prototype = {
 			c.adddefaultthreatevaluations(this.component);
 			c.addnode(this.id);
 			c.settitle(str);
-		} else if (n==prevcomponent.id) {
+		} else if (prevcomponent && prevcomponent.id==n) {
 			// New title is strictly different, but case-insensitive identical
 			prevcomponent.settitle(str);
 			prevcomponent = null; 
