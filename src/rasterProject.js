@@ -975,7 +975,6 @@ function askForConflictResolution(proj,details) {
 		});
 	} }
 	]);
-	$('#modaldialog').dialog( 'option', 'zIndex', 9999 );
 	$('#modaldialog').dialog( 'option', 'title', _("Conflict resulution"));
 	$('#modaldialog').html(
 		_("A newer version of project '%%' has been stored on the server by user '%%' on '%%'. ", H(proj.title), H(details.creator), H(prettyDate(details.date)))

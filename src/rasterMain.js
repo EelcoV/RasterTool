@@ -932,10 +932,6 @@ function removetransientwindows(/*evt*/) {
 	$('#selectmenu').hide();
 	$('#ccfmenu').hide();
 	$('.popupsubmenu').hide();
-	$('.actpanel').hide();
-	$('.activator').removeClass('actactive ui-state-active');
-	$('#libraryupdown').removeClass('ui-icon-triangle-1-n').addClass('ui-icon-triangle-1-s');
-	$('#optionsupdown').removeClass('ui-icon-triangle-1-n').addClass('ui-icon-triangle-1-s');
 }
 
 function removetransientwindowsanddialogs(/*evt*/) {
@@ -1050,7 +1046,6 @@ function rasterAlert(title,msg) {
 	} }
 	]);
 	$('#modaldialog').dialog({
-		zIndex: 9999,
 		title: String(title),
 		height: 'auto',
 		maxHeight: 600
@@ -1076,7 +1071,6 @@ function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
 		funcaction();
 	} }
 	]);
-	$('#modaldialog').dialog( 'option', 'zIndex', 9999 );
 	$('#modaldialog').dialog( 'option', 'title', String(title) );
 	$('#modaldialog').html( String(msg) );
 	$('#modaldialog').dialog('open');
@@ -1095,7 +1089,6 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 		dfd.resolve(true);
 	} }
 	]);
-	$('#modaldialog').dialog( 'option', 'zIndex', 9999 );
 	$('#modaldialog').dialog( 'option', 'title', String(title) );
 	$('#modaldialog').html( String(msg) );
 	$('#modaldialog').dialog('open');
@@ -2065,6 +2058,17 @@ function vertTabSelected(/*event, ui*/) {
 function initLibraryPanel() {
 	$('#libraryactivator span').first().html(_("Library"));
 
+	$('#librarypanel').dialog({
+		title: _("Library"),
+		modal: true,
+		width: 490,
+		resizable: false,
+		autoOpen: false,
+		close: function() {
+			$('#libraryactivator').removeClass('ui-state-hover');
+		}
+	});
+
 	$('#libactivate').attr('title',_("Continue working with the selected project."));
 	$('#libprops').attr('title',_("Change the name, description, and sharing status of the selected project."));
 	$('#libexport').attr('title',_("Save the selected project to a file."));
@@ -2110,6 +2114,7 @@ function initLibraryPanel() {
 			}
 		}
 		$('#libactivate').removeClass('ui-state-hover');
+		$('#librarypanel').dialog('close');
 	});
 	// Details --------------------
 	$('#libprops').on('click', function() {
@@ -2181,7 +2186,7 @@ function initLibraryPanel() {
 			} else {
 				dokill();
 			}
-			$('#libselect').val(Project.cid).focus().trigger('change');
+			$('#librarypanel').dialog('close');
 		})
 		.fail(function () {
 			$('#libselect').focus();
@@ -2206,7 +2211,7 @@ function initLibraryPanel() {
 			_("Merge"),_("Cancel"),
 			function() {
 				Project.merge(currentproject,otherproject);
-				$('#libselect').val(Project.cid).focus().trigger('change');
+				$('#librarypanel').dialog('close');
 		});
 	});
 
@@ -2296,37 +2301,23 @@ function initLibraryPanel() {
 	// panel activator --------------------
 	$('#libraryactivator').on('mouseenter', function() {
 		$('#libraryactivator').addClass('ui-state-hover');
-		// If one of the other panels was open, then close that panel and open this one,
-		// without requiring a click.
-		if ($('#optionspanel').css('display')!='none') {
-			$('#libraryactivator').trigger('click');
-		}
 	}).on('mouseleave', function() {
 		$('#libraryactivator').removeClass('ui-state-hover');
 	});
 	$('#libraryactivator').on('click',  function() {
-		if ($('#librarypanel').css('display')=='none') {
-			var it = new ProjectIterator({group: ToolGroup, stubsonly: false});
-			var nump = it.number();
-			nump += 4; // Allow space for option group titles.
-			if (nump<8) nump=8;
-			if (nump>15) nump=15;
-			$('#libselect').attr("size",nump);
-			removetransientwindows();
-			$('#librarypanel').show();
-			// Show project list using current stubs, but do fire an update
-			populateProjectList();
+		var it = new ProjectIterator({group: ToolGroup, stubsonly: false});
+		var nump = it.number();
+		nump += 4; // Allow space for option group titles.
+		if (nump<8) nump=8;
+		if (nump>15) nump=15;
+		$('#libselect').attr("size",nump);
+		$('#librarypanel').dialog('open');
+		// Show project list using current stubs, but do fire an update
+		populateProjectList();
 #ifdef SERVER
-			Project.updateStubs(refreshProjectList);
-			startPeriodicProjectListRefresh();
+		Project.updateStubs(refreshProjectList);
+		startPeriodicProjectListRefresh();
 #endif
-			if ($('#optionspanel').css('display')!='none') $('#optionsactivator').trigger('click');
-			$('#libraryactivator').addClass('actactive ui-state-active');
-			$('#libraryupdown').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-n');
-		} else {
-			removetransientwindows();
-		}
-		return false;
 	});
 }
 
@@ -2453,7 +2444,6 @@ function ShowDetails(p) {
 	dialog.dialog({
 		title: _("Properties for project '%%'", p.title),
 		modal: true,
-		position: {my: 'left top', at: 'right', of: '#libprops', collision: 'fit'},
 		width: 490,
 #ifdef SERVER
 		height: 280,
@@ -2564,6 +2554,17 @@ function refreshProjectList() {
 function initOptionsPanel() {
 	$('#optionsactivator span').first().html(_("Options"));
 
+	$('#optionspanel').dialog({
+		title: _("Options"),
+		modal: true,
+		width: 420,
+		resizable: false,
+		autoOpen: false,
+		close: function() {
+			$('#optionsactivator').removeClass('ui-state-hover');
+		}
+	});
+
 	$('#switcher span').first().html( _("Visual style:") );
 	$('[for=smoothness]').on('click',  function() { Preferences.settheme('smoothness'); return true; });
 	$('[for=start]').on('click',  function() { Preferences.settheme('start'); return true; });
@@ -2601,27 +2602,16 @@ function initOptionsPanel() {
 
 	$('#optionsactivator').on('mouseenter', function() {
 		$('#optionsactivator').addClass('ui-state-hover');
-		if ($('#librarypanel').css('display')!='none') {
-			$('#optionsactivator').trigger('click');
-		}
 	}).on('mouseleave', function() {
 		$('#optionsactivator').removeClass('ui-state-hover');
 	});
 	$('#optionsactivator').on('click',  function() {
-		if ($('#optionspanel').css('display')=='none') {
-			removetransientwindows();
-			$('#'+Preferences.emsize).prop('checked',true);
-			$(Preferences.online?'#online_on':'#online_off').prop('checked',true);
-			$(Preferences.label?'#label_on':'#label_off').prop('checked',true);
-			$('#optionspanel fieldset').controlgroup('refresh');
-			if ($('#librarypanel').css('display')!='none') $('#libraryactivator').trigger('click');
-			$('#optionspanel').show();
-			$('#optionsactivator').addClass('actactive ui-state-active');
-			$('#optionsupdown').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-n');
-		} else {
-			removetransientwindows();
-		}
-		return false;
+		removetransientwindows();
+		$('#optionspanel').dialog('open');
+		$('#'+Preferences.emsize).prop('checked',true);
+		$(Preferences.online?'#online_on':'#online_off').prop('checked',true);
+		$(Preferences.label?'#label_on':'#label_off').prop('checked',true);
+		$('#optionspanel fieldset').controlgroup('refresh');
 	});
 }
 
@@ -2751,16 +2741,14 @@ function initTabDiagrams() {
 
 	$('#nodereport').dialog({
 		autoOpen: false,
-		minHeight: 80,
-		zIndex: 400
+		minHeight: 80
 	});
 	$('#componentthreats').dialog({
 		autoOpen: false,
 		minHeight: 180,
 		minWidth: 775,
 		maxWidth: 779,
-		width: 775,
-		zIndex: 400
+		width: 775
 	});
 
 	$('#servaddbuttondia').on('click', function() {
@@ -3227,7 +3215,6 @@ function initChecklistsDialog(type) {
 		minWidth: 725,
 		minHeight: 180,
 		position: {my: 'left+'+(offsets[type]+50)+' top+'+offsets[type], at: 'left top', of: '#tabs', collision: 'fit'},
-		zIndex: 400,
 		autoOpen: false
 	});
 }

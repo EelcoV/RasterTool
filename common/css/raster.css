@@ -13,6 +13,8 @@ The UI consists of a main window containing three sections: diagrams, single ele
 }
 
 .ui-state-focus { outline: none; }
+/* Make sure model dialogs are above all other elements. */
+.ui-widget-overlay { z-index: 4000 !important; }
 
 body {
     padding: 0px;
@@ -93,7 +95,7 @@ input.inplace_field, textarea.inplace_field {
     top: 6px;
     width: 6px;
     height: 6px;
-    z-index: 9999;
+    z-index: 3999;
     border-radius: 4px;
 }
 .activityoff {background: transparent; border: none;}
@@ -310,32 +312,13 @@ img.tC {
     -moz-user-select: none;
     -webkit-user-select: none;
 }
-.actactive {
-    height: 30px;
-    border-radius: 0;
-    border: 1px solid white;
-    border-top: 0px;
-    border-bottom: 0px;
-    box-shadow: 7px 7px 6px #999;
-}
 #libraryactivator { left: 55px; }
 #optionsactivator { left: 175px; }
-
 
 
 /* Common settings for all panels */
 .actpanel {
     display: none;
-    position: absolute;
-    top: 32px;
-    border: 1px solid white;
-    border-top: 0px;
-    background: rgba(190,190,190,0.95);
-    color: white;
-    padding: 5px;
-    border-radius: 4px;
-    z-index: 2100;
-    box-shadow: 7px 7px 6px #999;
 }
 .actpanel table { font-size: 11px; width: 100%; }
 .actpanel tr { vertical-align: top; }
@@ -352,7 +335,6 @@ fieldset {
 }
 
 /* Panel for projects */
-#librarypanel { width: 475px; left: 55px; border-top-left-radius: 0; }
 #fileElem {visibility: hidden; width: 0; height: 0; }
 
 #form_projectprops input,textarea,#sh_onoff { margin: 0 0 5px; }
@@ -361,7 +343,6 @@ fieldset {
 }
 
 /* Panel for options */
-#optionspanel { width: 420px; left: 175px; border-top-left-radius: 0; }
 #optionspanel .ui-button .ui-button-text { line-height: 1.0; } /* radio buttons */
 #switcher,#labelonoff, #emblem_size, #onlineonoff { margin-bottom: 10px; }
 .leftlabel {
@@ -372,10 +353,6 @@ fieldset {
 }
 #creator {
 	width: 260px;
-}
-
-.ui-dialog {
-    z-index: 3000 !important;
 }
 
 /*
@@ -1032,7 +1009,7 @@ div.tNOTheader {
     opacity: 0.2;
     border-radius: 7px;
     border: 4px solid white;
-    z-index: 300;
+    z-index: 90;
 }
 
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */

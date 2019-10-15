@@ -90,7 +90,7 @@ See LICENSE.md
 <div id="libraryactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Library</span><span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
 <div id="optionsactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Options</span><span id="optionsupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
 
-<div id="librarypanel" class="actpanel ui-widget">
+<div id="librarypanel" class="actpanel">
   <form id="libform">
     <table>
     <tr><td>
@@ -116,7 +116,7 @@ See LICENSE.md
   </form>
 </div>
 
-<div id="optionspanel" class="actpanel ui-widget">
+<div id="optionspanel" class="actpanel">
     <div id="switcher" class="controlgroup">
         <span class="leftlabel ui-widget ui-state-default">Visual style:</span>
         <fieldset>
