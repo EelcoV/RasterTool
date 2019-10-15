@@ -872,7 +872,6 @@ Node.prototype = {
 			$('#nodereport').dialog({
 				title: _("Warning report on %%", rn.title+' '+rn.suffix),
 				position: {my: 'left top', at: 'center', of: e, collision: 'fit'},
-				zIndex: 400,
 				open: function() {
 					var o = $('#nodereport').dialog('widget').offset();
 					$('#nodereport').dialog('widget')
@@ -1108,8 +1107,7 @@ function RefreshNodeReportDialog() {
 	}
 	$('#nodereport').html( s );
 	$('#nodereport').dialog({
-		title: _("Warning report on %%", rn.title+' '+rn.suffix),
-		zIndex: 400
+		title: _("Warning report on %%", rn.title+' '+rn.suffix)
 	});
 	$('#nodereport').dialog('open');
 }
