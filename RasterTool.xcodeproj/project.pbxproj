@@ -167,7 +167,7 @@
 		4962CD6D1FCAD79700EBD886 /* User manual EN v2.0.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "User manual EN v2.0.pdf"; sourceTree = "<group>"; };
 		4962CD6E1FCAD79700EBD886 /* Handleiding methode NL v2.0.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Handleiding methode NL v2.0.pdf"; sourceTree = "<group>"; };
 		4962CD6F1FCAD79700EBD886 /* Handleiding methode NL v2.0.epub */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Handleiding methode NL v2.0.epub"; sourceTree = "<group>"; };
-		49656F6E235662CB00A731AC /* selected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = selected.png; path = img/selected.png; sourceTree = "<group>"; };
+		49656F6E235662CB00A731AC /* selected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = selected.png; sourceTree = "<group>"; };
 		496C1508233E95BF00769318 /* jsplumb-2.12.0.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jsplumb-2.12.0.min.js"; sourceTree = "<group>"; };
 		496C1509233E999B00769318 /* jquery-3.4.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.4.1.min.js"; sourceTree = "<group>"; };
 		498BB2B31A26231E00B12844 /* find.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = find.png; sourceTree = "<group>"; };
@@ -506,6 +506,7 @@
 		494B701618796E9D00400328 /* red */ = {
 			isa = PBXGroup;
 			children = (
+				49656F6E235662CB00A731AC /* selected.png */,
 				491CD6D1187D98070028B84D /* tNOT.png */,
 				494B701718796E9D00400328 /* tACT.png */,
 				494B701818796E9D00400328 /* tEQT.png */,
@@ -558,7 +559,6 @@
 		49F279FA1F91DAD4003F360B /* common */ = {
 			isa = PBXGroup;
 			children = (
-				49656F6E235662CB00A731AC /* selected.png */,
 				494B6F6618796E9D00400328 /* js */,
 				494B6FA218796E9D00400328 /* css */,
 				494464AC1A2323990066BDE1 /* help */,
