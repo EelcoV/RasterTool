@@ -121,7 +121,9 @@ function CurrentProjectAsString() {
 /* This jQuery function executes when the document is ready, but before all
  * HTML objects have been painted.
  */
-$(function() {
+$( initAllAndSetup );
+
+function initAllAndSetup() {
 	$.ajaxSetup({
 		timeout: 10000	// Cancel each AJAX request after 10 seconds
 	});
@@ -496,7 +498,7 @@ $(function() {
 	window.setTimeout(function () {
 		$(window).trigger('load');
 	}, 500);
-});
+}
 
 var findTimer;
 var nodeFindString = "";
@@ -4431,6 +4433,7 @@ function repaintCluster(elem) {
 		// None were visible
 		$('#noccf').css('display', 'block');
 		$('#someccf').css('display', 'none');
+		$('#ccfs_details').empty().scrollTop(0);
 		return;
 	}
 
