@@ -839,10 +839,10 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
     box-shadow: 2px 2px 3px #999;
 }
 .M0 { background: rgb(255,255,255) }    /* '-' */
-.M1 { background: rgb(255,0,255) }        /* 'A' */
-.M2 { background: rgb(51,255,0) }        /* 'U' */
-.M3 { background: rgb(204,255,0) }        /* 'L' */
-.M4 { background: rgb(255,204,51) }        /* 'M' */
+.M1 { background: rgb(255,0,255) }      /* 'A' */
+.M2 { background: rgb(51,255,0) }       /* 'U' */
+.M3 { background: rgb(204,255,0) }      /* 'L' */
+.M4 { background: rgb(255,204,51) }     /* 'M' */
 .M5 { background: rgb(255,153,153) }    /* 'H' */
 .M6 { background: rgb(255,0,0) }        /* 'V' */
 .M7 { background: rgb(153,204,255) }    /* 'X' */
@@ -1138,6 +1138,9 @@ for checklists and threat evaluations.
     margin-left: 15px !important;
     margin-bottom: 3px !important;
 }
+.ccfhighlight .ui-accordion-header {
+	background: #ccccff !important;
+}
 
 .ccfaccordionbody {
     padding-top: 0px !important;
@@ -1189,7 +1192,6 @@ for checklists and threat evaluations.
 .tlistitem {
     margin: 0 44px 5px 0px;
     padding: 1px 5px;
-    border: 1px solid #ccc;
     border-radius: 3px;
     cursor: ns-resize;
 }
@@ -1197,10 +1199,11 @@ for checklists and threat evaluations.
     border: 1px solid red;
     background: #fee;
 }
-.tlistroot { /* Identical to .tlistitem */
+.tlistroot {
     margin: 0 44px 5px 0px;
     padding: 1px 5px;
-    border: 1px solid gray;
+    border: 2px solid gray !important;
+    font-size: 120%;
     border-radius: 3px;
 }
 
