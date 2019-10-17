@@ -4371,6 +4371,7 @@ function expandAllCCF() {
 
 function collapseAllCCF() {
 	$('#ccfs_details').empty();
+	$('.ccfaccordion').removeClass('ccfhighlight');
 	CurrentCluster = null;
 	var it = new NodeClusterIterator({project: Project.cid});
 	for (it.first(); it.notlast(); it.next()) {
@@ -4445,6 +4446,8 @@ function repaintClusterDetails(nc) {
 	CurrentCluster = nc.id;
 	$('#ccfs_details').empty().scrollTop(0);
 	$('#ccfs_details').append( listFromCluster(nc) );
+	$('.ccfaccordion').removeClass('ccfhighlight');
+	$('#ccfaccordion'+nc.id).addClass('ccfhighlight');
 
 	$('#ccfs_details .tlistitem').draggable({
 		containment: '#ccfs_details',
