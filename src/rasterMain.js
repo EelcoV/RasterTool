@@ -3529,8 +3529,6 @@ function displayThreatsDialog(cid,event) {
 }
 
 function displayChecklistsDialog(type) {
-	// When displaying multiple checklist windows, each will get the same location and size.
-	// Since that is confusing, we prevent obscuration by using a type-specific offset.
 	$("#checklist_"+type).dialog('open');
 	$('.checklist input').each( function () {
 		$(this).trigger('blur'); return true;

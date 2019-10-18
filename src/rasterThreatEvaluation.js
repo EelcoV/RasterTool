@@ -553,6 +553,8 @@ function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
 			}
 		}
 	}
+
+	$('#componentthreats').dialog('close');
 }
 
 var DefaultThreats = [
