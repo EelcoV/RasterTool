@@ -117,14 +117,6 @@ See LICENSE.md
 </div>
 
 <div id="optionspanel" class="actpanel">
-    <div id="switcher" class="controlgroup">
-        <span class="leftlabel ui-widget ui-state-default">Visual style:</span>
-        <fieldset>
-            <input type="radio" name="switcher" id="smoothness" checked="checked"><label for="smoothness">Smoothness</label>
-            <input type="radio" name="switcher" id="start"><label for="start">Start</label>
-            <input type="radio" name="switcher" id="redmond"><label for="redmond">Redmond</label>
-        </fieldset>
-    </div>
     <div id="emblem_size">
         <span class="leftlabel ui-widget ui-state-default">Vulnerability levels:</span>
         <fieldset>
