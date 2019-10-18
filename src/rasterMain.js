@@ -548,8 +548,13 @@ var updateFind = function() {
 				} else {
 					res += '<div class="tinysquare" style="border: 1px solid white;"></div>';
 				}
-				res += ' ' + rn.htmltitle()
-				+ ' <span style="color:grey;">'
+				res += '<span class="findresult"';
+				res += ' node="' + rn.id + '"';
+				res += ' svc="' + s.id + '"';
+				res += '>';
+				res += rn.htmltitle();
+				res += '</span>';
+				res += ' <span style="color:grey;">'
 				+ _("in service")
 				+ '</span> '
 				+ H(s.title);
@@ -558,11 +563,50 @@ var updateFind = function() {
 		}
 	}
 	$('#field_found').html(res);
+	$('.findresult').on('click', function(event) {
+		var node_id = event.currentTarget.attributes[1].nodeValue;
+		var svc_id = event.currentTarget.attributes[2].nodeValue;
+		var node = Node.get(node_id);
+		var svc = Service.get(svc_id);
+		if (!node || !svc) {
+			bugreport("unknown node or service","updateFind");
+			return;
+		}
+		// Activate the Diagrams tab
+		$('#tabs').tabs('option','active',0);
+		// Activate the right service
+		$('#diaservicetab'+svc_id+' a').click();
+		// Scroll the node into view
+		var scrolldist_l = 0;
+		var scrolldist_t = 0;
+		var view_l = $('#diagrams'+svc_id).scrollLeft();
+		var view_t = $('#diagrams'+svc_id).scrollTop();
+		var view_o = $('#diagrams'+svc_id).offset();
+		var view_w = $('#diagrams'+svc_id).width();
+		var view_h = $('#diagrams'+svc_id).height();
+		var nodepos = $(node.jnid).offset();
+		if (nodepos.left < view_o.left)  scrolldist_l = view_o.left - nodepos.left + 100;
+		if (nodepos.left > view_o.left+view_w)  scrolldist_l = view_w - nodepos.left - view_o.left - 100;
+		if (nodepos.top < view_o.top)    scrolldist_t = view_o.top - nodepos.top + 100;
+		if (nodepos.top > view_o.top+view_h)  scrolldist_t = view_h - nodepos.top - view_o.top - 100;
+		$('#findpanel').dialog('widget').stop().fadeTo('slow', 0.5);
+		$('#diagrams'+svc_id).animate({
+			scrollLeft: '-='+scrolldist_l,
+			scrollTop: '-='+scrolldist_t
+		});
+		// Draw a selection around the node
+		var o = $('#diagrams_workspace'+svc_id).offset();
+		$('#selectrect').show().offset({
+			left: node.position.x-15+o.left, top: node.position.y-15+o.top}
+		).width(node.position.width+25).height(node.position.height+25);
+		// The node may be behind the Find window
+		$('#findpanel').dialog('widget').fadeTo(1000, 1);
+	});
 	findTimer = window.setTimeout(updateFind,500);
 };
 
 function StartFind() {
-	var dialog = $('<div></div>');
+	var dialog = $('<div id="findpanel"></div>');
 	var snippet ='\
 		<!-- form id="form_find" -->\n\
 		_LS_<br><input id="field_find" name="fld" type="text" value="" placeholder="_PH_"><br>\n\

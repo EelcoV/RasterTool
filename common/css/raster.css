@@ -274,6 +274,8 @@ img.tC {
     left: 350px;
     z-index: 100;
 }
+.findresult { cursor: pointer; }
+.findresult:hover { text-decoration: underline; }
 #field_found {
     width: 380px;
     height: 180px;
@@ -550,7 +552,7 @@ div.th_remark {
 	top: 45px;
 	left: 43px;
 	height: 65px;
-	z-index: 1100;
+	z-index: 98;
 }
 .displayopt {
 	display: inline-block;
@@ -1082,7 +1084,7 @@ for checklists and threat evaluations.
 	border-left: none;
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
-	z-index: 1150;
+	z-index: 99; /* Above .displayopts */
 }
 #ccfs_body p {
     margin-left: 15px;
