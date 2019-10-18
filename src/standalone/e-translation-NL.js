@@ -24,6 +24,7 @@ exports.translate = translate;
 _t['File'] = 'Bestand';
 _t['New'] = 'Nieuw';
 _t['Open...'] = 'Openen...';
+_t['Close'] = 'Sluiten';
 _t['Save'] = 'Opslaan';
 _t['Save as...'] = 'Opslaan als...';
 _t['PDF settings...'] = 'PDF instellingen...';

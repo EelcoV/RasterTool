@@ -256,6 +256,16 @@ function doNew() {
 	createWindow(null);
 }
 
+function tryClose(win) {
+	if (!checkSaveModifiedDocument(win)) {
+		return;
+	} else {
+		// Allow garbage collection to remove the window
+		delete Win[win.id];
+		win.close();
+	}
+}
+
 function doPrint(win) {
 	var filename = dialog.showSaveDialogSync(win, {
 		title: _("Save as PDF"),
@@ -559,13 +569,14 @@ MenuTemplate = [{
 			if (focusedWindow) focusedWindow.webContents.send('document-start-saveas');
 		}
 	}, {
+		label: _("Close"),
+		role: 'close',
+		click: function (item, focusedWindow) { tryClose(focusedWindow); }
+	}, {
 		type: 'separator'
 	}, {
 		label: _("PDF settings..."),
-		click: function (item, focusedWindow) {
-			if (!focusedWindow) return;
-			focusedWindow.webContents.send('pdf-settings-show', app.rasteroptions);
-		}
+		click: function (item, focusedWindow) { doOpen(focusedWindow); }
 	}, {
 		label: _("Save as PDF"),
 		accelerator: 'CmdOrCtrl+P',
