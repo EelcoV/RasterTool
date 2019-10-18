@@ -2567,12 +2567,6 @@ function initOptionsPanel() {
 		}
 	});
 
-	$('#switcher span').first().html( _("Visual style:") );
-	$('[for=smoothness]').on('click',  function() { Preferences.settheme('smoothness'); return true; });
-	$('[for=start]').on('click',  function() { Preferences.settheme('start'); return true; });
-	$('[for=redmond]').on('click',  function() { Preferences.settheme('redmond'); return true; });
-	$('#'+Preferences.theme).trigger('click');
-
 	$('#emblem_size span').first().html( _("Vulnerability levels:") );
 	$('#em_small').checkboxradio('option', 'label', _("Small"));
 	$('#em_large').checkboxradio('option', 'label', _("Large"));

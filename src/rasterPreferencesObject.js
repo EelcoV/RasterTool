@@ -9,12 +9,7 @@
  */
 var PreferencesObject = function() {
 	this.settheme = function(theme) {
-		this.theme = theme;
-		var cssLink = $('<link href="../css/'+theme+'-1.12.1/jquery-ui.min.css" type="text/css" rel="stylesheet" class="ui-theme">');
-		$('head').append(cssLink);
-		$('link.ui-theme').first().remove();
-		$('ul.rot-neg-90 li').css('float','right');
-		this.store();
+		/* Obsolete */
 	};
 	
 	this.setlabel = function(labelonoff) {
@@ -149,7 +144,6 @@ var PreferencesObject = function() {
 	try {
 		if (localStorage[LS+'R:0']!=null) {
 			var pr = JSON.parse(localStorage[LS+'R:0']);
-			if (pr.theme!=null) this.settheme(pr.theme);
 			if (pr.label!=null) this.setlabel(pr.label);
 			if (pr.emsize!=null) this.setemblem(pr.emsize);
 			if (pr.currentproject!=null) this.setcurrentproject(pr.currentproject);
