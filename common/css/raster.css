@@ -545,7 +545,7 @@ div.th_remark {
     background: rgba(240,240,240,0.95);
 	margin: 0;
 	padding: 0 0 0 10px;
-    width: 819px; /* width of .ccfaccordion, plus overhang left and right */
+    width: 809px; /* width of .ccfaccordion, plus overhang left and right */
 	position: fixed;
 	top: 45px;
 	left: 43px;
@@ -1034,7 +1034,7 @@ This tab (as does the common cause failures tab) borrows definitions from the di
 for checklists and threat evaluations.
 */
 .sfaccordion {
-    width: 810px !important;
+    width: 800px !important;
     margin-bottom: 3px !important;
 }
 
@@ -1067,13 +1067,13 @@ for checklists and threat evaluations.
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
 #ccfs_body {
-    width: 854px !important;
+    width: 847px !important;
 	border-right: none;
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 }
 #ccfs_details {
-	width: calc(100% - 866px) !important;
+	width: calc(100% - 859px) !important;
 	min-width: 500px;
 	position: absolute;
 	top: 0;
@@ -1135,7 +1135,7 @@ for checklists and threat evaluations.
 	line-height: 1.7em;
 }
 .ccfaccordion {
-    width: 810px !important;
+    width: 800px !important;
     margin-left: 15px !important;
     margin-bottom: 3px !important;
 }
