@@ -295,7 +295,6 @@ function initAllAndSetup() {
 	window.setTimeout(SizeDOMElements, 1000);
 
 	Preferences.settab(remembertab);
-	$('#tabs').tabs('option','active',Preferences.tab);
 	forceSelectVerticalTab(Preferences.tab);
 
 	$('#helpimg').on('mouseenter', function() {
@@ -1030,7 +1029,8 @@ function switchToProject(pid,dorefresh) {
 	}
 	if (found) {
 		Service.cid = s.id;
-	} forceSelectVerticalTab(Preferences.tab);
+	}
+	forceSelectVerticalTab(Preferences.tab);
 	if (dorefresh) {
 		p.dorefresh(false);
 	}
@@ -4304,12 +4304,20 @@ function AddAllClusters() {
 		var nc = it.getNodeCluster();
 		addClusterElements(nc);
 		repaintCluster(nc.id);
-		// Show the details of the first open accordion
-		if (nc.accordionopened && CurrentCluster==null) {
-			repaintClusterDetails(nc);
-		}
 	}
 	$('#ccfs_body').append('<br><br>');
+
+	// Show the details of the first open accordion
+	for (it.first(); it.notlast(); it.next()) {
+		nc = it.getNodeCluster();
+		if (nc.accordionopened && CurrentCluster==null) {
+			// Delay painting until the accordions are done
+			window.setTimeout(function() {
+				repaintClusterDetails(nc);
+			}, 1000);
+			break;
+		}
+	}
 }
 
 function sortClustersToCurrentOrder(it) {
@@ -4420,7 +4428,7 @@ function expandAllCCF() {
 	// Show the details of the first cluster
 	it = new NodeClusterIterator({project: Project.cid, isroot:true, isstub: false});
 	sortClustersToCurrentOrder(it);
-	it.first;
+	it.first();
 	repaintClusterDetails(it.getNodeCluster());
 }
 
