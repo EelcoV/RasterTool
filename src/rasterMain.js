@@ -502,6 +502,8 @@ function initAllAndSetup() {
 
 var findTimer;
 var nodeFindString = "";
+var FindScrollPos = 0;
+
 var updateFind = function() {
 	var str = $('#field_find').val();
 	if (str==nodeFindString) {
@@ -509,6 +511,12 @@ var updateFind = function() {
 		return;
 	}
 	nodeFindString = str;
+	// A negative scroll position means that we need to save it, otherwise reset the position
+	if (FindScrollPos<0) {
+		FindScrollPos = -FindScrollPos;
+	} else {
+		FindScrollPos = 0;
+	}
 	var res = "";
 	var currtype='';
 	if (nodeFindString!='') {
@@ -562,7 +570,8 @@ var updateFind = function() {
 			}
 		}
 	}
-	$('#field_found').html(res);
+	$('#field_found').html(res).scrollTop(FindScrollPos);
+
 	$('.findresult').on('click', function(event) {
 		var node_id = event.currentTarget.attributes[1].nodeValue;
 		var svc_id = event.currentTarget.attributes[2].nodeValue;
@@ -572,10 +581,15 @@ var updateFind = function() {
 			bugreport("unknown node or service","updateFind");
 			return;
 		}
+		FindScrollPos = $('#field_found').scrollTop();
 		// Activate the Diagrams tab
 		$('#tabs').tabs('option','active',0);
 		// Activate the right service
-		$('#diaservicetab'+svc_id+' a').click();
+		if (svc_id != Service.cid) {
+			$('#diaservicetab'+svc_id+' a').click();
+			FindScrollPos = -FindScrollPos;
+			StartFind(nodeFindString);
+		}
 		// Scroll the node into view
 		var scrolldist_l = 0;
 		var scrolldist_t = 0;
@@ -589,7 +603,12 @@ var updateFind = function() {
 		if (nodepos.left > view_o.left+view_w)  scrolldist_l = view_w - nodepos.left - view_o.left - 100;
 		if (nodepos.top < view_o.top)    scrolldist_t = view_o.top - nodepos.top + 100;
 		if (nodepos.top > view_o.top+view_h)  scrolldist_t = view_h - nodepos.top - view_o.top - 100;
+		// The node may be behind the Find window
 		$('#findpanel').dialog('widget').stop().fadeTo('slow', 0.5);
+		$('#findpanel').one('mousemove', function() {
+			// Immediately show when we wiggle the mouse
+			$('#findpanel').dialog('widget').stop().css('opacity',1);
+		});
 		$('#diagrams'+svc_id).animate({
 			scrollLeft: '-='+scrolldist_l,
 			scrollTop: '-='+scrolldist_t
@@ -599,13 +618,12 @@ var updateFind = function() {
 		$('#selectrect').show().offset({
 			left: node.position.x-15+o.left, top: node.position.y-15+o.top}
 		).width(node.position.width+25).height(node.position.height+25);
-		// The node may be behind the Find window
-		$('#findpanel').dialog('widget').fadeTo(1000, 1);
+		$('#selectrect').effect('shake',{distance:10, times:8},1000);
 	});
 	findTimer = window.setTimeout(updateFind,500);
 };
 
-function StartFind() {
+function StartFind(str) {
 	var dialog = $('<div id="findpanel"></div>');
 	var snippet ='\
 		<!-- form id="form_find" -->\n\
@@ -617,6 +635,7 @@ function StartFind() {
 	snippet = snippet.replace(/_LF_/g, _("Results:"));
 	snippet = snippet.replace(/_PH_/g, _("Type here to search nodes"));
 	dialog.append(snippet);
+	if (typeof(str)!='string')  str = "";
 
 	dialog.dialog({
 		title: _("Find nodes"),
@@ -626,7 +645,7 @@ function StartFind() {
 			click: function() {dialog.dialog('close');}
 		}],
 		open: function(/*event, ui*/) {
-			$('#field_find').focus().select();
+			$('#field_find').val(str).focus().select();
 			nodeFindString = "";
 			findTimer = window.setTimeout(updateFind,500);
 		},
