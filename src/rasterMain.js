@@ -4318,6 +4318,14 @@ function AddAllClusters() {
 			break;
 		}
 	}
+
+	$('.ccfaccordionbody').on('click', function(event) {
+		var nc = nid2id(this.id);
+		if (nc!=CurrentCluster) {
+			repaintClusterDetails(NodeCluster.get(nc));
+		}
+		event.stopPropagation();
+	});
 }
 
 function sortClustersToCurrentOrder(it) {
