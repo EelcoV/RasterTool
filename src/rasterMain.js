@@ -6124,11 +6124,12 @@ function listSelectedRisks() {
 		for (tit.first(); tit.notlast(); tit.next()) {
 			var nc = tit.getNodeCluster();
 			// Find the threat assessment for this node
+			var ta = null;
 			for (var i=0; i<cm.thrass.length; i++) {
-				var ta = ThreatAssessment.get(cm.thrass[i]);
+				ta = ThreatAssessment.get(cm.thrass[i]);
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
-			if (ta.title==nc.title && ta.type==nc.type
+			if (ta && ta.title==nc.title && ta.type==nc.type
 			&& (
 				(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
 				||
