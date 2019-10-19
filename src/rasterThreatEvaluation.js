@@ -599,7 +599,7 @@ var Threat = function(type,id) {
 	this.type = type;
 	this.project = Project.cid;
 	this.title = _("Vulnerability ")+this.id;
-	this.description = _("Description threat ")+this.id;
+	this.description = _("Description vulnerability ")+this.id;
 	
 	this.store();
 	Threat._all[this.id]=this;

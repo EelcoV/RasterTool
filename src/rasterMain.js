@@ -2721,16 +2721,6 @@ function bottomTabsShowHandlerSFaults(event,ui) {
 var menuTimerct, menuTimercl, menuTimercc;
 
 function initTabDiagrams() {
-	$('#WLSaddthreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#WLScopythreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#WLSpastethreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#WRDaddthreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#WRDcopythreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#WRDpastethreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#EQTaddthreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#EQTcopythreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#EQTpastethreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-
 	initChecklistsDialog('tWLS');
 	initChecklistsDialog('tWRD');
 	initChecklistsDialog('tEQT');
@@ -2790,9 +2780,9 @@ function initTabDiagrams() {
 	$('#tACT').attr('title', _("Drag to add an actor (someone using this telecom services)."));
 	$('#tUNK').attr('title', _("Drag to add an unknown link."));
 	$('#tNOT').attr('title', _("Drag to add an area for comments."));
-	$('#tC_tWLS').attr('title', _("Click to edit default threats for Wireless links."));
-	$('#tC_tWRD').attr('title', _("Click to edit default threats for Wired links."));
-	$('#tC_tEQT').attr('title', _("Click to edit default threats for Equipment components."));
+	$('#tC_tWLS').attr('title', _("Click to edit common vulnerabilities for Wireless links."));
+	$('#tC_tWRD').attr('title', _("Click to edit common vulnerabilities for Wired links."));
+	$('#tC_tEQT').attr('title', _("Click to edit common vulnerabilities for Equipment components."));
 
 	$('#mi_ccnone .plainlabel').html( _("No label") );
 	$('#mi_ccedit .plainlabel').html( _("Edit labels ...") );
@@ -3249,17 +3239,17 @@ function initTabDiagrams() {
 		};
 	};
 
-	$('#WLSaddthreat').on('click', addhandler('tWLS'));
-	$('#WLScopythreat').on('click', copyhandler('tWLS'));
-	$('#WLSpastethreat').on('click', pastehandler('tWLS'));
+	$('#tWLSaddthreat').on('click', addhandler('tWLS'));
+	$('#tWLScopythreat').on('click', copyhandler('tWLS'));
+	$('#tWLSpastethreat').on('click', pastehandler('tWLS'));
 
-	$('#WRDaddthreat').on('click', addhandler('tWRD'));
-	$('#WRDcopythreat').on('click', copyhandler('tWRD'));
-	$('#WRDpastethreat').on('click', pastehandler('tWRD'));
+	$('#tWRDaddthreat').on('click', addhandler('tWRD'));
+	$('#tWRDcopythreat').on('click', copyhandler('tWRD'));
+	$('#tWRDpastethreat').on('click', pastehandler('tWRD'));
 
-	$('#EQTaddthreat').on('click', addhandler('tEQT'));
-	$('#EQTcopythreat').on('click', copyhandler('tEQT'));
-	$('#EQTpastethreat').on('click', pastehandler('tEQT'));
+	$('#tEQTaddthreat').on('click', addhandler('tEQT'));
+	$('#tEQTcopythreat').on('click', copyhandler('tEQT'));
+	$('#tEQTpastethreat').on('click', pastehandler('tEQT'));
 
 	if (DEBUG && !Rules.consistent()) {
 		bugreport('the rules are not internally consistent','initTabDiagrams');
@@ -3493,6 +3483,10 @@ function displayThreatsDialog(cid,where) {
 }
 
 function displayChecklistsDialog(type) {
+	$('#'+type+'addthreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+	$('#'+type+'copythreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+	$('#'+type+'pastethreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+
 	$("#checklist_"+type).dialog('open');
 	$('.checklist input').each( function () {
 		$(this).trigger('blur'); return true;
