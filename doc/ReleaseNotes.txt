@@ -16,6 +16,8 @@ October 2019
 * In the Find panel you can now quickly jump to where the component is located
   in the diagram.
 * The option to change the visual style of the intranet-version has been removed.
+* The analysis tool "Single failues by level" is now "Assessments by level", and
+  inclused common cause failures as well as single failures.
 * Internal changes (library upgrades) and small bug fixes.
 
 November 2018

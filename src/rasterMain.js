@@ -4980,7 +4980,7 @@ function allowDrop(elem) {
 
 function initTabAnalysis() {
 	$("a[href^='#at1']").html(_("Failures and Vulnerabilities"));
-	$("a[href^='#at2']").html(_("Single failures by level"));
+	$("a[href^='#at2']").html(_("Assessments by level"));
 	$("a[href^='#at3']").html(_("Node counts"));
 	$("a[href^='#at4']").html(_("Checklist reports"));
 	$("a[href^='#at5']").html(_("Longlist"));
@@ -5500,7 +5500,7 @@ function paintVulnsTable() {
 	// but show a message instead
 	if (freq_snippet=="") {
 		snippet = '<p style="margin-left:3em; margin-top:4em; width:50em;">'
-			+ _("This space will show an overview of all vulnerabilities and their severities. ")
+			+ _("This space will show an overview of all assessments. ")
 			+ _("Since all service diagrams are empty, there is nothing to see here yet. ")
 			+ _("Add some nodes to the diagrams first.");
 		$('#at2').append(snippet);
@@ -5555,9 +5555,25 @@ function paintVulnsTableType(tabletype) {
 	var v_X = {'__TOTAL__':0};
 	var v_A = {'__TOTAL__':0};
 	var v_N = {'__TOTAL__':0};
-	// Use tit to iterate over all vulns
-	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
-	tit.sortByType();
+
+	// Sum the threatassessment into the arrays
+	function addUp(ta) {
+		var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
+		if (v_total[t]) v_total[t]++; else v_total[t]=1;
+		switchvar = (tabletype==0 ? ta.total : (tabletype==1 ? ta.freq : ta.impact) );
+		switch (switchvar) {
+		case 'U': v_U['__TOTAL__']++; if (v_U[t]>0) v_U[t]++; else v_U[t]=1; break;
+		case 'L': v_L['__TOTAL__']++; if (v_L[t]>0) v_L[t]++; else v_L[t]=1; break;
+		case 'M': v_M['__TOTAL__']++; if (v_M[t]>0) v_M[t]++; else v_M[t]=1; break;
+		case 'H': v_H['__TOTAL__']++; if (v_H[t]>0) v_H[t]++; else v_H[t]=1; break;
+		case 'V': v_V['__TOTAL__']++; if (v_V[t]>0) v_V[t]++; else v_V[t]=1; break;
+		case 'X': v_X['__TOTAL__']++; if (v_X[t]>0) v_X[t]++; else v_X[t]=1; break;
+		case 'A': v_A['__TOTAL__']++; if (v_A[t]>0) v_A[t]++; else v_A[t]=1; break;
+		case '-': v_N['__TOTAL__']++; if (v_N[t]>0) v_N[t]++; else v_N[t]=1; break;
+		default:
+			bugreport("Unknown threat-value","paintVulnsTable");
+		}
+	}
 
 	// Precompute all numbers
 	// Iterate over all components
@@ -5565,24 +5581,16 @@ function paintVulnsTableType(tabletype) {
 	for (cit.first(); cit.notlast(); cit.next()) {
 		var cm = cit.getcomponent();
 		for (var i=0; i<cm.thrass.length; i++) {
-			var ta = ThreatAssessment.get(cm.thrass[i]);
-			var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
-			if (v_total[t]) v_total[t]++; else v_total[t]=1;
-			switchvar = (tabletype==0 ? ta.total : (tabletype==1 ? ta.freq : ta.impact) );
-			switch (switchvar) {
-			case 'U': v_U['__TOTAL__']++; if (v_U[t]>0) v_U[t]++; else v_U[t]=1; break;
-			case 'L': v_L['__TOTAL__']++; if (v_L[t]>0) v_L[t]++; else v_L[t]=1; break;
-			case 'M': v_M['__TOTAL__']++; if (v_M[t]>0) v_M[t]++; else v_M[t]=1; break;
-			case 'H': v_H['__TOTAL__']++; if (v_H[t]>0) v_H[t]++; else v_H[t]=1; break;
-			case 'V': v_V['__TOTAL__']++; if (v_V[t]>0) v_V[t]++; else v_V[t]=1; break;
-			case 'X': v_X['__TOTAL__']++; if (v_X[t]>0) v_X[t]++; else v_X[t]=1; break;
-			case 'A': v_A['__TOTAL__']++; if (v_A[t]>0) v_A[t]++; else v_A[t]=1; break;
-			case '-': v_N['__TOTAL__']++; if (v_N[t]>0) v_N[t]++; else v_N[t]=1; break;
-			default:
-				bugreport("Unknown threat-value","paintVulnsTable");
-			}
+			addUp(ThreatAssessment.get(cm.thrass[i]));
 		}
 	}
+	// Tterate over all cluster assessments
+	var tit = new NodeClusterIterator({project: Project.cid, isempty: false});
+	for (tit.first(); tit.notlast(); tit.next()) {
+		var nc = tit.getNodeCluster();
+		addUp(ThreatAssessment.get(nc.thrass));
+	}
+
 	var grandtotal = v_U['__TOTAL__']+v_L['__TOTAL__']+v_M['__TOTAL__']+v_H['__TOTAL__']+
 		v_V['__TOTAL__']+v_X['__TOTAL__']+v_A['__TOTAL__']+v_N['__TOTAL__'];
 	if (grandtotal==0) {
@@ -5626,7 +5634,7 @@ function paintVulnsTableType(tabletype) {
 	snippet = snippet.replace(/_LF_/g, _("Frequencies"));
 	snippet = snippet.replace(/_LI_/g, _("Impacts"));
 	snippet = snippet.replace(/_LO_/g, _("Overall levels"));
-	snippet = snippet.replace(/_SV_/g, _("Single vulnerability"));
+	snippet = snippet.replace(/_SV_/g, _("Assessments for"));
 	snippet = snippet.replace(/_LVU_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['U']] );
 	snippet = snippet.replace(/_LVL_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['L']] );
 	snippet = snippet.replace(/_LVM_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['M']] );
@@ -5638,11 +5646,13 @@ function paintVulnsTableType(tabletype) {
 	snippet = snippet.replace(/_LT_/g, _("Total") );
 	snippet = snippet.replace(/_TT_/g, (tabletype==0 ? "levels" : (tabletype==1 ? _("frequencies") : _("impacts")) ));
 	// Do each of the table rows
+	tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
+	tit.sortByType();
 //	var col = 0;
 	for (tit.first(); tit.notlast(); tit.next()) {
 		var cl = tit.getNodeCluster();
-		ta = ThreatAssessment.get(cl.thrass);
-		t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
+		var ta = ThreatAssessment.get(cl.thrass);
+		var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
 
 		snippet += '<tr><td class="nodetitlecell">'+H(t)+'&nbsp;</td>\n';
 		if (v_U[t]>0) snippet += '<td class="blankcell">'+v_U[t]+'</td>\n';
