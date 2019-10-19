@@ -5644,7 +5644,7 @@ function paintVulnsTableType(tabletype) {
 	snippet = snippet.replace(/_LVA_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['A']] );
 	snippet = snippet.replace(/_LVN_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['-']] );
 	snippet = snippet.replace(/_LT_/g, _("Total") );
-	snippet = snippet.replace(/_TT_/g, (tabletype==0 ? "levels" : (tabletype==1 ? _("frequencies") : _("impacts")) ));
+	snippet = snippet.replace(/_TT_/g, (tabletype==0 ? _("levels") : (tabletype==1 ? _("frequencies") : _("impacts")) ));
 	// Do each of the table rows
 	tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	tit.sortByType();

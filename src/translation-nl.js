@@ -295,6 +295,7 @@ _t["Overall levels"] = "Totale niveaus";
 _t["Assessments for"] = "Beoordelingen van";
 _t["frequencies"] = "frequenties";
 _t["impacts"] = "impact";
+_t["levels"] = "niveaus";
 _t["Jump to:"] = "Snel naar:";
 _t["Node types counted by service"] = "Aantallen componenten per dienst";
 _t["Type"] = "Type";
