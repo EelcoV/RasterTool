@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, ThreatAssessment, _, arrayJoinAsString, bugreport, isSameString, nextUnusedIndex, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, ThreatAssessment, _, arrayJoinAsString, bugreport, isSameString, nextUnusedIndex, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace, displayThreatsDialog
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -829,9 +829,10 @@ Node.prototype = {
 				Node.MenuNode = rn.id;
 				if (rn.type=='tNOT') {
 					$('#titlemain'+rn.id).trigger('click');
+				} else if (rn.type=='tACT') {
+					/* do nothing */
 				} else {
-					Node.MenuNode = rn.id;
-					$('#mi_th').trigger('mouseup');
+					displayThreatsDialog(rn.component,rn.jnid);
 				}
 				evt.preventDefault();
 				return;

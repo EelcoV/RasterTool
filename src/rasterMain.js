@@ -130,7 +130,6 @@ function initAllAndSetup() {
 
 #ifdef SERVER
 	ToolGroup = $('meta[name="group"]').attr('content');
-	// Use only the first language in the list
 #else
 	ToolGroup = '_%standalone%_';
 	// Prevent file drops
@@ -3190,17 +3189,18 @@ function initTabDiagrams() {
 			var p = Project.get( Project.cid );
 			p.addthreat(t.id);
 			t.addtablerow("#"+typ+"threats");
-			rasterConfirm(_("Apply to all?"),_("Should this vulnerability be added to existing components as well?"),_("Add to all"),_("Don't add"),function(){
-				$('#componentthreats').dialog('close');
-				var it = new ComponentIterator({project: p.id, match: typ});
-				for (it.first(); it.notlast(); it.next()) {
-					var cm = it.getcomponent();
-					var ta = new ThreatAssessment(typ);
-					ta.settitle(t.title);
-					ta.setdescription(t.description);
-					cm.addthrass(ta);
-				}
-			});
+			// Apply the change to all components of matching type
+			var it = new ComponentIterator({project: p.id, match: typ});
+			for (it.first(); it.notlast(); it.next()) {
+				var cm = it.getcomponent();
+				var ta = new ThreatAssessment(typ);
+				ta.settitle(t.title);
+				ta.setdescription(t.description);
+				cm.addthrass(ta);
+			}
+			// Start editing the name of the new vulnerability
+			$('#thname'+t.id).click();
+			refreshThreatsDialog();
 			transactionCompleted("Checklist vuln add");
 		};
 	};
@@ -3269,7 +3269,7 @@ function initChecklistsDialog(type) {
 	// Since that is confusing, we prevent obscuration by using a type-specific offset.
 	var offsets = {'tWLS': 100, 'tWRD': 130, 'tEQT': 160};
 	$('#checklist_'+type).dialog({
-		title: _("Default vulnerabilities for new nodes of type '%%'", Rules.nodetypes[type]),
+		title: _("Common vulnerabilities for all nodes of type '%%'", Rules.nodetypes[type]),
 		closeOnEscape: false,
 		minWidth: 725,
 		minHeight: 180,
@@ -3384,9 +3384,11 @@ function workspacedrophandler(event, ui) {
 	transactionCompleted("Node add");
 }
 
-function displayThreatsDialog(cid,event) {
-	var c = Component.get(cid);
-	Component.ThreatsComponent = cid;
+function refreshThreatsDialog(force) {
+	if (!$('#componentthreats').dialog('isOpen') && force!==true)  return;
+
+	// Dialog is open, nog repaint its contents
+	var c = Component.get(Component.ThreatsComponent);
 	var snippet = '<div id="dialogthreatlist">\
 		<div class="threat">\
 		<div class="th_name th_col thr_header">_LN_</div>\
@@ -3408,29 +3410,29 @@ function displayThreatsDialog(cid,event) {
 	snippet = snippet.replace(/_BA_/g, _("+ Add vulnerability"));
 	snippet = snippet.replace(/_BC_/g, _("Copy"));
 	snippet = snippet.replace(/_BP_/g, _("Paste"));
-	snippet = snippet.replace(/_CI_/g, cid);
+	snippet = snippet.replace(/_CI_/g, c.id);
 	$('#componentthreats').html(snippet);
 	c.setmarkeroid(null);
 
 	for (var i=0; i<c.thrass.length; i++) {
 		if (c.thrass[i]==null) continue;
 		var th = ThreatAssessment.get(c.thrass[i]);
-		th.addtablerow('#threats'+cid,'dia');
+		th.addtablerow('#threats'+c.id,'dia');
 	}
-	$('#dthadddia'+cid).button();
-	$('#dthcopydia'+cid).button();
-	$('#dthpastedia'+cid).button();
-	$('#dthadddia'+cid).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthcopydia'+cid).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthpastedia'+cid).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthadddia'+cid).on('click',  function() {
+	$('#dthadddia'+c.id).button();
+	$('#dthcopydia'+c.id).button();
+	$('#dthpastedia'+c.id).button();
+	$('#dthadddia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
+	$('#dthcopydia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
+	$('#dthpastedia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
+	$('#dthadddia'+c.id).on('click',  function() {
 		var c = Component.get(nid2id(this.id));
 		var th = new ThreatAssessment((c.type=='tUNK' ? 'tEQT' : c.type));
 		c.addthrass(th);
 		th.addtablerow('#threats'+c.id,'dia');
 		transactionCompleted("Vuln add");
 	});
-	$('#dthcopydia'+cid).on('click',  function() {
+	$('#dthcopydia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
 		ThreatAssessment.Clipboard = [];
 		for (var i=0; i<cm.thrass.length; i++) {
@@ -3438,42 +3440,9 @@ function displayThreatsDialog(cid,event) {
 			ThreatAssessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
 		}
 	});
-	$('#dthpastedia'+cid).on('click',  function() {
+	$('#dthpastedia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
 		var newte = cm.mergeclipboard();
-//		for (var j=0; j<ThreatAssessment.Clipboard.length; j++) {
-//			for (var i=0; i<cm.thrass.length; i++) {
-//				var te = ThreatAssessment.get(cm.thrass[i]);
-//				if (ThreatAssessment.Clipboard[j].t==te.title && ThreatAssessment.Clipboard[j].y==te.type) break;
-//			}
-//			if (i==cm.thrass.length) {
-//				// Create a new threat evaluation
-//				var th = new ThreatAssessment(cm.type=='tUNK' ? ThreatAssessment.Clipboard[j].y : cm.type);
-//				th.setcomponent(cm.id);
-//				th.settitle(ThreatAssessment.Clipboard[j].t);
-//				th.setdescription(ThreatAssessment.Clipboard[j].d);
-//				th.setfreq( ThreatAssessment.worst(ThreatAssessment.Clipboard[j].p,'-') );
-//				th.setimpact( ThreatAssessment.worst(ThreatAssessment.Clipboard[j].i,'-') );
-//				th.setremark(ThreatAssessment.Clipboard[j].r);
-//				newte.push(th.id);
-//			} else {
-//				// Paste into existing threat evaluation
-//				if (te.description.indexOf(ThreatAssessment.Clipboard[j].d)==-1) {
-//					if (te.description.length>0 && ThreatAssessment.Clipboard[j].d.length>0)
-//						te.setdescription(te.description + " " + ThreatAssessment.Clipboard[j].d);
-//					else
-//						te.setdescription(te.description + ThreatAssessment.Clipboard[j].d);
-//				}
-//				te.setfreq( ThreatAssessment.worst(ThreatAssessment.Clipboard[j].p,te.freq) );
-//				te.setimpact( ThreatAssessment.worst(ThreatAssessment.Clipboard[j].i,te.impact) );
-//				if (te.remark.length>0 && ThreatAssessment.Clipboard[j].r.length>0)
-//					te.setremark(te.remark + " " + ThreatAssessment.Clipboard[j].r);
-//				else
-//					te.setremark(te.remark + ThreatAssessment.Clipboard[j].r);
-//				$('#dthdia_'+te.id).remove();
-//				te.addtablerow('#threats'+c.id,'dia');
-//			}
-//		}
 		for (i=0; i<cm.thrass.length; i++) {
 			th = ThreatAssessment.get(cm.thrass[i]);
 			if (newte.indexOf(cm.thrass[i])==-1) {
@@ -3484,32 +3453,7 @@ function displayThreatsDialog(cid,event) {
 		cm.setmarker();
 		transactionCompleted("Vuln paste");
 	});
-
-	if ($('#componentthreats').dialog('isOpen')) {
-		$('#componentthreats').dialog('close');
-	}
-	$('#componentthreats').dialog({
-		title: _("Vulnerability assessment for '%%'", c.title) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
-		position: {my: 'left top', at: 'right', of: event, collision: 'fit'},
-		closeOnEscape: false,
-		open: function() {
-			var o = $('#componentthreats').dialog('widget').offset();
-			// Fade in the menu, and move it left & down, but only move it if the call to "open" did not adjust the position
-			// of the window. Windows are adjusted to prevent them from sticking out of the viewport.
-			$('#componentthreats').dialog('widget')
-			.css({display: "", opacity: 0.3})
-			.animate({
-				opacity: 1,
-				left: o.left+(event.clientX==o.left? 10 : 0),
-				top: o.top+(event.clientY==o.top ? 10 : 0)
-			}, 250);
-		}
-	});
-	$('#componentthreats').dialog('open');
-	// First delete button gains focus, and is highlighted. Looks ugly.
-	$('#dialogthreatlist input').trigger('blur');
-
-	$('#threats'+cid).sortable({
+	$('#threats'+c.id).sortable({
 		containment: 'parent',
 		helper: 'clone',
 		cursor: 'ns-resize',
@@ -3519,13 +3463,31 @@ function displayThreatsDialog(cid,event) {
 				newlist.push( nid2id(this.children[i].id) );
 			}
 			if (newlist.length != c.thrass.length) {
-				bugreport("internal error in sorting","displayThreatsDialog");
+				bugreport("internal error in sorting","refreshThreatsDialog");
 			}
 			c.thrass = newlist;
 			c.store();
 			transactionCompleted("Reorder thrass of component "+c.id);
 		}
 	});
+}
+
+function displayThreatsDialog(cid,where) {
+	var c = Component.get(cid);
+	Component.ThreatsComponent = cid;
+
+	if ($('#componentthreats').dialog('isOpen')) {
+		$('#componentthreats').dialog('close');
+	}
+	refreshThreatsDialog(true);
+	$('#componentthreats').dialog({
+		title: _("Vulnerability assessment for '%%'", c.title) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
+		position: {my: 'left top', at: 'right', of: where, collision: 'fit'},
+		closeOnEscape: false
+	});
+	$('#componentthreats').dialog('open');
+	// First delete button gains focus, and is highlighted. Looks ugly.
+	$('#dialogthreatlist input').trigger('blur');
 }
 
 function displayChecklistsDialog(type) {
