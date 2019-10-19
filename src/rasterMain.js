@@ -2124,6 +2124,7 @@ function initLibraryPanel() {
 
 	$('#librarypanel').dialog({
 		title: _("Library"),
+		position: {my: 'left+50 top+50', at: 'bottom right', of: '#libraryactivator'},
 		modal: true,
 		width: 490,
 		resizable: false,
@@ -2621,6 +2622,7 @@ function initOptionsPanel() {
 	$('#optionspanel').dialog({
 		title: _("Options"),
 		modal: true,
+		position: {my: 'left+50 top+50', at: 'bottom right', of: '#optionsactivator'},
 		width: 420,
 		resizable: false,
 		autoOpen: false,
