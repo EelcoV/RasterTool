@@ -163,7 +163,7 @@ CreateWin32Version()
 		mkdir -p $BASEDIR
 		( cd $BASEDIR && unzip ../../cache/electron-v$ELECTRONVERSION-win32-ia32.zip )
 		mv $BASEDIR/electron.exe $BASEDIR/raster.exe
-		cp script/raster.ico $BASEDIR
+		cp script/raster.ico $BASEDIR/resources/icon.ico
 		# At this stage, it would be cool to convert the icon PNGs into an ICO file
 		(
 		 "$WINE" script/rcedit-x86.exe $BASEDIR/raster.exe \
@@ -175,7 +175,7 @@ CreateWin32Version()
 		  --set-version-string ProductName Raster \
 		  --set-version-string LegalCopyright "Copyright reserved" \
 		  --set-product-version "$RASTERVERSION ($RASTERSEASON)" \
-		  --set-icon $BASEDIR/raster.ico
+		  --set-icon script/raster.ico
 		 )
 	fi
 

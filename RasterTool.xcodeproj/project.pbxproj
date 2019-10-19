@@ -602,6 +602,8 @@
 			isa = PBXGroup;
 			children = (
 				4915A6371FA1178D00B4B205 /* Versions.sh */,
+				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
+				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,
 				4915A6361FA116CF00B4B205 /* fillcache.sh */,
 				4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */,
 				4999EB5F1F9004D0009BBF18 /* clean.sh */,
@@ -616,8 +618,6 @@
 				4915A6301FA0482800B4B205 /* raster.ico */,
 				494AF84E1FA48AA100356A28 /* installraster.ico */,
 				4915A63D1FA126E600B4B205 /* nsis.zip */,
-				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
-				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,
 				4915A6321FA113D900B4B205 /* FileAssociation.nsh */,
 				494AF84D1FA3BCBF00356A28 /* 7z.zip */,
 				4915A62E1F9E819300B4B205 /* rcedit-x86.exe */,
