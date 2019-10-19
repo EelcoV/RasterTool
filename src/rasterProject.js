@@ -107,11 +107,8 @@ Project.withTitle = function(str) {
 
 // Retrieve first project in ToolGroup
 Project.firstProject = function() {
-	var i=0;
-	var p;
-	while (i<Project._all.length) {
-		p = Project._all[i];
-		i++;
+	for (var i=0; i<Project._all.length; i++) {
+		var p = Project._all[i];
 		if (p==null || p.stub) continue;
 		if (!p.shared || p.group==ToolGroup) break;
 	}
