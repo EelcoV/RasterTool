@@ -408,6 +408,7 @@ Service.prototype = {
 		// the #selectrect div is inside the workspace. If the div is inside diagrams_body or
 		// inside the main <body>, the mouseup is almost always 'lost'. We therefore have to
 		// delete #selectrect, resurrect it, and re-bind the menu event handler.
+		$('#diagrams'+this.id).show();
 		$('.scroller_overview').hide();
 		$('#scroller_overview'+this.id).show();
 		$('#selectrect').remove();
