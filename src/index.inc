@@ -279,25 +279,25 @@ See LICENSE.md
     <div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
     <div id="tWLSthreats" class="threats">
     </div>
-    <input id="WLSaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
-    <input id="WLScopythreat" class="copybutton" type="button" value="Copy">
-    <input id="WLSpastethreat" class="pastebutton" type="button" value="Paste">
+    <input id="tWLSaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
+    <input id="tWLScopythreat" class="copybutton" type="button" value="Copy">
+    <input id="tWLSpastethreat" class="pastebutton" type="button" value="Paste">
 </div>
 <div id="checklist_tWRD" class="checklist">
     <div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
     <div id="tWRDthreats" class="threats">
     </div>
-    <input id="WRDaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
-    <input id="WRDcopythreat" class="copybutton" type="button" value="Copy">
-    <input id="WRDpastethreat" class="pastebutton" type="button" value="Paste">
+    <input id="tWRDaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
+    <input id="tWRDcopythreat" class="copybutton" type="button" value="Copy">
+    <input id="tWRDpastethreat" class="pastebutton" type="button" value="Paste">
 </div>
 <div id="checklist_tEQT" class="checklist">
     <div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
     <div id="tEQTthreats" class="threats">
     </div>
-    <input id="EQTaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
-    <input id="EQTcopythreat" class="copybutton" type="button" value="Copy">
-    <input id="EQTpastethreat" class="pastebutton" type="button" value="Paste">
+    <input id="tEQTaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
+    <input id="tEQTcopythreat" class="copybutton" type="button" value="Copy">
+    <input id="tEQTpastethreat" class="pastebutton" type="button" value="Paste">
 </div>
 
 <div id="currentProject" class="donotprint projectname ui-widget"></div>
