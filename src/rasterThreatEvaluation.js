@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm
+bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm, refreshThreatsDialog
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -463,12 +463,9 @@ ThreatAssessment.prototype = {
 				var dokill = function() {
 					c.removethrass(th.id);
 					var nc = NodeCluster.removecomponent_threat(Project.cid,th.component,th.title,th.type);
-					// Remove the node cluster if it became empty
-					if (nc.isempty()) {
-						nc.destroy();
-					}
 					$('#dth'+prefix+'_'+th.id).remove();
 					c.setmarker();
+					refreshThreatsDialog();
 					transactionCompleted("Vuln delete");
 				};
 				newRasterConfirm(_("Delete vulnerability?"),
@@ -554,7 +551,7 @@ function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
 		}
 	}
 
-	$('#componentthreats').dialog('close');
+	refreshThreatsDialog();
 }
 
 var DefaultThreats = [
@@ -676,38 +673,24 @@ Threat.prototype = {
 		$('#thdel'+this.id).on('click',  function() {
 			var th = Threat.get(nid2id(this.id));
 			newRasterConfirm(_("Delete vulnerability?"),
-				_("Do you want to delete the vulnerability '%%' for future %% nodes?", H(th.title), Rules.nodetypes[th.type]),
+				_("Do you want to delete the vulnerability '%%' for <i>all current</i> and future %% nodes?", H(th.title), Rules.nodetypes[th.type]),
 				_("Remove"),_("Cancel")
 			)
 			.done(function() {
 				Project.get(th.project).removethreat(th.id);
 				// Count how many components have this threat
-				var count = 0;
 				var it = new ComponentIterator({project: th.project, match: th.type});
 				for (it.first(); it.notlast(); it.next()) {
 					var cm = it.getcomponent();
+					NodeCluster.removecomponent_threat(Project.cid,cm.id,th.title,th.type,true);
 					for (var i=0; i<cm.thrass.length; i++) {
 						var ta = ThreatAssessment.get(cm.thrass[i]);
 						if (isSameString(ta.title,th.title)) {
-							count++;
+							cm.removethrass(ta.id);
 						}
 					}
 				}
-				if (count>0) {
-					rasterConfirm(_("Apply to all?"),_("Should this vulnerability be removed from %% current components as well?",count),_("Remove"),_("Keep"),function(){
-						$('#componentthreats').dialog('close');
-						for (it.first(); it.notlast(); it.next()) {
-							cm = it.getcomponent();
-							NodeCluster.removecomponent_threat(Project.cid,cm.id,th.title,th.type,true);
-							for (i=0; i<cm.thrass.length; i++) {
-								var ta = ThreatAssessment.get(cm.thrass[i]);
-								if (isSameString(ta.title,th.title)) {
-									cm.removethrass(ta.id);
-								}
-							}
-						}
-					});
-				}
+				refreshThreatsDialog();
 				transactionCompleted("Checklist remove");
 			});
 		});
