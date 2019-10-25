@@ -1,9 +1,13 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
+XXXX 2019
+=========
+Release as x.x.x - XXX
+
 October 2019
 ============
-* Release as x.x.x - Winter 2019
+* Release as 3.0.0 - Winter 2019
 * Breaking change: names of components, services and vulnerabilities are case
   insensitive. This means that "ethernet" and "EtherNet" can no longer be separate
   components. Projects are automatically upgraded to the new internal format.
