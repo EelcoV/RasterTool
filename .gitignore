@@ -14,5 +14,8 @@
 public_group/SharedProjects/**
 !public_group/SharedProjects/README.md
 
+/build
+/cache
+
 changes to commit
 
