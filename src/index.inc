@@ -301,6 +301,9 @@ See LICENSE.md
 </div>
 
 <div id="currentProject" class="donotprint projectname ui-widget"></div>
+#ifdef CLASSROOM
+<div id="demo" class="donotprint ui-widget"></div>
+#endif
 
 <div id="tabs">
     <ul>

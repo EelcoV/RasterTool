@@ -265,7 +265,12 @@ Project.retrieve = function(pid,doWhenReady,doOnError) {
 			if (newp!=null) {
 				var np = Project.get(newp);
 				np.date = p.date;
+#ifdef CLASSROOM
+				np.shared = false;
+				np.settitle(np.title + _(" - personal copy"));
+#else
 				np.shared = true;
+#endif
 				np.store();
 				if (doWhenReady) {
 					doWhenReady(newp);

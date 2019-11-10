@@ -88,6 +88,14 @@ input.inplace_field, textarea.inplace_field {
     width: 400px;
     z-index: 99; /* Just below templates */
 }
+#demo {
+	position: absolute;
+    top: 19px;
+    left: 880px;
+    color: #999;
+	font-style: italic;
+	z-index: 1;
+}
 
 #networkactivity {
     position: absolute;

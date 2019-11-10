@@ -237,6 +237,9 @@ function initAllAndSetup() {
 	initLibraryPanel();
 	initOptionsPanel();
 #endif
+#ifdef CLASSROOM
+	$("#demo").html(_("Training demo"));
+#endif
 
 	SizeDOMElements();
 
@@ -2521,6 +2524,11 @@ function ShowDetails(p) {
 			$('#sh_off')[0].checked = !p.shared;
 			$('#sh_on')[0].checked = p.shared;
 			$('input[name="sh_onoff"]').checkboxradio("refresh");
+#endif
+#ifdef CLASSROOM
+			$('input[name="sh_onoff"]').checkboxradio({
+				disabled: true
+			});
 #endif
 			$('#field_projecttitle').focus().select();
 			$('#form_projectprops').submit(function() {

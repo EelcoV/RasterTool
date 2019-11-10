@@ -377,3 +377,6 @@ _t["Your project was updated to a newer version. Some names of components and ot
 _t["Components '%%' and '%%'."] = "Componenten '%%' en '%%'.";
 _t["Vulnerabilities '%%' and '%%'."] = "Kwetsbaarheden '%%' en '%%'.";
 _t["Services '%%' and '%%'."] = "Diensten '%%' en '%%'.";
+
+_t["Training demo"] = "Cursus demo";
+_t[" - personal copy"] = " - eigen kopie";
