@@ -143,8 +143,16 @@ CreateWin32Version()
 	BASEDIR=build/electron-v$ELECTRONVERSION-win32-ia32-$LANG
 	APPDIR=$BASEDIR/resources/app
 
-	WINE="/Applications/Wine Stable.app/Contents/Resources/wine/bin/wine"
-	#WINE=""
+	cat >cache/versions-$LANG.bat <<-EOT
+		set basedir=$BASEDIR
+		set builddir=$BUILDDIR
+		set appdir=$APPDIR
+		set electronversion=$ELECTRONVERSION
+		set rasternumversion=$RASTERNUMVERSION
+		set rasterversion=$RASTERVERSION
+		set rasterseason=$RASTERSEASON
+		set lang=$LANG
+		EOT
 
 	echo "************************** Building $LANG version for Win32..."
 
@@ -163,20 +171,8 @@ CreateWin32Version()
 		mkdir -p $BASEDIR
 		( cd $BASEDIR && unzip ../../cache/electron-v$ELECTRONVERSION-win32-ia32.zip )
 		mv $BASEDIR/electron.exe $BASEDIR/raster.exe
-		cp script/raster.ico $BASEDIR/resources/icon.ico
 		# At this stage, it would be cool to convert the icon PNGs into an ICO file
-		(
-		 "$WINE" script/rcedit-x86.exe $BASEDIR/raster.exe \
-		  --set-version-string CompanyName "The Raster Method" \
-		  --set-version-string FileDescription Raster \
-		  --set-file-version $RASTERNUMVERSION \
-		  --set-version-string InternalName Raster \
-		  --set-version-string OriginalFilename raster.exe \
-		  --set-version-string ProductName Raster \
-		  --set-version-string LegalCopyright "Copyright reserved" \
-		  --set-product-version "$RASTERVERSION ($RASTERSEASON)" \
-		  --set-icon script/raster.ico
-		 )
+		cp script/raster.ico $BASEDIR/resources/icon.ico
 	fi
 
 	mkdir $APPDIR
@@ -190,26 +186,6 @@ CreateWin32Version()
 	#mv $APPDIR/standalone.html $APPDIR/index.html
 
 	find "$BASEDIR" -name .DS_Store -delete
-
-	(
-	 cd $BASEDIR
-	 "$WINE" ../../cache/nsis/makensis.exe /nocd ../../script/Raster.$LANG.nsis
-	)
-
-	(
-	 cd build
-	 ln -s electron-v$ELECTRONVERSION-win32-ia32-$LANG Raster
-
-	 rm -f raster-win32-v$RASTERNUMVERSION-$LANG.zip
-	 zip -r raster-win32-v$RASTERNUMVERSION-$LANG.zip Raster
-
-	 rm -f raster-v$RASTERNUMVERSION-$LANG-unpack.exe
-	 # Filenames containing "instal" require admin privileges!?
-	 "$WINE" ../cache/7z/7z.exe a -sfx7z.sfx raster-v$RASTERNUMVERSION-$LANG-unpack.exe Raster
-	 "$WINE" ../script/rcedit-x86.exe raster-v$RASTERNUMVERSION-$LANG-unpack.exe --set-icon ../script/installraster.ico
-
-	 rm Raster
-	)
 
 	echo "************************** ...done."
 }

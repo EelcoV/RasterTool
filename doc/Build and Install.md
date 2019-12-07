@@ -2,6 +2,8 @@
 Some tools are required to build the applications. Since development has been done on MacOS, most of these
 are Mac-centered. However, it should be possible to build the tools on other Unix-like platforms.
 
+When using Xcode on Mac, the build targets Clean, Make Server, Build Electron, and All are available. Clean, empties the build directory. All creates all distribution files; Make Server and Build Electron make the intranet respectively the standalone versions.
+
 ## Build and install the Intranet version
 You need:
 1. XCode. Not essential, but useful and free. MacOS only.
@@ -21,11 +23,12 @@ Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 ## Build and install the Standalone version
 In addition to the tools required for the Intranet version, you need:
 1. MacOS is required to build the standalone version for MacOS. The special utilities xattr, defaults, iconutil, and hdiutil are necessary to manipulate packages, disk images and icons. Those are not available on non-Mac platforms.
-2. Wine (https://www.winehq.org/) is required to build the standalone version for WIndows. If you build the tools under Windows, and if you have the basic Unix shell and utilities available, you should be able to build the standalone versions without Wine.
+2. A (virtualised) Microsoft Windows installation is required to build the standalone version for Windows. The X:-drive must be mapped to the source directory (e.g. x:\build contain the build data).
 
 To build, run these scripts from the root of the Raster tools project:
 1. 'script/fillcache.sh' to download Electron and prepare the required Windows utilities.
 2. 'script/build-electron.sh' to build the MacOS and Windows versions.
+3. Under Windows, run the 'winbuild.bat' batch file to create the Windows ZIP, exe and full installer.
 
 The build results are found in the 'build' directory. For both platforms, the tool is available in English (EN) or Dutch (NL).
 The MacOS version is distributed using the DMG files. To install, doubleclick the DMG file, and drag the Raster application to your Applications folder.
