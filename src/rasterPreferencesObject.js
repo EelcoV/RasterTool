@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global nid2id, AddAllClusters, bugreport, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global nid2id, AddAllClusters, DefaultIconset, bugreport, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
 
 /*
  *
@@ -19,14 +19,14 @@ var PreferencesObject = function() {
 			$('.contentimg').each(function(){
 				var rn = Node.get(nid2id(this.parentElement.id));
 				var src=$(this).attr('src');
-				src = src.replace(/\/img\/.+\//, '/img/'+rn.color+'/');
+				src = src.replace(/\/img\/iconset\/(\w+)\/.+\//, '/img/iconset/$1/'+rn.color+'/');
 				$(this).attr('src', src);
 			});
 		} else {
 			$('.nodeheader').addClass('Chide');
 			$('.contentimg').each(function(){
 				var src=$(this).attr('src');
-				src = src.replace(/\/img\/.+\//, '/img/none/');
+				src = src.replace(/\/img\/iconset\/(\w+)\/.+\//, '/img/iconset/$1/none/');
 				$(this).attr('src', src);
 			});
 		}
@@ -73,7 +73,12 @@ var PreferencesObject = function() {
 		}
 		this.store();
 	};
-	
+
+	this.seticonset = function(iconset) {
+		this.iconset = iconset;
+		this.store();
+	};
+
 	this.setcurrentproject = function(projectname) {
 		this.currentproject = String(projectname);
 		this.store();
@@ -121,6 +126,7 @@ var PreferencesObject = function() {
 		data.theme=this.theme;
 		data.label=this.label;
 		data.emsize =this.emsize;
+		data.iconset =this.iconset;
 		data.currentproject=this.currentproject;
 		data.tab=this.tab;
 		data.service=this.service;
@@ -137,6 +143,7 @@ var PreferencesObject = function() {
 	this.theme = 'smoothness';
 	this.label=true;
 	this.emsize = 'small';
+	this.iconset = DefaultIconset;
 	this.tab = 0;
 	this.service = 0;
 	this.creator = _("Anonymous");
@@ -146,6 +153,7 @@ var PreferencesObject = function() {
 			var pr = JSON.parse(localStorage[LS+'R:0']);
 			if (pr.label!=null) this.setlabel(pr.label);
 			if (pr.emsize!=null) this.setemblem(pr.emsize);
+			if (pr.iconset!=null) this.seticonset(pr.iconset);
 			if (pr.currentproject!=null) this.setcurrentproject(pr.currentproject);
 			if (pr.tab!=null) this.settab(pr.tab);
 			if (pr.service!=null) this.setservice(pr.service);

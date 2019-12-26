@@ -237,7 +237,7 @@ See LICENSE.md
     <div id="mi_du" class="popupmenuitem">Duplicate</div>
     <div id="mi_cc" class="popupmenuitem"><div id="mlabel" class="labeltext">Label</div><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
      <div id="mi_ccsm" class="popupsubmenu">
-      <div id="mi_ccnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="Bnone"><img src="../img/nolabel.png"></div><span class="plainlabel">No label</span></div>
+      <div id="mi_ccnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span class="plainlabel">No label</span></div>
       <div id="mi_ccred" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bred"></div><div class="labeltext">Red</div></div>
       <div id="mi_ccorange" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Borange"></div><div class="labeltext">Orange</div></div>
       <div id="mi_ccyellow" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Byellow"></div><span class="labeltext">Yellow</span></div>
@@ -254,7 +254,7 @@ See LICENSE.md
     <div id="mi_sd" class="popupmenuitem">Delete selection</div>
     <div id="mi_sc" class="popupmenuitem"><span>Label</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
      <div id="mi_scsm" class="popupsubmenu">
-      <div id="mi_scnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="Bnone"><img src="../img/nolabel.png"></div><span class="plainlabel">No label</span></div>
+      <div id="mi_scnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span class="plainlabel">No label</span></div>
       <div id="mi_scred" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bred"></div><div class="labeltext">Red</div></div>
       <div id="mi_scorange" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Borange"></div><div class="labeltext">Orange</div></div>
       <div id="mi_scyellow" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Byellow"></div><span class="labeltext">Yellow</span></div>
@@ -316,6 +316,14 @@ See LICENSE.md
 
 <div id="tab_diagrams" class="workbody workouter">
   <div id="diagrams_body" class="tabs-bottom">
+  	<div id="mask-collection" class="donotprint">
+  		<img class="mask" id="tWLS-mask" src="../img/iconset/default/tWLS-mask.png">
+		<img class="mask" id="tWRD-mask" src="../img/iconset/default/tWRD-mask.png">
+		<img class="mask" id="tEQT-mask" src="../img/iconset/default/tEQT-mask.png">
+		<img class="mask" id="tUNK-mask" src="../img/iconset/default/tUNK-mask.png">
+		<img class="mask" id="tACT-mask" src="../img/iconset/default/tACT-mask.png">
+		<img class="mask" id="tNOT-mask" src="../img/iconset/default/tNOT-mask.png">
+  	</div>
     <input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
     <ul id="bottomtabsdia">
     </ul>

@@ -411,6 +411,12 @@ div.popupmenuitem {
     margin-right: 10px;
     margin-top: 2px;
 }
+.noneblock {
+	display: inline-block;
+	margin-right: 10px;
+	background: none !important;
+	vertical-align: middle;
+}
 .tinyblock {
     display: inline-block;
     width: 5px;
@@ -429,15 +435,6 @@ div.popupmenuitem {
     margin-right: 3px;
 }
 .labelmenuitem { width: 160px !important; }
-.Bnone {display: inline-block; margin-right: 10px;}
-.Bred {background: rgb(240,165,166);}
-.Borange {background: rgb(248,207,127);}
-.Byellow {background: rgb(248,255,140);}
-.Bgreen {background: rgb(204,255,144);}
-.Bblue {background: rgb(193,238,255);}
-.Bpink {background: rgb(254,188,251);}
-.Bpurple {background: rgb(190,148,208);}
-.Bgrey {background: rgb(177,177,177);}
 .labeltext {
     display: inline-block;
     overflow: hidden;
@@ -749,20 +746,39 @@ div.node {
     -webkit-user-select: none;
 }
 div.node:focus {
+/*	outline: 1px dashed red;*/
 	outline: none;
 }
-div.nodeheader {
-    position: absolute;
-    width: 100%;
-    top: 0px;
-    left: 0px;
-    color: black;
-    text-align: center;
-    font: 12px sans-serif;
-    user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
+
+.nodecolorbackground {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	/* See bug https://bugzilla.mozilla.org/show_bug.cgi?id=1605976
+	 *
+	 * Firefox will use the -webkit- prefixed properties in preference over unprefixed versions. We therefore
+	 * do not bother with unprefixed variants.
+	 * Firefox will use the second mask-image instead of the first mask-image.
+	 * Chrome and Safari will use the first mask-image, as they do not recognize the -moz-element expressen.
+	 * Firefox has to use -moz-element, not the url(), as the bug will sometimes make the background disappear.
+	 *
+	 * The disadvantage of thie workaround is that we now need to embed the image somewhere on the page, and
+	 * reference is through its #id. That image must be visible (display=none or visibility=hidden will not work).
+	 *
+	 * The mask-image is included here to show how it would work; the actual mask-image is set in Node.paint().
+
+	-webkit-mask-image: url(tACT-mask.png);
+	-webkit-mask-image: -moz-element(#tACT-mask);
+
+	 */
+	-webkit-mask-size: 100% 100%;
+	z-index: -1;
+}
+.mask {
+	width: 1px;
+	height: 1px;
 }
 .none {color: black !important;}
 .red {color: darkred !important;}
@@ -773,29 +789,94 @@ div.nodeheader {
 .pink {color: black !important;}
 .purple {color: white !important;}
 .grey {color: #aaa !important;}
+.Bnone {background: #ffffff;}
+.Bred {background: #ffb1b3;}
+.Borange {background: #ffd88c;}
+.Byellow {background: #fbff7f;}
+.Bgreen {background: #d1ff7e;}
+.Bblue {background: #bee9ff;}
+.Bpink {background: #febcfb;}
+.Bpurple {background: #be94d0;}
+.Bgrey {background: #f0f0f0;}
+/* Grey is special: the black of the icon image is reduced to grey. */
+.Igrey {filter: invert(50%);}
 .Chide {color: black !important;}
-div.nodeheader input.inplace_field {
-    position: relative;
-    left: -4em;
-    width: 15em;
+
+img.contentimg {
+    width: 100%;
+    height: 100%;
 }
-div.tACTtitle .editInPlace-active {
-	width: 6em;
-	display: block;
-}
-div.tACTtitle input.inplace_field {
-	width: 6em;
-	left: 0;
-}
-div.nodetitle {
-    position: relative;
-/*    top: 0em;*/
+
+div.nodeheader {
+    position: absolute;
+    text-align: center;
+    font: 12px sans-serif;
     user-select: none;
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
 }
+div.headerinside {
+    top: 0px;
+    left: var(--margin);
+    width: calc(100% - 2 * var(--margin));
+    height: 100%;
+}
+div.headerbelow {
+    min-width: 6em;
+    top: 100%;
+    height: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+    /*border: 1px solid grey;*/
+    border-radius: 3px;
+    background: rgba(240,240,240,0.8);
+    padding: 2px 2px 0 2px;
+    color: black !important;
+}
+div.headertopleft {
+    top: 5%;
+    text-align: left;
+    left: var(--margin);
+    width: calc(100% - 2 * var(--margin));
+    height: 90%;
+    overflow: hidden;
+}
+
+div.nodetitle {
+    position: relative;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+div.titleinside {
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+}
+div.titlebelow {
+    left: 50%;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+}
+div.titletopleft {
+}
+div.nodeheader input.inplace_field {
+    position: relative;
+    left: -4em;
+    width: 15em;
+}
 .nodetitle span { cursor: pointer; }
+div.titlebelow .editInPlace-active {
+	width: 6em;
+	display: block;
+}
+div.titlebelow input.inplace_field {
+	width: 6em;
+	left: 0;
+}
 .marktitleM {
     color: rgb(153,51,0);
     position: relative;
@@ -803,16 +884,6 @@ div.nodetitle {
 .marktitleS {
     color: rgb(153,51,0);
     position: relative;
-}
-div.nodecontent {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
 }
 img.nodeC {
     position: absolute;
@@ -858,151 +929,57 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 .M6 { background: rgb(255,0,0) }        /* 'V' */
 .M7 { background: rgb(153,204,255) }    /* 'X' */
 
-img.contentimg {
-    width: 100%;
-    height: 100%;
-}
-
 /* Mods for Wireless links */
 div.tWLS {
-    width: 100px;
-    height: 30px;
+/*    width: 100px;*/
+/*    height: 30px;*/
 }
 div.tWLSheader {
-    left: 6%;
-    right: 6%;
-    width: 88%;
-    height: 100%;
-}
-div.tWLStitle {
-    top: 50%;
-    transform: translateY(-50%);
-    -webkit-transform: translateY(-50%);
-}
-div.tWLScontent {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
-    border: 0px;
+	--margin: 6%;
 }
 
 /* Mods for Wired links */
 div.tWRD {
-    border: 0px;
-    width: 99px;
-    height: 29px;
+/*    width: 99px;*/
+/*    height: 29px;*/
 }
 div.tWRDheader {
-    left: 8%;
-    right: 8%;
-    width: 84%;
-    height: 100%;
-}
-div.tWRDtitle {
-    top: 50%;
-    transform: translateY(-50%);
-    -webkit-transform: translateY(-50%);
-}
-div.tWRDcontent {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
-    border: 0px;
+	--margin: 8%;
 }
 
 /* Mods for Equiment nodes */
 div.tEQT {
-    border: 0px;
-    width: 99px;
-    height: 29px;
+/*    width: 99px;*/
+/*    height: 29px;*/
 }
 div.tEQTheader {
-    left: 11%;
-    width: 77%;
-    height: 100%;
-}
-div.tEQTtitle {
-    top: 50%;
-    transform: translateY(-50%);
-    -webkit-transform: translateY(-50%);
-}
-div.tEQTcontent {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    border: 0px;
+	--margin: 11%;
 }
 
 /* Mods for Actor nodes */
 div.tACT {
-    width: 70px;
-    height: 35px;
-}
-div.tACTcontent {
-    left: 25%;
-    right: 25%;
-    width: 50%;
-    height: 100%;
-}
-div.tACTheader {
-    position: absolute;
-    top: 100%;
-    width: auto;
-    min-width: 6em;
-    left: 50%;
-    transform: translateX(-50%);
-    -webkit-transform: translateX(-50%);
-    /*border: 1px solid grey;*/
-    border-radius: 3px;
-    background: rgba(240,240,240,0.8);
-    padding: 2px 2px 0 2px;
-}
-div.tACTtitle {
-    left: 50%;
-    transform: translateX(-50%);
-    -webkit-transform: translateX(-50%);
-}
-img.tACTD {
-    right: 10%;
-}
-img.tACTW {
-    left: 10%;
+/*    width: 50px;*/
+/*    height: 35px;*/
 }
 
 /* Mods for Unknown links */
 div.tUNK {
-    width: 100px;
-    height: 50px;
+/*    width: 100px;*/
+/*    height: 50px;*/
 }
 div.tUNKheader {
-    left: 15%;
-    right: 15%;
-    width: 70%;
-    height: 100%;
-}
-div.tUNKtitle {
-    top: 50%;
-    transform: translateY(-50%);
-    -webkit-transform: translateY(-50%);
+	--margin: 15%;
 }
 
 /* Mods for Notes */
 .tNOT {
-    width: 100px;
-    height: 50px;
+/*    width: 100px;*/
+/*    height: 50px;*/
 }
 div.tNOTheader {
-    top: 5%;
-    left: 3%;
-    right: 3%;
-    width: 96%;
-    text-align: left;
+	--margin: 3%;
 }
+.titletopleft span {white-space: pre-wrap;}
 .tNOTD {
     top: -3px !important;
     right: -3px !important;
@@ -1010,8 +987,6 @@ div.tNOTheader {
 .tNOTMagnitude, .tNOTW {
     visibility: hidden !important;
 }
-.tNOTtitle span {white-space: pre-wrap;}
-.tNOTcontent {height: 100%;}
 
 #selectrect {
     position: absolute;

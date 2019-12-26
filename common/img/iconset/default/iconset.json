@@ -1,0 +1,12 @@
+{
+"setName":"default",
+"setDescription":"The original Raster iconset",
+"icons":[
+	{"type":"tEQT","image":"tEQT.png","width":99,"height":29,"title":"inside","margin":11,"offsetConnector":0.5},
+	{"type":"tWRD","image":"tWRD.png","width":99,"height":29,"title":"inside","margin":8,"offsetConnector":0.5},
+	{"type":"tWLS","image":"tWLS.png","width":100,"height":30,"title":"inside","margin":6,"offsetConnector":0.5},
+	{"type":"tUNK","image":"tUNK.png","width":100,"height":50,"title":"inside","margin":15,"offsetConnector":0.66},
+	{"type":"tACT","image":"tACT.png","width":50,"height":35,"title":"below","offsetConnector":0.5},
+	{"type":"tNOT","image":"tNOT.png","width":100,"height":50,"margin":3,"maintainAspect":false,"title":"topleft"}
+]
+}

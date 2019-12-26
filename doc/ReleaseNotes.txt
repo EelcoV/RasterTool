@@ -5,6 +5,8 @@ XXXX 2019
 =========
 * Release as x.x.x - XXX
 * Build scripts now always create the classroom variant and the normal intranet variant.
+* Does not work with Internet Explorer anymore.
+* Groundwork for different iconsets.
 
 October 2019
 ============
