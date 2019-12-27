@@ -1,12 +1,68 @@
 {
-"setName":"default",
-"setDescription":"The original Raster iconset",
-"icons":[
-	{"type":"tEQT","image":"tEQT.png","width":99,"height":29,"title":"inside","margin":11,"offsetConnector":0.5},
-	{"type":"tWRD","image":"tWRD.png","width":99,"height":29,"title":"inside","margin":8,"offsetConnector":0.5},
-	{"type":"tWLS","image":"tWLS.png","width":100,"height":30,"title":"inside","margin":6,"offsetConnector":0.5},
-	{"type":"tUNK","image":"tUNK.png","width":100,"height":50,"title":"inside","margin":15,"offsetConnector":0.66},
-	{"type":"tACT","image":"tACT.png","width":50,"height":35,"title":"below","offsetConnector":0.5},
-	{"type":"tNOT","image":"tNOT.png","width":100,"height":50,"margin":3,"maintainAspect":false,"title":"topleft"}
+"setName": "default",
+"setDescription": {
+	"EN": "The original Raster symbols",
+	"NL": "De originele Raster symbolen"
+	},
+"icons": [
+	{
+		"type": "tEQT",
+		"image": "tEQT.png",
+		"name": {"EN": "Equipment", "NL": "Apparatuur"},
+		"width": 99,
+		"height": 29,
+		"title": "inside",
+		"margin": 11,
+		"offsetConnector": 0.5
+	},
+	{
+		"type": "tWRD",
+		"image": "tWRD.png",
+		"name": {"EN": "Wired link", "NL": "Kabel"},
+		"width": 99,
+		"height": 29,
+		"title": "inside",
+		"margin": 8,
+		"offsetConnector": 0.5
+	},
+	{
+		"type": "tWLS",
+		"image": "tWLS.png",
+		"name": {"EN": "Wireless link", "NL": "Draadloos"},
+		"width": 100,
+		"height": 30,
+		"title": "inside",
+		"margin": 6,
+		"offsetConnector": 0.5
+	},
+	{
+		"type": "tUNK",
+		"image": "tUNK.png",
+		"name": {"EN": "Unknown link", "NL": "Onverkend"},
+		"width": 100,
+		"height": 50,
+		"title": "inside",
+		"margin": 15,
+		"offsetConnector": 0.66
+	},
+	{
+		"type": "tACT",
+		"image": "tACT.png",
+		"name": {"EN": "Actor", "NL": "Actor"},
+		"width": 50,
+		"height": 35,
+		"title": "below",
+		"offsetConnector": 0.5
+	},
+	{
+		"type": "tNOT",
+		"image": "tNOT.png",
+		"name": {"EN": "Note", "NL": "Notitie"},
+		"width": 100,
+		"height": 50,
+		"margin": 3,
+		"maintainAspect": false,
+		"title": "topleft"
+	}
 ]
 }

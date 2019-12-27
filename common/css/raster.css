@@ -766,6 +766,7 @@ div.node:focus {
 	 *
 	 * The disadvantage of thie workaround is that we now need to embed the image somewhere on the page, and
 	 * reference is through its #id. That image must be visible (display=none or visibility=hidden will not work).
+	 * It can however be small (1px by 1px is fine) and hidden behind another div.
 	 *
 	 * The mask-image is included here to show how it would work; the actual mask-image is set in Node.paint().
 
@@ -841,42 +842,38 @@ div.headertopleft {
     left: var(--margin);
     width: calc(100% - 2 * var(--margin));
     height: 90%;
-    overflow: hidden;
 }
 
-div.nodetitle {
-    position: relative;
-    user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-}
 div.titleinside {
+    position: relative;
     top: 50%;
     transform: translateY(-50%);
     -webkit-transform: translateY(-50%);
 }
 div.titlebelow {
+    position: relative;
     left: 50%;
     transform: translateX(-50%);
     -webkit-transform: translateX(-50%);
 }
 div.titletopleft {
 }
+.titletopleft span {white-space: pre-wrap;}
+.nodetitle span { cursor: pointer; }
+
 div.nodeheader input.inplace_field {
     position: relative;
     left: -4em;
     width: 15em;
 }
-.nodetitle span { cursor: pointer; }
 div.titlebelow .editInPlace-active {
 	width: 6em;
 	display: block;
 }
 div.titlebelow input.inplace_field {
-	width: 6em;
 	left: 0;
 }
+
 .marktitleM {
     color: rgb(153,51,0);
     position: relative;
@@ -888,7 +885,7 @@ div.titlebelow input.inplace_field {
 img.nodeC {
     position: absolute;
     top: -5px;
-    right: 0px;
+    right: -5px;
     width: 16px;
     height: 16px;
     z-index: 15;
@@ -905,6 +902,10 @@ img.nodeW {
     height: 15px;
     cursor: pointer;
     z-index: 15;
+}
+/* Exception for notes: they don't have warnings. */
+.nodetNOT .nodeW {
+    visibility: hidden !important;
 }
 div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
     display: none;
@@ -928,65 +929,6 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 .M5 { background: rgb(255,153,153) }    /* 'H' */
 .M6 { background: rgb(255,0,0) }        /* 'V' */
 .M7 { background: rgb(153,204,255) }    /* 'X' */
-
-/* Mods for Wireless links */
-div.tWLS {
-/*    width: 100px;*/
-/*    height: 30px;*/
-}
-div.tWLSheader {
-	--margin: 6%;
-}
-
-/* Mods for Wired links */
-div.tWRD {
-/*    width: 99px;*/
-/*    height: 29px;*/
-}
-div.tWRDheader {
-	--margin: 8%;
-}
-
-/* Mods for Equiment nodes */
-div.tEQT {
-/*    width: 99px;*/
-/*    height: 29px;*/
-}
-div.tEQTheader {
-	--margin: 11%;
-}
-
-/* Mods for Actor nodes */
-div.tACT {
-/*    width: 50px;*/
-/*    height: 35px;*/
-}
-
-/* Mods for Unknown links */
-div.tUNK {
-/*    width: 100px;*/
-/*    height: 50px;*/
-}
-div.tUNKheader {
-	--margin: 15%;
-}
-
-/* Mods for Notes */
-.tNOT {
-/*    width: 100px;*/
-/*    height: 50px;*/
-}
-div.tNOTheader {
-	--margin: 3%;
-}
-.titletopleft span {white-space: pre-wrap;}
-.tNOTD {
-    top: -3px !important;
-    right: -3px !important;
-}
-.tNOTMagnitude, .tNOTW {
-    visibility: hidden !important;
-}
 
 #selectrect {
     position: absolute;

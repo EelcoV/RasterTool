@@ -3,7 +3,7 @@
  */
 
 /* global
- Component, ComponentIterator, DefaultThreats, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, NodeClusterIterator, Preferences, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, _, bugreport, exportProject, isSameString, loadFromString, newRasterConfirm, nextUnusedIndex, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, transactionCompleted, trimwhitespace, urlEncode
+ Component, ComponentIterator, DefaultThreats, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, _, bugreport, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nextUnusedIndex, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, transactionCompleted, trimwhitespace, urlEncode
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -34,6 +34,8 @@
  *	creator: (string) creator, as returned by the server. Only used for stubs.
  *	date: (string) date, as returned by the server. Only used for stubs.
  *	stub: (boolean) true iff this is a stub.
+ *  iconset: (string) name of the preferred iconset for this project.
+ *  icondata: an object containing information on this iconset.
  * Methods:
  *	destroy(): destructor for this object
  *	totalnodes(): returns the count of all nodes within all services of this project.
@@ -84,6 +86,54 @@ var Project = function(id,asstub) {
 #else
 	this.stub = false;
 #endif
+
+	this.iconset = 'default';
+	this.icondata = {};
+	var p = this;
+	// Load the current iconset
+	$.ajax({
+		url: '../img/iconset/'+this.iconset+'/iconset.json',
+		async: false,
+		success: function(data) {
+			p.icondata.setName = data.setName;
+			p.icondata.setDescription = mylang(data.setDescription);
+			p.icondata.icons = [];
+			data.icons.forEach(function(r) {
+				var i;
+				// set somewhat sane default values for each attribute
+				i = {
+					width: 100,
+					height: 30,
+					title: 'inside',
+					margin: 0,
+					offsetConnector: 0.5, // center
+					maintainAspect: true
+				};
+				if (r.type==null) return; // mandatory
+				if (r.image==null) return; // mandatory
+				if (Rules.nodetypes[r.type]==null) return; // invalid type
+				i.type = r.type;
+				i.image = r.image;
+				if (r.name!=null) {
+					i.name = mylang(r.name);
+				} else {
+					i.name = r.image;
+				}
+				if (r.width!=null) i.width = r.width;
+				if (r.height!=null) i.height = r.height;
+				if (r.title!=null) i.title = r.title;
+				if (r.margin!=null) i.margin = r.margin;
+				if (r.offsetConnector!=null) i.offsetConnector = r.offsetConnector;
+				if (r.maintainAspect!=null) i.maintainAspect = r.maintainAspect;
+				// Precompute the id and name of the mask image
+				i.mask = i.image.replace(/(.+)\.(\w+)$/, '$1-mask.$2');
+				i.maskid = i.mask.replace(/(.+)\.(\w+)$/, '$1-$2');
+				i.iconset = data.setName;
+				p.icondata.icons.push(i);
+			});
+		}
+	});
+
 	this.store();
 	Project._all[this.id]=this;
 };
@@ -457,6 +507,11 @@ Project.prototype = {
 		this.store();
 	},
 	
+	seticonset: function(iconset) {
+		this.iconset = iconset;
+		this.store();
+	},
+
 	unload: function() {
 		for (var i=0; i<this.services.length; i++) {
 			Service.get( this.services[i] ).unload();
@@ -526,6 +581,12 @@ Project.prototype = {
 			helper: 'clone',
 			cursor: 'ns-resize',
 			deactivate: sortfunc
+		});
+
+		// Mask images
+		$('#mask-collection').empty();
+		this.icondata.icons.forEach(function(r) {
+			$('#mask-collection').append('<img class="mask" id="'+r.maskid+'" src="../img/iconset/'+r.iconset+'/'+r.mask+'">');
 		});
 
 		$('.projectname').text(this.title);
@@ -1046,4 +1107,3 @@ ProjectIterator.prototype = {
 		});
 	}
 };
-

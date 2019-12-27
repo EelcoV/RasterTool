@@ -474,10 +474,9 @@
 			};
 			buildConfigurationList = 494B6F6218796DD000400328 /* Build configuration list for PBXProject "RasterTool" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				Base,
 			);

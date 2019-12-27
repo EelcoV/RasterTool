@@ -836,6 +836,23 @@ function _(s) {
 	return str;
 }
 
+/* mylang(obj): retrieve language specific element from obj.
+ *  obj = {'EN': 'English', 'NL': 'Not English'}
+ *  mylang('EN') --> 'English'
+ *  mylang('NL') --> 'Not English'
+ *  mylang('ES') --> undefined
+ */
+function mylang(obj) {
+	var lang = $.localise.defaultLanguage.toUpperCase();
+	if (obj[lang]) {
+		return obj[lang];
+	} else {
+		// Fallback from 'en-US' to 'EN'
+		lang = lang.replace(/([^_]+)-.+/, "$1");
+		return obj[lang];
+	}
+}
+
 /* testLocalStorage(): returns boolean
  * Checks whether the browser supports storing values in localStorage.
  */

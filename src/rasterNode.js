@@ -20,6 +20,7 @@
  *	servicehastitle(s,str): service 's' has a node with title 'str'.
  * Instance properties:
  *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK', 'tNOT'
+ *  index: index of the icon in the current iconset
  *	title: name of the node
  *	suffix: letter a,b,c... or user-set string to distiguish nodes with the same title (set by Component)
  *	id: unique number
@@ -92,14 +93,14 @@ var Node = function(type, id) {
 	// Sticky notes are traditionally yellow
 	this.color = (this.type=='tNOT' ? "yellow" : "none");
 
-switch (this.type) {
-case 'tWLS': this.position.width=100; this.position.height=30;break;
-case 'tWRD': this.position.width=99; this.position.height=29;break;
-case 'tEQT': this.position.width=99; this.position.height=29;break;
-case 'tUNK': this.position.width=100; this.position.height=50;break;
-case 'tACT': this.position.width=50; this.position.height=35;break;
-case 'tNOT': this.position.width=100; this.position.height=50;break;
-}
+	// Locate the first possible index
+	var p = Project.get(Project.cid);
+	for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
+		// empty
+	}
+
+	this.position.width = p.icondata.icons[this.index].width;
+	this.position.height = p.icondata.icons[this.index].height;
 
 	this.store();
 	Node._all[this.id] = this;
@@ -656,6 +657,8 @@ Node.prototype = {
 	},
 	
 	paint: function(effect) {
+		var p = Project.get(Project.cid);
+		var icn = p.icondata.icons[this.index];
 		var jsP = Service.get(this.service)._jsPlumb;
 		if (this.position.x<0 || this.position.y<0
 			|| this.position.x>3000 || this.position.y>3000) {
@@ -665,24 +668,26 @@ Node.prototype = {
 			this.store();
 		}
 		var str = '\n\
-			<div id="node_ID_" class="node _TY_" tabindex="2">\n\
+			<div id="node_ID_" class="node node_TY_" tabindex="2">\n\
 				<div id="nodecolorbackground_ID_" class="nodecolorbackground B_CO_"></div>\n\
-				<img id="nodeimg_ID_" src="../img/iconset/default/_TY_.png" class="contentimg I_CO_">\n\
-				<div id="nodeheader_ID_" class="nodeheader _TY_header _HB_ _CO_">\n\
-				  <div id="nodetitle_ID_" class="nodetitle _TY_title _TB_"><span id="titlemain_ID_"></span><span id="titlesuffix_ID_"></span></div>\n\
+				<img id="nodeimg_ID_" src="../img/iconset/_IS_/_IM_" class="contentimg I_CO_">\n\
+				<div id="nodeheader_ID_" class="nodeheader _HB_ _CO_">\n\
+				  <div id="nodetitle_ID_" class="_TB_"><span id="titlemain_ID_"></span><span id="titlesuffix_ID_"></span></div>\n\
 				</div>\n\
-				<img id="nodeC_ID_" class="nodeC _TY_D" src="../img/dropdown.png">\n\
-				<img id="nodeW_ID_" class="nodeW _TY_W" src="../img/warn.png">\n\
-				<div id="nodeMagnitude_ID_" class="nodeMagnitude _TY_Magnitude"></div>\n\
+				<img id="nodeC_ID_" class="nodeC" src="../img/dropdown.png">\n\
+				<img id="nodeW_ID_" class="nodeW" src="../img/warn.png">\n\
+				<div id="nodeMagnitude_ID_" class="nodeMagnitude"></div>\n\
 			</div>\n\
 			';
 		str = str.replace(/_ID_/g, this.id);
 		str = str.replace(/_TY_/g, this.type);
+		str = str.replace(/_IS_/g, p.iconset);
+		str = str.replace(/_IM_/g, icn.image);
 		str = str.replace(/_CO_/g, (Preferences.label ? this.color : 'none'));
-		if (this.type == 'tACT') {
+		if (icn.title == 'below') {
 			str = str.replace(/_HB_/g, 'headerbelow');
 			str = str.replace(/_TB_/g, 'titlebelow');
-		} else if (this.type == 'tNOT') {
+		} else if (icn.title == 'topleft') {
 			str = str.replace(/_HB_/g, 'headertopleft');
 			str = str.replace(/_TB_/g, 'titletopleft');
 		} else {
@@ -691,20 +696,18 @@ Node.prototype = {
 		}
 		$('#diagrams_workspace'+this.service).append(str);
 		this.setmarker();
-		$('#nodecolorbackground'+this.id).css('-webkit-mask-image', 'url("../img/iconset/default/'+this.type+'-mask.png")');
-		$('#nodecolorbackground'+this.id).css('-webkit-mask-image', '-moz-element(#'+this.type+'-mask)');
+		$('#nodeheader'+this.id).css('--margin', icn.margin+'%');
+		// See comments in raster.css at nodecolorbackground
+		$('#nodecolorbackground'+this.id).css('-webkit-mask-image', 'url(../img/iconset/'+p.iconset+'/'+icn.mask+')');
+		$('#nodecolorbackground'+this.id).css('-webkit-mask-image', '-moz-element(#'+icn.maskid+')');
 
 		str = '<div id="tinynode_ID_" class="tinynode"></div>\n';
 		str = str.replace(/_ID_/g, this.id);
 		$('#scroller_overview'+this.service).append(str);
 
-//		if (this.position.width==0) {
-//			this.position.width=$(this.jnid).width();
-//			this.position.height=$(this.jnid).height();
-//		} else {
-			$(this.jnid).width(this.position.width);
-			$(this.jnid).height(this.position.height);
-//		}
+		$(this.jnid).width(this.position.width);
+		$(this.jnid).height(this.position.height);
+
 		if (this.component!=null) {
 			var cm = Component.get(this.component);
 			cm.setmarkeroid(null);
@@ -723,7 +726,6 @@ Node.prototype = {
 		}
 		this.setposition(this.position.x, this.position.y, false);
 
-//		var containmentarr = [];
 		/* This is *not* jQuery's draggable, but Katavorio's!
 		 * See https://github.com/jsplumb/katavorio/wiki
 		 */
@@ -1322,70 +1324,4 @@ var Rules = {
 			
 		return true;	
 	}
-};
-
-var DefaultIconset = {
-	setName: 'default',
-	setDescription: {EN: 'The original Raster symbols', NL: 'De originele Raster symbolen'},
-	icons: [
-		{
-			type: 'tEQT',
-			image: 'tEQT.png',
-			name: {EN: 'Equipment', NL: 'Apparatuur'},
-			width: 99,
-			height: 29,
-			title: 'inside',
-			margin: 11,
-			offsetConnector: 0.5
-		},
-		{
-			type: 'tWRD',
-			image: 'tWRD.png',
-			name: {EN: 'Wired link', NL: 'Kabel'},
-			width: 99,
-			height: 29,
-			title: 'inside',
-			margin: 8,
-			offsetConnector: 0.5
-		},
-		{
-			type: 'tWLS',
-			image: 'tWLS.png',
-			name: {EN: 'Wireless link', NL: 'Draadloos'},
-			width: 100,
-			height: 30,
-			title: 'inside',
-			margin: 6,
-			offsetConnector: 0.5
-		},
-		{
-			type: 'tUNK',
-			image: 'tUNK.png',
-			name: {EN: 'Unknown link', NL: 'Onverkend'},
-			width: 100,
-			height: 50,
-			title: 'inside',
-			margin: 15,
-			offsetConnector: 0.66
-		},
-		{
-			type: 'tACT',
-			image: 'tACT.png',
-			name: {EN: 'Actor', NL: 'Actor'},
-			width: 50,
-			height: 35,
-			title: 'below',
-			offsetConnector: 0.5
-		},
-		{
-			type: 'tNOT',
-			image: 'tNOT.png',
-			name: {EN: 'Note', NL: 'Notitie'},
-			width: 100,
-			height: 50,
-			margin: 3,
-			maintainAspect: false,
-			title: 'topleft'
-		}
-	]
 };

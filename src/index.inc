@@ -316,14 +316,7 @@ See LICENSE.md
 
 <div id="tab_diagrams" class="workbody workouter">
   <div id="diagrams_body" class="tabs-bottom">
-  	<div id="mask-collection" class="donotprint">
-  		<img class="mask" id="tWLS-mask" src="../img/iconset/default/tWLS-mask.png">
-		<img class="mask" id="tWRD-mask" src="../img/iconset/default/tWRD-mask.png">
-		<img class="mask" id="tEQT-mask" src="../img/iconset/default/tEQT-mask.png">
-		<img class="mask" id="tUNK-mask" src="../img/iconset/default/tUNK-mask.png">
-		<img class="mask" id="tACT-mask" src="../img/iconset/default/tACT-mask.png">
-		<img class="mask" id="tNOT-mask" src="../img/iconset/default/tNOT-mask.png">
-  	</div>
+  	<div id="mask-collection" class="donotprint"><!-- mask images to be inserted here --></div>
     <input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
     <ul id="bottomtabsdia">
     </ul>
