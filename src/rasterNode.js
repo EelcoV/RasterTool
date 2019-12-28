@@ -705,6 +705,11 @@ Node.prototype = {
 		str = str.replace(/_ID_/g, this.id);
 		$('#scroller_overview'+this.service).append(str);
 
+		// Under a different iconset the aspect ratio may be off. Correct it, if necessary
+		if (icn.maintainAspect) {
+			this.position.height = this.position.width * icn.height/icn.width;
+			this.store();
+		}
 		$(this.jnid).width(this.position.width);
 		$(this.jnid).height(this.position.height);
 
