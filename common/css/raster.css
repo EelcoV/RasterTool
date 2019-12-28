@@ -897,7 +897,7 @@ img.nodeC {
 img.nodeW {
     position: absolute;
     top: -5px;
-    left: 0px;
+    left: -5px;
     width: 15px;
     height: 15px;
     cursor: pointer;
