@@ -71,11 +71,6 @@
 		494B6FF318796E9D00400328 /* dropdown.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dropdown.png; sourceTree = "<group>"; };
 		494B700218796E9D00400328 /* nolabel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nolabel.png; sourceTree = "<group>"; };
 		494B701518796E9D00400328 /* Raster.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Raster.png; sourceTree = "<group>"; };
-		494B701D18796E9D00400328 /* tACTicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tACTicon.png; sourceTree = "<group>"; };
-		494B701E18796E9D00400328 /* tEQTicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tEQTicon.png; sourceTree = "<group>"; };
-		494B701F18796E9D00400328 /* tUNKicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tUNKicon.png; sourceTree = "<group>"; };
-		494B702018796E9D00400328 /* tWLSicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWLSicon.png; sourceTree = "<group>"; };
-		494B702118796E9D00400328 /* tWRDicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tWRDicon.png; sourceTree = "<group>"; };
 		494B702218796E9D00400328 /* warn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = warn.png; sourceTree = "<group>"; };
 		494B702918796E9D00400328 /* share.inc */ = {isa = PBXFileReference; explicitFileType = text.script.php; path = share.inc; sourceTree = "<group>"; };
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
@@ -242,12 +237,7 @@
 				494B700218796E9D00400328 /* nolabel.png */,
 				494B701518796E9D00400328 /* Raster.png */,
 				49656F6E235662CB00A731AC /* selected.png */,
-				494B701D18796E9D00400328 /* tACTicon.png */,
-				494B701E18796E9D00400328 /* tEQTicon.png */,
 				491CD6CA187D97B60028B84D /* tNOTicon.png */,
-				494B701F18796E9D00400328 /* tUNKicon.png */,
-				494B702018796E9D00400328 /* tWLSicon.png */,
-				494B702118796E9D00400328 /* tWRDicon.png */,
 				494B702218796E9D00400328 /* warn.png */,
 			);
 			path = img;

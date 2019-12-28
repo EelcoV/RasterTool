@@ -2793,22 +2793,6 @@ function initTabDiagrams() {
 	$('#mi_sd').html( _("Delete selection") );
 	$('#mi_sc span').html( _("Label") );
 
-	$('#templates .t1 .templatelabel').html( _("Wireless") );
-	$('#templates .t2 .templatelabel').html( _("Wired") );
-	$('#templates .t3 .templatelabel').html( _("Equipment") );
-	$('#templates .t4 .templatelabel').html( _("Actor") );
-	$('#templates .t5 .templatelabel').html( _("Unexplored") );
-	$('#templates .t6 .templatelabel').html( _("note") );
-	$('#tWLS').attr('title', _("Drag to add a wireless link."));
-	$('#tWRD').attr('title', _("Drag to add a wired link (cable)."));
-	$('#tEQT').attr('title', _("Drag to add an equipment item."));
-	$('#tACT').attr('title', _("Drag to add an actor (someone using this telecom services)."));
-	$('#tUNK').attr('title', _("Drag to add an unknown link."));
-	$('#tNOT').attr('title', _("Drag to add an area for comments."));
-	$('#tC_tWLS').attr('title', _("Click to edit common vulnerabilities for Wireless links."));
-	$('#tC_tWRD').attr('title', _("Click to edit common vulnerabilities for Wired links."));
-	$('#tC_tEQT').attr('title', _("Click to edit common vulnerabilities for Equipment components."));
-
 	$('#mi_ccnone .plainlabel').html( _("No label") );
 	$('#mi_ccedit .plainlabel').html( _("Edit labels ...") );
 	$('#mi_scnone .plainlabel').html( _("No label") );
@@ -2836,18 +2820,12 @@ function initTabDiagrams() {
 		transactionCompleted("Service add");
 	});
 
-	$('.templatebg,.templatebgNOT').draggable({
-		cursor: 'move',
-		helper: 'clone'
-	});
-
-	$('.template').on('mouseenter', function() {
-		$('#tC_'+this.firstElementChild.id).css({visibility: 'visible'});
+	$('#templates').on('mouseenter', function() {
+		$('.tC').css({visibility: 'visible'});
 	}).on('mouseleave',function() {
-		$('#tC_'+this.firstElementChild.id).css({visibility: 'hidden'});
+		$('.tC').css({visibility: 'hidden'});
 	});
-	$('.tC').on('mousedown', function(/*event,ui*/){
-		$('#'+this.id).css({visibility: 'hidden'});
+	$(document).on('mousedown', '.tC', function(/*event,ui*/){
 		// this.id is of the form "tC_YYY", and we need to know YYY
 		var ctype = this.id.substr(3);
 		displayChecklistsDialog(ctype);

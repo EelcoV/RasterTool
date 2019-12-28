@@ -57,6 +57,7 @@
 	{
 		"type": "tNOT",
 		"image": "tNOT.png",
+		"template": "tNOTicon.png",
 		"name": {"EN": "Note", "NL": "Notitie"},
 		"width": 100,
 		"height": 50,

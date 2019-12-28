@@ -2,10 +2,10 @@
 Each iconset should be stored in its own directory inside the 'iconset' directory.
 The name of the directory should match the name of the iconset; e.g. all files for iconset 'medical' should be stored in 'img/iconset/medical'.
 The iconset must contain a description in JSON format; the file must be called 'iconset.json'.
-For each icon there must be two files: the icon and an icon mask; the mask must have the same name as its corresponding icon but with '-mask' appended, and must have the same extension.
+For each icon there must be two or three files: the icon, an icon mask and a template. The mask must have the same name as its corresponding icon but with '-mask' appended, and must have the same extension. The first icon of each type will be used as the template-image; the use drags the template onto the workspace to create a new node. If no template image is specified, then a name will be created using '-template'. 
 E.g;
-* icon "machine.png" must have mask "machine-mask.png"
-* icon "tube.jpeg" must have mask "tube-mask.jpeg"
+* icon "machine.png" must have mask "machine-mask.png", and default template will be "machine-template.png".
+* icon "tube.jpeg" must have mask "tube-mask.jpeg", and default template will be "tube-template.jpeg".
 
 ## iconset.json
 This must be a valid JSON file, containing a single object with three fields. Some of the (sub-)fields are multi-language strings. Multi-language strings are objects in with property names are (capitalized) language codes, and property values are the string in that language.
@@ -27,3 +27,4 @@ Icon descriptions:
 7. margin: String (optional), left and right margin of the title as a percentage of the icon width. Does not apply when title = below. Increase the margin to fit the title inside the icon. Default = 0.
 8. offsetConnector: float between 0.00 and 1.00 (optional). The connector is always drawn at the top of the icon; this offset specifies its horizontal location: 0.00 means at the extreme left, 0.5 means centered, 1,0 means at the extreme right. Default = 0.5.
 9. maintainAspect: boolean (optional). If false, the width and height can be adjusted independently. Default = true.
+10. template: String, the name of an image that can be used as the template image (optional). Default = derived from the image.

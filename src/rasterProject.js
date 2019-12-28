@@ -125,6 +125,11 @@ var Project = function(id,asstub) {
 				if (r.margin!=null) i.margin = r.margin;
 				if (r.offsetConnector!=null) i.offsetConnector = r.offsetConnector;
 				if (r.maintainAspect!=null) i.maintainAspect = r.maintainAspect;
+				if (r.template!=null) {
+					i.template = r.template;
+				} else {
+					i.template = i.image.replace(/(.+)\.(\w+)$/, '$1-template.$2');
+				}
 				// Precompute the id and name of the mask image
 				i.mask = i.image.replace(/(.+)\.(\w+)$/, '$1-mask.$2');
 				i.maskid = i.mask.replace(/(.+)\.(\w+)$/, '$1-$2');
@@ -587,6 +592,48 @@ Project.prototype = {
 		$('#mask-collection').empty();
 		this.icondata.icons.forEach(function(r) {
 			$('#mask-collection').append('<img class="mask" id="'+r.maskid+'" src="../img/iconset/'+r.iconset+'/'+r.mask+'">');
+		});
+
+		// Template images. The first image of each type will be the default image.
+		$('#templates').empty();
+		var icn = this.icondata.icons;
+		Object.keys(Rules.nodetypes).forEach(function(t) {
+			for (i=0; i<icn.length; i++) {
+				if (icn[i].type!=t)  continue;
+				var str = '\
+					<div class="template"><div class="templateinner">\n\
+						<div id="_TY_" class="templatebg">\n\
+							<img class="templateicon" src="../img/iconset/_IS_/_IT_">\n\
+						</div>\n\
+						<div class="ui-widget templatelabel">_TN_</div>\n\
+						<img id="tC__TY_" class="tC" src="../img/dropedit.png">\n\
+					<div></div>\
+				';
+				str =str.replace(/_TY_/g, icn[i].type);
+				str =str.replace(/_TN_/g, Rules.nodetypes[icn[i].type]);
+				str =str.replace(/_IS_/g, icn[i].iconset);
+				str =str.replace(/_IM_/g, icn[i].image);
+				str =str.replace(/_IT_/g, icn[i].template);
+				$('#templates').append(str);
+				// See comments in raster.css at nodecolorbackground
+				$('#tbg_'+icn[i].type).css('-webkit-mask-image', 'url(../img/iconset/'+icn[i].iconset+'/'+icn[i].mask+')');
+				$('#tbg_'+icn[i].type).css('-webkit-mask-image', '-moz-element(#'+icn[i].maskid+')');
+				break;
+			}
+		});
+		$('#tWLS').attr('title', _("Drag to add a wireless link."));
+		$('#tWRD').attr('title', _("Drag to add a wired link (cable)."));
+		$('#tEQT').attr('title', _("Drag to add an equipment item."));
+		$('#tACT').attr('title', _("Drag to add an actor (someone using this telecom services)."));
+		$('#tUNK').attr('title', _("Drag to add an unknown link."));
+		$('#tNOT').attr('title', _("Drag to add an area for comments."));
+		$('#tC_tWLS').attr('title', _("Click to edit common vulnerabilities for Wireless links."));
+		$('#tC_tWRD').attr('title', _("Click to edit common vulnerabilities for Wired links."));
+		$('#tC_tEQT').attr('title', _("Click to edit common vulnerabilities for Equipment components."));
+
+		$('.templatebg').draggable({
+			cursor: 'move',
+			helper: 'clone'
 		});
 
 		$('.projectname').text(this.title);

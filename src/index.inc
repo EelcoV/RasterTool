@@ -177,35 +177,7 @@ See LICENSE.md
 </div>
 #endif
 
-<div id="templates" class="ui-state-default">
-    <div class="template t1">
-        <div id="tWLS" class="templatebg"><img class="templateicon" src="../img/tWLSicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Wireless</div>
-        <img id="tC_tWLS" class="tC" src="../img/dropedit.png">
-    </div>
-    <div class="template t2">
-        <div id="tWRD" class="templatebg"><img class="templateicon" src="../img/tWRDicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Wired</div>
-        <img id="tC_tWRD" class="tC" src="../img/dropedit.png">
-    </div>
-    <div class="template t3">
-        <div id="tEQT" class="templatebg"><img class="templateicon" src="../img/tEQTicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Equipment</div>
-        <img id="tC_tEQT" class="tC" src="../img/dropedit.png">
-    </div>
-    <div class="template t4">
-        <div id="tACT" class="templatebg"><img class="templateicon" src="../img/tACTicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Actor</div>
-    </div>
-    <div class="template t5">
-        <div id="tUNK" class="templatebg"><img class="templateicon" src="../img/tUNKicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">Unexplored</div>
-    </div>
-    <div class="template t6">
-        <div id="tNOT" class="templatebgNOT"><img class="templateicon" src="../img/tNOTicon.png"></div>
-        <div class="ui-widget ui-widget-content ui-state-default templatelabel">note</div>
-    </div>
-</div> <!-- id="templates" -->
+<div id="templates" class="ui-state-default"> <!-- Is filled in Project.load() --></div>
 
 <div id="helppanel">
     <div id="helptabs">

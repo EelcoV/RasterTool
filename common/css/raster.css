@@ -116,78 +116,70 @@ input.inplace_field, textarea.inplace_field {
     position: absolute;
     left: 400px;
     top: 2px;
-    width: 398px;
     height: 40px;
     border-radius: 0 0 5px 5px;
+    padding: 0px 5px;
     z-index: 100;
+}
+.template:last-child {
+	margin-left: 10px;
 }
 .template {
-    position: absolute;
-    width: 63px;
-    height: 45px;
-    z-index: 100;
+	display: inline-block;
+	width: 64px;
+}
+.template:last-child {
+	margin-left: 20px;
+}
+.templateinner { /* So that we have a positioned DIV to layout against. */
+	position: relative;
+	width: 60px;
+	left: 2px;
+	height: 40px;
 }
 .templatebg {
-    position: absolute;
-    width: 50px;
+    width: 100%;
     height: 23px;
-    top: 2px;
-    left: 0px;
     border: 1px solid #333;
     border-radius: 3px;
     background: #ccccff;
     cursor: move;
-    overflow: hidden;
-    z-index: 100;
 }
-.templatebgNOT {
-    position: absolute;
-    top: 2px;
-    left: 12px;
-    height: 24px;
-    width: 26px;
-    border: 1px solid #333;
-    border-radius: 3px;
-    background: #ffff87;
-    cursor: move;
+img.templateicon {
+	position: relative;
+	/* Center the image inside the div.templatebg */
+	left: 50%;
+	top: 50%;
+	transform: translateX(-50%) translateY(-50%);
+	-webkit-transform: translateX(-50%) translateY(-50%);
+	max-width: 58px;
+	max-height: 20px;
 }
-.templatebgNOT .templateicon {
-    padding-left: 3px;
-    padding-top: 0px;
-}
-.t1 {left: 14px;}
-.t2 {left: 75px;}
-.t3 {left: 138px;}
-.t4 {left: 200px;}
-.t5 {left: 262px;}
-.t6 {left: 344px;}
-img.templateicon { padding-top: 1px; }
+/* Pencil is enabled/disabled using 'display', and shown/hidden using 'visibility' */
+#tC_tWLS { display: block; }
+#tC_tWRD { display: block; }
+#tC_tEQT { display: block; }
 img.tC {
     position: absolute;
+    display: none;
+    visibility: hidden;
     top: 0px;
-    right: 7px;
+    right: -3px;
     width: 16px;
     height: 16px;
-    z-index: 105;
 	border: 1px solid orange;
 	border-radius: 6px;
 	box-shadow: 2px 2px 3px gray;
-    visibility: hidden;
     cursor: context-menu;
 }
 .templatelabel {
-    position: relative;
-    left: -5px;
-    top: 26px;
-    z-index: 101;
+    position: absolute;
+	bottom: 0;
     white-space: nowrap;
-    text-align: center;
     color: #666;
-    cursor: default;
-    background: transparent !important;
-    border: 0 !important;
+	width: 100%;
+	text-align: center;
     user-select: none;
-    -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
 }
@@ -195,7 +187,7 @@ img.tC {
 #helpbutton {
     position: absolute;
     top: 6px;
-    left: 820px;
+    left: 350px;
     z-index: 100;
 }
 #helppanel {
@@ -279,7 +271,7 @@ img.tC {
 #findbutton {
     position: absolute;
     top: 6px;
-    left: 350px;
+    left: 310px;
     z-index: 100;
 }
 .findresult { cursor: pointer; }
