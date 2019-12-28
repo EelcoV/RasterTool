@@ -37,6 +37,8 @@ See LICENSE.md
   <script src="../js/translation-nl.js"></script>
 #endif
 #endif
+<link rel="preload" href="../img/qm-hi.png" as="image">
+<link rel="preload" href="../img/find-hi.png" as="image">
 <script type="text/javascript" src="../js/rasterMain.js"></script>
 <script type="text/javascript" src="../js/rasterProject.js"></script>
 <script type="text/javascript" src="../js/rasterService.js"></script>  
@@ -84,11 +86,11 @@ See LICENSE.md
 #ifdef SERVER
 <div id="networkactivity" class="donotprint"></div>
 
-<div id="findbutton" class="donotprint"><img id="findimg" src="../img/find.png"></div>
-<div id="helpbutton" class="donotprint"><img id="helpimg" src="../img/qm-lo.png"></div>
+<div id="libraryactivator" class="ui-widget ui-button toolbaritem activator donotprint"><span>Library</span><span>...</span></div>
+<div id="optionsactivator" class="ui-widget ui-button toolbaritem activator donotprint"><span>Options</span><span>...</span></div>
 
-<div id="libraryactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Library</span><span id="libraryupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
-<div id="optionsactivator" class="activator ui-widget ui-state-default ui-button-text-only"><span>Options</span><span id="optionsupdown" style="float:right" class="ui-icon ui-icon-triangle-1-s"></span></div>
+<div id="findbutton" class="ui-button toolbaritem donotprint"></div>
+<div id="helpbutton" class="ui-button toolbaritem donotprint"></div>
 
 <div id="librarypanel" class="actpanel">
   <form id="libform">

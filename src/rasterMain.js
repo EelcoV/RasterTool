@@ -299,11 +299,6 @@ function initAllAndSetup() {
 	Preferences.settab(remembertab);
 	forceSelectVerticalTab(Preferences.tab);
 
-	$('#helpimg').on('mouseenter', function() {
-		$('#helpimg').attr('src','../img/qm-hi.png');
-	}).on('mouseleave', function() {
-		$('#helpimg').attr('src','../img/qm-lo.png');
-	});
 	$('#helptabs a').eq(0).html( _("Frequency") );
 	$('#helptabs a').eq(1).html( _("Impact") );
 	$('#helptabs a').eq(2).html( _("How to use") );
@@ -339,12 +334,12 @@ function initAllAndSetup() {
 			}
 		}
 	});
-	$('#helpbutton img').on('click',  function() {
+	$('#helpbutton').on('click',  function() {
 		$('#helppanel').dialog('open');
 	});
 
 #ifdef SERVER
-	$('#findbutton img').on('click', StartFind);
+	$('#findbutton').on('click', StartFind);
 
 	var flashTimer;
 	$(document).ajaxSend(function(){
