@@ -84,13 +84,23 @@ See LICENSE.md
 </div>
 
 #ifdef SERVER
-<div id="networkactivity" class="donotprint"></div>
-
-<div id="libraryactivator" class="ui-widget ui-button toolbaritem activator donotprint"><span>Library</span><span>...</span></div>
-<div id="optionsactivator" class="ui-widget ui-button toolbaritem activator donotprint"><span>Options</span><span>...</span></div>
-
-<div id="findbutton" class="ui-button toolbaritem donotprint"></div>
-<div id="helpbutton" class="ui-button toolbaritem donotprint"></div>
+<div id="toolbar" class="donotprint">
+	<div id="networkactivity"></div>
+	<div id="libraryactivator" class="ui-widget ui-button toolbaritem activator"><span>Library</span><span>...</span></div>
+	<div id="optionsactivator" class="ui-widget ui-button toolbaritem activator"><span>Options</span><span>...</span></div>
+	<div class="toolbarspacer"></div>
+	<div id="findbutton" class="ui-button toolbaritem"></div>
+	<div class="toolbarspacer"></div>
+	<div id="templates" class="ui-state-default toolbaritem"> <!-- Is filled in Project.load() --></div>
+	<div class="toolbarspacer"></div>
+	<div id="helpbutton" class="ui-button toolbaritem"></div>
+	#ifdef CLASSROOM
+	<div class="toolbarspacer"></div>
+	<div id="demo" class="ui-widget toolbaritem"></div>
+	<div class="toolbarspacer"></div>
+	#endif
+</div> <!-- toolbar -->
+<div id="currentProject" class="ui-widget projectname"></div>
 
 <div id="librarypanel" class="actpanel">
   <form id="libform">
@@ -178,8 +188,6 @@ See LICENSE.md
     </div>
 </div>
 #endif
-
-<div id="templates" class="ui-state-default"> <!-- Is filled in Project.load() --></div>
 
 <div id="helppanel">
     <div id="helptabs">
@@ -273,11 +281,6 @@ See LICENSE.md
     <input id="tEQTcopythreat" class="copybutton" type="button" value="Copy">
     <input id="tEQTpastethreat" class="pastebutton" type="button" value="Paste">
 </div>
-
-<div id="currentProject" class="donotprint projectname ui-widget"></div>
-#ifdef CLASSROOM
-<div id="demo" class="donotprint ui-widget"></div>
-#endif
 
 <div id="tabs">
     <ul>

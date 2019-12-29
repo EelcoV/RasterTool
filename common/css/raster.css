@@ -36,71 +36,37 @@ body {
     -webkit-user-select: none;
 }
 
-/* Vertical tabs */
-#tabs {padding: 0px; border-left: 0px;}
-.ui-tabs-nav {  z-index: 150; }
-.ui-tabs-vertical-sw > .ui-tabs-nav li { width: 9em; float: right; z-index: 150; }
-.longtab { width: 15.5em !important; }
-.rot-neg-90 {
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-    transform-origin: 0 0;
-    -ms-transform-origin: 0 0;
-    -moz-transform-origin: 0 0;
-    -webkit-transform-origin: 0 0;
-    -o-transform-origin:  0 0;
-}
-.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150; outline: none;}
-.longlink { width: 12.5em !important; }
-.tabcloseicon {margin-top:0.4em !important; cursor: pointer;}
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|         TOOLBAR         |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
-/* The content panes to each vertical tab */
-.workouter {position: absolute; left: 35px; top: 42px; margin: 0px; }
-.workinner {overflow: auto; border-radius: 4px; }
-.workbody h1 {margin-top: 0;}
 
-input.inplace_field, textarea.inplace_field {
-    font-size: 11px;
-    box-shadow: 0 0 0 4px white;
-    outline: 2px dotted grey;
-    -moz-outline-border: 4px;
-    border: 0;
-    z-index: 1100;
-    background: rgb(255,204,102);
+.toolbaritem {
+	display: inline-block;
+	margin-left: 6px;
+    min-width: 25px;
+	height: 25px;
+	border-radius: 3px;
+	padding: 2px;
 }
-.th_freq .inplace_form {position: relative; z-index:1100; left: -9px;}
-.th_impact .inplace_form {position: relative; z-index:1100; left: -9px;}
-.th_freq select {
-    margin-left: -7em !important;
+.toolbaritem img {
+	max-width: 25px;
+	max-height: 25px;
 }
-
-.ui-link { cursor: pointer; text-decoration: underline; }
-
-#currentProject {
-    color: #999;
-    font-size: 1.3em !important;
-    overflow: hidden;
-    position: absolute;
-    right: 8px;
-    text-align: right;
-    top: 10px;
-    white-space: nowrap;
-    width: 400px;
-    z-index: 99; /* Just below templates */
+.toolbarspacer {
+	display: inline-block;
+	width: 15px;
+	background: white;
 }
-#demo {
-	position: absolute;
-    top: 19px;
-    left: 880px;
-    color: #999;
-	font-style: italic;
-	z-index: 1;
+#toolbar {
+	background: white;
+	display: inline-block;
 }
 
 #networkactivity {
     position: absolute;
-    left: 57px;
-    top: 8px;
+    left: 10px;
+    top: 10px;
     width: 6px;
     height: 6px;
     z-index: 3999;
@@ -110,16 +76,38 @@ input.inplace_field, textarea.inplace_field {
 .activityyes {background: lightgreen; border: 1px solid grey;}
 .activityno  {background: white; border: 1px solid grey;}
 
+/* Toolbar text buttons */
+.activator {
+	padding: 6px 10px 2px;
+	font-size: 80% !important;
+	height: 21px;
+}
+#libraryactivator { padding-left: 10px; }
+
+#findbutton {
+	background-size: 85%;
+	background-repeat: no-repeat;
+	background-image: url(../img/find-lo.png);
+}
+#findbutton:hover {
+	background-image: url(../img/find-hi.png);
+}
+
+#helpbutton {
+	background-size: 85%;
+	background-repeat: no-repeat;
+	background-image: url(../img/qm-lo.png);
+}
+#helpbutton:hover {
+	background-image: url(../img/qm-hi.png);
+}
 
 /* Templates of the 5 node types, for dragging onto the workspace */
 #templates {
-    position: absolute;
-    left: 400px;
     top: 2px;
     height: 40px;
-    border-radius: 0 0 5px 5px;
-    padding: 0px 5px;
-    z-index: 100;
+    border-radius: 5px;
+    padding: 0px 7px;
 }
 .template:last-child {
 	margin-left: 10px;
@@ -134,6 +122,7 @@ input.inplace_field, textarea.inplace_field {
 .templateinner { /* So that we have a positioned DIV to layout against. */
 	position: relative;
 	width: 60px;
+	top: 2px;
 	left: 2px;
 	height: 40px;
 }
@@ -174,7 +163,7 @@ img.tC {
 }
 .templatelabel {
     position: absolute;
-	bottom: 0;
+	bottom: 1px;
     white-space: nowrap;
     color: #666;
 	width: 100%;
@@ -184,28 +173,91 @@ img.tC {
     -webkit-user-select: none;
 }
 
-.toolbaritem {
+#currentProject {
+    color: #999;
+    font-size: 1.3em !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
     position: absolute;
-    min-width: 25px;
-	height: 25px;
+    right: 8px;
+    text-align: right;
+    top: 10px;
+    white-space: nowrap;
+    width: 400px;
+    z-index: -1; /* below templates */
+}
+#demo {
+    color: #999;
+	font-style: italic;
+	background: white;
+}
+
+
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|       MAIN LAYOUT       |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+
+
+/* Vertical tabs */
+#tabs {
+	padding: 0px;
+	border: 0px;
+	top: 3px;
+}
+.ui-tabs-nav {  z-index: 150; }
+.ui-tabs-vertical-sw > .ui-tabs-nav li { width: 9em; float: right; z-index: 150; }
+.longtab { width: 15.5em !important; }
+.rot-neg-90 {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    transform-origin: 0 0;
+    -ms-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+    -o-transform-origin:  0 0;
+}
+.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150; outline: none;}
+.longlink { width: 12.5em !important; }
+.tabcloseicon {margin-top:0.4em !important; cursor: pointer;}
+
+/* The content panes to each vertical tab */
+.workouter {
+	position: absolute;
+	left: 35px;
+	top: 0px;
+	margin: 0px;
+	padding: 0 !important;
+}
+.workinner {
+	overflow: auto;
 	border-radius: 4px;
-	padding: 2px;
-    top: 6px;
-    z-index: 100;
 }
-.toolbaritem img {
-	max-width: 25px;
-	max-height: 25px;
+.workbody h1 {margin-top: 0;}
+
+
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|         DIALOGS         |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+
+
+input.inplace_field, textarea.inplace_field {
+    font-size: 11px;
+    box-shadow: 0 0 0 4px white;
+    outline: 2px dotted grey;
+    -moz-outline-border: 4px;
+    border: 0;
+    z-index: 1100;
+    background: rgb(255,204,102);
 }
-#helpbutton {
-    left: 350px;
-	background-size: 85%;
-	background-repeat: no-repeat;
-	background-image: url(../img/qm-lo.png);
+.th_freq .inplace_form {position: relative; z-index:1100; left: -9px;}
+.th_impact .inplace_form {position: relative; z-index:1100; left: -9px;}
+.th_freq select {
+    margin-left: -7em !important;
 }
-#helpbutton:hover {
-	background-image: url(../img/qm-hi.png);
-}
+
+.ui-link { cursor: pointer; text-decoration: underline; }
+
+
 #helppanel {
     width: auto;
 }
@@ -284,15 +336,6 @@ img.tC {
 
 
 
-#findbutton {
-	left: 310px;
-	background-size: 85%;
-	background-repeat: no-repeat;
-	background-image: url(../img/find-lo.png);
-}
-#findbutton:hover {
-	background-image: url(../img/find-hi.png);
-}
 .findresult { cursor: pointer; }
 .findresult:hover { text-decoration: underline; }
 #field_found {
@@ -306,30 +349,9 @@ img.tC {
     width: 376px;
     margin-bottom: 5px;
 }
-#helppanel {
-    width: auto;
-}
 ::-webkit-input-placeholder { font-style: italic; }
 ::-moz-placeholder { font-style: italic; }
 :-ms-input-placeholder { font-style: italic; }
-
-
-/* Hoverbuttons to activate the three panels */
-.activator {
-    width: 88px;
-	padding-top: 6px;
-	height: 21px;
-	font-size: 80% !important;
-	user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-}
-.activator span {
-	padding-top: 2px;
-}
-#libraryactivator { left: 55px; padding-left: 10px; }
-#optionsactivator { left: 175px; }
 
 
 /* Common settings for all panels */
@@ -1092,31 +1114,6 @@ for checklists and threat evaluations.
 .lineimg {
 	width: 12px;
 	height: 25px;
-}
-
-.clusternodelist {
-/*    height: 450px; is now set in SizeDOMElements() */
-    margin-top: 5px;
-
-    overflow: auto;
-    background:
-        linear-gradient(white 30%, rgba(255,255,255,0)),
-        linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
-        radial-gradient(50% 0, farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)),
-        radial-gradient(50% 100%,farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
-    background:
-        linear-gradient(white 30%, rgba(255,255,255,0)),
-        linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
-/*        radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
-        radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
-*/
-        linear-gradient(to bottom, rgba(90,0,0,.8), rgba(50,0,0,.2) 2px, rgba(0,0,0,0)),
-        linear-gradient(to top, rgba(90,0,0,.8), rgba(50,0,0,.2) 2px, rgba(0,0,0,0)) 0 100%;
-    background-repeat: no-repeat;
-    background-size: 100% 40px, 100% 40px, 740px 15px, 740px 15px;
-
-    /* Opera doesn't support this in the shorthand */
-    background-attachment: local, local, scroll, scroll;
 }
 
 .tlist {

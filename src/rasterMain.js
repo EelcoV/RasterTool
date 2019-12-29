@@ -909,7 +909,6 @@ function modifyCSS(selector,property,newvalue) {
 function SizeDOMElements() {
 	var ww = $(window).width();
 	var wh = $(window).height();
-
 	// Overall browser window / DOM body
 	$('#tabs').width(ww-7);
 	$('#tabs').height(wh-7);
@@ -932,14 +931,11 @@ function SizeDOMElements() {
 	$('.workbody').height(wh-50);
 #else
 	$('.workbody').height(wh-8);
-	// Center the templates
-	var tl = ww/2-200;
-	if (tl<60) tl=60;
-	$('#templates').css('left',tl+'px');
+//	// Center the templates
+//	var tl = ww/2-200;
+//	if (tl<60) tl=60;
+//	$('#templates').css('left',tl+'px');
 #endif
-	$('.workouter').css('padding','0px');
-
-	modifyCSS('.clusternodelist', 'height', (wh-250) + 'px');
 
 	$('#servaddbuttondia').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('.tabs-bottom > .ui-tabs-nav').width(ww-82);
