@@ -90,16 +90,13 @@ See LICENSE.md
 	<div id="optionsactivator" class="ui-widget ui-button toolbaritem activator"><span>Options</span><span>...</span></div>
 	<div class="toolbarspacer"></div>
 	<div id="findbutton" class="ui-button toolbaritem"></div>
+	<div id="helpbutton" class="ui-button toolbaritem"></div>
 	<div class="toolbarspacer"></div>
 	<div id="templates" class="ui-state-default toolbaritem"> <!-- Is filled in Project.load() --></div>
-	<div class="toolbarspacer"></div>
-	<div id="helpbutton" class="ui-button toolbaritem"></div>
-	#ifdef CLASSROOM
-	<div class="toolbarspacer"></div>
-	<div id="demo" class="ui-widget toolbaritem"></div>
-	<div class="toolbarspacer"></div>
-	#endif
 </div> <!-- toolbar -->
+#ifdef CLASSROOM
+<div id="demo" class="ui-widget"></div>
+#endif
 <div id="currentProject" class="ui-widget projectname"></div>
 
 <div id="librarypanel" class="actpanel">

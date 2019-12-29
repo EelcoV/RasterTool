@@ -141,7 +141,6 @@ function initAllAndSetup() {
 	$('#currentProject').hide();
 	$('#helpbutton').hide();
 	$('.workouter').css('top', '0px');
-	$('#templates').removeClass('ui-state-default').css('background','rgba(200,200,200,0.8)');
 
 	// PDF print options dialog
 	$('#pdf_orientation span').html(_("Orientation:"));

@@ -43,11 +43,16 @@ body {
 
 .toolbaritem {
 	display: inline-block;
+	vertical-align: top;
 	margin-left: 6px;
     min-width: 25px;
 	height: 25px;
 	border-radius: 3px;
 	padding: 2px;
+	vertical-align: top;
+}
+.toolbaritem.ui-button {
+	margin-top: 4px;
 }
 .toolbaritem img {
 	max-width: 25px;
@@ -62,6 +67,7 @@ body {
 	background: white;
 	display: inline-block;
 	margin-bottom: 2px;
+	height: 42px;
 }
 
 #networkactivity {
@@ -105,7 +111,6 @@ body {
 
 /* Templates of the 5 node types, for dragging onto the workspace */
 #templates {
-    top: 2px;
     height: 40px;
     border-radius: 5px;
     padding: 0px 7px;
@@ -185,20 +190,23 @@ img.tC {
 }
 
 #currentProject {
+    position: absolute;
+    right: 0px;
     color: #999;
     font-size: 1.3em !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    position: absolute;
-    right: 8px;
-    text-align: right;
-    top: 10px;
     white-space: nowrap;
     width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+    top: 10px;
     z-index: -1; /* below templates */
 }
 #demo {
-    color: #999;
+	position: fixed;
+	top: 0;
+	right: 2px;
+	color: #999;
 	font-style: italic;
 	background: white;
 }
