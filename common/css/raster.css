@@ -61,6 +61,7 @@ body {
 #toolbar {
 	background: white;
 	display: inline-block;
+	margin-bottom: 2px;
 }
 
 #networkactivity {
@@ -108,6 +109,16 @@ body {
     height: 40px;
     border-radius: 5px;
     padding: 0px 7px;
+}
+/* In the standalone version, templates are shown using #templates.floatingtoolbar */
+.floatingtoolbar {
+	position: absolute;
+	z-index: 100;
+	background: lightgray;
+	border-radius: 0px 0px 2px 2px !important;
+	left: 50%;
+	transform: translateX(-50%);
+	-webkit-transform: translateX(-50%);
 }
 .template:last-child {
 	margin-left: 10px;
@@ -202,7 +213,6 @@ img.tC {
 #tabs {
 	padding: 0px;
 	border: 0px;
-	top: 3px;
 }
 .ui-tabs-nav {  z-index: 150; }
 .ui-tabs-vertical-sw > .ui-tabs-nav li { width: 9em; float: right; z-index: 150; }
@@ -582,8 +592,8 @@ div.th_remark {
 	padding: 0 0 0 10px;
     width: 809px; /* width of .ccfaccordion, plus overhang left and right */
 	position: fixed;
-	top: 45px;
 	left: 43px;
+	top: auto;
 	height: 65px;
 	z-index: 98;
 }

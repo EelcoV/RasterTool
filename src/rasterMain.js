@@ -142,7 +142,6 @@ function initAllAndSetup() {
 	$('#helpbutton').hide();
 	$('.workouter').css('top', '0px');
 	$('#templates').removeClass('ui-state-default').css('background','rgba(200,200,200,0.8)');
-	modifyCSS('.displayoptsarea','top','3px');
 
 	// PDF print options dialog
 	$('#pdf_orientation span').html(_("Orientation:"));
@@ -838,7 +837,15 @@ function _(s) {
  *  mylang('ES') --> undefined
  */
 function mylang(obj) {
+#ifdef SERVER
 	var lang = $.localise.defaultLanguage.toUpperCase();
+#else
+	var lang = 'EN'; // default
+#ifdef LANG_NL
+	lang = 'NL';
+#endif
+#endif
+
 	if (obj[lang]) {
 		return obj[lang];
 	} else {
@@ -884,24 +891,24 @@ function loadDefaultProject() {
 	s.paintall();
 }
 
-function modifyCSS(selector,property,newvalue) {
-	/* Find a CSS-rule for the given selector, then set the rule
-	 * for property to newvalue.
-	 */
-	var css=document.getElementById('maincssfile').sheet;
-	var rule=null;
-	for (var i=0; i<css.cssRules.length; i++) {
-		if (css.cssRules[i].selectorText==selector) {
-			rule = css.cssRules[i];
-			break;
-		}
-	}
-	if (!rule) {
-		bugreport('cannot locate css rule for '+selector,'modifyCSS');
-	} else {
-		rule.style[property] = newvalue;
-	}
-}
+//function modifyCSS(selector,property,newvalue) {
+//	/* Find a CSS-rule for the given selector, then set the rule
+//	 * for property to newvalue.
+//	 */
+//	var css=document.getElementById('maincssfile').sheet;
+//	var rule=null;
+//	for (var i=0; i<css.cssRules.length; i++) {
+//		if (css.cssRules[i].selectorText==selector) {
+//			rule = css.cssRules[i];
+//			break;
+//		}
+//	}
+//	if (!rule) {
+//		bugreport('cannot locate css rule for '+selector,'modifyCSS');
+//	} else {
+//		rule.style[property] = newvalue;
+//	}
+//}
 
 /* SizeDOMElements()
  * Set the size of various containers, based on the size of the browser window.
@@ -931,10 +938,6 @@ function SizeDOMElements() {
 	$('.workbody').height(wh-50);
 #else
 	$('.workbody').height(wh-8);
-//	// Center the templates
-//	var tl = ww/2-200;
-//	if (tl<60) tl=60;
-//	$('#templates').css('left',tl+'px');
 #endif
 
 	$('#servaddbuttondia').removeClass('ui-corner-all').addClass('ui-corner-bottom');

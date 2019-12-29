@@ -159,6 +159,8 @@ See LICENSE.md
 #endif
 
 #ifdef STANDALONE
+<div id="templates" class="floatingtoolbar"> <!-- Is filled in Project.load() --></div>
+
 <div id="pdfoptions">
     <div id="pdf_orientation" class="controlgroup">
         <span class="pdflabel ui-widget ui-state-default">Orientation:</span>

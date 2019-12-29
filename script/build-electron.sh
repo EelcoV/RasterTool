@@ -29,7 +29,7 @@ CreateAppVersion()
 	do
 		destfile=$BUILDDIR/js/`basename $srcfile`
 		if [ $srcfile -nt $destfile ]; then
-			$PREPROCESS -DSTANDALONE $srcfile > $destfile
+			$PREPROCESS -DLANG_$LANG -DSTANDALONE $srcfile > $destfile
 			if [ -n "$ESLINT" ]; then
 				# Check whether the sources are correct, and correctly preprocessed
 				$ESLINT --config script/eslintrc --format script/eslint-xcode-format.js "$destfile" || { rm "$destfile";exit 1; }

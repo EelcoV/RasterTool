@@ -94,6 +94,7 @@ var Project = function(id,asstub) {
 	$.ajax({
 		url: '../img/iconset/'+this.iconset+'/iconset.json',
 		async: false,
+		dataType: 'json',
 		success: function(data) {
 			p.icondata.setName = data.setName;
 			p.icondata.setDescription = mylang(data.setDescription);
