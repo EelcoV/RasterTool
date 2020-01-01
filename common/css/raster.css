@@ -149,6 +149,7 @@ body {
     border-radius: 3px;
     background: #ccccff;
     cursor: move;
+    z-index: 100;
 }
 img.templateicon {
 	position: relative;
