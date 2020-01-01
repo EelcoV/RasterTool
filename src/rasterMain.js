@@ -1007,7 +1007,6 @@ function removetransientwindows(/*evt*/) {
 	$('#nodemenu').hide();
 	$('#selectmenu').hide();
 	$('#ccfmenu').hide();
-	$('.popupsubmenu').hide();
 }
 
 function removetransientwindowsanddialogs(/*evt*/) {
@@ -2767,29 +2766,28 @@ function initTabDiagrams() {
 	$('.copybutton').val( _("Copy"));
 	$('.pastebutton').val( _("Paste"));
 
-	$('.popupmenuitem').button();
-	$('.popupmenuitem').removeClass('ui-corner-all');
-	$('#mi_th').html( _("Vulnerabilities") );
-	$('#mi_ct span').html( _("Change type") );
-	$('#mi_cttWLS').html( _("Wireless link") );
-	$('#mi_cttWRD').html( _("Wired link") );
-	$('#mi_cttEQT').html( _("Equipment") );
-	$('#mi_cttACT').html( _("Actor") );
-	$('#mi_cttUNK').html( _("Unknown link") );
-	$('#mi_cl span').html( _("Class") );
-	$('#mi_rc').html( _("Rename class") );
-	$('#mi_sx').html( _("Rename suffix") );
+	$('#mi_th span.lc:first').html( _("Vulnerabilities") );
+	$('#mi_ct span.lc:first').html( _("Change type") );
+	$('#mi_cttWLS span.lc:first').html( _("Wireless link") );
+	$('#mi_cttWRD span.lc:first').html( _("Wired link") );
+	$('#mi_cttEQT span.lc:first').html( _("Equipment") );
+	$('#mi_cttACT span.lc:first').html( _("Actor") );
+	$('#mi_cttUNK span.lc:first').html( _("Unknown link") );
+	$('#mi_cl span.lc:first').html( _("Class") );
+	$('#mi_rc span.lc:first').html( _("Rename class") );
+	$('#mi_sx span.lc:first').html( _("Rename suffix") );
 	// Menu item Similar/Identical is handled inside Nodecluster:_showpopupmenu()
-	$('#mi_du').html( _("Duplicate") );
-	$('#mi_de').html( _("Delete") );
+	$('#mi_du span.lc:first').html( _("Duplicate") );
+	$('#mi_de span.lc:first').html( _("Delete") );
+	$('#mi_ccnone  span.lc:first').html( _("No label") );
+	$('#mi_ccedit  span.lc:first').html( _("Edit labels ...") );
+	$('#nodemenu').menu().hide();
 
-	$('#mi_sd').html( _("Delete selection") );
-	$('#mi_sc span').html( _("Label") );
-
-	$('#mi_ccnone .plainlabel').html( _("No label") );
-	$('#mi_ccedit .plainlabel').html( _("Edit labels ...") );
-	$('#mi_scnone .plainlabel').html( _("No label") );
-	$('#mi_scedit .plainlabel').html( _("Edit labels ...") );
+	$('#mi_sd span.lc:first').html( _("Delete selection") );
+	$('#mi_sc span.lc:first').html( _("Label") );
+	$('#mi_scnone span.lc:first').html( _("No label") );
+	$('#mi_scedit span.lc:first').html( _("Edit labels ...") );
+	$('#selectmenu').menu().hide();
 
 	$('#nodereport').dialog({
 		autoOpen: false,
@@ -2826,76 +2824,46 @@ function initTabDiagrams() {
 	});
 
 	$('#mi_th').on('mouseup', function(e) {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		if (rn.type=='tACT' || rn.type=='tNOT') {
 			return;
 		}
 		displayThreatsDialog(rn.component,e);
 	});
-	$('#mi_ct').on('mouseenter', function(){
-		clearTimeout(menuTimerct);
-		if (!$('#mi_ct').hasClass("popupmenuitemdisabled")) {
-			$('#mi_ctsm').show();
-			$('#mi_clsm').hide();
-		}
-	}).on('mouseleave',function(){
-		menuTimerct = setTimeout( function() {$('#mi_ctsm').hide();}, 150);
-	});
-	$('#mi_ctsm').on('mouseenter',function(){
-		clearTimeout(menuTimerct);
-		$('#mi_ctsm').show();
-	}).on('mouseleave',function(){
-		menuTimerct = setTimeout( function() {$('#mi_ctsm').hide();}, 150);
-	});
 	$('#mi_cttWLS').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		rn.changetype('tWLS');
 		transactionCompleted("Node change type tWLS");
 	});
 	$('#mi_cttWRD').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		rn.changetype('tWRD');
 		transactionCompleted("Node change type tWRD");
 	});
 	$('#mi_cttEQT').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		rn.changetype('tEQT');
 		transactionCompleted("Node change type tEQT");
 	});
 	$('#mi_cttACT').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		rn.changetype('tACT');
 		transactionCompleted("Node change type tACT");
 	});
 	$('#mi_cttUNK').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		rn.changetype('tUNK');
 		transactionCompleted("Node change type tUNK");
 	});
-	$('#mi_cl').on('mouseenter',function(){
-		clearTimeout(menuTimercl);
-		if (!$('#mi_cl').hasClass("popupmenuitemdisabled")) {
-			$('#mi_ctsm').hide();
-			$('#mi_clsm').show();
-		}
-	}).on('mouseleave',function(){
-		menuTimercl = setTimeout( function() {$('#mi_clsm').hide();}, 150);
-	});
-	$('#mi_clsm').on('mouseenter',function(){
-		clearTimeout(menuTimercl);
-		$('#mi_clsm').show();
-	}).on('mouseleave',function(){
-		menuTimercl = setTimeout( function() {$('#mi_clsm').hide();}, 150);
-	});
 	$('#mi_rc').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		// Actors and notes don't have components
 		if (rn.component==null)  return;
 
@@ -2946,8 +2914,8 @@ function initTabDiagrams() {
 		});
 	});
 	$('#mi_sx').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		// Actors and notes don't have components
 		if (rn.component==null)  return;
 
@@ -2997,8 +2965,8 @@ function initTabDiagrams() {
 		});
 	});
 	$('#mi_sm').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		// Actors and notes don't have components
 		if (rn.component==null)  return;
 
@@ -3007,8 +2975,8 @@ function initTabDiagrams() {
 		transactionCompleted("Component class single/multiple");
 	});
 	$('#mi_du').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		if (rn.component!=null) {
 			var cm = Component.get(rn.component);
 			if (cm.single) {
@@ -3034,31 +3002,10 @@ function initTabDiagrams() {
 		nn.setlabel(rn.color);
 		transactionCompleted("Node duplicate");
 	});
-	$('#mi_cc').on('mouseenter',function(){
-		clearTimeout(menuTimercc);
-		// Remove any previous custom style
-		$('#mi_ccsm').attr('style','');
-		$('#mi_ccsm').show();
-		var limit = $('#diagrams'+Service.cid).offset().top + $('#diagrams'+Service.cid).height();
-		var o = $('#mi_ccsm').offset();
-		// Make sure that the submenu is fully visible
-		if (o.top + $('#mi_ccsm').height() > limit) {
-			o.top = limit - $('#mi_ccsm').height();
-			$('#mi_ccsm').offset(o);
-		}
-	}).on('mouseleave',function(){
-		menuTimercc = setTimeout( function() {$('#mi_ccsm').hide();}, 150);
-	});
-	$('#mi_ccsm').on('mouseenter',function(){
-		clearTimeout(menuTimercc);
-		$('#mi_ccsm').show();
-	}).on('mouseleave',function(){
-		menuTimercc = setTimeout( function() {$('#mi_ccsm').hide();}, 150);
-	});
 	function colorfunc(c) {
 		return function() {
-			$('#nodemenu').css('display', 'none');
-			var rn = Node.get( Node.MenuNode );
+			$('#nodemenu').hide();
+			var rn = Node.get( $('#nodemenu').data('menunode') );
 			rn.setlabel(c);
 			transactionCompleted("Node change color "+c);
 		};
@@ -3074,8 +3021,8 @@ function initTabDiagrams() {
 	$('#mi_ccgrey').on('mouseup', colorfunc('grey') );
 	$('#mi_ccedit').on('mouseup', showLabelEditForm );
 	$('#mi_de').on('mouseup', function() {
-		$('#nodemenu').css('display', 'none');
-		var rn = Node.get( Node.MenuNode );
+		$('#nodemenu').hide();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
 		rasterConfirm(_("Delete element node?"),
 			_("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
 			_("Delete"),_("Cancel"),
@@ -3123,24 +3070,9 @@ function initTabDiagrams() {
 	});
 	$('#mi_sc').on('mouseenter',function(){
 		populateLabelMenu();
-		// Remove any previous custom style
-		$('#mi_scsm').attr('style','');
-		$('#mi_scsm').show();
-		var limit = $('#diagrams'+Service.cid).offset().top + $('#diagrams'+Service.cid).height();
-		var o = $('#mi_scsm').offset();
-		// Make sure that the submenu is fully visible
-		if (o.top + $('#mi_scsm').height() > limit) {
-			o.top = limit - $('#mi_scsm').height();
-			$('#mi_scsm').offset(o);
-		}
-	}).on('mouseleave',function(){
-		$('#mi_scsm').hide();
 	});
 	$('#mi_scsm').on('mouseenter',function(){
 		populateLabelMenu();
-		$('#mi_scsm').show();
-	}).on('mouseleave',function(){
-		$('#mi_scsm').hide();
 	});
 	function selcolorfunc(c) {
 		return function() {
@@ -3268,28 +3200,28 @@ function initChecklistsDialog(type) {
 
 function populateLabelMenu() {
 	var p = Project.get(Project.cid);
-	$('#mi_ccred .labeltext').html( '"' + H(p.labels[0]) + '"' );
-	$('#mi_ccorange .labeltext').html( '"' + H(p.labels[1]) + '"' );
-	$('#mi_ccyellow .labeltext').html( '"' + H(p.labels[2]) + '"' );
-	$('#mi_ccgreen .labeltext').html( '"' + H(p.labels[3]) + '"' );
-	$('#mi_ccblue .labeltext').html( '"' + H(p.labels[4]) + '"' );
-	$('#mi_ccpink .labeltext').html( '"' + H(p.labels[5]) + '"' );
-	$('#mi_ccpurple .labeltext').html( '"' + H(p.labels[6]) + '"' );
-	$('#mi_ccgrey .labeltext').html( '"' + H(p.labels[7]) + '"' );
+	$('#mi_ccred span.lc:first').html( '"' + H(p.labels[0]) + '"' );
+	$('#mi_ccorange span.lc:first').html( '"' + H(p.labels[1]) + '"' );
+	$('#mi_ccyellow span.lc:first').html( '"' + H(p.labels[2]) + '"' );
+	$('#mi_ccgreen span.lc:first').html( '"' + H(p.labels[3]) + '"' );
+	$('#mi_ccblue span.lc:first').html( '"' + H(p.labels[4]) + '"' );
+	$('#mi_ccpink span.lc:first').html( '"' + H(p.labels[5]) + '"' );
+	$('#mi_ccpurple span.lc:first').html( '"' + H(p.labels[6]) + '"' );
+	$('#mi_ccgrey span.lc:first').html( '"' + H(p.labels[7]) + '"' );
 
-	$('#mi_scred .labeltext').html( '"' + H(p.labels[0]) + '"' );
-	$('#mi_scorange .labeltext').html( '"' + H(p.labels[1]) + '"' );
-	$('#mi_scyellow .labeltext').html( '"' + H(p.labels[2]) + '"' );
-	$('#mi_scgreen .labeltext').html( '"' + H(p.labels[3]) + '"' );
-	$('#mi_scblue .labeltext').html( '"' + H(p.labels[4]) + '"' );
-	$('#mi_scpink .labeltext').html( '"' + H(p.labels[5]) + '"' );
-	$('#mi_scpurple .labeltext').html( '"' + H(p.labels[6]) + '"' );
-	$('#mi_scgrey .labeltext').html( '"' + H(p.labels[7]) + '"' );
+	$('#mi_scred span.lc:first').html( '"' + H(p.labels[0]) + '"' );
+	$('#mi_scorange span.lc:first').html( '"' + H(p.labels[1]) + '"' );
+	$('#mi_scyellow span.lc:first').html( '"' + H(p.labels[2]) + '"' );
+	$('#mi_scgreen span.lc:first').html( '"' + H(p.labels[3]) + '"' );
+	$('#mi_scblue span.lc:first').html( '"' + H(p.labels[4]) + '"' );
+	$('#mi_scpink span.lc:first').html( '"' + H(p.labels[5]) + '"' );
+	$('#mi_scpurple span.lc:first').html( '"' + H(p.labels[6]) + '"' );
+	$('#mi_scgrey span.lc:first').html( '"' + H(p.labels[7]) + '"' );
 }
 
 function showLabelEditForm() {
 	var p = Project.get(Project.cid);
-	$('#nodemenu').css('display', 'none');
+	$('#nodemenu').hide();
 	var dialog = $('<div></div>');
 	var snippet ='\
 		<form id="form_editlabels">\
@@ -3866,8 +3798,9 @@ function initTabCCFs() {
 	CurrentCluster = null;
 
 	// Localise user interface
-	$('#mi_ccfc').html( _("Create new cluster") );
-	$('#mi_ccfm span').html( _("Move to") );
+	$('#mi_ccfc span.lc:first').html( _("Create new cluster") );
+	$('#mi_ccfm span.lc:first').html( _("Move to") );
+	$('#ccfmenu').menu().hide();
 
 	// Event handlers for mouse actions
 	$('#ccfs_details').on('click', '.childnode', clickSelectHandler);
@@ -3879,30 +3812,7 @@ function initTabCCFs() {
 
 	// Event handlers for menu items
 	$('#mi_ccfc').on('click', createClusterHandler);
-	$('#mi_ccfmsm').on('click', '.ui-button', moveToClusterHandler);
-
-	// Event handlers for showing/hiding menus
-	$('#mi_ccfm').on('mouseenter',function(){
-		clearTimeout(ccfmsm_timer);
-		$('#mi_ccfmsm').show().position({
-			my: 'left top',
-			at: 'right center',
-			of: '#mi_ccfm'
-		});
-	}).on('mouseleave',function(){
-		ccfmsm_timer = setTimeout(function(){
-			$('#mi_ccfmsm').hide();
-		},150);
-	});
-	$('#mi_ccfmsm').on('mouseenter',function(){
-		populateLabelMenu();
-		clearTimeout(ccfmsm_timer);
-		$('#mi_ccfmsm').show();
-	}).on('mouseleave',function(){
-		ccfmsm_timer = setTimeout(function(){
-			$('#mi_ccfmsm').hide();
-		},150);
-	});
+	$('#mi_ccfmsm').on('click', '.ui-menu-item', moveToClusterHandler);
 }
 
 // To be able to extend the selection.
@@ -4022,20 +3932,21 @@ function contextMenuHandler(ev) {
 	MenuCluster = cluster.id;
 	$('#ccfmenu').css('left', ev.clientX+2);
 	$('#ccfmenu').css('top', ev.clientY-5);
-	$('.popupsubmenu').hide();
 
 	if (isNaN(nid)) {
 		// Popup menu called on a cluster
 		// Cannot move to the parent (because that's where it is already), nor can it be
 		// moved into any of its own descendants. And it cannot be moved onto itself.
 		populateClusterSubmenu(cluster, cluster.allclusters().concat(cluster.parentcluster));
-		$('#mi_ccfc').html( _("Remove cluster") );
-		$('#mi_ccfc').removeClass('popupmenuitemdisabled');
+		$('#mi_ccfc span.lc:first').html( _("Remove cluster") );
+		$('#mi_ccfc div').append('<span class="ui-icon ui-icon-trash"></span>');
+		$('#mi_ccfc').removeClass('ui-state-disabled');
 		LastSelectedNode = null;
 	} else {
 		// Popup menu called on node
 		populateClusterSubmenu(cluster,[]);
-		$('#mi_ccfc').html( _("Create new cluster") );
+		$('#mi_ccfc span.lc:first').html( _("Create new cluster") );
+		$('#mi_ccfc span.ui-icon').remove();
 		LastSelectedNode = this.id;
 		// Remove the selection unless the current node is also selected
 		if (!$(this).hasClass('li_selected')) {
@@ -4044,13 +3955,13 @@ function contextMenuHandler(ev) {
 		$(this).addClass('li_selected');
 
 		if ($('#ccfs_details .li_selected').length<2) {
-			$('#mi_ccfc').addClass('popupmenuitemdisabled');
+			$('#mi_ccfc').addClass('ui-state-disabled');
 		} else {
-			$('#mi_ccfc').removeClass('popupmenuitemdisabled');
+			$('#mi_ccfc').removeClass('ui-state-disabled');
 		}
 	}
 
-	$('#ccfmenu').css('display', 'block');
+	$('#ccfmenu').show();
 }
 
 function populateClusterSubmenu(cluster,exceptions) {
@@ -4059,9 +3970,9 @@ function populateClusterSubmenu(cluster,exceptions) {
 	/* Add all sub(sub)-clusters as submenuitems */
 	for (var i=0; i<allclusters.length; i++) {
 		var cl = NodeCluster.get(allclusters[i]);
-		snippet += '<div id="ccf_msm_CI_" class="popupmenuitem popupsubmenuitem _DIS_"><span class="labeltextw">_CN_</span></div>\n';
+		snippet += '<li id="ccf_msm_CI_" class="_DIS_"><div><span class="lc">_CN_</span></div></li>';
 		snippet = snippet.replace(/_CI_/, cl.id);
-		snippet = snippet.replace(/_DIS_/, (exceptions.indexOf(cl.id)==-1 ? '' : 'popupmenuitemdisabled'));
+		snippet = snippet.replace(/_DIS_/, (exceptions.indexOf(cl.id)==-1 ? '' : 'ui-state-disabled'));
 		if (i==0) {
 			/* root cluster */
 			snippet = snippet.replace(/_CN_/, cl.title + ' ' + _("(root)"));
@@ -4070,14 +3981,13 @@ function populateClusterSubmenu(cluster,exceptions) {
 		}
 	}
 	$('#mi_ccfmsm').html(snippet);
-	$('#mi_ccfmsm .popupmenuitem').button();
-	$('#mi_ccfmsm .popupmenuitem').removeClass('ui-corner-all');
+	$('#ccfmenu').menu("refresh");
 }
 
 function createClusterHandler(/*event*/) {
 	var cluster = NodeCluster.get(MenuCluster);
 
-	$('#ccfmenu').css('display', 'none');
+	$('#ccfmenu').hide();
 	if (LastSelectedNode) {
 		// Called on a node: create a new cluster from selection
 		var nc = new NodeCluster(cluster.type);
@@ -4129,7 +4039,7 @@ function moveToClusterHandler(/*event*/) {
 	// Cluster indicated by the submenu item
 	var to_cluster = NodeCluster.get(nid2id(this.id));
 
-	$('#ccfmenu').css('display', 'none');
+	$('#ccfmenu').hide();
 	if (LastSelectedNode) {
 		// Called on a node: move selection to cluster
 		moveSelectionToCluster(to_cluster);

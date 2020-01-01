@@ -86,8 +86,8 @@ See LICENSE.md
 #ifdef SERVER
 <div id="toolbar" class="donotprint">
 	<div id="networkactivity"></div>
-	<div id="libraryactivator" class="ui-widget ui-button toolbaritem activator"><span>Library</span><span>...</span></div>
-	<div id="optionsactivator" class="ui-widget ui-button toolbaritem activator"><span>Options</span><span>...</span></div>
+	<div id="libraryactivator" class="ui-widget ui-button toolbaritem activator"><span class="lc">Library</span><span>...</span></div>
+	<div id="optionsactivator" class="ui-widget ui-button toolbaritem activator"><span class="lc">Options</span><span>...</span></div>
 	<div class="toolbarspacer"></div>
 	<div id="findbutton" class="ui-button toolbaritem"></div>
 	<div id="helpbutton" class="ui-button toolbaritem"></div>
@@ -199,60 +199,65 @@ See LICENSE.md
     </div>
 </div>
 
-<div id="nodemenu" class="popupmenu">
-    <div id="mi_th" class="popupmenuitem">Vulnerabilities</div>
-    <div id="mi_ct" class="popupmenuitem"><span>Change type</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
-     <div id="mi_ctsm" class="popupsubmenu">
-      <div id="mi_cttWLS" class="popupmenuitem popupsubmenuitem">Wireless link</div>
-      <div id="mi_cttWRD" class="popupmenuitem popupsubmenuitem">Wired link</div>
-      <div id="mi_cttEQT" class="popupmenuitem popupsubmenuitem">Equipment</div>
-      <div id="mi_cttACT" class="popupmenuitem popupsubmenuitem">Actor</div>
-      <div id="mi_cttUNK" class="popupmenuitem popupsubmenuitem">Unknown link</div>
-     </div>
-    <div id="mi_cl" class="popupmenuitem"><span>Class</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
-     <div id="mi_clsm" class="popupsubmenu">
-      <div id="mi_rc" class="popupmenuitem popupsubmenuitem">Rename class</div>
-      <div id="mi_sx" class="popupmenuitem popupsubmenuitem">Rename suffix</div>
-      <div id="mi_sm" class="popupmenuitem popupsubmenuitem">Similar/Identical</div>
-     </div>
-    <div id="mi_du" class="popupmenuitem">Duplicate</div>
-    <div id="mi_cc" class="popupmenuitem"><div id="mlabel" class="labeltext">Label</div><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
-     <div id="mi_ccsm" class="popupsubmenu">
-      <div id="mi_ccnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span class="plainlabel">No label</span></div>
-      <div id="mi_ccred" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bred"></div><div class="labeltext">Red</div></div>
-      <div id="mi_ccorange" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Borange"></div><div class="labeltext">Orange</div></div>
-      <div id="mi_ccyellow" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Byellow"></div><span class="labeltext">Yellow</span></div>
-      <div id="mi_ccgreen" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgreen"></div><span class="labeltext">Green</span></div>
-      <div id="mi_ccblue" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bblue"></div><span class="labeltext">Blue</span></div>
-      <div id="mi_ccpink" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpink"></div><span class="labeltext">Pink</span></div>
-      <div id="mi_ccpurple" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpurple"></div><span class="labeltext">Purple</span></div>
-      <div id="mi_ccgrey" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgrey"></div><span class="labeltext">Grey</span></div>
-      <div id="mi_ccedit" class="popupmenuitem popupsubmenuitem labelmenuitem"><span class="plainlabel">Edit labels ...</span></div>
-     </div>
-    <div id="mi_de" class="popupmenuitem">Delete</div>
-</div>
-<div id="selectmenu" class="popupmenu">
-    <div id="mi_sd" class="popupmenuitem">Delete selection</div>
-    <div id="mi_sc" class="popupmenuitem"><span>Label</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
-     <div id="mi_scsm" class="popupsubmenu">
-      <div id="mi_scnone" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span class="plainlabel">No label</span></div>
-      <div id="mi_scred" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bred"></div><div class="labeltext">Red</div></div>
-      <div id="mi_scorange" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Borange"></div><div class="labeltext">Orange</div></div>
-      <div id="mi_scyellow" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Byellow"></div><span class="labeltext">Yellow</span></div>
-      <div id="mi_scgreen" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgreen"></div><span class="labeltext">Green</span></div>
-      <div id="mi_scblue" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bblue"></div><span class="labeltext">Blue</span></div>
-      <div id="mi_scpink" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpink"></div><span class="labeltext">Pink</span></div>
-      <div id="mi_scpurple" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bpurple"></div><span class="labeltext">Purple</span></div>
-      <div id="mi_scgrey" class="popupmenuitem popupsubmenuitem labelmenuitem"><div class="smallblock Bgrey"></div><span class="labeltext">Grey</span></div>
-      <div id="mi_scedit" class="popupmenuitem popupsubmenuitem labelmenuitem"><span class="plainlabel">Edit labels ...</span></div>
-     </div>
-</div>
-<div id="ccfmenu" class="popupmenu">
-    <div id="mi_ccfc" class="popupmenuitem">Create new cluster</div>
-    <div id="mi_ccfm" class="popupmenuitem"><span>Move to</span><span style="float:right; margin-right:-5px;" class="ui-icon ui-icon-triangle-1-e"></span></div>
-     <div id="mi_ccfmsm" class="popupsubmenu">
-     </div>
-</div>
+<ul id="nodemenu">
+    <li id="mi_th"><div><span class="lc">Vulnerabilities</span></div></li>
+    <li id="mi_ct"><div><span class="lc">Change type</span></div>
+     <ul id="mi_ctsm">
+      <li id="mi_cttWLS"><div><span class="lc">Wireless link</span></div></li>
+      <li id="mi_cttWRD"><div><span class="lc">Wired link</span></div></li>
+      <li id="mi_cttEQT"><div><span class="lc">Equipment</span></div></li>
+      <li id="mi_cttACT"><div><span class="lc">Actor</span></div></li>
+      <li id="mi_cttUNK"><div><span class="lc">Unknown link</span></div></li>
+     </ul>
+	</li>
+    <li id="mi_cl"><div><span class="lc">Class</span></div>
+     <ul id="mi_clsm">
+      <li id="mi_rc"><div><span class="lc">Rename class</span></div></li>
+      <li id="mi_sx"><div><span class="lc">Rename suffix</span></div></li>
+      <li id="mi_sm"><div><span class="lc">Similar/Identical</span></div></li>
+     </ul>
+	</li>
+    <li id="mi_du"><div><span class="lc">Duplicate</span></div></li>
+    <li id="mi_cc"><div><span class="lc">Label</span></div>
+     <ul id="mi_ccsm">
+      <li id="mi_ccnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span class="lc">No label</span></div></li>
+      <li id="mi_ccred"><div><div class="smallblock Bred"></div><span class="lc">Red</span></div></li>
+      <li id="mi_ccorange"><div><div class="smallblock Borange"></div><span class="lc">Orange</span></div></li>
+      <li id="mi_ccyellow"><div><div class="smallblock Byellow"></div><span class="lc">Yellow</span></div></li>
+      <li id="mi_ccgreen"><div><div class="smallblock Bgreen"></div><span class="lc">Green</span></div></li>
+      <li id="mi_ccblue"><div><div class="smallblock Bblue"></div><span class="lc">Blue</span></div></li>
+      <li id="mi_ccpink"><div><div class="smallblock Bpink"></div><span class="lc">Pink</span></div></li>
+      <li id="mi_ccpurple"><div><div class="smallblock Bpurple"></div><span class="lc">Purple</span></div></li>
+      <li id="mi_ccgrey"><div><div class="smallblock Bgrey"></div><span class="lc">Grey</span></div></li>
+      <li id="mi_ccedit"><div><span class="lc">Edit labels ...</span></div></li>
+     </ul>
+	</li>
+    <li id="mi_de"><div><span class="lc">Delete</span><span class="ui-icon ui-icon-trash"></div></li>
+</ul>
+<ul id="selectmenu">
+	<li id="mi_sc"><div><span class="lc">Label</span></div>
+		<ul id="mi_scsm">
+			<li id="mi_scnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span class="lc">No label</span></div></li>
+			<li id="mi_scred"><div><div class="smallblock Bred"></div><span class="lc">Red</span></div></li>
+			<li id="mi_scorange"><div><div class="smallblock Borange"></div><span class="lc">Orange</span></div></li>
+			<li id="mi_scyellow"><div><div class="smallblock Byellow"></div><span class="lc">Yellow</span></div></li>
+			<li id="mi_scgreen"><div><div class="smallblock Bgreen"></div><span class="lc">Green</span></div></li>
+			<li id="mi_scblue"><div><div class="smallblock Bblue"></div><span class="lc">Blue</span></div></li>
+			<li id="mi_scpink"><div><div class="smallblock Bpink"></div><span class="lc">Pink</span></div></li>
+			<li id="mi_scpurple"><div><div class="smallblock Bpurple"></div><span class="lc">Purple</span></div></li>
+			<li id="mi_scgrey"><div><div class="smallblock Bgrey"></div><span class="lc">Grey</span></div></li>
+			<li id="mi_scedit"><div><span class="lc">Edit labels ...</span></div></li>
+		</ul>
+	</li>
+	<li id="mi_sd"><div><span class="lc">Delete selection</span><span class="ui-icon ui-icon-trash"></div></li>
+</ul>
+<ul id="ccfmenu">
+	<li id="mi_ccfc"><div><span class="lc">Create new cluster</span></div></li>
+	<li id="mi_ccfm"><div><span class="lc">Move to</span></div>
+	 <ul id="mi_ccfmsm">
+	 </ul>
+	</li>
+</ul>
 <div id="nodereport" class="nodereport"></div>
 <div id="componentthreats" class="componentthreats"></div>
 

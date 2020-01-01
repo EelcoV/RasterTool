@@ -420,32 +420,17 @@ Dialog windows:
  - threat evaluations for element nodes
 */
 
-/* Dialog: popup menu */
-div.popupmenu {
-    display: none;
-    position: absolute;
-    width: 130px;
-    z-index: 700;
+.ui-menu {
+	position:absolute;
+	display:none;
+	min-width: 150px;
+	background: #eee;
+	border: 1px solid gray !important;
     box-shadow: 7px 7px 6px #999;
+	z-index: 700;
 }
-div.popupsubmenu {
-    position: absolute;
-    margin-left: 121px;
-    margin-top: -22px;
-    z-index: 701;
-    display: none;
-    width: 155px;
-    box-shadow: 7px 7px 6px #999;
-}
-div.popupmenuitem {
-    width: 113px;
-    height: 21px;
-    text-align: left;
-    margin: 0;
-    padding: 5px 11px 0px 11px;
-}
-.popupsubmenuitem {
-    width: 148px !important;
+.ui-menu-item {
+	white-space: nowrap;
 }
 
 .smallblock {
@@ -498,9 +483,6 @@ div.popupmenuitem {
 #mlabel {width:95px !important}
 .field_label_text {
 	width: 220px;
-}
-div.popupmenuitemdisabled {
-    color: #aaa !important;
 }
 #form_editlabels input {margin-bottom: 5px; }
 
@@ -790,10 +772,6 @@ div.node {
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
-}
-div.node:focus {
-/*	outline: 1px dashed red;*/
-	outline: none;
 }
 
 .nodecolorbackground {

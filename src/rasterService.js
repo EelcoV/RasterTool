@@ -413,12 +413,14 @@ Service.prototype = {
 		$('#scroller_overview'+this.id).show();
 		$('#selectrect').remove();
 		$('#diagrams_workspace'+this.id).append('<div id="selectrect"></div>');
-		$('#selectrect').bind('contextmenu', function(e) {
+		$('#selectrect').on('contextmenu', function(e) {
 			e.preventDefault();
 			$('#selectmenu').css('left', e.pageX+4).css('top', e.pageY+4);
-			$('.popupsubmenu').hide();
-			$('#selectmenu').css('display', 'block');
+			$('#selectmenu').show();
 			return false;
+		});
+		$('#selectrect').on('click', function(evt) {
+			if (evt.button==0)  $('#selectmenu').hide(); // left mousebutton
 		});
 		var origpos;
 		$('#selectrect').draggable({

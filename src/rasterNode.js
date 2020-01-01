@@ -13,8 +13,6 @@
  * Class variables (those prefixed with underscore should not be accessed from outside)
  *	_all: array of all Node elements, indexed by id
  *	_currindex: sequence number for auto-generated IDs
- *	DialogNode: id of the node currently beingreported in the warning report window (#nodereport)
- *	MenuNode: Node for which the popup menu has appeared
  *	get(i): returns the object with id 'i'.
  *	projecthastitle(p,str): project 'p' has a node with title 'str'.
  *	servicehastitle(s,str): service 's' has a node with title 'str'.
@@ -106,8 +104,6 @@ var Node = function(type, id) {
 	Node._all[this.id] = this;
 };
 Node._all = [];
-Node.DialogNode = 0;
-Node.MenuNode = 0;
 Node.get = function(id) { return Node._all[id]; };
 Node.projecthastitle = function(pid,str) {
 	for (var i=0,alen=Node._all.length; i<alen; i++) {
@@ -161,7 +157,7 @@ Node.prototype = {
 			this.component = null;
 		}
 
-		if (this.id==Node.DialogNode) {
+		if (this.id==$('#nodereport').data('DialogNode')) {
 			$('#nodereport').dialog('close');
 		}
 		if (this.component==Component.ThreatsComponent) {
@@ -171,7 +167,7 @@ Node.prototype = {
 		for (var i=0; i<neighbours.length; i++) {
 			var nb = Node.get(neighbours[i]);
 			this.detach_center( nb );
-			if (Node.DialogNode==nb.id) RefreshNodeReportDialog();
+			if (nb.id==$('#nodereport').data('DialogNode')) RefreshNodeReportDialog();
 		}
 		
 		this.removefromnodeclusters();
@@ -858,7 +854,7 @@ Node.prototype = {
 			}
 			// Open vulnerabilities dialog
 			if (evt.key=='Enter') {
-				Node.MenuNode = rn.id;
+				$('#nodemenu').data('menunode', rn.id);
 				if (rn.type=='tNOT') {
 					$('#titlemain'+rn.id).trigger('click');
 				} else if (rn.type=='tACT') {
@@ -871,7 +867,7 @@ Node.prototype = {
 			}
 			// Delete, after confirmation
 			if (evt.key=='Delete' || evt.key=='Backspace') {
-				Node.MenuNode = rn.id;
+				$('#nodemenu').data('menunode', rn.id);
 				$('#mi_de').trigger('mouseup');
 				evt.preventDefault();
 				return;
@@ -917,7 +913,7 @@ Node.prototype = {
 				}
 			});
 			$('#nodereport').dialog('open');
-			Node.DialogNode = id;
+			$('#nodereport').data('DialogNode', id);
 			return false;
 		});
 	
@@ -989,7 +985,7 @@ Node.prototype = {
 		this.centerpoint=null;
 		this.dragpoint=null;
 
-		if (this.id==Node.DialogNode) {
+		if (this.id==$('#nodereport').data('DialogNode')) {
 			$('#nodereport').dialog('close');
 		}
 		$(this.jnid).remove();
@@ -1001,26 +997,25 @@ Node.prototype = {
 		var cm = Component.get(this.component);
 		$('#nodemenu').css('left', x);
 		$('#nodemenu').css('top', y);
-		$('.popupmenuitem').removeClass('menuhigh popupmenuitemdisabled');
-		$('.popupsubmenu').hide();
+		$('#nodemenu .ui-menu-item').removeClass('ui-state-disabled');
 		if (this.type=='tNOT') {
-			$('#mi_th').addClass('popupmenuitemdisabled');
-			$('#mi_ct').addClass('popupmenuitemdisabled');
-			$('#mi_cl').addClass('popupmenuitemdisabled');
+			$('#mi_th').addClass('ui-state-disabled');
+			$('#mi_ct').addClass('ui-state-disabled');
+			$('#mi_cl').addClass('ui-state-disabled');
 		}
 		if (this.type=='tACT') {
-			$('#mi_th').addClass('popupmenuitemdisabled');
-			$('#mi_cl').addClass('popupmenuitemdisabled');
+			$('#mi_th').addClass('ui-state-disabled');
+			$('#mi_cl').addClass('ui-state-disabled');
 		}
 		if (cm==null || cm.nodes.length<2) {
-			$('#mi_cl').addClass('popupmenuitemdisabled');
+			$('#mi_cl').addClass('ui-state-disabled');
 		}
 		if (cm!=null && cm.single) {
-			$('#mi_sx').addClass('popupmenuitemdisabled');
+			$('#mi_sx').addClass('ui-state-disabled');
 		}
-		$('#mi_sm').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
+		$('#mi_sm span.lc:first').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
 		if (cm!=null && cm.single) {
-			$('#mi_du').addClass('popupmenuitemdisabled');
+			$('#mi_du').addClass('ui-state-disabled');
 		}
 		populateLabelMenu();
 		var s=p.strToLabel(this.color);
@@ -1029,18 +1024,9 @@ Node.prototype = {
 		} else {
 			s = '"' + s + '"';
 		}
-		$('#mi_cc .labeltext').html(s);
-		$('#nodemenu').css('display', 'block');
-		// Remove any previous custom style
-		var limit = $('#diagrams'+Service.cid).offset().top + $('#diagrams'+Service.cid).height();
-		var o = $('#nodemenu').offset();
-		// Make sure that the submenu is fully visible
-		if (o.top + $('#nodemenu').height() > limit) {
-			// -5 to make the node menu not the same distance from the bottom of the screen as the label submenu
-			o.top = limit - $('#nodemenu').height() - 5;
-			$('#nodemenu').offset(o);
-		} 
-		Node.MenuNode = this.id;
+		$('#mi_cc span.lc:first').html(s);
+		$('#nodemenu').show();
+		$('#nodemenu').data('menunode', this.id);
 	},
 	
 	_stringify: function() {
@@ -1126,7 +1112,7 @@ Node.prototype = {
 function RefreshNodeReportDialog() {
 	if (! $('#nodereport').dialog('isOpen'))  return;
 	// Refresh the contents
-	var rn = Node.get(Node.DialogNode);
+	var rn = Node.get($('#nodereport').data('DialogNode'));
 	var report = rn._getreport();
 	var s;
 				
