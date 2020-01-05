@@ -202,3 +202,6 @@ CreateAll()
 CreateAll "EN"
 CreateAll "NL"
 
+# If Parallels Desktop is running, then the following may trigger it to run the winbuild.bat batch file.
+open -a 'Parallels Desktop' script/winbuild.bat
+
