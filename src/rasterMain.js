@@ -21,6 +21,7 @@ var LS = LS_prefix+':'+LS_version+':';
 /* Global preferences */
 var Preferences;
 var ToolGroup;
+var GroupSettings;
 //var UserLanguage;
 
 #ifdef STANDALONE
@@ -130,6 +131,7 @@ function initAllAndSetup() {
 
 #ifdef SERVER
 	ToolGroup = $('meta[name="group"]').attr('content');
+	getGroupSettings();
 #else
 	ToolGroup = '_%standalone%_';
 	// Prevent file drops
@@ -234,9 +236,10 @@ function initAllAndSetup() {
 #ifdef SERVER
 	initLibraryPanel();
 	initOptionsPanel();
-#endif
-#ifdef CLASSROOM
-	$("#demo").html(_("Training demo"));
+
+	if (GroupSettings.classroom) {
+		$("#classroom").html(_("Classroom version")).show();
+	}
 #endif
 
 	SizeDOMElements();
@@ -492,6 +495,31 @@ function initAllAndSetup() {
 	window.setTimeout(function () {
 		$(window).trigger('load');
 	}, 500);
+}
+
+function getGroupSettings() {
+	// Initialise default values, then attempt to retrieve settings from the server
+	GroupSettings = {
+		classroom: false,
+		template: 'Project Template',
+		iconset: 'default'
+	};
+	$.ajax({
+		url: 'group.json',
+		async: false,
+		dataType: 'json',
+		success: function(data) {
+			if (data.classroom===true) {
+				GroupSettings.classroom = true;
+			}
+			if (typeof data.template==='string') {
+				GroupSettings.template = data.template;
+			}
+			if (typeof data.iconset==='string') {
+				GroupSettings.iconset = data.iconset;
+			}
+		}
+	});
 }
 
 var findTimer;
@@ -1341,6 +1369,7 @@ function transactionCompleted(/*transaction*/) {
 /* loadFromString(str): with string 'str' containing an entire file, try to
  *		read and create the objects in it.
  * Shows error messages, unless 'showerrors' is false.
+ * Throws an error if the string does not contain any projects, unless 'allowempty' is true.
  *
  * Returns the id of one of the projects loaded, or null on failure.
  */
@@ -2305,7 +2334,7 @@ function initLibraryPanel() {
 	});
 
 	// Add --------------------
-	$('#libadd').on('click',  function(){
+	function addEmptyProject() {
 		var p = new Project();
 		var s = new Service();
 		p.adddefaultthreats();
@@ -2313,8 +2342,66 @@ function initLibraryPanel() {
 		s.autosettitle();
 		p.autosettitle();
 		populateProjectList();
-		$('#libselect').val(p.id).focus().trigger('change');
+		$('#libselect').val(p.id).focus().trigger('change').trigger('dblclick');
 		transactionCompleted("Project add");
+	}
+
+	$('#libadd').on('click',  function(){
+		// Check for a template
+		var p, template;
+		var found=false;
+		for (var i=0; !found && i<Project._all.length; i++) {
+			template = Project._all[i];
+			if (template==null) continue;
+			found=(isSameString(template.title,GroupSettings.template) && template.group==ToolGroup);
+		}
+
+		/* There are 4 possibilities:
+		   1. The template exists on the server (a stub locally): retrieve the template; when it fails create a blank project.
+		   2. The template exists on the server, and has been retrieved: duplicate the template.
+		   3. The template does exists as a private project: duplicate the template
+		   4. The template does not exists: create a blank project
+		 */
+		// Possibility 1
+		if (found && template.stub && Preferences.online) {
+			Project.retrieve(template.id, function(newpid) {
+				// Success
+				p = Project.get(newpid);
+				p.stub = false;
+				p.setshared(false,false);
+				p.autosettitle();
+				populateProjectList();
+				$('#libselect').val(newpid).focus().trigger('change').trigger('dblclick');
+				transactionCompleted("Project add");
+			}, function() {
+				// Error
+				addEmptyProject();
+			});
+		// Possibility 2 and 3
+		} else if (found) {
+			// To duplicate the template, export it into a string, then read & load that string
+			var savedcopy = exportProject(template.id);
+			i = loadFromString(
+				savedcopy,	// the string to parse
+				true,		// show errors
+				false,		// allow empty
+				'Project from template'		// Source of the string, used in error messages
+			);
+			if (i==null) {
+				// Some kind of error occurred. This is not normal, so return without doing anything else.
+				return;
+			}
+			p = Project.get(i);
+			p.stub = false;
+			p.setshared(false,false);
+			p.autosettitle();
+			populateProjectList();
+			$('#libselect').val(i).focus().trigger('change').trigger('dblclick');
+			transactionCompleted("Project add");
+		} else {
+			// Blank project
+			addEmptyProject();
+		}
 	});
 	// Import --------------------
 	$('#libimport').on('click',  function() {
@@ -2533,11 +2620,12 @@ function ShowDetails(p) {
 			$('#sh_off')[0].checked = !p.shared;
 			$('#sh_on')[0].checked = p.shared;
 			$('input[name="sh_onoff"]').checkboxradio("refresh");
-#endif
-#ifdef CLASSROOM
-			$('input[name="sh_onoff"]').checkboxradio({
-				disabled: true
-			});
+
+			if (GroupSettings.classroom) {
+				$('input[name="sh_onoff"]').checkboxradio({
+					disabled: true
+				});
+			}
 #endif
 			$('#field_projecttitle').focus().select();
 			$('#form_projectprops').submit(function() {
@@ -2732,10 +2820,6 @@ function bottomTabsShowHandlerSFaults(event,ui) {
 	Service.cid = id;
 	paintSingleFailures(Service.get(id));
 }
-
-// Timer to prevent submenus from disappearing too quickly
-//
-var menuTimerct, menuTimercl, menuTimercc;
 
 function initTabDiagrams() {
 	initChecklistsDialog('tWLS');

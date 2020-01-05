@@ -203,8 +203,9 @@ img.tC {
     top: 10px;
     z-index: -1; /* below templates */
 }
-#demo {
+#classroom {
 	position: fixed;
+	display: none;
 	top: 0;
 	right: 2px;
 	color: #999;

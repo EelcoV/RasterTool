@@ -3,7 +3,7 @@
  */
 
 /* global
- Component, ComponentIterator, DefaultThreats, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, _, bugreport, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nextUnusedIndex, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, transactionCompleted, trimwhitespace, urlEncode
+ Component, ComponentIterator, DefaultThreats, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, _, bugreport, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nextUnusedIndex, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, transactionCompleted, trimwhitespace, urlEncode
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -87,7 +87,7 @@ var Project = function(id,asstub) {
 	this.stub = false;
 #endif
 
-	this.iconset = 'default';
+	this.iconset = GroupSettings.iconset;
 	this.icondata = {};
 	var p = this;
 	// Load the current iconset
@@ -179,10 +179,8 @@ Project.merge = function(intoproject,otherproject) {
 	// Move each of the services over, one by one
 	for (var i=0; i<otherproject.services.length; i++) {
 		var s = Service.get(otherproject.services[i]);
-		// Change the service, and create its DOM elements.
 		s.setproject(intoproject.id);
-		s.settitle(s.title);
-		s.load();
+		s.settitle(s.title); // intoproject may already have a service with title s.title
 		intoproject.services.push(s.id);
 
 		var it = new ComponentIterator({service: s.id});
@@ -321,12 +319,12 @@ Project.retrieve = function(pid,doWhenReady,doOnError) {
 			if (newp!=null) {
 				var np = Project.get(newp);
 				np.date = p.date;
-#ifdef CLASSROOM
-				np.shared = false;
-				np.settitle(np.title + _(" - personal copy"));
-#else
-				np.shared = true;
-#endif
+				if (GroupSettings.classroom) {
+					np.shared = false;
+					np.settitle(np.title + _(" - personal copy"));
+				} else {
+					np.shared = true;
+				}
 				np.store();
 				if (doWhenReady) {
 					doWhenReady(newp);

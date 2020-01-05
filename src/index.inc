@@ -94,9 +94,7 @@ See LICENSE.md
 	<div class="toolbarspacer"></div>
 	<div id="templates" class="ui-state-default toolbaritem"> <!-- Is filled in Project.load() --></div>
 </div> <!-- toolbar -->
-#ifdef CLASSROOM
-<div id="demo" class="ui-widget"></div>
-#endif
+<div id="classroom" class="ui-widget"></div>
 <div id="currentProject" class="ui-widget projectname"></div>
 
 <div id="librarypanel" class="actpanel">

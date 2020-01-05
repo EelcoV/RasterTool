@@ -95,6 +95,8 @@
 		499A6B9F1A72D97A0047E182 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		49AE7CC62378595A00F12B9D /* winbuild.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = winbuild.bat; sourceTree = "<group>"; };
+		49BEE0DE23C1F90E00AC17F7 /* group.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = group.json; sourceTree = "<group>"; };
+		49BEE0DF23C1FA4800AC17F7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		49CD587D1F92238E00A9F17F /* e-translation-NL.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "e-translation-NL.js"; sourceTree = "<group>"; };
 		49CD587E1F933CD600A9F17F /* e-translation-EN.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "e-translation-EN.js"; sourceTree = "<group>"; };
 		49CD587F1F93922E00A9F17F /* Object data structure.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Object data structure.txt"; sourceTree = "<group>"; };
@@ -211,6 +213,8 @@
 		494B6FDA18796E9D00400328 /* public_group */ = {
 			isa = PBXGroup;
 			children = (
+				49BEE0DF23C1FA4800AC17F7 /* README.md */,
+				49BEE0DE23C1F90E00AC17F7 /* group.json */,
 				494B6FDB18796E9D00400328 /* htaccess */,
 				494B6FDC18796E9D00400328 /* index.php */,
 				494B6FDD18796E9D00400328 /* share.php */,
@@ -295,7 +299,6 @@
 			isa = PBXGroup;
 			children = (
 				494B6F8A18796E9D00400328 /* index.inc */,
-				49F27A001F91E15B003F360B /* server */,
 				49F279FF1F91E14A003F360B /* standalone */,
 				494B6F8118796E9D00400328 /* rasterMain.js */,
 				494B6F7F18796E9D00400328 /* rasterComponent.js */,
@@ -361,13 +364,6 @@
 				49CD587E1F933CD600A9F17F /* e-translation-EN.js */,
 			);
 			path = standalone;
-			sourceTree = "<group>";
-		};
-		49F27A001F91E15B003F360B /* server */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = server;
 			sourceTree = "<group>";
 		};
 		49F27A011F91E472003F360B /* js */ = {

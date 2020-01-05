@@ -2,7 +2,10 @@
 Some tools are required to build the applications. Since development has been done on MacOS, most of these
 are Mac-centered. However, it should be possible to build the tools on other Unix-like platforms.
 
-When using Xcode on Mac, the build targets Clean, Make Server, Build Electron, and All are available. Clean, empties the build directory. All creates all distribution files; Make Server and Build Electron make the intranet respectively the standalone versions.
+When using Xcode on Mac, the build targets Clean, Make Server, Build Electron, and All are available. 
+* Clean: empties the build directory. 
+* All: creates all distribution files.
+* Make Server and Build Electron: make the intranet respectively the standalone versions.
 
 ## Build and install the Intranet version
 You need:

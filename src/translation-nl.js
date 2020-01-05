@@ -47,7 +47,9 @@ _t["Are you sure you want to remove project <i>'%%'</i>?\n<strong>This cannot be
 _t["This project has %% nodes.\nAre you <i>really</i> sure you want to discard these?"] = "Dit project heeft %% componenten.\nWeet u <i>echt</i> zeker dat u deze wilt verwijderen?";
 _t["Remove"] = "Verwijder";
 _t["Cancel"] = "Annuleer";
+_t["Delete all?"] = "Alles verwijderen?";
 _t["Yes, really remove"] = "Ja, echt verwijderen";
+_t["That project name is used already"] = "Die projectnaam wordt al gebruikt";
 _t["There is already a project called '%%'. Please rename that project first."] = "Er bestaat al een project met de naam '%%'. Hernoem eerst dat andere project.";
 _t["There is already a project named '%%' on the server. You must rename this project before it can be shared."] = "Er bestaat al een project met de naam '%%' op de server. U moet dit project hernoemen voordat het kan worden gedeeld.";
 _t["This function is not implemented yet."] = "Deze functie is nog niet geïmplementeerd.";
@@ -378,5 +380,5 @@ _t["Components '%%' and '%%'."] = "Componenten '%%' en '%%'.";
 _t["Vulnerabilities '%%' and '%%'."] = "Kwetsbaarheden '%%' en '%%'.";
 _t["Services '%%' and '%%'."] = "Diensten '%%' en '%%'.";
 
-_t["Training demo"] = "Cursus demo";
+_t["Classroom version"] = "Cursusomgeving";
 _t[" - personal copy"] = " - eigen kopie";

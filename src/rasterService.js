@@ -335,7 +335,7 @@ Service.prototype = {
 		});
 
 		$('.workspace').droppable({
-			accept: '.templatebg,.templatebgNOT',
+			accept: '.templatebg',
 			drop: workspacedrophandler
 		});
 	},
