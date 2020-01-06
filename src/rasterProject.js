@@ -172,6 +172,15 @@ Project.firstProject = function() {
 	else return p;
 };
 
+/* Note: this is not a general merge procedure. Project 'intoproject' must be
+ * the currently activated project for this to work. This needs a rewrite.
+ * Consider:
+ *  - do a loadFromString(savedcopy,...)
+ *  - transfer the services of the newly created project into 'intoproject'
+ *  - cleanly destroy the remnants of the created project
+ * This will leave 'otherproject' completely untouched.
+ * We can then get rid of s.load() below, and move that functionality into $('#libmerge').on('click',  function() {...})
+ */
 Project.merge = function(intoproject,otherproject) {
 	// Save a copy of the file that is merged
 	var savedcopy = exportProject(otherproject.id);
@@ -181,6 +190,7 @@ Project.merge = function(intoproject,otherproject) {
 		var s = Service.get(otherproject.services[i]);
 		s.setproject(intoproject.id);
 		s.settitle(s.title); // intoproject may already have a service with title s.title
+		s.load(); // Because intoproject is currently active.
 		intoproject.services.push(s.id);
 
 		var it = new ComponentIterator({service: s.id});
