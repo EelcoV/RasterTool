@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global nid2id, AddAllClusters, DefaultIconset, bugreport, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global nid2id, AddAllClusters, DefaultIconset, bugreport, createUUID, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
 
 /*
  *

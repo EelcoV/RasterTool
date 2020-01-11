@@ -3,7 +3,7 @@
  */
 
 /* globals
- H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, _, bugreport, isSameString, jsPlumb, nextUnusedIndex, nid2id, removetransientwindows, transactionCompleted, trimwhitespace, workspacedrophandler
+ H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, _, bugreport, createUUID, isSameString, jsPlumb, nextUnusedIndex, nid2id, removetransientwindows, transactionCompleted, trimwhitespace, workspacedrophandler
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -17,7 +17,7 @@
  *	titleisused(p,str,e): checks whether there is a service in project p, other than
  *		service e, having title str.
  * Instance properties:
- *	id: (integer) unique ID of the service
+ *	id: (integer) UUID
  *	project: (object) project to which this service belongs
  *	title: (string) short name of the service (max 50 chars).
  *	_painted: boolean, indicates whether all Nodes have been painted already;
@@ -47,7 +47,7 @@ var Service = function(id) {
 	if (id!=null && Service._all[id]!=null) {
 		bugreport("Service with id "+id+" already exists","Service.constructor");
 	}
-	this.id = (id==null ? nextUnusedIndex(Service._all) : id);
+	this.id = (id==null ? createUUID() : id);
 	this.project = Project.cid;
 	this.title = "";
 	this._painted=false;
@@ -74,16 +74,15 @@ var Service = function(id) {
 };
 Service.get = function(id) { return Service._all[id]; };
 Service.cid = 0;
-Service._all = [];
+Service._all = new Object();
 Service.titleisused = function(projectid,str,except) {
-	var found=false;
-	for (var i=0; !found && i<Service._all.length; i++) {
+	for (var i in Service._all) {
 		if (i==except) continue;
-		if (Service._all[i]!=null && Service._all[i].project==projectid) {
-			found=(isSameString(Service._all[i].title,str));
+		if (Service._all[i].project==projectid) {
+			if (isSameString(Service._all[i].title,str))  return true;
 		}
 	}
-	return found;
+	return false;
 };
 
 Service.prototype = {
@@ -96,7 +95,7 @@ Service.prototype = {
 			it.getnode().destroy(false);
 		}
 		localStorage.removeItem(LS+'S:'+this.id);
-		Service._all[this.id]=null;
+		delete Service._all[this.id];
 	},
 	
 	settitle: function(newtitle) {
@@ -592,8 +591,7 @@ var ServiceIterator = function(pid) {
 	this.pid = pid;
 	this.index = 0;
 	this.item = [];
-	for (var i=0; i<Service._all.length; i++) {
-		if (Service._all[i]==null) continue;
+	for (var i in Service._all) {
 		var s =  Service._all[i];
 		if (s.project == pid) {
 			this.item.push(i);

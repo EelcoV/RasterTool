@@ -40,6 +40,7 @@ See LICENSE.md
 <link rel="preload" href="../img/qm-hi.png" as="image">
 <link rel="preload" href="../img/find-hi.png" as="image">
 <script type="text/javascript" src="../js/rasterMain.js"></script>
+<script type="text/javascript" src="../js/rasterTransaction.js"></script>
 <script type="text/javascript" src="../js/rasterProject.js"></script>
 <script type="text/javascript" src="../js/rasterService.js"></script>  
 <script type="text/javascript" src="../js/rasterThreatEvaluation.js"></script>  

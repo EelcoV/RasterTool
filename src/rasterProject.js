@@ -3,7 +3,7 @@
  */
 
 /* global
- Component, ComponentIterator, DefaultThreats, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, _, bugreport, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nextUnusedIndex, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, transactionCompleted, trimwhitespace, urlEncode
+ Component, ComponentIterator, DefaultThreats, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nextUnusedIndex, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, transactionCompleted, trimwhitespace, urlEncode
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -21,7 +21,7 @@
  *	retrieve(i): download the project with id 'i' from the server.
  *	getProps(s): retrieve properties of remote project with name 's'.
  * Instance properties:
- *	id: (integer) unique ID of the project
+ *	id: UUID
  *	title: (string) short name of the project
  *  group: (string) group to which the project belongs (default group is ToolGroup)
  *		group is only meaningful when the project is shared or a stub.
@@ -67,7 +67,7 @@ var Project = function(id,asstub) {
 	if (id!=null && Project._all[id]!=null) {
 		bugreport("Project with id "+id+" already exists","Project.constructor");
 	}
-	this.id = (id==null ? nextUnusedIndex(Project._all) : id);
+	this.id = (id==null ? createUUID() : id);
 	this.title = "?";
 	this.group = ToolGroup;
 	this.description = "";
@@ -145,31 +145,30 @@ var Project = function(id,asstub) {
 };
 Project.get = function(id) { return Project._all[id]; };
 Project.cid = 0;
-Project._all = [];
+Project._all =new Object();
 Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Pink"), _("Purple"), _("Grey")];
 Project.colors = ["none","red","orange","yellow","green","blue","pink","purple","grey"];
 
 // Check wether there is a project with name 'str' and group ToolGroup
 Project.withTitle = function(str) {
-	var found=false;
-	for (var i=0; !found && i<Project._all.length; i++) {
+	for (var i in Project._all) {
 		var p = Project._all[i];
-		if (p==null || p.stub) continue;
-
-		found=(isSameString(p.title,str)  && (!p.shared || p.group==ToolGroup));
+		if (p.stub) continue;
+		if (isSameString(p.title,str)  && (!p.shared || p.group==ToolGroup)) {
+			return p.id;
+		}
 	}
-	return (found ? i-1 : null);
+	return null;
 };
 
 // Retrieve first project in ToolGroup
 Project.firstProject = function() {
-	for (var i=0; i<Project._all.length; i++) {
+	for (var i in Project._all) {
 		var p = Project._all[i];
-		if (p==null || p.stub) continue;
-		if (!p.shared || p.group==ToolGroup) break;
+		if (p.stub) continue;
+		if (!p.shared || p.group==ToolGroup)  return p;
 	}
-	if (i==Project._all.length)  return 0;
-	else return p;
+	return null;
 };
 
 /* Note: this is not a general merge procedure. Project 'intoproject' must be
@@ -421,7 +420,7 @@ Project.prototype = {
 			it.getNodeCluster().destroy();
 		}
 		localStorage.removeItem(LS+'P:'+this.id);
-		Project._all[this.id]=null;
+		delete Project._all[this.id];
 	},
 	
 	totalnodes: function() {
@@ -1125,8 +1124,7 @@ function askForConflictResolution(proj,details) {
 var ProjectIterator = function(opt) {
 	this.index = 0;
 	this.item = [];
-	for (var i=0; i<Project._all.length; i++) {
-		if (Project._all[i]==null) continue;
+	for (var i in Project._all) {
 		var p =  Project._all[i];
 		var ok = true;
 		if (opt && opt.title!=null) {

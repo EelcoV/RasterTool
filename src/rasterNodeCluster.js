@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, nextUnusedIndex, _, addClusterElements, repaintCluster, Component, DEBUG, LS, ThreatAssessment, H, isSameString */
+/* global bugreport, nextUnusedIndex, _, addClusterElements, repaintCluster, Component, DEBUG, LS, ThreatAssessment, H, createUUID, isSameString */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -17,7 +17,7 @@
  *		named 'ti' of type 'ty'.
  *	removecomponent_threat: reverse of addcomponent_threat().
  * Instance properties:
- *	id: unique number
+ *	id: UUID
  *  type:
  *	project: project to which this NodeCluster belongs.
  *	title:
@@ -59,7 +59,7 @@ var NodeCluster = function(type, id) {
 	if (id!=null && NodeCluster._all[id]!=null) {
 		bugreport("NodeCluster with id "+id+" already exists","NodeCluster.constructor");
 	}
-	this.id = (id==null ? nextUnusedIndex(NodeCluster._all) : id);
+	this.id = (id==null ? createUUID() : id);
 	this.type = type;
 	this.title = _("New cluster")+' '+this.id;
 	this.project = null;
@@ -74,7 +74,7 @@ var NodeCluster = function(type, id) {
 	this.store();
 	NodeCluster._all[this.id] = this;
 };
-NodeCluster._all = [];
+NodeCluster._all = new Object();
 NodeCluster.get = function(id) { return NodeCluster._all[id]; };
 
 NodeCluster.addnode_threat = function(pid,nid,threattitle,threattype,duplicateok) {
@@ -171,7 +171,7 @@ NodeCluster.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS+'L:'+this.id);
 		ThreatAssessment.get(this.thrass).destroy();
-		NodeCluster._all[this.id]=null;
+		delete NodeCluster._all[this.id];
 	},
 
 	setproject: function(p) {
@@ -491,9 +491,8 @@ NodeCluster.prototype = {
 var NodeClusterIterator = function(opt) {
 	this.index = 0;
 	this.item = [];
-	for (var i=0,alen=NodeCluster._all.length; i<alen; i++) {
+	for (var i in NodeCluster._all) {
 		var nc = NodeCluster._all[i];
-		if (nc==null) continue;
 		if (opt && opt.project!=undefined && nc.project!=opt.project) continue;
 		if (opt && opt.parentcluster!=undefined && nc.parentcluster!=opt.parentcluster) continue;
 		if (opt && opt.isroot!=undefined && nc.isroot()!=opt.isroot) continue;

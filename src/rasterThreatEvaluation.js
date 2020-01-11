@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm, refreshThreatsDialog
+bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm, refreshThreatsDialog
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -24,7 +24,7 @@ bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, trimwhitespace,
  *	worst(a,b): synonym for sum().
  * Instance properties:
  *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK'
- *	id: unique number
+ *	id: UUID
  *	component: Component object to which this evaluation belongs (may be null).
  *	cluster: NodeCluster object to which this evaluation belongs (may be null).
  *	type: type of threat (type of Node to which this evaluation belongs)
@@ -64,7 +64,7 @@ var ThreatAssessment = function(type,id) {
 	if (type=='tACT' || type=='tUNK' || type=='tNOT') {
 		bugreport("ThreatAssessment with id "+id+" has illegal type "+type,"ThreatAssessment.constructor");
 	}
-	this.id = (id==null ? nextUnusedIndex(ThreatAssessment._all) : id);
+	this.id = (id==null ? createUUID() : id);
 	this.type = type;
 	this.component = null;
 	this.cluster = null;
@@ -81,7 +81,7 @@ var ThreatAssessment = function(type,id) {
 	ThreatAssessment._all[this.id]=this;
 };
 ThreatAssessment.get = function(id) { return ThreatAssessment._all[id]; };
-ThreatAssessment._all = [];
+ThreatAssessment._all = new Object();
 ThreatAssessment.Clipboard = [];
 ThreatAssessment.values =[
 '-', // unspecified
@@ -159,7 +159,7 @@ ThreatAssessment.prototype = {
 		if (Component.ThreatsComponent==this.component) {
 			$('#dth'+this.id).remove();
 		}
-		ThreatAssessment._all[this.id]=null;
+		delete ThreatAssessment._all[this.id];
 	},
 	
 	setcomponent: function(id) {
@@ -577,7 +577,7 @@ var DefaultThreats = [
  *	get(i): returns the object with id 'i'.
  * Instance properties:
  *	type: one of 'tWLS','tWRD','tEQT'. Actors and unknown links don't have threats.
- *	id: unique number.
+ *	id: UUID.
  *	project: ID of the project to which this threat belongs.
  *	title: short name of the threat.
  *	description: description of the threat.
@@ -595,7 +595,7 @@ var Threat = function(type,id) {
 	if (id!=null && Threat._all[id]!=null) {
 		bugreport("Vulnerability with id "+id+" already exists","Threat.constructor");
 	}
-	this.id = (id==null ? nextUnusedIndex(Threat._all) : id);
+	this.id = (id==null ? createUUID() : id);
 	this.type = type;
 	this.project = Project.cid;
 	this.title = _("Vulnerability ")+this.id;
@@ -605,12 +605,12 @@ var Threat = function(type,id) {
 	Threat._all[this.id]=this;
 };
 Threat.get = function(id) { return Threat._all[id]; };
-Threat._all = [];
+Threat._all = new Object();
 Threat.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS + 'T:' + this.id);
 		$('#threat'+this.id).remove();
-		Threat._all[this.id]=null;
+		delete Threat._all[this.id];
 	},
 	
 	setproject: function(p) {
@@ -734,9 +734,8 @@ Threat.prototype = {
 var ThreatIterator = function(pid,t) {
 	this.index = 0;
 	this.item = [];
-	for (var i=0,alen=Threat._all.length; i<alen; i++) {
-		if (Threat._all[i]!=null 
-			&& Threat._all[i].project==pid
+	for (var i in Threat._all) {
+		if (Threat._all[i].project==pid
 			&& (t=='tUNK' || t==Threat._all[i].type))
 		{
 			this.item.push(i);

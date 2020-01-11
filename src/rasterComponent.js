@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals bugreport, nextUnusedIndex, Rules, Project, _, isSameString, LS, Threat, ThreatAssessment, NodeCluster, NodeClusterIterator, prependIfMissing, trimwhitespace, H */
+/* globals bugreport, createUUID, Rules, Project, _, isSameString, LS, Threat, ThreatAssessment, NodeCluster, NodeClusterIterator, prependIfMissing, trimwhitespace, H */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -16,7 +16,7 @@
  *		type 'type' and project 'pid', or -1 if no such Component exists.
  * Instance properties:
  *	type: one of 'tWLS','tWRD','tEQT','tUNK'
- *	id: unique number
+ *	id: UUID
  *	title: retrieve current title
  *	project: project to which this component belongs
  *	thrass[]: array of ThreatAssessment id's, holding the threat estimates
@@ -57,7 +57,7 @@ var Component = function(type, id) {
 	if (id!=null && Component._all[id]!=null) {
 		bugreport("Component with id "+id+" already exists","Component.constructor");
 	}
-	this.id = (id==null ? nextUnusedIndex(Component._all) : id);
+	this.id = (id==null ? createUUID() : id);
 	this.type = type;
 	this.project = Project.cid;
 	this.nodes = [];
@@ -70,12 +70,11 @@ var Component = function(type, id) {
 	this.store();
 	Component._all[this.id] = this;
 };
-Component._all = [];
+Component._all = new Object();
 Component.ThreatsComponent = -1;
 Component.get = function(id) { return Component._all[id]; };
 Component.hasTitleTypeProject = function(str,typ,pid) {
-	for (var i=0; i<Component._all.length; i++) {
-		if (!Component._all[i]) continue;
+	for (var i in Component._all) {
 		if (isSameString(Component._all[i].title,str)
 			&& Component._all[i].type==typ
 			&& Component._all[i].project==pid)  return i;
@@ -91,7 +90,7 @@ Component.prototype = {
 		for (var i=0; i<this.thrass.length; i++) {
 			ThreatAssessment.get(this.thrass[i]).destroy();
 		}
-		Component._all[this.id]=null;
+		delete Component._all[this.id];
 	},
 
 	absorbe: function(cm) {
@@ -622,8 +621,7 @@ Component.prototype = {
 var ComponentIterator = function(opt) {
 	this.index = 0;
 	this.item = [];
-	for (var i=0,alen=Component._all.length; i<alen; i++) {
-		if (Component._all[i]==null) continue;
+	for (var i in Component._all) {
 		var cm =  Component._all[i];
 		// The component is part of a project if one of its nodes belongs to a
 		// service that belongs to that project.

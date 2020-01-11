@@ -3,7 +3,7 @@
  */
 
 /* globals
-Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Threat, ThreatAssessment, ThreatIterator, _t, unescapeNewlines, urlDecode, urlEncode
+Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Threat, ThreatAssessment, ThreatIterator, _t, createUUID, transactionCompleted, unescapeNewlines, urlDecode, urlEncode
 */
 
 "use strict";
@@ -15,7 +15,7 @@ var DEBUG = true;  // set to false for production version
  * previous versions and perform an upgrade.
  */
 var LS_prefix = 'raster';
-var LS_version = 2;
+var LS_version = 3;
 var LS = LS_prefix+':'+LS_version+':';
 
 /* Global preferences */
@@ -1075,12 +1075,11 @@ function switchToProject(pid,dorefresh) {
 	}
 }
 
-/* nid2id: translate a DOM id to a numeric id
+/* nid2id: translate a DOM id to a UUID
+ * DOM ids are a string followed by a UUID, return the trailing UUID
  */
 function nid2id(nid) {
-	/* Remove all but the trailing digits, then parse the remainder as an integer.
-	 */
-	return parseInt(nid.replace(/^.*\D/i,""),10);
+	return nid.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/)[1];
 }
 
 /* trimwhitespace: remove leading & trailing white space
@@ -1129,10 +1128,11 @@ function nextUnusedIndex(arr) {
  */
 
 /* prettyDate: reformat the timestamp string for server projects.
+ * prettyDate("20210516 1435 22") = "16-05-2021 14:35"
  */
 function prettyDate(d) {
 	// Format is: YYYYMMDD HHMM SS
-	//			1   2 3  4 5  6
+	//            1   2 3  4 5  6
 	var r = d.match(/^(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d) (\d\d)$/);
 	return (r==null ? d : r[3]+'-'+r[2]+'-'+r[1]+' '+r[4]+':'+r[5]);
 }
@@ -1358,20 +1358,24 @@ function autoSaveFunction() {
 }
 #endif
 
-function transactionCompleted(/*transaction*/) {
-#ifdef SERVER
-	autoSaveFunction();
-#else
-	setModified();
-#endif
-}
-
 /* loadFromString(str): with string 'str' containing an entire file, try to
  *		read and create the objects in it.
  * Shows error messages, unless 'showerrors' is false.
  * Throws an error if the string does not contain any projects, unless 'allowempty' is true.
  *
  * Returns the id of one of the projects loaded, or null on failure.
+ *
+ * Version 0 is ancient, and is not supported anymore.
+ * To upgrade from version 1:
+ *  - Names/titles of nodes, services and clusters are now case-insensitive. When upgrading from
+ *    version 1, it may be necessary to add a sequence number to titles (or increase the one that
+ *    is already there).
+ *  - There is one additional label.
+ *  - Plus all the upgrades necessary for version 2.
+ * To upgrade from version 2:
+ *  - ID's are no longer simple numbers but UUIDs. This simplifies the loading of projects, because
+ *    it is not necessary to check whether an id is already in use. The use of UUID virtually guarantees
+ *    that no collisions occur.
  */
 var Flag_Upgrade_Done = false;
 var Upgrade_Description = "";
@@ -1387,6 +1391,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 
 	var res, key, val;
 	var upgrade_1_2 = false;
+	var upgrade_2_3 = false;
 
 	Flag_Upgrade_Done = false;
 	Upgrade_Description = "";
@@ -1399,14 +1404,19 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			if (!key || key[0]!=LS_prefix) throw new Error('Invalid key');
 			if (key[1]!=LS_version) {
 				if (key[1]==1) {
-					// Can upgrade from version 1 to version 2
+					// Can upgrade from version 1 to version 3
 					upgrade_1_2 = true;
+					upgrade_2_3 = true;
+				} else if (key[1]==2) {
+						// Can upgrade from version 2 to version 3
+						upgrade_2_3 = true;
 				} else {
 					throw new Error("The file has version ("+key[1]+"); expected version ("+LS_version+"). You must use a more recent version of the Raster tool.");
 				}
 			}
 			val = JSON.parse(urlDecode(res[2]));
-			val.id = parseInt(key[3],10);
+			// Integer in version 1 and 2, string in version 3
+			val.id = ( key[1]<3 ? parseInt(key[3],10) : key[3]);
 			switch (key[2]) {
 			case 'P':
 				lProject.push(val);
@@ -1446,7 +1456,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		if (!showerrors)  return null;
 		var errdialog = $('<div></div>');
 		var s = str.substr(0,40);
-		s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\s+/g," ");
+		s = H(s).replace(/\s+/g," ");
 		errdialog.append('<p>' + strsource + ' contains an error:</p>\
 			<blockquote>' + e.message + '</blockquote>\
 			<p>The incorrect text is:</p>\
@@ -1459,8 +1469,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		});
 		return null;
 	}
-
 	/* File has been read. Now check for consistency */
+
 	// Returns:
 	//  there exists j, 0<=j<arr.length, such that arr[j].id == id
 	function containsID(arr,id) {
@@ -1492,8 +1502,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	var lThrEvallen=lThrEval.length;
 
 	try {
-		if (lProjectlen==0) throw new Error("There are no projects; there must be at least one");
-		if (lServicelen==0) throw new Error("There are no services; there must be at least one");
+		if (lProjectlen==0) throw new Error('There are no projects; there must be at least one');
+		if (lServicelen==0) throw new Error('There are no services; there must be at least one');
 		for (i=0; i<lProjectlen; i++) {
 			/* lProject[i].s[] must contain IDs of services */
 			if (!containsAllIDs(lService,lProject[i].s)) throw new Error('Project '+lProject[i].id+' has an invalid service.');
@@ -1566,7 +1576,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		if (!showerrors)  return null;
 		errdialog = $('<div></div>');
 		errdialog.append('<p>' + strsource + ' contains an error:</p>\
-			<blockquote>' + e.message + '</blockquote>');
+			<blockquote>' + H(e.message) + '</blockquote>');
 		errdialog.dialog({
 			title: strsource + " is not valid",
 			modal: true,
@@ -1576,189 +1586,89 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		return null;
 	}
 
-	/* We loaded data into arrays lProject lService lThreat lNode lNodeCluster lThrEval
-	 * that seems to make sense.
-	 *
-	 * In order to merge these objects into the existing sets, we must make
-	 * sure that IDs of the new objects do not conflict with existing ones.
-	 * The way we execute this:
-	 * a) create a combined list of all IDs, both current and new.
-	 * b) step through the new objects
-	 *   c) if the ID of the new object conflicts with an existing one:
-	 *	 d) find the lowest unused ID in the combined list
-	 *	 e) rekey the new object to use the ID thus found (change the id of this
-	 *		  object, and all other objects that might refer to this one).
-	 *	 f) add the new ID to the combined list
-	 * Rekeying means that we must also rekey the relevant properties in this
-	 * and other objects.
-	 */
-	/* a) */
-	combined = [];
-	for (i=0; i<lProjectlen; i++) combined.push(lProject[i].id);
-	for (i=0; i<Project._all.length; i++) {
-		if (Project._all[i]) combined.push(Project._all[i].id);
+	// To replace the value '7' in some array A by '77777', we use A[ A.indexOf(7) ] = 7777
+	// If A does not contain the value 7, then indexOf evaluates to -1. This does not give a error message,
+	// but creates a "-1" property on the array.
+	// This only works if the value to be replaced occurs at most once, which is the case here.
+	function arrayReplace(A,oldval,newval) {
+		A[ A.indexOf(oldval) ] = newval;
 	}
-	/* b) */
-	for (i=0; i<lProjectlen; i++) {
-		/* c) */
-		if (Project._all[lProject[i].id]==null) continue;
-		/* d) */
-		lu = lowestunused(combined);
-		/* e) Rekey from .id to lu
-		 * Threat.project, Service.project, NodeCluster.project, Component.project, and this Project.id
+
+	if (upgrade_2_3) {
+		/* Before version 3, IDs were numerical instead of UUIDs, so replace those.
+		 * We replace the id by a UUID, but do remember the old id because it is used in cross-references.
+		 * First correct all IDs, then fix the crossreferences.
 		 */
-		for (k=0; k<lThreatlen; k++) {
-			if (lThreat[k].p==lProject[i].id) lThreat[k].p=lu;
+		for (i=0; i<lProjectlen; i++) {
+			lProject[i].oldid = lProject[i].id;
+			lProject[i].id = createUUID();
 		}
-		for (k=0; k<lServicelen; k++) {
-			if (lService[k].p==lProject[i].id) lService[k].p=lu;
+		for (i=0; i<lThreatlen; i++) {
+			lThreat[i].oldid = lThreat[i].id;
+			lThreat[i].id = createUUID();
 		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			if (lNodeCluster[k].p==lProject[i].id) lNodeCluster[k].p=lu;
+		for (i=0; i<lServicelen; i++) {
+			lService[i].oldid = lService[i].id;
+			lService[i].id = createUUID();
 		}
-		for (k=0; k<lComponentlen; k++) {
-			if (lComponent[k].p==lProject[i].id) lComponent[k].p=lu;
+		for (i=0; i<lNodelen; i++) {
+			lNode[i].oldid = lNode[i].id;
+			lNode[i].id = createUUID();
 		}
-		lProject[i].id = lu;
-		/* f) */
-		combined.push(lu);
+		for (i=0; i<lComponentlen; i++) {
+			lComponent[i].oldid = lComponent[i].id;
+			lComponent[i].id = createUUID();
+		}
+		for (i=0; i<lThrEvallen; i++) {
+			lThrEval[i].oldid = lThrEval[i].id;
+			lThrEval[i].id = createUUID();
+		}
+		for (i=0; i<lNodeClusterlen; i++) {
+			lNodeCluster[i].oldid = lNodeCluster[i].id;
+			lNodeCluster[i].id = createUUID();
+		}
+
+		for (i=0; i<lProjectlen; i++) {
+			// Replace service and Threat IDs
+			for (k=0; k<lThreatlen;  k++)  arrayReplace(lProject[i].t, lThreat[k].oldid, lThreat[k].id);
+			for (k=0; k<lServicelen; k++)  arrayReplace(lProject[i].s, lService[k].oldid, lService[k].id);
+		}
+		for (i=0; i<lThreatlen; i++) {
+			// Replace project id
+			for (k=0; k<lProjectlen; k++)  lThreat[i].p = (lThreat[i].p==lProject[k].oldid ? lProject[k].id : lThreat[i].p);
+		}
+		for (i=0; i<lServicelen; i++) {
+			// Replace project id
+			for (k=0; k<lProjectlen; k++)  lService[i].p = (lService[i].p==lProject[k].oldid ? lProject[k].id : lService[i].p);
+		}
+		for (i=0; i<lNodelen; i++) {
+			// Replace component, connects and service id
+			for (k=0; k<lComponentlen; k++)  lNode[i].m = (lNode[i].m==lComponent[k].oldid ? lComponent[k].id : lNode[i].m);
+			for (k=0; k<lNodelen;      k++)  arrayReplace(lNode[i].c, lNode[k].oldid, lNode[k].id);
+			for (k=0; k<lServicelen;   k++)  lNode[i].s = (lNode[i].s==lService[k].oldid ? lService[k].id : lNode[i].s);
+		}
+		for (i=0; i<lComponentlen; i++) {
+			// Replace project, nodes, and treatassessment ids
+			for (k=0; k<lProjectlen; k++)  lComponent[i].p = (lComponent[i].p==lProject[k].oldid ? lProject[k].id : lComponent[i].p);
+			for (k=0; k<lNodelen;    k++)  arrayReplace(lComponent[i].n, lNode[k].oldid, lNode[k].id);
+			for (k=0; k<lThrEvallen; k++)  arrayReplace(lComponent[i].e, lThrEval[k].oldid, lThrEval[k].id);
+		}
+		for (i=0; i<lThrEvallen; i++) {
+			// Replace component, cluster ids
+			for (k=0; k<lComponentlen;   k++)  lThrEval[i].m = (lThrEval[i].m==lComponent[k].oldid ? lComponent[k].id : lThrEval[i].m);
+			for (k=0; k<lNodeClusterlen; k++)  lThrEval[i].u = (lThrEval[i].u==lNodeCluster[k].oldid ? lNodeCluster[k].id : lThrEval[i].u);
+		}
+		for (i=0; i<lNodeClusterlen; i++) {
+			// Replace project, threatassessment, parentcluster, childclusters, nodes
+			for (k=0; k<lProjectlen;     k++)  lNodeCluster[i].p = (lNodeCluster[i].p==lProject[k].oldid ? lProject[k].id : lNodeCluster[i].p);
+			for (k=0; k<lThrEvallen;     k++)  lNodeCluster[i].e = (lNodeCluster[i].e==lThrEval[k].oldid ? lThrEval[k].id : lNodeCluster[i].e);
+			for (k=0; k<lNodeClusterlen; k++)  lNodeCluster[i].u = (lNodeCluster[i].u==lNodeCluster[k].oldid ? lNodeCluster[k].id : lNodeCluster[i].u);
+			for (k=0; k<lNodeClusterlen; k++)  arrayReplace(lNodeCluster[i].c, lNodeCluster[k].oldid, lNodeCluster[k].id);
+			for (k=0; k<lNodelen;        k++)  arrayReplace(lNodeCluster[i].n, lNode[k].oldid, lNode[k].id);
+		}
 	}
 
-	combined = [];
-	for (i=0; i<lThreatlen; i++) combined.push(lThreat[i].id);
-	for (i=0; i<Threat._all.length; i++) {
-		if (Threat._all[i]) combined.push(Threat._all[i].id);
-	}
-	for (i=0; i<lThreatlen; i++) {
-		if (Threat._all[lThreat[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// Project.threats[], and this Threat.id
-		for (k=0; k<lProjectlen; k++) {
-			for (n=0; n<lProject[k].t.length; n++) {
-				if (lProject[k].t[n]==lThreat[i].id) lProject[k].t[n]=lu;
-			}
-		}
-		lThreat[i].id = lu;
-		combined.push(lu);
-	}
-
-	var combined = [];
-	var lu;
-	for (i=0; i<lServicelen; i++) combined.push(lService[i].id);
-	for (i=0; i<Service._all.length; i++) {
-		if (Service._all[i]) combined.push(Service._all[i].id);
-	}
-	for (i=0; i<lServicelen; i++) {
-		if (Service._all[lService[i].id]==null) continue;
-		lu = lowestunused(combined);
-		/* Project.services[], Node.service, and this Service.id */
-		for (k=0; k<lProjectlen; k++) {
-			for (n=0; n<lProject[k].s.length; n++) {
-				if (lProject[k].s[n]==lService[i].id) lProject[k].s[n]=lu;
-			}
-		}
-		for (k=0; k<lNodelen; k++) {
-			if (lNode[k].s==lService[i].id) lNode[k].s=lu;
-		}
-		lService[i].id = lu;
-		combined.push(lu);
-	}
-
-	combined = [];
-	for (i=0; i<lNodelen; i++) combined.push(lNode[i].id);
-	for (i=0; i<Node._all.length; i++) {
-		if (Node._all[i]) combined.push(Node._all[i].id);
-	}
-	for (i=0; i<lNodelen; i++) {
-		if (Node._all[lNode[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// Node.connect[], Component.nodes[], NodeCluster.childnodes[], and this Node.id
-		for (k=0; k<lNodelen; k++) {
-			for (n=0; n<lNode[k].c.length; n++) {
-				if (lNode[k].c[n]==lNode[i].id) lNode[k].c[n]=lu;
-			}
-		}
-		for (k=0; k<lComponentlen; k++) {
-			for (n=0; n<lComponent[k].n.length; n++) {
-				if (lComponent[k].n[n]==lNode[i].id) lComponent[k].n[n]=lu;
-			}
-		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			for (n=0; n<lNodeCluster[k].n.length; n++) {
-				if (lNodeCluster[k].n[n]==lNode[i].id) lNodeCluster[k].n[n]=lu;
-			}
-		}
-		lNode[i].id = lu;
-		combined.push(lu);
-	}
-
-	combined = [];
-	for (i=0; i<lComponentlen; i++) combined.push(lComponent[i].id);
-	for (i=0; i<Component._all.length; i++)  {
-		if (Component._all[i]) combined.push(Component._all[i].id);
-	}
-	for (i=0; i<lComponentlen; i++) {
-		if (Component._all[lComponent[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// Node.component, ThreatAssessment.component, and this Component.id
-		for (k=0; k<lNodelen; k++) {
-			if (lNode[k].m==lComponent[i].id) lNode[k].m=lu;
-		}
-		for (k=0; k<lThrEvallen; k++) {
-			if (lThrEval[k].m==lComponent[i].id) lThrEval[k].m=lu;
-		}
-		lComponent[i].id = lu;
-		combined.push(lu);
-	}
-
-	combined = [];
-	for (i=0; i<lThrEvallen; i++) combined.push(lThrEval[i].id);
-	for (i=0; i<ThreatAssessment._all.length; i++)  {
-		if (ThreatAssessment._all[i]) combined.push(ThreatAssessment._all[i].id);
-	}
-	for (i=0; i<lThrEvallen; i++) {
-		if (ThreatAssessment._all[lThrEval[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// Component.thrass[], NodeCluster.thrass and this ThreatAssessment.id
-		for (k=0; k<lComponentlen; k++) {
-			for (n=0; n<lComponent[k].e.length; n++) {
-				if (lComponent[k].e[n]==lThrEval[i].id) lComponent[k].e[n]=lu;
-			}
-		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			if (lNodeCluster[k].e==lThrEval[i].id) lNodeCluster[k].e=lu;
-		}
-		lThrEval[i].id = lu;
-		combined.push(lu);
-	}
-
-	combined = [];
-	for (i=0; i<lNodeClusterlen; i++) combined.push(lNodeCluster[i].id);
-	for (i=0; i<NodeCluster._all.length; i++)  {
-		if (NodeCluster._all[i]) combined.push(NodeCluster._all[i].id);
-	}
-	for (i=0; i<lNodeClusterlen; i++) {
-		if (NodeCluster._all[lNodeCluster[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// ThreatAssessment.cluster, NodeCluster.parentcluster, NodeCluster.childclusters and NodeCluster.id
-		for (k=0; k<lThrEvallen; k++) {
-			if (lThrEval[k].u==lNodeCluster[i].id) lThrEval[k].u=lu;
-		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			if (lNodeCluster[k].u==lNodeCluster[i].id) lNodeCluster[k].u=lu;
-		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			for (n=0; n<lNodeCluster[k].c.length; n++) {
-				if (lNodeCluster[k].c[n]==lNodeCluster[i].id) lNodeCluster[k].c[n]=lu;
-			}
-		}
-		lNodeCluster[i].id = lu;
-		combined.push(lu);
-	}
-
-	/* All lProject[], lService[] etc do have IDs that do not conflict with
-	 * existing Project, Service etc objects.
-	 * It is safe to create new objects now.
+	/* It is safe to create new objects now.
 	 */
 	for (i=0; i<lServicelen; i++) {
 		var ls = lService[i];
@@ -1847,7 +1757,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		for (k=0; k<lp.s.length; k++) {
 			p.addservice(lp.s[k]);
 		}
-		p.threats = lp.t;
+		p.threats = lp.t.slice(0); // Omit the "-1" property, if it exists
 		// Upgrade from version 1 to version 2: an additional color was added
 		if (upgrade_1_2 && lp.c && lp.c.length==7) {
 			lp.c[7] = lp.c[6];
@@ -1879,18 +1789,9 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		var lc = lComponent[i];
 		var cm = new Component(lc.t,lc.id);
 		cm.thrass = lc.e;
-		cm.nodes = lc.n;
+		cm.nodes = lc.n.slice(0); // Omit the "-1" property, if it exists;
 		cm.single = (lc.s===true);
 		cm.accordionopened = (lc.o===true);
-//		if (!lc.p) {
-//			// project wasn't stored, because we upgraded from a version 1 localStorage.
-//			// Get the project of the service of the first node.
-//			// First, locate the first node
-//			for (j=0; j<lNodelen && lNode[j].id!=lc.n[0]; j++) { /*jsl:pass*/ }
-//			// Second, locate that node's service
-//			for (k=0; k<lServicelen && lService[k].id!=lNode[j].s; k++) { /*jsl:pass*/ }
-//			lc.p = lService[k].p;
-//		}
 		cm.project = lc.p;
 		if (upgrade_1_2) {
 			// Check if there is another Component in this project with the same case-insensitive name
@@ -1949,8 +1850,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		nc.title = lnc.l;
 		nc.project = lnc.p;
 		nc.parentcluster = lnc.u;
-		nc.childclusters = lnc.c;
-		nc.childnodes = lnc.n;
+		nc.childclusters = lnc.c.slice(0); // Omit the "-1" property, if it exists;
+		nc.childnodes = lnc.n.slice(0); // Omit the "-1" property, if it exists
 		nc.thrass = lnc.e;
 		nc.accordionopened = (lnc.o===true);
 		//nc.calculatemagnitude(); // Not all childclusters may have been loaded
@@ -3905,25 +3806,29 @@ var LastSelectedNode;
 var MenuCluster;
 
 
-/* In the event handlers 'this.id' is of the form linode123_678 (for nodes)
- * or linode678 (for cluster headings), where 123 is a Node id and 678 is a NodeCluster id.
+/* In the event handlers 'this.id' is of the form linodeNNN_CCC (for nodes)
+ * or linodeCCC (for cluster headings), where NNN is a Node id and CCC is a NodeCluster id.
  *
  * To get the cluster id, just use nid2id().
- * To get the node id, first strip underscore and digits, then use nid2id().
- *
- *	var node_id = nid2id(this.id.replace(/_\d+$/,''));
- *	var cluster_id = nid2id(this.id);
- *
- * If either format is to be handled, then the following may be more useful:
- *
- *  var node_id = nid2id(this.id.replace(/\d+$/,'').replace(/_$/,''));
- *
- * since it either returns the node id or NaN in case of a cluster heading.
+ * To get the node id, use internalID().
  */
+
+/* internalID(str)
+ * If str ends in XXX_YYY, where XXX and YYY are UUIDs, then return XXX.
+ * Else return null.
+ */
+function internalID(str) {
+	str = str.replace(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/, '');
+	var m = str.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_$/);
+	if (m) {
+		return m[1];
+	} else {
+		return null;
+	}
+}
 
 function clickCollapseHandler(ev) {
 	var ul = $(this).parent();
-//	var nid = nid2id(this.id.replace(/\d+$/,'').replace(/_$/,''));
 	var cluster = NodeCluster.get(nid2id(this.id));
 
 	$('#ccfmenu').hide();
@@ -3970,8 +3875,8 @@ function clickSelectHandler(ev) {
 			// node laste selected. Else ignore.
 			if (LastSelectedNode && nid2id(this.id)==nid2id(LastSelectedNode)) {
 				// Select all nodes from LastSelectedId to this.id, inclusive.
-				var fromnid = nid2id(LastSelectedNode.replace(/_\d+$/,''));
-				var tonid = nid2id(this.id.replace(/_\d+$/,''));
+				var fromnid = internalID(LastSelectedNode);
+				var tonid = internalID(this.id);
 //				var cluster = nid2id(this.id);
 
 				var idlist = [];
@@ -3984,7 +3889,7 @@ function clickSelectHandler(ev) {
 				// find the from and to nodes
 				var fromi, toi;
 				for (var i=0; i<idlist.length; i++) {
-					var nd = nid2id(idlist[i].replace(/_\d+$/,''));
+					var nd = internalID(idlist[i]);
 					if (fromnid==nd) fromi = i;
 					if (tonid==nd) toi = i;
 				}
@@ -4009,7 +3914,7 @@ function clickSelectHandler(ev) {
 }
 
 function contextMenuHandler(ev) {
-	var nid = nid2id(this.id.replace(/\d+$/,'').replace(/_$/,''));
+	var nid = internalID(this.id);
 	var cluster = NodeCluster.get(nid2id(this.id));
 //	var root = NodeCluster.get(cluster.root());
 
@@ -4017,7 +3922,7 @@ function contextMenuHandler(ev) {
 	$('#ccfmenu').css('left', ev.clientX+2);
 	$('#ccfmenu').css('top', ev.clientY-5);
 
-	if (isNaN(nid)) {
+	if (nid==null) {
 		// Popup menu called on a cluster
 		// Cannot move to the parent (because that's where it is already), nor can it be
 		// moved into any of its own descendants. And it cannot be moved onto itself.
@@ -4141,7 +4046,7 @@ function moveToClusterHandler(/*event*/) {
 function moveSelectionToCluster(cluster) {
 	var root = NodeCluster.get(cluster.root());
 	$('.li_selected').each(function(){
-		var n = nid2id(this.id.replace(/_\d+$/,''));
+		var n = internalID(this.id);
 		root.removechildnode(n);
 		cluster.addchildnode(n);
 	});
@@ -4228,13 +4133,13 @@ function AddAllClusters() {
 
 	$('#noccf').css('display', 'none');
 	$('#someccf').css('display', 'block');
-	$('#expandallccf').on('click',  function(evt){
+	$('#expandallccf').on('click',  function(){
 		$('#ccfs_body').scrollTop(0);
-		expandAllCCF(nid2id(evt.target.id));
+		expandAllCCF();
 	});
-	$('#collapseallccf').on('click',  function(evt){
+	$('#collapseallccf').on('click',  function(){
 		$('#ccfs_body').scrollTop(0);
-		collapseAllCCF(nid2id(evt.target.id));
+		collapseAllCCF();
 	});
 	var create_ccf_sortfunc = function(opt) {
 		return function() {
@@ -4786,33 +4691,19 @@ function appendAllThreats(nc,domid,prefix) {
 	Drop onto self (either node or cluster): invalid.
  */
 function nodeClusterReorder(event,ui) {
-	// dragid is either of the form "linode137" or "linode456_137", where
-	// 137 is a NodeCluster id and 456 is a Node id.
-	// In either case nid2id() will get the cluster id.
-	// First stripping digits, then stripping non-digits, then calling nid2id() will
-	// either result in NaN or the Node id.
+	// See the note at the start of the definition of internalID()
 	var dragid = ui.draggable[0].id;
 	var dropid = this.id;
 	// Only valid drops are to be expected.
-	var drag_n=null, drag; // source node and cluster
-	var drop_n=null, drop; // destination node and cluster
+	var drag_n, drag; // source node and cluster
+	var drop_n, drop; // destination node and cluster
 	var drag_cluster, drop_cluster, root_cluster;
 
 	drag = nid2id(dragid);
-	dragid = dragid.replace(/\d+$/,"");
-	dragid = dragid.replace(/\D+$/,"");
-	dragid = nid2id(dragid);
-	if (!isNaN(dragid)) {
-		drag_n = dragid;
-	}
+	drag_n = internalID(dragid);
 
 	drop = nid2id(dropid);
-	dropid = dropid.replace(/\d+$/,"");
-	dropid = dropid.replace(/\D+$/,"");
-	dropid = nid2id(dropid);
-	if (!isNaN(dropid)) {
-		drop_n = dropid;
-	}
+	drop_n = internalID(dropid);
 
 	if (drag!=null) drag_cluster = NodeCluster.get(drag);
 	if (drop!=null) drop_cluster = NodeCluster.get(drop);
@@ -4836,10 +4727,7 @@ function nodeClusterReorder(event,ui) {
 			}
 			$(this).addClass('li_selected');
 			$('.li_selected').each(function(){
-				var n = this.id;
-				n = n.replace(/\d+$/,"");
-				n = n.replace(/\D+$/,"");
-				n = nid2id(n);
+				var n = internalID(this.id);
 				root_cluster.removechildnode(n);
 				nc.addchildnode(n);
 			});
@@ -4858,10 +4746,7 @@ function nodeClusterReorder(event,ui) {
 		} else if (drop_n==null && drag!=drop) {
 			// Dropped into a different cluster
 			$('.li_selected').each(function(){
-				var n = this.id;
-				n = n.replace(/\d+$/,"");
-				n = n.replace(/\D+$/,"");
-				n = nid2id(n);
+				var n = internalID(this.id);
 				root_cluster.removechildnode(n);
 				drop_cluster.addchildnode(n);
 			});
@@ -4908,27 +4793,17 @@ function allowDrop(elem) {
 	if (Preferences.tab!=2)  return false;
 	if (this==elem[0])  return false;
 	// Source and target information
-	var drag_n=null, drag;	// source node and cluster (id)
-	var drop_n=null, drop; // destination node and cluster (id)
+	var drag_n, drag;	// source node and cluster (id)
+	var drop_n, drop; // destination node and cluster (id)
 	var drag_cluster, drop_cluster; // source and destination clusters (object)
 
 	var id = elem[0].id;
 	drag = nid2id(id);
-	id = id.replace(/\d+$/,"");
-	id = id.replace(/\D+$/,"");
-	id = nid2id(id);
-	if (!isNaN(id)) {
-		drag_n = id;
-	}
+	drag_n = internalID(id);
 
 	id = this.id;
 	drop = nid2id(id);
-	id = id.replace(/\d+$/,"");
-	id = id.replace(/\D+$/,"");
-	id = nid2id(id);
-	if (!isNaN(id)) {
-		drop_n = id;
-	}
+	drop_n = internalID(id);
 
 	drag_cluster = NodeCluster.get(drag);
 	drop_cluster = NodeCluster.get(drop);

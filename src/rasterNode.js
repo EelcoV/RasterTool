@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, ThreatAssessment, _, arrayJoinAsString, bugreport, isSameString, nextUnusedIndex, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace, displayThreatsDialog
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, ThreatAssessment, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace, displayThreatsDialog
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -21,9 +21,8 @@
  *  index: index of the icon in the current iconset
  *	title: name of the node
  *	suffix: letter a,b,c... or user-set string to distiguish nodes with the same title (set by Component)
- *	id: unique number
+ *	id: UUID
  *	component: component object for this node
- *	nid: node ID (id of the DOM element)
  *	jnid: node ID in jQuery format (#id of the DOM element)
  *	service: ID of the service to which this node belongs
  *	position: current position on workspace, and size {x,y,width,height}
@@ -76,8 +75,9 @@ var Node = function(type, id) {
 	if (id!=null && Node._all[id]!=null) {
 		bugreport("Node with id "+id+" already exists","Node.constructor");
 	}
-	this.id = (id==null ? nextUnusedIndex(Node._all) : id);
+	this.id = (id==null ? createUUID() : id);
 	this.type = type;
+	this.index = null;
 	this.nid = 'node'+this.id;
 	this.jnid = '#node'+this.id;
 	this.service = Service.cid;
@@ -91,23 +91,13 @@ var Node = function(type, id) {
 	// Sticky notes are traditionally yellow
 	this.color = (this.type=='tNOT' ? "yellow" : "none");
 
-	// Locate the first possible index
-	var p = Project.get(Project.cid);
-	for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
-		// empty
-	}
-
-	this.position.width = p.icondata.icons[this.index].width;
-	this.position.height = p.icondata.icons[this.index].height;
-
 	this.store();
 	Node._all[this.id] = this;
 };
-Node._all = [];
+Node._all = new Object();
 Node.get = function(id) { return Node._all[id]; };
 Node.projecthastitle = function(pid,str) {
-	for (var i=0,alen=Node._all.length; i<alen; i++) {
-		if (!Node._all[i]) continue;
+	for (var i in Node._all) {
 		if (isSameString(Node._all[i].title,str)) {
 			var cm = Component.get(Node._all[i].component);
 			if (cm.project==pid)  return i;
@@ -116,8 +106,7 @@ Node.projecthastitle = function(pid,str) {
 	return -1;
 };
 Node.servicehastitle = function(sid,str) {
-	for (var i=0,alen=Node._all.length; i<alen; i++) {
-		if (!Node._all[i]) continue;
+	for (var i in Node._all) {
 		if (isSameString(Node._all[i].title,str) && Node._all[i].service==sid)  return i;
 	}
 	return -1;
@@ -141,7 +130,7 @@ Node.nodesinselection = function() {
 Node.destroyselection = function () {
 	var a = Node.nodesinselection();
 	for (var i=0; i<a.length; i++) {
-		var rn = Node._all[a[i]];
+		var rn = Node.get(a[i]);
 		rn.destroy();
 	}
 };
@@ -175,7 +164,7 @@ Node.prototype = {
 		localStorage.removeItem(LS+'N:'+this.id);
 		this.hidemarker();  // Make it disappear before the animation starts
 		$('#tinynode'+this.id).remove();
-		Node._all[this.id]=null;
+		delete Node._all[this.id];
 		if (effect==undefined || effect==true) {
 			$(this.jnid).effect('explode', 500, function() {
 				var id = nid2id(this.id);
@@ -243,7 +232,7 @@ Node.prototype = {
 		this.store();
 		$(this.jnid).css('left',px+'px').css('top',py+'px');
 		jsP.revalidate(this.nid);
-		
+
 		dO.left = (px * ow)/fw;
 		dO.top = (py * oh)/fh;
 		$('#tinynode'+this.id).css('left', dO.left);
@@ -654,6 +643,15 @@ Node.prototype = {
 	
 	paint: function(effect) {
 		var p = Project.get(Project.cid);
+		if (!this.index) {
+			// Locate the first possible index
+			for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
+				// empty
+			}
+			if (this.position.width==0)  this.position.width = p.icondata.icons[this.index].width;
+			if (this.position.height==0)  this.position.height = p.icondata.icons[this.index].height;
+		}
+
 		var icn = p.icondata.icons[this.index];
 		var jsP = Service.get(this.service)._jsPlumb;
 		if (this.position.x<0 || this.position.y<0
@@ -703,7 +701,12 @@ Node.prototype = {
 
 		// Under a different iconset the aspect ratio may be off. Correct it, if necessary
 		if (icn.maintainAspect) {
-			this.position.height = this.position.width * icn.height/icn.width;
+			var newh = this.position.width * icn.height/icn.width;
+			if (newh > this.position.height) {
+				this.position.height = newh;
+			} else {
+				this.position.width = this.position.height * icn.width/icn.height;
+			}
 			this.store();
 		}
 		$(this.jnid).width(this.position.width);
@@ -820,7 +823,7 @@ Node.prototype = {
 			if (!rn.editinprogress()) this.blur();
 			$('#nodeC'+id).css({visibility: 'hidden'});
 			if (rn.dragpoint) $(rn.dragpoint.canvas).css({visibility: 'hidden'});
-			$('#nodeMagnitude'+id).removeClass('doshow'); 
+			$('#nodeMagnitude'+id).removeClass('doshow');
 		}).on('contextmenu', function(e) {
 			e.preventDefault();
 			var rn = Node.get(nid2id(this.id));
@@ -1151,8 +1154,7 @@ var NodeIterator = function(opt) {
 	 */
 	this.index = 0;
 	this.item = [];
-	for (var i=0,alen=Node._all.length; i<alen; i++) {
-		if (!Node._all[i]) continue;
+	for (var i in Node._all) {
 		var rn = Node._all[i];
 		if (opt.project!=undefined && Service.get(rn.service).project!=opt.project) continue;
 		if (opt.service!=undefined && rn.service!=opt.service) continue;
