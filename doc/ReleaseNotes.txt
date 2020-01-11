@@ -7,6 +7,8 @@ XXXX 2019
 * Build scripts now always create the classroom variant and the normal intranet variant.
 * Does not work with Internet Explorer anymore.
 * Groundwork for different iconsets.
+* Use native jQueryUI menus (to simplify the code).
+* Make the toolbar at the top more consistent.
 
 October 2019
 ============
