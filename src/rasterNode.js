@@ -829,6 +829,8 @@ Node.prototype = {
 				if (Math.abs(do_data[0].x-rn.undo_data[0].x) > 10
 				 || Math.abs(do_data[0].y-rn.undo_data[0].y) > 10
 				) {
+					// Restore previous geometry, necessary for testing
+					rn.setposition(rn.undo_data[0].x, rn.undo_data[0].y);
 					new Transaction('nodeGeometry', rn.undo_data, do_data);
 				}
 				delete rn.undo_data;
@@ -1057,12 +1059,8 @@ Node.prototype = {
 			maxHeight: (this.type=='tNOT' ? 3 : 2) * this._normh,
 			start: function(event,ui) {
 				let rn = Node.get( nid2id(this.id) );
-				rn.undo_data = {
-					x: rn.position.x,
-					y: rn.position.y,
-					width: rn.position.width,
-					height: rn.position.height
-				};
+				rn.undo_data = {};
+				for (let i in rn.position)  rn.undo_data[i] = rn.position[i];
 			},
 			resize: function(event,ui) {
 				let rn = Node.get( nid2id(this.id) );
@@ -1074,9 +1072,16 @@ Node.prototype = {
 			},
 			stop: function (event,ui) {
 				let rn = Node.get( nid2id(this.id) );
+				let newposition = {};
+				// Save new geometry
+				for (let i in rn.position)  newposition[i] = rn.position[i];
+				// Restore starting geometry
+				for (let i in rn.undo_data)  rn.position[i] = rn.undo_data[i];
+// rn.store() is necessary for testing
+				rn.store();
 				new Transaction('nodeGeometry',
 					[{id: rn.id, x: rn.undo_data.x, y: rn.undo_data.y, width: rn.undo_data.width, height: rn.undo_data.height}],
-					[{id: rn.id, x: rn.position.x, y: rn.position.y, width: rn.position.width, height: rn.position.height}]
+					[{id: rn.id, x: newposition.x, y: newposition.y, width: newposition.width, height: newposition.height}]
 				);
 				delete rn.undo_data;
 			}

@@ -47,26 +47,24 @@ var Transaction = function(knd,undo_data,do_data) {
 	// If there are any actions between current and head, then these are discarded
 	Transaction.current.next = this;
 	this.prev = Transaction.current;
-	this.perform();
-	transactionCompleted("+ "+this.kind);
-
 // Test!
 checkForErrors();
 let S1 = exportProject(Project.cid);
-this.undo();
+	this.perform();
+	transactionCompleted("+ "+this.kind);
+
 checkForErrors();
 let S2 = exportProject(Project.cid);
-this.perform();
-checkForErrors();
-let S3 = exportProject(Project.cid);
 this.undo();
 checkForErrors();
-let S4 = exportProject(Project.cid);
+let S3 = exportProject(Project.cid);
 this.perform();
+checkForErrors();
+let S4 = exportProject(Project.cid);
 if (S1!=S3) {
-	logdiff(S1,S3,"in new: perform != perform");
+	logdiff(S1,S3,"in new: undo != undo");
 } else if (S2!=S4) {
-	logdiff(S2,S4,"in new: undo != undo");
+	logdiff(S2,S4,"in new: perform != perform");
 }
 
 	Transaction.current = this;
