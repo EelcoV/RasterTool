@@ -91,6 +91,24 @@ body {
 }
 #libraryactivator { padding-left: 10px; }
 
+#undobutton {
+	background-size: 85%;
+	background-repeat: no-repeat;
+	background-image: url(../img/undo-lo.png);
+}
+#undobutton.possible {
+	background-image: url(../img/undo-hi.png);
+}
+
+#redobutton {
+	background-size: 85%;
+	background-repeat: no-repeat;
+	background-image: url(../img/redo-lo.png);
+}
+#redobutton.possible {
+	background-image: url(../img/redo-hi.png);
+}
+
 #findbutton {
 	background-size: 85%;
 	background-repeat: no-repeat;

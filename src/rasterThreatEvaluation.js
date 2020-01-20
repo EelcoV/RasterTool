@@ -749,6 +749,15 @@ ThreatIterator.prototype = {
 	next: function() {this.index++;},
 	notlast: function() {return (this.index < this.itemlength);},
 	getthreat: function() {return Threat.get( this.item[this.index] );},
-	getthreatid: function() {return this.item[this.index];}
+	getthreatid: function() {return this.item[this.index];},
+	sortByType: function() {
+		this.item.sort( function(a,b) {
+			var ta = Threat.get(a);
+			var tb = Threat.get(b);
+			if (ta.type<tb.type)  return -1;
+			if (ta.type>tb.type)  return 1;
+			return 0;
+		});
+	}
 };
 

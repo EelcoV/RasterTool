@@ -3,7 +3,7 @@
  */
 
 /* globals
-Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Threat, ThreatAssessment, ThreatIterator, _t, createUUID, transactionCompleted, unescapeNewlines, urlDecode, urlEncode
+Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Threat, ThreatAssessment, ThreatIterator, Transaction, _t, transactionCompleted, unescapeNewlines, urlDecode, urlEncode
 */
 
 "use strict";
@@ -335,12 +335,19 @@ function initAllAndSetup() {
 			}
 		}
 	});
+	$('#helpbutton').attr('title', _("Assistance"));
 	$('#helpbutton').on('click',  function() {
 		$('#helppanel').dialog('open');
 	});
 
 #ifdef SERVER
+	$('#undobutton').on('click', Transaction.undo);
+	$('#redobutton').on('click', Transaction.redo);
+	$('#undobutton').attr('title', _("Undo"));
+	$('#redobutton').attr('title', _("Redo"));
+
 	$('#findbutton').on('click', StartFind);
+	$('#findbutton').attr('title', _("Locate nodes"));
 
 	var flashTimer;
 	$(document).ajaxSend(function(){
@@ -1075,6 +1082,18 @@ function switchToProject(pid,dorefresh) {
 	}
 }
 
+/* createUUID: return a new "unique" random UUID.
+ * There are different UUID-versions; version 4 is randomly generated.
+ * Use the crypto library, as Math.random() is insufficiently random.
+ */
+/* eslint-disable no-bitwise */
+function createUUID() {
+  return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c /4).toString(16)
+  );
+}
+/* eslint-enable no-bitwise */
+
 /* nid2id: translate a DOM id to a UUID
  * DOM ids are a string followed by a UUID, return the trailing UUID
  */
@@ -1454,6 +1473,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	}
 	catch(e) {
 		if (!showerrors)  return null;
+		$('#splash').hide();
 		var errdialog = $('<div></div>');
 		var s = str.substr(0,40);
 		s = H(s).replace(/\s+/g," ");
@@ -1574,6 +1594,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	catch (e) {
 		if (DEBUG) console.log("Error: "+e.message);
 		if (!showerrors)  return null;
+		$('#splash').hide();
 		errdialog = $('<div></div>');
 		errdialog.append('<p>' + strsource + ' contains an error:</p>\
 			<blockquote>' + H(e.message) + '</blockquote>');
@@ -1825,7 +1846,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		te.setdescription(lte.d);
 		te.freq=lte.p;
 		te.impact=lte.i;
-		te.description=lte.d;
 		te.remark=lte.r;
 		te.computetotal();
 		te.component=lte.m;
@@ -1834,17 +1854,17 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	}
 	for (i=0; i<lNodeClusterlen; i++) {
 		var lnc = lNodeCluster[i];
-		/* For some reason, some project contain empty cluster (root, no nodes and no subclusters).
-		 * Do not create such a useless cluster, and if its ThreatEvaluation has been created
-		 * already then delete that.
-		 */
-		if (lnc.u==null && lnc.c.length==0 && lnc.n.length==0) {
-			te = ThreatAssessment.get(lnc.e);
-			if (te && te.cluster==lnc.id) {
-				te.destroy();
-			}
-			continue;
-		}
+//		/* For some reason, some project contain empty cluster (root, no nodes and no subclusters).
+//		 * Do not create such a useless cluster, and if its ThreatEvaluation has been created
+//		 * already then delete that.
+//		 */
+//		if (lnc.u==null && lnc.c.length==0 && lnc.n.length==0) {
+//			te = ThreatAssessment.get(lnc.e);
+//			if (te && te.cluster==lnc.id) {
+//				te.destroy();
+//			}
+//			continue;
+//		}
 
 		var nc = new NodeCluster(lnc.t,lnc.id);
 		nc.title = lnc.l;
@@ -1857,6 +1877,20 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		//nc.calculatemagnitude(); // Not all childclusters may have been loaded
 		nc.store();
 	}
+
+	// As from version 3, there should be rootclusters for each threat
+	for (i=0; upgrade_2_3 && i<lThreatlen; i++) {
+		lth = lThreat[i];
+		let it = new NodeClusterIterator({project: lth.p, title: lth.l, type: lth.t, isroot: true});
+		// If the project has a rootcluster with that type and title, then OK.
+		if (it.notlast())  continue;
+		// else make sure than a stub rootcluster exists, and has a threat assessment.
+		nc = new NodeCluster(lth.t);
+		nc.setproject(lth.p);
+		nc.settitle(lth.l);
+		nc.addthrass();
+	}
+
 	for (i=0; i<lComponentlen; i++) {
 		cm = Component.get( lComponent[i].id );
 		cm.calculatemagnitude();
@@ -2874,7 +2908,6 @@ function initTabDiagrams() {
 					var name = $('#field_componentrename');
 					cm.changetitle(name.val());
 					$(this).dialog('close');
-					transactionCompleted("Component class rename");
 				}
 		});
 		dialog.dialog({
@@ -2890,7 +2923,6 @@ function initTabDiagrams() {
 					var name = $('#field_componentrename');
 					cm.changetitle(name.val());
 					dialog.dialog('close');
-					transactionCompleted("Component class rename");
 				});
 			},
 			close: function(/*event, ui*/) {
@@ -2925,7 +2957,6 @@ function initTabDiagrams() {
 					var name = $('#field_suffixrename');
 					rn.changesuffix(name.val());
 					$(this).dialog('close');
-					transactionCompleted("Node suffix rename");
 				}
 		});
 		dialog.dialog({
@@ -2941,7 +2972,6 @@ function initTabDiagrams() {
 					var name = $('#field_suffixrename');
 					rn.changesuffix(name.val());
 					dialog.dialog('close');
-					transactionCompleted("Node suffix rename");
 				});
 			},
 			close: function(/*event, ui*/) {
@@ -3268,25 +3298,75 @@ function showLabelEditForm() {
 }
 
 function workspacedrophandler(event, ui) {
+	let typ = ui.draggable[0].id;
 	// The id of the template must be a valid type
-	if (!Rules.nodetypes[ui.draggable[0].id]) {
+	if (!Rules.nodetypes[typ]) {
 		bugreport('object with unknown type','workspacedrophandler');
 	}
-	var rn = new Node(ui.draggable[0].id);
-	/* 50 = half the width of a div.node; 10 = half the height
-	 * The center of the new Node is therefore roughly on the the drop spot.
-	 */
-	rn.autosettitle();
-	var r = $('#tab_diagrams').offset();
-	rn.paint();
-	rn.setposition(
-		event.originalEvent.pageX-50-r.left+$('#diagrams'+Service.cid).scrollLeft(),
-		event.originalEvent.pageY-10-r.top +$('#diagrams'+Service.cid).scrollTop()
+
+	let newid = createUUID();
+	let newtitle = Node.autotitle(typ);
+	let r = $('#tab_diagrams').offset();
+	let newx = event.originalEvent.pageX-50-r.left+$('#diagrams'+Service.cid).scrollLeft();
+	let newy = event.originalEvent.pageY-10-r.top +$('#diagrams'+Service.cid).scrollTop();
+
+	if (typ=='tNOT' || typ=='tACT') {
+		new Transaction('nodeCreate',
+			[{id: newid}],
+			[{id: newid,
+			 type: typ,
+			 title: newtitle,
+			 x: newx,
+			 y: newy
+			}]
+		);
+		return;
+	}
+
+	// Set of default vulnerabilities
+	let newthr = [];
+	let p = Project.get(Project.cid);
+	for (let i of p.threats) {
+		let th = Threat.get(i);
+		if (th.type!=typ && typ!='tUNK') continue;
+		newthr.push({
+			id: createUUID(),
+			title: th.title,
+			type: th.type,
+			description: th.description,
+			freq: '-',
+			impact: '-',
+			remark: ''
+		});
+	}
+
+	new Transaction('nodeCreate',
+		[{id: newid}],
+		[{id: newid,
+		 type: typ,
+		 title: newtitle,
+		 x: newx,
+		 y: newy,
+		 componentid: createUUID(),
+		 thrass: newthr
+		}]
 	);
-	// Now we now the width and height. Adjust the position if necessary.
-	rn.setposition(rn.position.x,rn.position.y);
+
+//	var rn = new Node(typ);
+//	/* 50 = half the width of a div.node; 10 = half the height
+//	 * The center of the new Node is therefore roughly on the the drop spot.
+//	 */
+//	rn.autosettitle();
+//	var r = $('#tab_diagrams').offset();
+//	rn.paint();
+//	rn.setposition(
+//		event.originalEvent.pageX-50-r.left+$('#diagrams'+Service.cid).scrollLeft(),
+//		event.originalEvent.pageY-10-r.top +$('#diagrams'+Service.cid).scrollTop()
+//	);
+//	// Now we now the width and height. Adjust the position if necessary.
+//	rn.setposition(rn.position.x,rn.position.y);
 	$('.tC').css('visibility','hidden');
-	transactionCompleted("Node add");
+//	transactionCompleted("Node add");
 }
 
 function refreshThreatsDialog(force) {
@@ -4758,7 +4838,7 @@ function nodeClusterReorder(event,ui) {
 		}
 	} else {
 		// A cluster is being dragged
-		if (DEBUG && drag_cluster.hasdescendant(drop)) {
+		if (DEBUG && drag_cluster.containscluster(drop)) {
 			bugreport("Cluster dropped on a descendant","nodeClusterReorder");
 		} else if (drop_n!=null) {
 			bugreport("Cluster dropped on a node","nodeClusterReorder");
@@ -4824,7 +4904,7 @@ function allowDrop(elem) {
 		if (drop_n!=null) {
 			return false;
 		} else {
-			return !(drag_cluster.hasdescendant(drop));
+			return !(drag_cluster.containscluster(drop));
 		}
 	}
 	/* unreachable */

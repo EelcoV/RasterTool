@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, nextUnusedIndex, _, addClusterElements, repaintCluster, Component, DEBUG, LS, ThreatAssessment, H, createUUID, isSameString */
+/* global bugreport, nextUnusedIndex, _, addClusterElements, repaintCluster, Component, createUUID, DEBUG, LS, ThreatAssessment, H, createUUID, isSameString */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -33,13 +33,13 @@
  *	setproject(pid): set the project to which this NodeCluster belongs to pid.
  *	setparent(nc): set the parent of this cluster to nc.
  *	settitle(str): sets the title (and the title of the thrass) to 't'.
- *	addthrass: adds a new, blank threat assessment to this cluster.
+ *	addthrass(id): adds a new, blank threat assessment to this cluster; the id of the new threat assessment is optional.
  *	addchildcluster(id): add a child cluster 'id' to this cluster.
  *	removechildcluster(id): remove child cluster 'id' from this cluster.
  *	addchildnode(nid): add a child node 'nid' to this cluster.
  *	removechildnode(nid): remove node 'nid' from this tree, and/or from any of its subtrees
  *	containsnode(nid): checks whether node 'nid' is contained in this cluster, or any subcluster.
- *	hasdescendant(ncid): checks whether cluster 'ncid' is a descendent of this cluster.
+ *	containscluster(ncid): checks whether cluster 'ncid' is contained in this cluster, or any subcluster.
  *	root(): returns the ultimate root-cluster of this cluster.
  *  depth(): 0 for root, one more for each step removed from root in parent-child relations.
  *	isroot(): true iff this cluster has no parent.
@@ -79,27 +79,22 @@ NodeCluster.get = function(id) { return NodeCluster._all[id]; };
 
 NodeCluster.addnode_threat = function(pid,nid,threattitle,threattype,duplicateok) {
 	// Locate the corresponding cluster in the project. 
-	// There should be at most one.
+	// There should be exactly one.
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
 	if (it.itemlength>1) {
 		bugreport("Multiple matches","NodeCluster.addnode_threat");
+		return;
+	} else if (it.itemlength==0) {
+		bugreport("No rootcluster found","NodeCluster.addnode_threat");
+		return;
 	}
-	if (it.notlast()) {
-		var nc = it.getNodeCluster();
+	var nc = it.getNodeCluster();
 //console.debug("Adding node "+nid+" to cluster "+nc.id+" ["+threattitle+"|"+threattype+":"+nc.project+"]");
-		if (nc.containsnode(nid)) {
-			if (duplicateok!=true) {
-				bugreport("Duplicate node in cluster","NodeCluster.addnode_threat");
-			}
-			return;
+	if (nc.containsnode(nid)) {
+		if (duplicateok!=true) {
+			bugreport("Duplicate node in cluster","NodeCluster.addnode_threat");
 		}
-	} else {
-		nc = new NodeCluster(threattype);
-		nc.setproject(pid);
-		nc.settitle(threattitle);
-//console.debug("Creating cluster with node "+nid+" as cluster "+nc.id+" ["+threattitle+"|"+threattype+":"+nc.project+"]");
-		nc.addthrass();
-		addClusterElements(nc);
+		return;
 	}
 	nc.addchildnode(nid);
 	repaintCluster(nc.id);
@@ -110,20 +105,16 @@ NodeCluster.addcomponent_threat = function(pid,cid,threattitle,threattype,duplic
 		bugreport("No such component","NodeCluster.addcomponent_threat");
 	}
 	// Locate the corresponding cluster in the project. 
-	// There should be at most one.
+	// There should be exactly one.
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
 	if (it.itemlength>1) {
 		bugreport("Multiple matching clusters","NodeCluster.addcomponent_threat");
+		return;
+	} else if (it.itemlength==0) {
+		bugreport("No rootcluster found","NodeCluster.addnode_threat");
+		return;
 	}
-	if (it.notlast()) {
-		var nc = it.getNodeCluster();
-	} else {
-		nc = new NodeCluster(threattype);
-		nc.setproject(pid);
-		nc.settitle(threattitle);
-		nc.addthrass();
-		addClusterElements(nc);
-	}
+	var nc = it.getNodeCluster();
 	for (var i=0; i<(cm.single?1:cm.nodes.length); i++) {
 		if (nc.containsnode(cm.nodes[i])) {
 			if (duplicateok) continue;
@@ -237,21 +228,18 @@ NodeCluster.prototype = {
 		}
 	},
 
-	containsnode: function(nid) {
-		if (this.childnodes.indexOf(nid)>-1) {
-			return true;
+	containsnode: function(target) {
+		if (this.childnodes.indexOf(target)!=-1)  return true;
+		for (let child of this.childclusters) {
+			if (NodeCluster.get(child).containsnode(target))  return true;
 		}
-		var contains=false;
-		for (var i=0; !contains && i<this.childclusters.length; i++) {
-			contains = NodeCluster.get(this.childclusters[i]).containsnode(nid);
-		}
-		return contains;
+		return false;
 	},
 	
-	hasdescendant: function(ncid){
-		if (this.childclusters.indexOf(ncid)!=-1)  return true;
-		for (var i=0; i<this.childclusters.length; i++) {
-			if (NodeCluster.get(this.childclusters[i]).hasdescendant(ncid))  return true;
+	containscluster: function(target) {
+		if (this.childclusters.indexOf(target)!=-1)  return true;
+		for (let child of this.childclusters) {
+			if (NodeCluster.get(child).containscluster(target))  return true;
 		}
 		return false;
 	},
@@ -272,8 +260,9 @@ NodeCluster.prototype = {
 		return arr;
 	},
 	
-	addthrass: function() {
-		var ta = new ThreatAssessment(this.type);
+	addthrass: function(newid) {
+		if (!newid) newid = createUUID();
+		var ta = new ThreatAssessment(this.type, newid);
 		this.thrass = ta.id;
 		ta.setcluster(this.id);
 		ta.settitle(this.title);
@@ -389,6 +378,11 @@ NodeCluster.prototype = {
 	
 	_stringify: function() {
 		var data = {};
+		// When comparing projects (e.g. for debugging) it is useful if the order of
+		// items in the project file is the same.
+		// Therefore sort childclusters and childnodes
+		this.childclusters.sort();
+		this.childnodes.sort();
 		data.t=this.type;
 		data.l=this.title;
 		data.p=this.project;
@@ -414,6 +408,15 @@ NodeCluster.prototype = {
 		var errors = "";
 		var offender = "Node cluster '"+H(this.title)+"' ("+this.id+") ";
 		var i, j;
+		let key = LS+'L:'+this.id;
+		let lsval = localStorage[key];
+
+		if (!lsval) {
+			errors += offender+" is not in local storage.\n";
+		}
+		if (lsval && lsval!=this._stringify()) {
+			errors += offender+" local storage is not up to date.\n";
+		}
 		for (i=0; i<this.childclusters.length; i++) {
 			var cc = NodeCluster.get(this.childclusters[i]);
 			if (!cc) {
@@ -457,7 +460,7 @@ NodeCluster.prototype = {
 				}
 			}
 			var cm = Component.get(rn.component);
-			if (!rn) {
+			if (!cm) {
 				errors += offender+"has a child node "+rn.id+" that does not have a valid component.\n";
 				continue;
 			}

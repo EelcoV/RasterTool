@@ -508,6 +508,15 @@ Project.prototype = {
 		th.setproject(this.id);
 		this.threats.push(th.id);
 		this.store();
+
+		// Make sure that the project has a rootcluster for this threat
+		let it = new NodeClusterIterator({project: this.id, title: th.title, type: th.type, isroot: true});
+		if (!it.notlast()) {
+			let nc = new NodeCluster(th.type);
+			nc.setproject(this.id);
+			nc.settitle(th.title);
+			nc.addthrass();
+		}
 	},
 	
 	removethreat: function(id) {
@@ -963,11 +972,21 @@ Project.prototype = {
 	internalCheck: function() {
 		var errors = "";
 		var it;
+		let key = LS+'P:'+this.id;
+		let lsval = localStorage[key];
+
+		if (!lsval) {
+			errors += "Project "+this.id+" is not in local storage.\n";
+		}
+		if (lsval && lsval!=this._stringify()) {
+			errors += "Project "+this.id+" local storage is not up to date.\n";
+		}
+
 		if (this.stub && this.services.length>0) {
-			errors += "Project is marked as a stub, but does have services.\n";
+			errors += "Project "+this.id+" is marked as a stub, but does have services.\n";
 		}
 		if (!this.stub && this.services.length==0) {
-			errors += "Project is has no services.\n";
+			errors += "Project "+this.id+" is has no services.\n";
 		}
 		// Check each service, and all nodes in each service
 		for (var i=0; i<this.services.length; i++) {
@@ -997,7 +1016,7 @@ Project.prototype = {
 		// Check all node clusters
 		it = new NodeClusterIterator({project: this.id});
 		if (this.stub && it.notlast()) {
-			errors += "Project is marked as a stub, but does have node clusters.\n";
+			errors += "Project "+this.id+" is marked as a stub, but does have node clusters.\n";
 		}
 		for (it.first(); it.notlast(); it.next()) {
 			var nc = it.getNodeCluster();
@@ -1010,7 +1029,7 @@ Project.prototype = {
 		// Check all components
 		it = new ComponentIterator({project: this.id});
 		if (this.stub && it.notlast()) {
-			errors += "Project is marked as a stub, but does have components.\n";
+			errors += "Project "+this.id+" is marked as a stub, but does have components.\n";
 		}
 		for (it.first(); it.notlast(); it.next()) {
 			var cm = it.getcomponent();
@@ -1022,7 +1041,7 @@ Project.prototype = {
 		}
 		// Check all threats on this project
 		if (this.stub && this.threats.length>0) {
-			errors += "Project is marked as a stub, but does have a threats array.\n";
+			errors += "Project "+this.id+" is marked as a stub, but does have a threats array.\n";
 		}
 		for (i=0; i<this.threats.length; i++) {
 			var t = Threat.get(this.threats[i]);
@@ -1033,11 +1052,16 @@ Project.prototype = {
 			if (t.project != this.id) {
 				errors += "Threat "+t.id+" belongs to a different project.\n";
 			}
+			let it = new NodeClusterIterator({project: this.id, title: t.title, type: t.type, isroot: true});
+			if (!it.notlast()) {
+				errors += "Threat "+t.id+" does not have a corresponding node cluster.\n";
+			}
+
 		}
 		// Check all threats
 		it = new ThreatIterator(this.id,'tUNK');
 		if (this.stub && it.notlast()) {
-			errors += "Project is marked as a stub, but does have threats.\n";
+			errors += "Project "+this.id+" is marked as a stub, but does have threats.\n";
 		}
 		for (it.first(); it.notlast(); it.next()) {
 			t = it.getthreat();

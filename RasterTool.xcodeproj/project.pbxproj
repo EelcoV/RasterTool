@@ -98,6 +98,10 @@
 		49AE7CC62378595A00F12B9D /* winbuild.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = winbuild.bat; sourceTree = "<group>"; };
 		49BEE0DE23C1F90E00AC17F7 /* group.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = group.json; sourceTree = "<group>"; };
 		49BEE0DF23C1FA4800AC17F7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		49CA255C23CB3A31002F7B74 /* redo-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "redo-lo.png"; sourceTree = "<group>"; };
+		49CA255D23CB3A31002F7B74 /* undo-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "undo-lo.png"; sourceTree = "<group>"; };
+		49CA255E23CB3A32002F7B74 /* redo-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "redo-hi.png"; sourceTree = "<group>"; };
+		49CA255F23CB3A32002F7B74 /* undo-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "undo-hi.png"; sourceTree = "<group>"; };
 		49CD587D1F92238E00A9F17F /* e-translation-NL.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "e-translation-NL.js"; sourceTree = "<group>"; };
 		49CD587E1F933CD600A9F17F /* e-translation-EN.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "e-translation-EN.js"; sourceTree = "<group>"; };
 		49CD587F1F93922E00A9F17F /* Object data structure.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Object data structure.txt"; sourceTree = "<group>"; };
@@ -228,6 +232,10 @@
 		494B6FEB18796E9D00400328 /* img */ = {
 			isa = PBXGroup;
 			children = (
+				49CA255E23CB3A32002F7B74 /* redo-hi.png */,
+				49CA255C23CB3A31002F7B74 /* redo-lo.png */,
+				49CA255F23CB3A32002F7B74 /* undo-hi.png */,
+				49CA255D23CB3A31002F7B74 /* undo-lo.png */,
 				495E762623B4E37000C1F367 /* iconset */,
 				49F29A2620420DEC002A2E1E /* hint.png */,
 				4997D9131F8A5DF200E3481A /* barB.png */,

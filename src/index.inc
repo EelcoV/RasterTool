@@ -90,6 +90,9 @@ See LICENSE.md
 	<div id="libraryactivator" class="ui-widget ui-button toolbaritem activator"><span class="lc">Library</span><span>...</span></div>
 	<div id="optionsactivator" class="ui-widget ui-button toolbaritem activator"><span class="lc">Options</span><span>...</span></div>
 	<div class="toolbarspacer"></div>
+	<div id="undobutton" class="ui-button toolbaritem"></div>
+	<div id="redobutton" class="ui-button toolbaritem"></div>
+	<div class="toolbarspacer"></div>
 	<div id="findbutton" class="ui-button toolbaritem"></div>
 	<div id="helpbutton" class="ui-button toolbaritem"></div>
 	<div class="toolbarspacer"></div>

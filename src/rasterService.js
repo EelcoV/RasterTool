@@ -3,7 +3,7 @@
  */
 
 /* globals
- H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, _, bugreport, createUUID, isSameString, jsPlumb, nextUnusedIndex, nid2id, removetransientwindows, transactionCompleted, trimwhitespace, workspacedrophandler
+ H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nextUnusedIndex, nid2id, removetransientwindows, transactionCompleted, trimwhitespace, workspacedrophandler
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -17,8 +17,8 @@
  *	titleisused(p,str,e): checks whether there is a service in project p, other than
  *		service e, having title str.
  * Instance properties:
- *	id: (integer) UUID
- *	project: (object) project to which this service belongs
+ *	id: (string) UUID
+ *	project: (object-id) project to which this service belongs
  *	title: (string) short name of the service (max 50 chars).
  *	_painted: boolean, indicates whether all Nodes have been painted already;
  *		necessary to avoid painting them twice.
@@ -426,6 +426,13 @@ Service.prototype = {
 			start: function(event,ui) {
 				origpos = ui.position;
 				NodesBeingDragged = Node.nodesinselection();
+				// Remember the original positions in the (scratchpad) undo_data data-property of #selectrect
+				let undo_data = [];
+				for (let i=0; i<NodesBeingDragged.length; i++) {
+					let n = Node.get(NodesBeingDragged[i]);
+					undo_data.push({id: n.id, x: n.position.x, y: n.position.y});
+				}
+				$('#selectrect').data('undo_data',undo_data);
 			},
 			drag: function(event,ui) {
 				// Drag all nodes in the selection
@@ -438,11 +445,19 @@ Service.prototype = {
 				}
 			},
 			stop: function(/*event,ui*/) {
-				for (var i=0; i<NodesBeingDragged.length; i++) {
-					var n = Node.get(NodesBeingDragged[i]);
-					n.setposition(n.position.x,n.position.y);
+//				for (var i=0; i<NodesBeingDragged.length; i++) {
+//					var n = Node.get(NodesBeingDragged[i]);
+//					n.setposition(n.position.x,n.position.y);
+//				}
+//				transactionCompleted("Node move selection");
+				NodesBeingDragged = Node.nodesinselection();
+				let do_data = [];
+				for (let i=0; i<NodesBeingDragged.length; i++) {
+					let n = Node.get(NodesBeingDragged[i]);
+					do_data.push({id: n.id, x: n.position.x, y: n.position.y});
 				}
-				transactionCompleted("Node move selection");
+				new Transaction('nodePosition', $('#selectrect').data('undo_data'), do_data);
+				$('#selectrect').removeData('undo_data');
 			},
 			cursor: 'move'
 		});
@@ -517,7 +532,7 @@ function dropfunction(data) {
 	}
 
     if (data.scope=='center') {
-        bugreport("Connection in default scope","dropfunction");
+        bugreport("Connection in center scope","dropfunction");
         return;
     }
     src.try_attach_center(dst);

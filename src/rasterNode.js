@@ -3,27 +3,28 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, ThreatAssessment, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace, displayThreatsDialog
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Threat, ThreatAssessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace, displayThreatsDialog
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Node: an element in a telecom service diagram
  *
- * Class variables (those prefixed with underscore should not be accessed from outside)
+ * Class properties & methods (those prefixed with underscore should not be accessed from outside)
  *	_all: array of all Node elements, indexed by id
- *	_currindex: sequence number for auto-generated IDs
  *	get(i): returns the object with id 'i'.
  *	projecthastitle(p,str): project 'p' has a node with title 'str'.
  *	servicehastitle(s,str): service 's' has a node with title 'str'.
+ *	autotitle(type,str): create a unique title based on 'str' for a node of type 'typ'.
  * Instance properties:
  *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK', 'tNOT'
  *  index: index of the icon in the current iconset
  *	title: name of the node
  *	suffix: letter a,b,c... or user-set string to distiguish nodes with the same title (set by Component)
  *	id: UUID
- *	component: component object for this node
- *	jnid: node ID in jQuery format (#id of the DOM element)
+ *	component: component object for this node; null for tNOT and tACT
+ *	nid (getter): node ID in DOM format
+ *	jnid (getter): node ID in jQuery format (#id of the DOM element)
  *	service: ID of the service to which this node belongs
  *	position: current position on workspace, and size {x,y,width,height}
  *	dragpoint: jsPlumb endpoint from which to drag new connectors
@@ -38,8 +39,6 @@
  *	setposition(x,y,snap): set the position of the HTML document object to (x,y).
  *		If snap==false then do not restrict to 20x20 pixel grid positions.
  *	setcomponent(cm): set the id of the component object to cm.
- *	autosettitle: give this Node a unique title, and create the corresponding
- *		Component object.
  *	changetitle(str): change the header text to 'str' if allowed, and update all components and node classes.
  *	settitle(str,suff): sets the header text to 'str' and suffix 'suff'.
  *	changesuffix(str): change the suffix to 'str' if allowed, and update all other nodes in the class.
@@ -78,8 +77,6 @@ var Node = function(type, id) {
 	this.id = (id==null ? createUUID() : id);
 	this.type = type;
 	this.index = null;
-	this.nid = 'node'+this.id;
-	this.jnid = '#node'+this.id;
 	this.service = Service.cid;
 	this.position = {x: 0, y: 0, width: 0, height: 0};
 	this.connect = [];
@@ -99,8 +96,8 @@ Node.get = function(id) { return Node._all[id]; };
 Node.projecthastitle = function(pid,str) {
 	for (var i in Node._all) {
 		if (isSameString(Node._all[i].title,str)) {
-			var cm = Component.get(Node._all[i].component);
-			if (cm.project==pid)  return i;
+			var s = Service.get(Node._all[i].service);
+			if (s.project==pid)  return i;
 		}
 	}
 	return -1;
@@ -134,8 +131,27 @@ Node.destroyselection = function () {
 		rn.destroy();
 	}
 };
+Node.autotitle = function(typ,newtitle) {
+	if (!newtitle)  newtitle = Rules.nodetypes[typ];
+	if (typ=='tNOT')  return newtitle;
+
+	let targettitle = newtitle;
+	let n=0;
+	while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
+		targettitle = newtitle + ' (' + (++n) + ')';
+	}
+	return targettitle;
+};
 
 Node.prototype = {
+	get nid() {
+		return 'node'+this.id;
+	},
+
+	get jnid() {
+		return '#node'+this.id;
+	},
+
 	destroy: function(effect) {
 		var jsP = Service.get(this.service)._jsPlumb;
 		if (this.centerpoint) jsP.deleteEndpoint(this.centerpoint);
@@ -243,34 +259,13 @@ Node.prototype = {
 		if (this.type=='tNOT') {
 			bugreport("Attempt to attach component to a note","Node.setcomponent");
 		}
+		if (this.type=='tACT') {
+			bugreport("Attempt to attach component to an actor","Node.setcomponent");
+		}
 		this.component = c;
 		this.store();
 	},
 	
-	autosettitle: function(newtitle) {
-		if (!newtitle) {
-			newtitle = Rules.nodetypes[this.type];
-		}
-		var targettitle = newtitle;
-		var n=0;
-		if (this.type=='tNOT') {
-			this.settitle(targettitle);
-		} else if (this.type=='tACT') {
-			while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
-				targettitle = newtitle + ' (' + (++n) + ')';
-			}
-			this.settitle(targettitle);
-		} else {
-			while (Node.projecthastitle(Project.cid,targettitle)!=-1) {
-				targettitle = newtitle + ' (' + (++n) + ')';
-			}
-			var c = new Component(this.type);
-			c.adddefaultthreatevaluations();
-			c.addnode(this.id);
-			c.settitle(targettitle);
-		}
-	},
-
 	changetitle: function(str) {
 		str = trimwhitespace(str);
 		if (str==this.title)  return;
@@ -281,50 +276,88 @@ Node.prototype = {
 		}
 		// Notes can be identical (can have the same 'title').
 		if (this.type=='tNOT') {
-			this.settitle(str);
+			new Transaction('nodeTitle',
+				[{id: this.id, title: this.title}],
+				[{id: this.id, title: str}]
+			);
 			return;
 		}
 		// Actors don't have (nor need) components, since they have no threat evaluations
 		if (this.type=='tACT') {
-			var i=0;
-			var targettitle = str;
+			let i=0;
+			let prevtitle = this.title;
+			let targettitle = str;
 			// If there is an actor "abc" and an actor "abc (1)", then renaming that second actor
 			// to "abc" should not result in a name "abc (2)"
 			this.title='NoSuchNameNoSuchNameNoSuchNameNoSuchName';
 			while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
 				targettitle = str + ' (' + (++i) + ')';
 			}
-			this.settitle(targettitle);
-			RefreshNodeReportDialog();
+			new Transaction('nodeTitle',
+				[{id: this.id, title: prevtitle}],
+				[{id: this.id, title: targettitle}]
+			);
 			return;
 		}
-		var prevcomponent = null;
-		if (this.component!=null) {
-			if (!Component.get(this.component)) {
-				bugreport("no such component","Node.changetitle");
-			}
-			prevcomponent = Component.get(this.component);
+
+		let prevcomponent = Component.get(this.component);
+		if (!prevcomponent) {
+			bugreport("no such component","Node.changetitle");
 		}
 		// See if there is an existing component with this title & type
-		var n = Component.hasTitleTypeProject(str,this.type,Project.cid);
-		if (n==-1) {
-			// Create a new component, and link it to this node
-			var c = new Component(this.type);
-			c.adddefaultthreatevaluations(this.component);
-			c.addnode(this.id);
-			c.settitle(str);
-		} else if (prevcomponent && prevcomponent.id==n) {
+		let n = Component.hasTitleTypeProject(str,this.type,Project.cid);
+		if (n==-1 && prevcomponent.nodes.length==1) {
+			// Simple case, no classes involved
+			new Transaction('nodeTitle',
+				[{id: this.id, title: this.title}],
+				[{id: this.id, title: str}]
+			);
+		} else if (n==prevcomponent.id) {
 			// New title is strictly different, but case-insensitive identical
-			prevcomponent.settitle(str);
-			prevcomponent = null; 
+			new Transaction('nodeTitle',
+							[{id: this.id, title: this.title}],
+							[{id: this.id, title: str}]
+							);
+		} else if (n==-1) {
+			// Set of default vulnerabilities
+			let thr = [];
+			var p = Project.get(prevcomponent.project);
+			for (let i of p.threats) {
+				var th = Threat.get(i);
+				if (th.type!=prevcomponent.type && prevcomponent.type!='tUNK') continue;
+				thr.push({
+					id: createUUID(),
+					title: th.title,
+					type: th.type,
+					description: th.description,
+					freq: '-',
+					impact: '-',
+					remark: ''
+				});
+			}
+
+			if (prevcomponent.nodes.length==2) {
+				// Class with only two nodes and this is dropping out; the class ceases to exist
+				let othernode = Node.get( prevcomponent.nodes[0]==this.id ? prevcomponent.nodes[1] : prevcomponent.nodes[0]);
+				new Transaction('nodeTitle',
+					[{id: this.id, title: this.title, suffix: this.suffix, suffix2: othernode.suffix, component: prevcomponent.id}],
+					[{id: this.id, title: str, component: createUUID(), thrass: thr}]
+				);
+			} else { //  prevcomponent.nodes.length>2
+				// This node drops out of the class, but the class continues to exist
+				new Transaction('nodeTitle',
+					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id}],
+					[{id: this.id, title: str, component: createUUID(), thrass: thr}]
+				);
+			}
 		} else {
 			// The new name of this node matches an existing Component.
 			// add this node to that component
 			var cm = Component.get( n );
 			// Not allowed if the component is 'single' and this node's service already contains a member of the component.
 			if (cm.single) {
-				for (i=0; i<cm.nodes.length; i++) {
-					var rn = Node.get(cm.nodes[i]);
+				for (const n of cm.nodes) {
+					let rn = Node.get(n);
 					if (rn.service==this.service) {
 						// do not change the title
 						$(this.jnid).effect('pulsate', { times:2 }, 800);
@@ -333,11 +366,34 @@ Node.prototype = {
 					}
 				}
 			}
-			cm.addnode(this.id);
+			let thr = [];
+			for (const t of prevcomponent.thrass) {
+				let ta = ThreatAssessment.get(t);
+				thr.push({
+					id: ta.id,
+					title: ta.title,
+					type: ta.type,
+					description: ta.description,
+					freq: ta.freq,
+					impact: ta.impact,
+					remark: ta.remark
+				});
+			}
+			if (cm.nodes.length==1) {
+				// A new class is created
+				let sf = cm.newsuffix(2);
+				new Transaction('nodeTitle',
+					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id, thrass: thr}],
+					[{id: this.id, title: str, suffix: sf[1], suffix2: sf[0], component: n}]
+				);
+			} else {
+				// Becomes member of an existing class
+				new Transaction('nodeTitle',
+					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id, thrass: thr}],
+					[{id: this.id, title: str, suffix: cm.newsuffix(), component: n}]
+				);
+			}
 		}
-		this.setmarker();
-		if (prevcomponent) prevcomponent.removenode(this.id);
-		RefreshNodeReportDialog();
 	},
 
 	settitle: function(str,suff) {
@@ -352,22 +408,18 @@ Node.prototype = {
 		}
 		$('#titlemain'+this.id).html(H(this.title));
 		$('#titlesuffix'+this.id).html(this.suffix=='' ? '' : '&thinsp;<sup>'+H(this.suffix)+'</sup>');
+		if ($('#nodereport').data('DialogNode')==this.id)  RefreshNodeReportDialog();
 		this.store();
 	},
 	
 	changesuffix: function(str) {
 		str = trimwhitespace(str);
 		if (str==this.suffix || str=="")  return;
-
-		var cm = Component.get(this.component);
-		for (var i=0; i<cm.nodes.length; i++) {
-			if (cm.nodes[i]==this.id) continue;
-			var nn = Node.get(cm.nodes[i]);
-			if (nn.suffix==str) {
-				nn.settitle(nn.title,this.suffix);
-			}
-		}
-		this.settitle(this.title,str);
+		
+		new Transaction('nodeSuffix',
+			[{id: this.id, suffix: this.suffix}],
+			[{id: this.id, suffix: str}]
+		);
 	},
 	
 	htmltitle: function() {
@@ -622,9 +674,9 @@ Node.prototype = {
 			if (nc.containsnode(this.id)) {
 				nc.removechildnode(this.id);
 				nc.normalize();
-				if (nc.childclusters.length==0 && nc.childnodes.length==0 && nc.parentcluster==null) {
-					nc.destroy();
-				}
+//				if (nc.childclusters.length==0 && nc.childnodes.length==0 && nc.parentcluster==null) {
+//					nc.destroy();
+//				}
 			}
 		}		
 	},
@@ -699,7 +751,7 @@ Node.prototype = {
 		str = str.replace(/_ID_/g, this.id);
 		$('#scroller_overview'+this.service).append(str);
 
-		// Under a different iconset the aspect ratio may be off. Correct it, if necessary
+		// Under a different iconset the aspect ratio may be off. Enlarge it, if necessary
 		if (icn.maintainAspect) {
 			var newh = this.position.width * icn.height/icn.width;
 			if (newh > this.position.height) {
@@ -738,13 +790,43 @@ Node.prototype = {
 			distance: 10,	// prevent drags when clicking the menu activator
 			opacity: 0.8,
 			filter: '.ui-resizable-handle',
+			start: function(event,ui) {
+				// Remember the original positions in the (scratchpad) undo_data property of the node
+				let rn = Node.get( nid2id(event.el.id) );
+				if (event.e.shiftKey) {
+					rn.undo_data = [];
+					var ni = new NodeIterator({service: rn.service});
+					for (ni.first(); ni.notlast(); ni.next()) {
+						var n = ni.getnode();
+						rn.undo_data.push({id: n.id, x: n.position.x, y: n.position.y});
+					}
+				} else {
+					rn.undo_data = [{id: rn.id, x: rn.position.x, y: rn.position.y}];
+				}
+			},
 			stop: function(event) {
-				// Reset the node to the grid
-				var rn = Node.get( nid2id(event.el.id) );
-				rn.setposition(rn.position.x,rn.position.y);
+				let rn = Node.get( nid2id(event.el.id) );
+				let do_data;
+				if (event.e.shiftKey) {
+					do_data = [];
+					var ni = new NodeIterator({service: rn.service});
+					for (ni.first(); ni.notlast(); ni.next()) {
+						var n = ni.getnode();
+						do_data.push({id: n.id, x: n.position.x, y: n.position.y});
+					}
+				} else {
+					do_data = [{id: rn.id, x: rn.position.x, y: rn.position.y}];
+				}
+				// A filter on insignificant position changes, to prevent 'pollution' of the undo stack
+				// Since all nodes in the (un)do_data move by the same delta, we only need to inspect the first.
+				if (Math.abs(do_data[0].x-rn.undo_data[0].x) > 10
+				 || Math.abs(do_data[0].y-rn.undo_data[0].y) > 10
+				) {
+					new Transaction('nodePosition', rn.undo_data, do_data);
+				}
+				delete rn.undo_data;
 				// Disallow dragging for 100msec
 				setTimeout( function(){rn.dragging=false;}, 100);
-				transactionCompleted("Node move (selection)");
 			},
 			drag: function(event) {
 				var rn = Node.get( nid2id(event.el.id) );
@@ -927,8 +1009,7 @@ Node.prototype = {
 			callback: function(domid, enteredText) {
 				var rn = Node.get( nid2id(domid) );
 				rn.changetitle(enteredText);
-				rn.store();
-				transactionCompleted("Node rename");
+//				rn.store();
 				return H(rn.title);
 			},
 			/* Make sure that the editor is above all node decorations. */
@@ -1062,49 +1143,59 @@ Node.prototype = {
 	
 	internalCheck: function() {
 		var errors = "";
+		let offender = "Node "+this.id;
+		let key = LS+'N:'+this.id;
+		let lsval = localStorage[key];
+
+		if (!lsval) {
+			errors += offender+" is not in local storage.\n";
+		}
+		if (lsval && lsval!=this._stringify()) {
+			errors += offender+" local storage is not up to date.\n";
+		}
 		if (Rules.nodetypes[this.type]==undefined) {
-			errors += "Node "+this.id+" has weird type-value "+this.type+".\n";
+			errors += offender+" has weird type-value "+this.type+".\n";
 		}
 		if ((this.type=='tACT' || this.type=='tNOT') && this.component!=null) {
-			errors += "Node "+this.id+" has a component, but should have none.\n";
+			errors += offender+" has a component, but should have none.\n";
 		}
 		if (this.component!=null && Component.get(this.component)==null) {
-			errors += "Node "+this.id+" has invalid component.\n";
+			errors += offender+" has invalid component.\n";
 		}
 		if (this.position.x<0 || this.position.x>9999 || this.position.y<0 || this.position.y>9999) {
-			errors += "Node "+this.id+" has weird position.\n";
+			errors += offender+" has weird position.\n";
 		}
 		if (this.position.width<0 || this.position.width>999 || this.position.height<0 || this.position.height>999) {
-			errors += "Node "+this.id+" has weird size.\n";
+			errors += offender+" has weird size.\n";
 		}
 		if (this.connect.indexOf(this.id)!=-1) {
-			errors += "Node "+this.id+" is connected to itself.\n";
+			errors += offender+" is connected to itself.\n";
 		}
 		for (var i=0; i<this.connect.length; i++) {
 			var rn = Node.get(this.connect[i]);
 			if (!rn) {
-				errors += "Node "+this.id+" is connected to node "+this.connect[i]+" which does not exist.\n";
+				errors += offender+" is connected to node "+this.connect[i]+" which does not exist.\n";
 				continue;
 			}
 			if (rn.connect.indexOf(this.id)==-1) {
-				errors += "Node "+this.id+" is connected to node "+rn.id+", but not vice versa.\n";
+				errors += offender+" is connected to node "+rn.id+", but not vice versa.\n";
 			}
 			if (this.service!=rn.service && this.id>rn.id) { // id-check is to avoid duplicate error messages
-				errors += "Node "+this.id+" is connected to node "+rn.id+", which is in another service diagram.\n";
+				errors += offender+" is connected to node "+rn.id+", which is in another service diagram.\n";
 			}
 		}
 		// If this node is member of a singlular component, and it is not the first node of that component,
 		// then this node should not appear in any node cluster
 		var cm = Component.get(this.component);
 		if (cm && !isSameString(cm.title,this.title)) {
-			errors += "Node "+this.id+" has title ("+this.title+") that differs from its component ("+cm.title+").\n";
+			errors += offender+" has title ("+this.title+") that differs from its component ("+cm.title+").\n";
 		}
 		if (cm && cm.single && cm.nodes[0]!=this.id) {
 			var it = new NodeClusterIterator({isroot: true});
 			for (it.first(); it.notlast(); it.next()) {
 				var nc = it.getNodeCluster();
 				if (nc.containsnode(this.id)) {
-					errors += "Node "+this.id+" is member of a singular class, yet appears in cluster '"+nc.title+"'.\n";
+					errors += offender+" is member of a singular class, yet appears in cluster '"+nc.title+"'.\n";
 				}
 			}
 		} 

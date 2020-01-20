@@ -9,6 +9,11 @@ In general, when object A has some B's, then the action will be in A to add a B,
 -Services having nodes.
 -Projects having checklistitems.
 The reverse, removing a B from an A, is the responsibility of B. Typically, when a B is destroyed, it will remove itself from its A.
+==> Not always the case, e.g. Component.removenode()
+
+With the transition towards transactions with undo/redo, the code for setting properties on objects needs to be rearranged as well.
+Perhaps: use change<property> for methods that start a transaction, and set<property> for methods that immediately affect the object?
+
 
 Actions
 ~~~~~~~
@@ -113,5 +118,28 @@ Difficult/impossible to undo:
 - delete a project
 - zap, delete localstorage (probably not an action)
 - actions on clusters that lead to normalisation?
-At first glance all actions are in principle undoable.
+At first glance all actions are *in principle* undoable.
+
+In fact, even changing the title of a node proves to be complex (because renaming als creates/deletes node classes).
+
+What to do with transactions when the user switches projects?
+Switching projects is itself not a transaction (although undoable).
+Switching projects can be useful in the workflow, to quickly check how that other project solved some issue.
+Preserve? Then there must be a transaction list as property of each project. Or, transactions must have a project-id.
+Reset: the easiest for now, but not the most user-friendly.
+Let's see how the server sync of transactions works out, before deciding on this.
+
+Also complex: creating a new node. Undo is easy: just delete the node.
+Creating requires new ID for the node, often an ID for the component and IDs for its ThreatAssessment.
+But also an ID for a node cluster *and* an ID for its ThreatAssessment.
+Alternatively: provide each do_data and undo_data with a list of IDs to use, in case an ID is needed?
+IDs to create a node:
+ 1 for the node
+ 1 for the component
+ N for the threat assessments of the component
+ N for the each root cluster
+ N for the each cluster's threat assessment
+--> 3N+2 IDs required. With 5 or 6 default vulnerabilities about 20 IDs are needed!
+When we leave empty root clusters be instead of 'normalizing' them, to make this at least a bit easier?
+It would then need only N+2 new IDs, which is what is needed for nodeTitle actions as well.
 

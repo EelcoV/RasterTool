@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals bugreport, createUUID, Rules, Project, _, isSameString, LS, Threat, ThreatAssessment, NodeCluster, NodeClusterIterator, prependIfMissing, trimwhitespace, H */
+/* globals bugreport, createUUID, Rules, Project, _, isSameString, LS, Threat, ThreatAssessment, Transaction, NodeCluster, NodeClusterIterator, prependIfMissing, trimwhitespace, H */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -193,6 +193,41 @@ Component.prototype = {
 		return newte;
 	},
 
+	// Called with no argument, or with argument '1': returns a string of an unused suffix
+	// Called with a numerical argument >1, returns an array of unused suffixes
+	newsuffix: function(n) {
+		function _newsuffix(cm,except) {
+			let n, j;
+			let sfx = [];
+			for (n of cm.nodes) {
+				sfx.push(Node.get(n).suffix);
+			}
+			for (j=0; j<26; j++) {
+				var chr = String.fromCharCode(String('a').charCodeAt(0)+j);
+				if (sfx.indexOf(chr)==-1 && except.indexOf(chr)==-1) break;
+			}
+			if (j==26) {
+				// This is silly. There are more than 26 members in the node class!
+				// Find a random number to fit.
+				for (;;) {
+					chr = '#' + Math.floor(Math.random()*100000);
+					if (sfx.indexOf(chr)==-1 && except.indexOf(chr)==-1) break;
+				}
+			}
+			return chr;
+		}
+
+		if (!n || n==1) {
+			return _newsuffix(this,[]);
+		}
+		let arr = [];
+		while (n>0) {
+			arr.push( _newsuffix(this,arr) );
+			n--;
+		}
+		return arr;
+	},
+
 	_setalltitles: function() {
 		var len = this.nodes.length;
 		if (len==0)  return;
@@ -221,7 +256,7 @@ Component.prototype = {
 				}
 				return prefix+chr;
 			};
-			
+
 			for (i=0; i<this.nodes.length; i++) {
 				var rn = Node.get(this.nodes[i]);
 				if (this.single) {
@@ -257,14 +292,15 @@ Component.prototype = {
 		// Blank title is not allowed. Retain current title.
 		if (str=="")  return;
 
-		var it = new NodeIterator({project: Project.cid});
-		for (it.first(); it.notlast(); it.next()) {
-			var rn = it.getnode();
-			if (rn.component!=this.id && isSameString(rn.title,str)) {
-				return;
-			}
-		}
-		this.settitle(str);
+		new Transaction('classTitle',
+			[{id: this.id, title: this.title}],
+			[{id: this.id, title: str}]
+		);
+	},
+
+	_settitle: function(str) {
+		this.title = trimwhitespace(str);
+		this.store();
 	},
 
 	settitle: function(str) {
@@ -272,7 +308,7 @@ Component.prototype = {
 		this._setalltitles();
 		this.store();
 	},
-	
+
 	setproject: function(pid) {
 		this.project = pid;
 		this.store();
@@ -492,6 +528,11 @@ Component.prototype = {
 
 	_stringify: function() {
 		var data = {};
+		// When comparing projects (e.g. for debugging) it is useful if the order of
+		// items in the project file is the same.
+		// Therefore sort nodes and thrass
+		this.nodes.sort();
+		this.thrass.sort();
 		data.t=this.type;
 		data.p=this.project;
 		data.l=this.title;
@@ -515,6 +556,15 @@ Component.prototype = {
 		var errors = "";
 		var offender = "Component '"+H(this.title)+"' ("+this.id+") ";
 		var i,j;
+		let key = LS+'C:'+this.id;
+		let lsval = localStorage[key];
+
+		if (!lsval) {
+			errors += offender+" is not in local storage.\n";
+		}
+		if (lsval && lsval!=this._stringify()) {
+			errors += offender+" local storage is not up to date.\n";
+		}
 		for (i=0; i<this.nodes.length; i++) {
 			var rn = Node.get(this.nodes[i]);
 			if (!rn) {
@@ -597,6 +647,17 @@ Component.prototype = {
 			if (rn.component!=this.id) continue;
 			if (this.nodes.indexOf(rn.id)==-1) {
 				errors += "Node "+rn.id+" claims to belong to component "+this.id+" but doesn't appear in the list.\n";
+			}
+		}
+		// Duplicate component titles
+		for (i in Component._all) {
+			let cm = Component._all[i];
+			if (isSameString(cm.title,this.title)
+				&& cm.id>this.id // when all components are checked, only show this error once
+				&& cm.type==this.type
+				&& cm.project==this.project
+			) {
+				errors += offender+"has the same title as component "+cm.id+".\n";
 			}
 		}
 		return errors;
