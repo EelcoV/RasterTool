@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+Option Hide/Show color does not have immediate effect.
 On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.

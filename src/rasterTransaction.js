@@ -189,6 +189,8 @@ Transaction.prototype = {
 			//  id: id of the node; this is the *only* property in the undo data
 			//  type: type of the node
 			//  title: title of the node class
+			//  x, y: position of the node
+			//  width, height: size of the node (optional)
 			//  component: id of the component object
 			//  thrass: info on the blank vulnerabilities
 			for (const d of data) {
@@ -200,8 +202,14 @@ Transaction.prototype = {
 				}
 
 				let rn = new Node(d.type, d.id);
+				rn.iconinit();
 				rn.settitle(d.title);
 				rn.setposition(d.x,d.y);
+				if (d.width && d.height) {
+					rn.position.width = d.width;
+					rn.position.height = d.height;
+					rn.store();
+				}
 // Change to true when not debugging
 				rn.paint(false);
 				if (d.type=='tNOT' || d.type=='tACT')  continue;
@@ -222,13 +230,18 @@ Transaction.prototype = {
 			}
 			break;
 
-		case 'nodePosition':
+		case 'nodeGeometry':
 			// Change the size and/or position of nodes
 			// data: array of objects; each object has these properties
 			//  id: id of the node
 			//  x, y: position of the node
+			//  width, height: size of the node (optional)
 			for (const d of data) {
 				let rn = Node.get(d.id);
+				if (d.width && d.height) {
+					rn.position.width = d.width;
+					rn.position.height = d.height;
+				}
 				rn.setposition(d.x,d.y);
 			}
 			break;

@@ -456,7 +456,7 @@ Service.prototype = {
 					let n = Node.get(NodesBeingDragged[i]);
 					do_data.push({id: n.id, x: n.position.x, y: n.position.y});
 				}
-				new Transaction('nodePosition', $('#selectrect').data('undo_data'), do_data);
+				new Transaction('nodeGeometry', $('#selectrect').data('undo_data'), do_data);
 				$('#selectrect').removeData('undo_data');
 			},
 			cursor: 'move'

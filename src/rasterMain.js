@@ -1796,6 +1796,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		rn.title = trimwhitespace(lrn.l);
 		if (lrn.f) rn.suffix = trimwhitespace(lrn.f);
 		rn.service = lrn.s;
+		rn.iconinit();
 		rn.position = {x: lrn.x, y: lrn.y, width: lrn.w, height: lrn.h};
 		rn._normw = lrn.v;
 		rn._normh = lrn.g;
@@ -3042,8 +3043,54 @@ function initTabDiagrams() {
 			_("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
 			_("Delete"),_("Cancel"),
 			function() {
-				rn.destroy();
-				transactionCompleted("Node delete");
+
+
+				if (rn.type=='tNOT' || rn.type=='tACT') {
+					new Transaction('nodeCreate',
+						[{id: rn.id,
+						  type: rn.type,
+						  title: rn.title,
+						  x: rn.position.x,
+						  y: rn.position.y,
+						  width: rn.position.width,
+						  height: rn.position.height
+						}],
+						[{id: rn.id}]
+					);
+					return;
+				}
+
+				let ths = [];
+				let cm = Component.get(rn.component);
+				for (let i=0; i<cm.thrass.length; i++) {
+					let th = ThreatAssessment.get(cm.thrass[i]);
+					ths.push({
+						id: th.id,
+						title: th.title,
+						type: th.type,
+						description: th.description,
+						freq: th.freq,
+						impact: th.impact,
+						remark: th.remark
+					});
+				}
+
+				new Transaction('nodeCreate',
+					[{id: rn.id,
+					  type: rn.type,
+					  title: rn.title,
+					  x: rn.position.x,
+					  y: rn.position.y,
+					  componentid: rn.component,
+					  thrass: ths
+					}],
+					[{id: rn.id}]
+				);
+
+
+
+//				rn.destroy();
+//				transactionCompleted("Node delete");
 			}
 			);
 	});

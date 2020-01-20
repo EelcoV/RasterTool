@@ -247,6 +247,7 @@ Node.prototype = {
 		this.position.y = py;
 		this.store();
 		$(this.jnid).css('left',px+'px').css('top',py+'px');
+		$(this.jnid).css('width',this.position.width+'px').css('height',this.position.height+'px');
 		jsP.revalidate(this.nid);
 
 		dO.left = (px * ow)/fw;
@@ -692,17 +693,23 @@ Node.prototype = {
 	editinprogress: function() {
 		return $('#titlemain'+this.id).hasClass('editInPlace-active');
 	},
-	
+
+	iconinit: function() {
+		var p = Project.get(Service.get(this.service).project);
+		// Locate the first possible index
+		for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
+			// empty
+		}
+		this.position.width = p.icondata.icons[this.index].width;
+		this.position.height = p.icondata.icons[this.index].height;
+		this._normw = this.position.width;
+		this._normh = this.position.height;
+		this.store();
+	},
+
 	paint: function(effect) {
 		var p = Project.get(Project.cid);
-		if (!this.index) {
-			// Locate the first possible index
-			for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
-				// empty
-			}
-			if (this.position.width==0)  this.position.width = p.icondata.icons[this.index].width;
-			if (this.position.height==0)  this.position.height = p.icondata.icons[this.index].height;
-		}
+		if (!this.index)  this.iconinit();
 
 		var icn = p.icondata.icons[this.index];
 		var jsP = Service.get(this.service)._jsPlumb;
@@ -822,7 +829,7 @@ Node.prototype = {
 				if (Math.abs(do_data[0].x-rn.undo_data[0].x) > 10
 				 || Math.abs(do_data[0].y-rn.undo_data[0].y) > 10
 				) {
-					new Transaction('nodePosition', rn.undo_data, do_data);
+					new Transaction('nodeGeometry', rn.undo_data, do_data);
 				}
 				delete rn.undo_data;
 				// Disallow dragging for 100msec
@@ -1048,16 +1055,30 @@ Node.prototype = {
 			maxWidth: (this.type=='tNOT' ? 3 : 2) * this._normw,
 			minHeight: this._normh,
 			maxHeight: (this.type=='tNOT' ? 3 : 2) * this._normh,
+			start: function(event,ui) {
+				let rn = Node.get( nid2id(this.id) );
+				rn.undo_data = {
+					x: rn.position.x,
+					y: rn.position.y,
+					width: rn.position.width,
+					height: rn.position.height
+				};
+			},
 			resize: function(event,ui) {
-				var rn = Node.get( nid2id(this.id) );
+				let rn = Node.get( nid2id(this.id) );
 				rn.position.x -= (ui.size.width-rn.position.width)/2;
 				rn.position.y -= (ui.size.height-rn.position.height)/2;
 				rn.position.width=ui.size.width;
 				rn.position.height=ui.size.height;
 				rn.setposition(rn.position.x,rn.position.y);
 			},
-			stop: function () {
-				transactionCompleted("Node resize");
+			stop: function (event,ui) {
+				let rn = Node.get( nid2id(this.id) );
+				new Transaction('nodeGeometry',
+					[{id: rn.id, x: rn.undo_data.x, y: rn.undo_data.y, width: rn.undo_data.width, height: rn.undo_data.height}],
+					[{id: rn.id, x: rn.position.x, y: rn.position.y, width: rn.position.width, height: rn.position.height}]
+				);
+				delete rn.undo_data;
 			}
 		});
 	},
