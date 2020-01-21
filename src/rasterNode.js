@@ -587,18 +587,20 @@ Node.prototype = {
 			|| Csrc[dst.type]>Rules.edgeMax[this.type][dst.type]
 			|| Cdst[this.type]>Rules.edgeMax[dst.type][this.type]
 		) {
-			/* detach the newly attached connection, and flash the element for
-			 * visual feedback.
-			 */
+			/* do not attach the nodes, and flash the elements for visual feedback. */
 			$(this.jnid).effect('pulsate', { times:2 }, 800);
 			$(dst.jnid).effect('pulsate', { times:2 }, 800);
 		} else {
 			/* Move the begin and endpoints to the center points */
-			this.attach_center(dst);
-			this.setmarker();
-			dst.setmarker();
+			new Transaction('nodeConnect',
+				[{id: this.id, otherid: dst.id, connect: false}],
+				[{id: this.id, otherid: dst.id, connect: true}]
+			);
+//			this.attach_center(dst);
+//			this.setmarker();
+//			dst.setmarker();
 			RefreshNodeReportDialog();
-			transactionCompleted("Node connect");
+//			transactionCompleted("Node connect");
 		}
 	},
 	
@@ -618,9 +620,13 @@ Node.prototype = {
 							var node2 = labelOverlay.component.targetId;
 							var src = Node.get(nid2id(node1));
 							var dst = Node.get(nid2id(node2));
-							jsP.deleteConnection(labelOverlay.component);
-							src.detach_center(dst);
-							transactionCompleted("Node disconnect");
+							new Transaction('nodeConnect',
+								[{id: src.id, otherid: dst.id, connect: true}],
+								[{id: src.id, otherid: dst.id, connect: false}]
+							);
+//							jsP.deleteConnection(labelOverlay.component);
+//							src.detach_center(dst);
+//							transactionCompleted("Node disconnect");
 						}
 					}
 				}	
@@ -1140,6 +1146,10 @@ Node.prototype = {
 	},
 	
 	_stringify: function() {
+		// When comparing projects (e.g. for debugging) it is useful if the order of
+		// items in the project file is the same.
+		// Therefore sort nodes and thrass
+		this.connect.sort();
 		var data = {};
 		data.t=this.type;
 		data.l=this.title;

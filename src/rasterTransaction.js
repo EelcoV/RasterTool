@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals Component, DEBUG, Project, RefreshNodeReportDialog, ThreatAssessment, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, setModified
+/* globals Component, DEBUG, Project, RefreshNodeReportDialog, Service, ThreatAssessment, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, setModified
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -181,6 +181,37 @@ Transaction.prototype = {
 			}
 			break;
 
+		case 'nodeConnect':
+			// (Dis)connect nodes
+			// data: array of objects; each object has these properties
+			//  id: id of tone node
+			//  otherid: id of the other node
+			//  connect: true for connecting, false for disconneting
+			for (const d of data) {
+				let nd1 = Node.get(d.id);
+				let nd2 = Node.get(d.otherid);
+				if (d.connect) {
+					nd1.attach_center(nd2);
+					nd1.setmarker();
+					nd2.setmarker();
+				} else {
+					let jsP = Service.get(nd1.service)._jsPlumb;
+					let connA = jsP.getConnections({scope:'center'});
+					connA.forEach(conn => {
+						// In jsPlumb, connections have a source and target, but in Raster connections are symmetric
+						let src = nid2id(conn.sourceId);
+						let dst = nid2id(conn.targetId);
+						if (src==d.id && dst==d.otherid
+						 || src==d.otherid && dst==d.id
+						) {
+							jsP.deleteConnection(conn);
+							nd1.detach_center(nd2);
+						}
+					});
+				}
+			}
+			break;
+
 		case 'nodeCreate':
 			// Create a new node
 			// data: array of objects; each object has these properties
@@ -346,24 +377,31 @@ function transactionCompleted(str) {
 }
 
 
+function ExportstringToArray(str) {
+	let a = [];
+	let patt = new RegExp(/^(.+)\n/gm);
+	let r=patt.exec(str);
+	while (r!=null) {
+		a.push(r[1]);
+		r=patt.exec(str);
+	}
+	return a;
+}
+
 function logdiff(s1, s2, header) {
-	let patt = new RegExp(/^(.+)\n/);
+	let a1 = ExportstringToArray(s1);
+	let a2 = ExportstringToArray(s2);
 	let print = false;
 
-	let r1=patt.exec(s1);
-	let r2=patt.exec(s2);
-	while (r1!=null && r2!=null) {
-		if (r1[1]!=r2[1]) {
-			if (!print)  console.log("===== "+header+" =======================");
-			console.log(">> " + r1[1]);
-			console.log("<< " + r2[1]);
-			console.log("--");
-			print=true;
-		}
-		s1 = s1.substr(r1[0].length);
-		s2 = s2.substr(r2[0].length);
-		r1=patt.exec(s1);
-		r2=patt.exec(s2);
-	}
+	a1.sort();
+	a2.sort();
+	a1.forEach((line,i) => {
+		if (a1[i]==a2[i])  return;
+		if (!print)  console.log("===== "+header+" =======================");
+		console.log(">> " + a1[i]);
+		console.log("<< " + a2[i]);
+		console.log("--");
+		print=true;
+	});
 }
 
