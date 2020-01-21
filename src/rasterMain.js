@@ -3022,8 +3022,12 @@ function initTabDiagrams() {
 		return function() {
 			$('#nodemenu').hide();
 			var rn = Node.get( $('#nodemenu').data('menunode') );
-			rn.setlabel(c);
-			transactionCompleted("Node change color "+c);
+			new Transaction('nodeLabel',
+				[{id: rn.id, label: rn.color}],
+				[{id: rn.id, label: c}]
+			);
+//			rn.setlabel(c);
+//			transactionCompleted("Node change color "+c);
 		};
 	}
 	$('#mi_ccnone').on('mouseup', colorfunc('none') );
@@ -3053,7 +3057,9 @@ function initTabDiagrams() {
 						  x: rn.position.x,
 						  y: rn.position.y,
 						  width: rn.position.width,
-						  height: rn.position.height
+						  height: rn.position.height,
+						  label: rn.color,
+						  connect: rn.connect.slice()
 						}],
 						[{id: rn.id}]
 					);
@@ -3082,7 +3088,11 @@ function initTabDiagrams() {
 					  x: rn.position.x,
 					  y: rn.position.y,
 					  componentid: rn.component,
-					  thrass: ths
+					  thrass: ths,
+					  width: rn.position.width,
+					  height: rn.position.height,
+					  label: rn.color,
+					  connect: rn.connect.slice()
 					}],
 					[{id: rn.id}]
 				);

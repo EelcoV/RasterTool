@@ -217,11 +217,13 @@ Transaction.prototype = {
 			// data: array of objects; each object has these properties
 			//  id: id of the node; this is the *only* property in the undo data
 			//  type: type of the node
+			//  label: color of the node
 			//  title: title of the node class
 			//  x, y: position of the node
 			//  width, height: size of the node (optional)
 			//  component: id of the component object
 			//  thrass: info on the blank vulnerabilities
+			//  connect: array of node IDs to connect to
 			for (const d of data) {
 				if (d.type==null) {
 					// This is undo_data: delete the node
@@ -233,6 +235,7 @@ Transaction.prototype = {
 				let rn = new Node(d.type, d.id);
 				rn.iconinit();
 				rn.settitle(d.title);
+				if (d.label)  rn.color = d.label;
 				rn.setposition(d.x,d.y);
 				if (d.width && d.height) {
 					rn.position.width = d.width;
@@ -241,6 +244,9 @@ Transaction.prototype = {
 				}
 // Change to true when not debugging
 				rn.paint(false);
+				if (d.connect) {
+					d.connect.forEach(n => rn.attach_center( Node.get(n) ));
+				}
 				if (d.type=='tNOT' || d.type=='tACT')  continue;
 
 				let cm = new Component(d.type, d.componentid);
@@ -272,6 +278,17 @@ Transaction.prototype = {
 					rn.position.height = d.height;
 				}
 				rn.setposition(d.x,d.y);
+			}
+			break;
+
+		case 'nodeLabel':
+			// Change the label color of nodes
+			// data: array of objects; each object has these properties
+			//  id: id of the node
+			//  label: color of the node
+			for (const d of data) {
+				let rn = Node.get(d.id);
+				rn.setlabel(d.label);
 			}
 			break;
 
