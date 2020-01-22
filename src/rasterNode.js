@@ -70,14 +70,14 @@
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
  */
-var Node = function(type, id) {
+var Node = function(type, serv, id) {
 	if (id!=null && Node._all[id]!=null) {
 		bugreport("Node with id "+id+" already exists","Node.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);
 	this.type = type;
 	this.index = null;
-	this.service = Service.cid;
+	this.service = serv;
 	this.position = {x: 0, y: 0, width: 0, height: 0};
 	this.connect = [];
 	this._normw = 0;
@@ -198,7 +198,7 @@ Node.prototype = {
 			bugreport("Attempt to change the type of a note","Node.changetype");
 		}
 		var i;
-		var newn = new Node(typ);
+		var newn = new Node(typ, this.service);
 		newn.position.x = this.position.x;
 		newn.position.y = this.position.y;
 		newn.position.w = 0;
@@ -206,7 +206,6 @@ Node.prototype = {
 		newn.position.v = 0;
 		newn.position.g = 0;
 		newn.color = this.color;
-		newn.service = this.service;
 		newn.changetitle(this.title);
 		newn.store();
 		newn.paint(false);
@@ -219,7 +218,6 @@ Node.prototype = {
 	
 	setposition: function(px,py,snaptogrid) {
 		var jsP = Service.get(this.service)._jsPlumb;
-//		var r = $('#tab_diagrams').position();
 		var fh = $('.fancyworkspace').height();
 		var fw = $('.fancyworkspace').width();
 		var oh = $('#scroller_overview'+this.service).height();
@@ -596,11 +594,7 @@ Node.prototype = {
 				[{id: this.id, otherid: dst.id, connect: false}],
 				[{id: this.id, otherid: dst.id, connect: true}]
 			);
-//			this.attach_center(dst);
-//			this.setmarker();
-//			dst.setmarker();
 			RefreshNodeReportDialog();
-//			transactionCompleted("Node connect");
 		}
 	},
 	
@@ -624,9 +618,6 @@ Node.prototype = {
 								[{id: src.id, otherid: dst.id, connect: true}],
 								[{id: src.id, otherid: dst.id, connect: false}]
 							);
-//							jsP.deleteConnection(labelOverlay.component);
-//							src.detach_center(dst);
-//							transactionCompleted("Node disconnect");
 						}
 					}
 				}	
@@ -1084,7 +1075,7 @@ Node.prototype = {
 				// Restore starting geometry
 				for (let i in rn.undo_data)  rn.position[i] = rn.undo_data[i];
 // rn.store() is necessary for testing
-				rn.store();
+//				rn.store();
 				new Transaction('nodeGeometry',
 					[{id: rn.id, x: rn.undo_data.x, y: rn.undo_data.y, width: rn.undo_data.width, height: rn.undo_data.height}],
 					[{id: rn.id, x: newposition.x, y: newposition.y, width: newposition.width, height: newposition.height}]

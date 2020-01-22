@@ -47,7 +47,12 @@ var Transaction = function(knd,undo_data,do_data) {
 	// If there are any actions between current and head, then these are discarded
 	Transaction.current.next = this;
 	this.prev = Transaction.current;
-// Test!
+/* Test!
+ *
+ * This block, and undo and redo below, contain a lot of debugging code. The transaction
+ * is rolled back, to check that there are no unaccounted side-effects. When this new
+ * structure is working, the code can be commented out, or removed.
+ */
 checkForErrors();
 let S1 = exportProject(Project.cid);
 	this.perform();
@@ -217,6 +222,10 @@ Transaction.prototype = {
 			// data: array of objects; each object has these properties
 			//  id: id of the node; this is the *only* property in the undo data
 			//  type: type of the node
+			//  title: name of the node
+			//  suffix: suffix of the node
+			//  suffix2: suffix of the other node in this class
+			//  service: service to which the nod belongs
 			//  label: color of the node
 			//  title: title of the node class
 			//  x, y: position of the node
@@ -232,9 +241,9 @@ Transaction.prototype = {
 					continue;
 				}
 
-				let rn = new Node(d.type, d.id);
+				let rn = new Node(d.type, d.service, d.id);
 				rn.iconinit();
-				rn.settitle(d.title);
+				rn.settitle(d.title,d.suffix);
 				if (d.label)  rn.color = d.label;
 				rn.setposition(d.x,d.y);
 				if (d.width && d.height) {
@@ -249,19 +258,25 @@ Transaction.prototype = {
 				}
 				if (d.type=='tNOT' || d.type=='tACT')  continue;
 
-				let cm = new Component(d.type, d.componentid);
-				for (const t of d.thrass) {
-					let ta = new ThreatAssessment(t.type, t.id);
-					ta.settitle(t.title);
-					ta.setdescription(t.description);
-					ta.setremark(t.remark);
-					ta.setfreq(t.freq);
-					ta.setimpact(t.impact);
-					ta.computetotal();
-					cm.addthrass(ta);
+				let cm = Component.get(d.component);
+				if (!cm) {
+					cm = new Component(d.type, d.componentid);
+					for (const t of d.thrass) {
+						let ta = new ThreatAssessment(t.type, t.id);
+						ta.settitle(t.title);
+						ta.setdescription(t.description);
+						ta.setremark(t.remark);
+						ta.setfreq(t.freq);
+						ta.setimpact(t.impact);
+						ta.computetotal();
+						cm.addthrass(ta);
+					}
+				} else if (cm.nodes.length==1) {
+					let othernd = Node.get(cm.nodes[0]);
+					othernd.settitle(othernd.title,d.suffix2);
 				}
-				cm.settitle(d.title);
 				cm.addnode(d.id);
+				cm.settitle(d.title);
 			}
 			break;
 

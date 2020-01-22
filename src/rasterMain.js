@@ -1792,10 +1792,9 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	}
 	for (i=0; i<lNodelen; i++) {
 		var lrn = lNode[i];
-		var rn = new Node(lrn.t,lrn.id);
+		var rn = new Node(lrn.t,lrn.s,lrn.id);
 		rn.title = trimwhitespace(lrn.l);
 		if (lrn.f) rn.suffix = trimwhitespace(lrn.f);
-		rn.service = lrn.s;
 		rn.iconinit();
 		rn.position = {x: lrn.x, y: lrn.y, width: lrn.w, height: lrn.h};
 		rn._normw = lrn.v;
@@ -3001,7 +3000,7 @@ function initTabDiagrams() {
 				return;
 			}
 		}
-		var nn = new Node(rn.type);
+		var nn = new Node(rn.type, rn.service);
 		nn.changetitle(rn.title);
 		var fh = $('.fancyworkspace').height();
 		var fw = $('.fancyworkspace').width();
@@ -3026,8 +3025,6 @@ function initTabDiagrams() {
 				[{id: rn.id, label: rn.color}],
 				[{id: rn.id, label: c}]
 			);
-//			rn.setlabel(c);
-//			transactionCompleted("Node change color "+c);
 		};
 	}
 	$('#mi_ccnone').on('mouseup', colorfunc('none') );
@@ -3047,12 +3044,11 @@ function initTabDiagrams() {
 			_("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
 			_("Delete"),_("Cancel"),
 			function() {
-
-
 				if (rn.type=='tNOT' || rn.type=='tACT') {
 					new Transaction('nodeCreate',
 						[{id: rn.id,
 						  type: rn.type,
+						  service: rn.service,
 						  title: rn.title,
 						  x: rn.position.x,
 						  y: rn.position.y,
@@ -3081,13 +3077,21 @@ function initTabDiagrams() {
 					});
 				}
 
+				let suf2 = "";
+				if (cm.nodes.length==2) {
+					let otherid = (cm.nodes[0]==rn.id ? cm.nodes[1] : cm.nodes[0]);
+					suf2 = Node.get(otherid).suffix;
+				}
 				new Transaction('nodeCreate',
 					[{id: rn.id,
 					  type: rn.type,
+					  service: rn.service,
 					  title: rn.title,
+					  suffix: rn.suffix,
+					  suffix2: suf2,
 					  x: rn.position.x,
 					  y: rn.position.y,
-					  componentid: rn.component,
+					  component: rn.component,
 					  thrass: ths,
 					  width: rn.position.width,
 					  height: rn.position.height,
@@ -3096,13 +3100,8 @@ function initTabDiagrams() {
 					}],
 					[{id: rn.id}]
 				);
-
-
-
-//				rn.destroy();
-//				transactionCompleted("Node delete");
 			}
-			);
+		);
 	});
 	$('#mi_sd').on('mouseup', function() {
 		var nodes = Node.nodesinselection();
@@ -3361,6 +3360,8 @@ function workspacedrophandler(event, ui) {
 		bugreport('object with unknown type','workspacedrophandler');
 	}
 
+	$('.tC').css('visibility','hidden');
+
 	let newid = createUUID();
 	let newtitle = Node.autotitle(typ);
 	let r = $('#tab_diagrams').offset();
@@ -3372,6 +3373,7 @@ function workspacedrophandler(event, ui) {
 			[{id: newid}],
 			[{id: newid,
 			 type: typ,
+			 service: Service.cid,
 			 title: newtitle,
 			 x: newx,
 			 y: newy
@@ -3401,6 +3403,7 @@ function workspacedrophandler(event, ui) {
 		[{id: newid}],
 		[{id: newid,
 		 type: typ,
+		 service: Service.cid,
 		 title: newtitle,
 		 x: newx,
 		 y: newy,
@@ -3408,22 +3411,6 @@ function workspacedrophandler(event, ui) {
 		 thrass: newthr
 		}]
 	);
-
-//	var rn = new Node(typ);
-//	/* 50 = half the width of a div.node; 10 = half the height
-//	 * The center of the new Node is therefore roughly on the the drop spot.
-//	 */
-//	rn.autosettitle();
-//	var r = $('#tab_diagrams').offset();
-//	rn.paint();
-//	rn.setposition(
-//		event.originalEvent.pageX-50-r.left+$('#diagrams'+Service.cid).scrollLeft(),
-//		event.originalEvent.pageY-10-r.top +$('#diagrams'+Service.cid).scrollTop()
-//	);
-//	// Now we now the width and height. Adjust the position if necessary.
-//	rn.setposition(rn.position.x,rn.position.y);
-	$('.tC').css('visibility','hidden');
-//	transactionCompleted("Node add");
 }
 
 function refreshThreatsDialog(force) {
