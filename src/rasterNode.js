@@ -382,13 +382,13 @@ Node.prototype = {
 				// A new class is created
 				let sf = cm.newsuffix(2);
 				new Transaction('nodeTitle',
-					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id, thrass: thr}],
+					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id, thrass: thr, accordionopened: prevcomponent.accordionopened}],
 					[{id: this.id, title: str, suffix: sf[1], suffix2: sf[0], component: n}]
 				);
 			} else {
 				// Becomes member of an existing class
 				new Transaction('nodeTitle',
-					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id, thrass: thr}],
+					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id, thrass: thr, accordionopened: prevcomponent.accordionopened}],
 					[{id: this.id, title: str, suffix: cm.newsuffix(), component: n}]
 				);
 			}
@@ -523,6 +523,7 @@ Node.prototype = {
 			$('#nodeMagnitude'+this.id).hide();
 			this.showmarker();
 		} else {
+			// Actors have a marker but no component
 			if (this.component!=null) {
 				var m = Component.get(this.component).magnitude;
 				var mi = ThreatAssessment.valueindex[m];

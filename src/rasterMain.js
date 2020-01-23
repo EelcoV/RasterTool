@@ -3093,6 +3093,7 @@ function initTabDiagrams() {
 					  y: rn.position.y,
 					  component: rn.component,
 					  thrass: ths,
+					  accordionopened: cm.accordionopened,
 					  width: rn.position.width,
 					  height: rn.position.height,
 					  label: rn.color,
@@ -3407,7 +3408,7 @@ function workspacedrophandler(event, ui) {
 		 title: newtitle,
 		 x: newx,
 		 y: newy,
-		 componentid: createUUID(),
+		 component: createUUID(),
 		 thrass: newthr
 		}]
 	);

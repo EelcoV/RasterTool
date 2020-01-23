@@ -254,13 +254,17 @@ Transaction.prototype = {
 // Change to true when not debugging
 				rn.paint(false);
 				if (d.connect) {
-					d.connect.forEach(n => rn.attach_center( Node.get(n) ));
+					d.connect.forEach(n => {
+						let othernode = Node.get(n);
+						rn.attach_center(othernode);
+						othernode.setmarker();
+					});
 				}
 				if (d.type=='tNOT' || d.type=='tACT')  continue;
 
 				let cm = Component.get(d.component);
 				if (!cm) {
-					cm = new Component(d.type, d.componentid);
+					cm = new Component(d.type, d.component);
 					for (const t of d.thrass) {
 						let ta = new ThreatAssessment(t.type, t.id);
 						ta.settitle(t.title);
@@ -271,12 +275,14 @@ Transaction.prototype = {
 						ta.computetotal();
 						cm.addthrass(ta);
 					}
+					cm.accordionopened = d.accordionopened;
 				} else if (cm.nodes.length==1) {
 					let othernd = Node.get(cm.nodes[0]);
 					othernd.settitle(othernd.title,d.suffix2);
 				}
 				cm.addnode(d.id);
 				cm.settitle(d.title);
+				rn.setmarker();
 			}
 			break;
 
@@ -373,6 +379,7 @@ Transaction.prototype = {
 						ta.computetotal();
 						cm.addthrass(ta);
 					}
+					cm.accordionopened = d.accordionopened;
 				}
 				if (d.component!=rn.component) {
 					let oldcm = Component.get(rn.component);
