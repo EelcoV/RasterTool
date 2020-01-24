@@ -473,7 +473,15 @@ Service.prototype = {
 					let n = Node.get(NodesBeingDragged[i]);
 					do_data.push({id: n.id, x: n.position.x, y: n.position.y});
 				}
-				new Transaction('nodeGeometry', $('#selectrect').data('undo_data'), do_data);
+				let undo_data = $('#selectrect').data('undo_data');
+				// Restore previous geometry, necessary for testing only
+				for (const d of undo_data) {
+					let n = Node.get(d.id);
+					n.position.x = d.x;
+					n.position.y = d.y;
+					n.store();
+				}
+				new Transaction('nodeGeometry', undo_data, do_data);
 				$('#selectrect').removeData('undo_data');
 			},
 			cursor: 'move'
