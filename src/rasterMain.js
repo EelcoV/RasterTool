@@ -2983,8 +2983,10 @@ function initTabDiagrams() {
 		if (rn.component==null)  return;
 
 		var cm = Component.get(rn.component);
-		cm.setsingle(cm.single==false);
-		transactionCompleted("Component class single/multiple");
+		new Transaction('classSingular',
+			[{id: cm.id, singular: cm.single}],
+			[{id: cm.id, singular: cm.single==false}]
+		);
 	});
 	$('#mi_du').on('mouseup', function() {
 		$('#nodemenu').hide();

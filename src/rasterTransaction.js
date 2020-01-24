@@ -168,6 +168,17 @@ Transaction.prototype = {
 		if (!data)  data = this.do_data;
 		switch (this.kind) {
 
+		case 'classSingular':
+			// Edit the title of a node class
+			// data: array of objects; each object has these properties
+			//  id: id of the component of the class
+			//  singular: true iff the component should be a singular class, false otherwise
+			for (const d of data) {
+				let cm = Component.get(d.id);
+				cm.setsingle(d.singular);
+			}
+			break;
+
 		case 'classTitle':
 			// Edit the title of a node class
 			// data: array of objects; each object has these properties
