@@ -425,6 +425,7 @@ Service.prototype = {
 		$('#selectrect').on('contextmenu', function(e) {
 			e.preventDefault();
 //			$('#selectmenu').css('left', e.pageX+4).css('top', e.pageY+4);
+			$('#selectmenu').menu('collapseAll');
 			$('#selectmenu').show();
 			$('#selectmenu').position({
 				my: "left top",

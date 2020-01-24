@@ -1143,6 +1143,7 @@ Node.prototype = {
 			s = '"' + s + '"';
 		}
 		$('#mi_cc span.lc:first').html(s);
+		$('#nodemenu').menu('collapseAll');
 		$('#nodemenu').show();
 		$('#nodemenu').position({
 			my: "left top",

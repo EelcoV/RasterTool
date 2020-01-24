@@ -4073,6 +4073,7 @@ function contextMenuHandler(ev) {
 		}
 	}
 
+	$('#ccfmenu').menu('collapseAll');
 	$('#ccfmenu').show();
 	$('#ccfmenu').position({
 		my: "left top",
