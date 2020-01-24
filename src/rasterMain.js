@@ -4044,8 +4044,8 @@ function contextMenuHandler(ev) {
 //	var root = NodeCluster.get(cluster.root());
 
 	MenuCluster = cluster.id;
-	$('#ccfmenu').css('left', ev.clientX+2);
-	$('#ccfmenu').css('top', ev.clientY-5);
+//	$('#ccfmenu').css('left', ev.clientX+2);
+//	$('#ccfmenu').css('top', ev.clientY-5);
 
 	if (nid==null) {
 		// Popup menu called on a cluster
@@ -4076,6 +4076,12 @@ function contextMenuHandler(ev) {
 	}
 
 	$('#ccfmenu').show();
+	$('#ccfmenu').position({
+		my: "left top",
+		at: "left+" + ev.clientX + "px top+" + ev.clientY + "px",
+		of: "body",
+		collision: "fit"
+	});
 }
 
 function populateClusterSubmenu(cluster,exceptions) {

@@ -414,8 +414,14 @@ Service.prototype = {
 		$('#diagrams_workspace'+this.id).append('<div id="selectrect"></div>');
 		$('#selectrect').on('contextmenu', function(e) {
 			e.preventDefault();
-			$('#selectmenu').css('left', e.pageX+4).css('top', e.pageY+4);
+//			$('#selectmenu').css('left', e.pageX+4).css('top', e.pageY+4);
 			$('#selectmenu').show();
+			$('#selectmenu').position({
+				my: "left top",
+				at: "left+" + e.pageX + "px top+" + e.pageY + "px",
+				of: "body",
+				collision: "fit"
+			});
 			return false;
 		});
 		$('#selectrect').on('click', function(evt) {

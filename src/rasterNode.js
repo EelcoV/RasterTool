@@ -137,7 +137,7 @@ Node.autotitle = function(typ,newtitle) {
 
 	let targettitle = newtitle;
 	let n=0;
-	while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
+	while (Node.projecthastitle(Project.cid,targettitle)!=-1) {
 		targettitle = newtitle + ' (' + (++n) + ')';
 	}
 	return targettitle;
@@ -1103,8 +1103,8 @@ Node.prototype = {
 	_showpopupmenu: function(x,y) {
 		var p = Project.get(Project.cid);
 		var cm = Component.get(this.component);
-		$('#nodemenu').css('left', x);
-		$('#nodemenu').css('top', y);
+//		$('#nodemenu').css('left', x);
+//		$('#nodemenu').css('top', y);
 		$('#nodemenu .ui-menu-item').removeClass('ui-state-disabled');
 		if (this.type=='tNOT') {
 			$('#mi_th').addClass('ui-state-disabled');
@@ -1134,7 +1134,14 @@ Node.prototype = {
 		}
 		$('#mi_cc span.lc:first').html(s);
 		$('#nodemenu').show();
+		$('#nodemenu').position({
+			my: "left top",
+			at: "center",
+			of: this.jnid,
+			collision: "flipfit"
+		});
 		$('#nodemenu').data('menunode', this.id);
+
 	},
 	
 	_stringify: function() {
