@@ -827,8 +827,13 @@ Node.prototype = {
 				if (Math.abs(do_data[0].x-rn.undo_data[0].x) > 10
 				 || Math.abs(do_data[0].y-rn.undo_data[0].y) > 10
 				) {
-					// Restore previous geometry, necessary for testing
-					rn.setposition(rn.undo_data[0].x, rn.undo_data[0].y);
+					// Restore previous geometry, necessary for testing only
+					for (const d of rn.undo_data) {
+						let n = Node.get(d.id);
+						n.position.x = d.x;
+						n.position.y = d.y;
+						n.store();
+					}
 					new Transaction('nodeGeometry', rn.undo_data, do_data);
 				}
 				delete rn.undo_data;
