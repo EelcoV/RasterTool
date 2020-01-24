@@ -43,12 +43,12 @@
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
  */
-var Service = function(id) {
+var Service = function(pid, id) {
 	if (id!=null && Service._all[id]!=null) {
 		bugreport("Service with id "+id+" already exists","Service.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);
-	this.project = Project.cid;
+	this.project = pid;
 	this.title = "";
 	this._painted=false;
 	this._loaded=false;
@@ -78,11 +78,21 @@ Service._all = new Object();
 Service.titleisused = function(projectid,str,except) {
 	for (var i in Service._all) {
 		if (i==except) continue;
-		if (Service._all[i].project==projectid) {
-			if (isSameString(Service._all[i].title,str))  return true;
-		}
+		if (Service._all[i].project!=projectid)  continue;
+		if (isSameString(Service._all[i].title,str))  return true;
 	}
 	return false;
+};
+Service.autotitle = function(pid,str) {
+	if (!str)  str = _("New service");
+	let targettitle = str;
+	if (Service.titleisused(pid,targettitle,null)) {
+		var n=0;
+		do {
+			targettitle = str + " (" + (++n) + ")";
+		} while (Service.titleisused(pid,targettitle,null));
+	}
+	return targettitle;
 };
 
 Service.prototype = {
@@ -117,7 +127,7 @@ Service.prototype = {
 	},
 
 	autosettitle: function() {
-		this.settitle(_("New service"));
+		this.settitle( Service.autotitle() );
 	},
 
 	setproject: function(p) {

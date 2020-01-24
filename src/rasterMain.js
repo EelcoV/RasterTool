@@ -915,8 +915,8 @@ function testLocalStorage() {
 }
 
 function loadDefaultProject() {
-	var s = new Service();
 	var p = new Project();
+	var s = new Service(p.id);
 	p.adddefaultthreats();
 	p.addservice(s.id);
 	s.autosettitle();
@@ -1693,8 +1693,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	 */
 	for (i=0; i<lServicelen; i++) {
 		var ls = lService[i];
-		s = new Service(ls.id);
-		s.project = ls.p;
+		s = new Service(ls.p,ls.id);
 		if (upgrade_1_2) {
 			// Check if there is another service in this project with the same case-insensitive name
 			for (j=i+1; j<lServicelen; j++) {
@@ -2271,7 +2270,7 @@ function initLibraryPanel() {
 	// Add --------------------
 	function addEmptyProject() {
 		var p = new Project();
-		var s = new Service();
+		var s = new Service(p.id);
 		p.adddefaultthreats();
 		p.addservice(s.id);
 		s.autosettitle();
@@ -2821,13 +2820,12 @@ function initTabDiagrams() {
 	});
 
 	$('#servaddbuttondia').on('click', function() {
-		var p = Project.get( Project.cid );
-		var s = new Service();
-		p.addservice(s.id);
-		s.autosettitle();
-		s.load();
-		$('#diagramstabtitle'+s.id).trigger('click');
-		transactionCompleted("Service add");
+		let newid = createUUID();
+		let newtitle = Service.autotitle(Project.cid);
+		new Transaction('serviceCreate',
+			[{id: newid, project: Project.cid}],
+			[{id: newid, project: Project.cid, title: newtitle}]
+		);
 	});
 
 	$('#templates').on('mouseenter', function() {
@@ -3572,13 +3570,12 @@ function initTabSingleFs() {
 	});
 
 	$('#servaddbuttonsf').on('click',  function() {
-		var p = Project.get( Project.cid );
-		var s = new Service();
-		p.addservice(s.id);
-		s.autosettitle();
-		s.load();
-		$('#singlefstabtitle'+s.id).trigger('click');
-		transactionCompleted("Service add");
+		let newid = createUUID();
+		let newtitle = Service.autotitle(Project.cid);
+		new Transaction('serviceCreate',
+			[{id: newid, project: Project.cid}],
+			[{id: newid, project: Project.cid, title: newtitle}]
+		);
 	});
 }
 

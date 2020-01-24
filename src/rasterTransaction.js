@@ -119,6 +119,7 @@ if (S1!=S3) {
 }
 
 	} catch (e) {
+console.log(e);
 		if (e!='TransactionCancel')  bugreport(e,"Transaction.undo");
 	}
 	Transaction.current = Transaction.current.prev;
@@ -150,6 +151,7 @@ if (S1!=S3) {
 }
 
 	} catch (e) {
+console.log(e);
 		if (e!='TransactionCancel')  bugreport(e,"Transaction.redo");
 	}
 	Transaction.current = Transaction.current.next;
@@ -189,7 +191,7 @@ Transaction.prototype = {
 		case 'nodeConnect':
 			// (Dis)connect nodes
 			// data: array of objects; each object has these properties
-			//  id: id of tone node
+			//  id: id of one node
 			//  otherid: id of the other node
 			//  connect: true for connecting, false for disconneting
 			for (const d of data) {
@@ -272,7 +274,6 @@ Transaction.prototype = {
 						ta.setremark(t.remark);
 						ta.setfreq(t.freq);
 						ta.setimpact(t.impact);
-						ta.computetotal();
 						cm.addthrass(ta);
 					}
 					cm.accordionopened = d.accordionopened;
@@ -376,7 +377,6 @@ Transaction.prototype = {
 						ta.setremark(t.remark);
 						ta.setfreq(t.freq);
 						ta.setimpact(t.impact);
-						ta.computetotal();
 						cm.addthrass(ta);
 					}
 					cm.accordionopened = d.accordionopened;
@@ -397,6 +397,31 @@ Transaction.prototype = {
 				rn.settitle(d.title,d.suffix);
 				rn.setmarker();
 				RefreshNodeReportDialog();
+			}
+			break;
+
+		case 'serviceCreate':
+			// Add/remove service
+			// data: array of objects; each object has these properties
+			//  id: id of service
+			//  project: project to which the service is to belong
+			//  title: title of the new service; this is null for undo data
+			for (const d of data) {
+				if (!d.title) {
+					// this is undo data
+					let p = Project.get(d.project);
+					p.removeservice(d.id);
+					continue;
+				}
+				let p = Project.get(d.project);
+				let s = new Service(d.project,d.id);
+				p.addservice(s.id);
+				s.settitle(d.title);
+				if (d.project==Project.cid) {
+					s.load();
+// Enable when not debugging
+//					$('#diagramstabtitle'+s.id).trigger('click');
+				}
 			}
 			break;
 
