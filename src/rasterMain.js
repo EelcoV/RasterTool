@@ -1807,12 +1807,11 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	}
 	for (i=0; i<lComponentlen; i++) {
 		var lc = lComponent[i];
-		var cm = new Component(lc.t,lc.id);
+		var cm = new Component(lc.t,lc.p,lc.id);
 		cm.thrass = lc.e;
 		cm.nodes = lc.n.slice(0); // Omit the "-1" property, if it exists;
 		cm.single = (lc.s===true);
 		cm.accordionopened = (lc.o===true);
-		cm.project = lc.p;
 		if (upgrade_1_2) {
 			// Check if there is another Component in this project with the same case-insensitive name
 			for (j=i+1; j<lComponentlen; j++) {

@@ -25,6 +25,7 @@
  *	component: component object for this node; null for tNOT and tACT
  *	nid (getter): node ID in DOM format
  *	jnid (getter): node ID in jQuery format (#id of the DOM element)
+ *  project (getter): project to which the node belongs
  *	service: ID of the service to which this node belongs
  *	position: current position on workspace, and size {x,y,width,height}
  *	dragpoint: jsPlumb endpoint from which to drag new connectors
@@ -150,6 +151,10 @@ Node.prototype = {
 
 	get jnid() {
 		return '#node'+this.id;
+	},
+
+	get project() {
+		return Service.get(this.service).project;
 	},
 
 	destroy: function(effect) {

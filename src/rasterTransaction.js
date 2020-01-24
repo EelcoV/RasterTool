@@ -227,7 +227,7 @@ Transaction.prototype = {
 			//  title: name of the node
 			//  suffix: suffix of the node
 			//  suffix2: suffix of the other node in this class
-			//  service: service to which the nod belongs
+			//  service: service to which the node belongs
 			//  label: color of the node
 			//  title: title of the node class
 			//  x, y: position of the node
@@ -266,7 +266,7 @@ Transaction.prototype = {
 
 				let cm = Component.get(d.component);
 				if (!cm) {
-					cm = new Component(d.type, d.component);
+					cm = new Component(d.type, rn.project, d.component);
 					for (const t of d.thrass) {
 						let ta = new ThreatAssessment(t.type, t.id);
 						ta.settitle(t.title);
@@ -369,7 +369,7 @@ Transaction.prototype = {
 						throw('TransactionCancel');
 					}
 					// create a new component
-					cm = new Component(rn.type,d.component);
+					cm = new Component(rn.type,rn.project,d.component);
 					for (const t of d.thrass) {
 						let ta = new ThreatAssessment(t.type, t.id);
 						ta.settitle(t.title);

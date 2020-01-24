@@ -47,7 +47,7 @@
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
 */
-var Component = function(type, id) {
+var Component = function(type, pid, id) {
 	if (type=='tACT') {
 		bugreport("attempt to create component for actor node","Component.constructor");
 	}
@@ -59,7 +59,7 @@ var Component = function(type, id) {
 	}
 	this.id = (id==null ? createUUID() : id);
 	this.type = type;
-	this.project = Project.cid;
+	this.project = pid;
 	this.nodes = [];
 	this.title = _("Component ") + Rules.nodetypes[this.type] + " " + this.id;
 	this.thrass = [];
