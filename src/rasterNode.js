@@ -926,7 +926,7 @@ Node.prototype = {
 		}).on('contextmenu', function(e) {
 			e.preventDefault();
 			var rn = Node.get(nid2id(this.id));
-			rn._showpopupmenu(e.clientX+2,e.clientY-5);
+			rn._showpopupmenu(e);
 			return false;
 		}).on('keydown', function(evt){
 			var rn = Node.get(nid2id(this.id));
@@ -976,10 +976,10 @@ Node.prototype = {
 			}
 		});
 
-		$('#nodeC'+this.id).on('mousedown',  function(/*event*/){
+		$('#nodeC'+this.id).on('mousedown',  function(evt){
 			var rn = Node.get(nid2id(this.id));
-			var offset = $(this).offset();
-			rn._showpopupmenu(offset.left+16,offset.top+5);
+//			var offset = $(this).offset();
+			rn._showpopupmenu(evt);
 			return false;
 		});
 		$('#nodeC'+this.id).on('click',  function(/*event*/){ return false; });
@@ -1110,7 +1110,7 @@ Node.prototype = {
 		$('#tinynode'+this.id).remove();
 	},
 
-	_showpopupmenu: function(x,y) {
+	_showpopupmenu: function(evt) {
 		var p = Project.get(Project.cid);
 		var cm = Component.get(this.component);
 //		$('#nodemenu').css('left', x);
@@ -1147,7 +1147,7 @@ Node.prototype = {
 		$('#nodemenu').position({
 			my: "left top",
 			at: "center",
-			of: this.jnid,
+			of: evt,
 			collision: "flipfit"
 		});
 		$('#nodemenu').data('menunode', this.id);
