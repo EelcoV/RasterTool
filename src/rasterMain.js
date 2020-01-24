@@ -3104,39 +3104,86 @@ function initTabDiagrams() {
 		);
 	});
 	$('#mi_sd').on('mouseup', function() {
-		var nodes = Node.nodesinselection();
-		var num = nodes.length;
+		let nodes = Node.nodesinselection();
+		let num = nodes.length;
 		$('#selectmenu').hide();
 		if (num==0) {
 			$('#selectrect').hide();
 			return;
 		}
 		// Start blinking
-		for (var i=0; i<num; i++) {
-			var rn = Node.get(nodes[i]);
-			$(rn.jnid).effect('pulsate', { times:10 }, 4000);
-		}
+		nodes.forEach(n => $(Node.get(n).jnid).effect('pulsate', { times:10 }, 4000) );
 		rasterConfirm(_("Delete %% %% in selection?", num, plural(_("node"),_("nodes"),num)),
 			_("Are you sure you want to delete all selected nodes?"),
 			_("Delete %% %%", num, plural(_("node"),_("nodes"),num)),_("Cancel"),
 			function() {
 				// Stop any leftover pulsate effects
-				for (var i=0; i<num; i++) {
-					var rn = Node.get(nodes[i]);
-					$(rn.jnid).stop(true,true);
-				}
-				transactionCompleted("Node destroy selection");
-				Node.destroyselection();
-				$('#selectrect').hide();
+				nodes.forEach(n => $(Node.get(n).jnid).stop(true,true) );
+				let undo_data = [];
+				let data = [];
+				nodes.forEach(n => {
+					let rn = Node.get(n);
+					if (rn.type=='tNOT' || rn.type=='tACT') {
+						undo_data.push({
+							id: rn.id,
+							type: rn.type,
+							service: rn.service,
+							title: rn.title,
+							x: rn.position.x,
+							y: rn.position.y,
+							width: rn.position.width,
+							height: rn.position.height,
+							label: rn.color,
+							connect: rn.connect.slice()
+						});
+						data.push({id: rn.id});
+						return;
+					}
+
+					let ths = [];
+					let cm = Component.get(rn.component);
+					for (let i=0; i<cm.thrass.length; i++) {
+						let th = ThreatAssessment.get(cm.thrass[i]);
+						ths.push({
+							id: th.id,
+							title: th.title,
+							type: th.type,
+							description: th.description,
+							freq: th.freq,
+							impact: th.impact,
+							remark: th.remark
+						});
+					}
+
+					let suf2 = "";
+					if (cm.nodes.length==2) {
+						let otherid = (cm.nodes[0]==rn.id ? cm.nodes[1] : cm.nodes[0]);
+						suf2 = Node.get(otherid).suffix;
+					}
+					undo_data.push({
+						id: rn.id,
+						type: rn.type,
+						service: rn.service,
+						title: rn.title,
+						suffix: rn.suffix,
+						suffix2: suf2,
+						x: rn.position.x,
+						y: rn.position.y,
+						component: rn.component,
+						thrass: ths,
+						accordionopened: cm.accordionopened,
+						width: rn.position.width,
+						height: rn.position.height,
+						label: rn.color,
+						connect: rn.connect.slice()
+					});
+					data.push({id: rn.id});
+				});
+				new Transaction('nodeCreate', undo_data, data);
 			},
 			function() {
 				// Stop any leftover pulsate effects
-				for (var i=0; i<num; i++) {
-					var rn = Node.get(nodes[i]);
-					$(rn.jnid).stop(true,true);
-					$(rn.jnid).show().css("opacity","");
-				}
-				$('#selectrect').hide();
+				nodes.forEach(n => $(Node.get(n).jnid).stop(true,true).show().css("opacity","") );
 			});
 	});
 	$('#mi_sc').on('mouseenter',function(){
@@ -3147,20 +3194,20 @@ function initTabDiagrams() {
 	});
 	function selcolorfunc(c) {
 		return function() {
-			var nodes = Node.nodesinselection();
-			var num = nodes.length;
+			let nodes = Node.nodesinselection();
 			$('#selectmenu').hide();
-			if (num==0) {
+			if (nodes.length==0) {
 				$('#selectrect').hide();
 				return;
 			}
-			for (var i=0; i<num; i++) {
-				var rn = Node.get(nodes[i]);
-				if (rn.type!='tNOT') {
-					rn.setlabel(c);
-				}
-			}
-			transactionCompleted("Node change selection color "+c);
+			let undo_data = [];
+			let data = [];
+			nodes.forEach( n=> {
+				let rn = Node.get(n);
+				undo_data.push({id: n, label: rn.color});
+				data.push({id: n, label: c});
+			});
+			new Transaction('nodeLabel', undo_data, data);
 		};
 	}
 	$('#mi_scnone').on('mouseup', selcolorfunc('none') );
