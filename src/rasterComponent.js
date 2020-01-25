@@ -506,7 +506,15 @@ Component.prototype = {
 		// When comparing projects (e.g. for debugging) it is useful if the order of
 		// items in the project file is the same.
 		// Therefore sort nodes and thrass
-		this.nodes.sort();
+		// For singular classes nodes[0] must remain fixed!
+		if (this.single) {
+			let sub = this.nodes.slice(1);
+			sub.sort();
+			sub.unshift(this.nodes[0]);
+			this.nodes = sub;
+		} else {
+			this.nodes.sort();
+		}
 		this.thrass.sort();
 		data.t=this.type;
 		data.p=this.project;
@@ -566,7 +574,7 @@ Component.prototype = {
 		for (i=0; i<this.nodes.length; i++) {
 			sfx.push(Node.get(this.nodes[i]).suffix);
 		}
-		for (i=0; i<this.nodes.length; i++) {
+		for (i=0; !this.single && i<this.nodes.length; i++) {
 			if (sfx[i]=="") continue;
 			rn = Node.get(this.nodes[i]);
 			j = sfx.indexOf(rn.suffix);
@@ -613,7 +621,7 @@ Component.prototype = {
 			cc = NodeCluster.get(cc.root());
 			for (j=0; j<(this.single? 1 : this.nodes.length); j++) {
 				if (!cc.containsnode(this.nodes[j])) {
-					errors += offender+"has a node "+rn.id+" that does not appear in the node cluster for "+H(ta.title)+" ("+H(ta.type)+").\n";
+					errors += offender+"has a node "+this.nodes[j]+" that does not appear in the node cluster for "+H(ta.title)+" ("+H(ta.type)+").\n";
 				}
 			}
 		}

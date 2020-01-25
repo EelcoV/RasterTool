@@ -1799,7 +1799,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		rn._normw = lrn.v;
 		rn._normh = lrn.g;
 		rn.component = lrn.m;
-		rn.connect = lrn.c;
+		rn.connect = lrn.c.slice(0);
 		if (lrn.o) {
 			rn.color = lrn.o;
 		}
@@ -1808,7 +1808,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	for (i=0; i<lComponentlen; i++) {
 		var lc = lComponent[i];
 		var cm = new Component(lc.t,lc.p,lc.id);
-		cm.thrass = lc.e;
+		cm.thrass = lc.e.slice(0);
 		cm.nodes = lc.n.slice(0); // Omit the "-1" property, if it exists;
 		cm.single = (lc.s===true);
 		cm.accordionopened = (lc.o===true);
@@ -1834,6 +1834,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			}
 		}
 		cm.title = lc.l;
+		cm.store();
 		// Delay calculation until ThrEvals have been loaded
 		//cm.calculatemagnitude();
 	}
