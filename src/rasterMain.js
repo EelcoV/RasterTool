@@ -1833,7 +1833,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 				}
 			}
 		}
-		cm.settitle(lc.l);
+		cm.title = lc.l;
 		// Delay calculation until ThrEvals have been loaded
 		//cm.calculatemagnitude();
 	}
@@ -2903,7 +2903,7 @@ function initTabDiagrams() {
 			text: _("Change name"),
 			click: function() {
 					var name = $('#field_componentrename');
-					cm.changetitle(name.val());
+					cm.changeclasstitle(name.val());
 					$(this).dialog('close');
 				}
 		});
@@ -2918,7 +2918,7 @@ function initTabDiagrams() {
 				$('#field_componentrename').focus().select();
 				$('#form_componentrename').submit(function() {
 					var name = $('#field_componentrename');
-					cm.changetitle(name.val());
+					cm.changeclasstitle(name.val());
 					dialog.dialog('close');
 				});
 			},
@@ -2990,31 +2990,54 @@ function initTabDiagrams() {
 	});
 	$('#mi_du').on('mouseup', function() {
 		$('#nodemenu').hide();
+		let fh = $('.fancyworkspace').height();
+		let fw = $('.fancyworkspace').width();
 		var rn = Node.get( $('#nodemenu').data('menunode') );
-		if (rn.component!=null) {
-			var cm = Component.get(rn.component);
-			if (cm.single) {
-				// A component marked 'single' cannot be duplicated, as it would create a second
-				// instance within the same diagram.
-				return;
-			}
+		let newid = createUUID();
+		let cm = Component.get(rn.component);
+
+		if (cm && cm.single) {
+			// A component marked 'single' cannot be duplicated, as it would create a second
+			// instance within the same diagram.
+			return;
 		}
-		var nn = new Node(rn.type, rn.service);
-		nn.changetitle(rn.title);
-		var fh = $('.fancyworkspace').height();
-		var fw = $('.fancyworkspace').width();
-		// Duplicate size and width, but offset the position
-		nn.position.width = rn.position.width;
-		nn.position.height = rn.position.height;
-		nn._normw = rn._normw;
-		nn._normh = rn._normh;
-		nn.paint();
-		nn.setposition(
-			(rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70),
-			(rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30)
+
+		if (rn.type=='tNOT' || rn.type=='tACT') {
+			new Transaction('nodeCreate',
+				[{id: newid}],
+				[{
+					id: newid,
+					type: rn.type,
+					service: rn.service,
+					title: Node.autotitle(rn.type,rn.title),
+					x: (rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70) + Math.random()*20 - 10,
+					y: (rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30) + Math.random()*20 - 10,
+					width: rn.position.width,
+					height: rn.position.height,
+					label: rn.color,
+					connect: rn.connect.slice()
+				}]
+			);
+			return;
+		}
+
+		new Transaction('nodeCreate',
+			[{id: newid}],
+			[{
+				id: newid,
+				type: rn.type,
+				service: rn.service,
+				title: rn.title,
+				suffix: cm.newsuffix(),
+				x: (rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70) + Math.random()*20 - 10,
+				y: (rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30) + Math.random()*20 - 10,
+				component: rn.component,
+				width: rn.position.width,
+				height: rn.position.height,
+				label: rn.color,
+				connect: []
+			}]
 		);
-		nn.setlabel(rn.color);
-		transactionCompleted("Node duplicate");
 	});
 	function colorfunc(c) {
 		return function() {
@@ -3039,69 +3062,51 @@ function initTabDiagrams() {
 	$('#mi_de').on('mouseup', function() {
 		$('#nodemenu').hide();
 		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rasterConfirm(_("Delete element node?"),
-			_("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
-			_("Delete"),_("Cancel"),
-			function() {
+//		rasterConfirm(_("Delete element node?"),
+//			_("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
+//			_("Delete"),_("Cancel"),
+//			function() {
 				if (rn.type=='tNOT' || rn.type=='tACT') {
 					new Transaction('nodeCreate',
-						[{id: rn.id,
-						  type: rn.type,
-						  service: rn.service,
-						  title: rn.title,
-						  x: rn.position.x,
-						  y: rn.position.y,
-						  width: rn.position.width,
-						  height: rn.position.height,
-						  label: rn.color,
-						  connect: rn.connect.slice()
+						[{
+							id: rn.id,
+							type: rn.type,
+							service: rn.service,
+							title: rn.title,
+							x: rn.position.x,
+							y: rn.position.y,
+							width: rn.position.width,
+							height: rn.position.height,
+							label: rn.color,
+							connect: rn.connect.slice()
 						}],
 						[{id: rn.id}]
 					);
 					return;
 				}
 
-				let ths = [];
 				let cm = Component.get(rn.component);
-				for (let i=0; i<cm.thrass.length; i++) {
-					let th = ThreatAssessment.get(cm.thrass[i]);
-					ths.push({
-						id: th.id,
-						title: th.title,
-						type: th.type,
-						description: th.description,
-						freq: th.freq,
-						impact: th.impact,
-						remark: th.remark
-					});
-				}
-
-				let suf2 = "";
-				if (cm.nodes.length==2) {
-					let otherid = (cm.nodes[0]==rn.id ? cm.nodes[1] : cm.nodes[0]);
-					suf2 = Node.get(otherid).suffix;
-				}
 				new Transaction('nodeCreate',
-					[{id: rn.id,
-					  type: rn.type,
-					  service: rn.service,
-					  title: rn.title,
-					  suffix: rn.suffix,
-					  suffix2: suf2,
-					  x: rn.position.x,
-					  y: rn.position.y,
-					  component: rn.component,
-					  thrass: ths,
-					  accordionopened: cm.accordionopened,
-					  width: rn.position.width,
-					  height: rn.position.height,
-					  label: rn.color,
-					  connect: rn.connect.slice()
+					[{
+						id: rn.id,
+						type: rn.type,
+						service: rn.service,
+						title: rn.title,
+						suffix: rn.suffix,
+						x: rn.position.x,
+						y: rn.position.y,
+						component: rn.component,
+						thrass: cm.threatdata(),
+						accordionopened: cm.accordionopened,
+						width: rn.position.width,
+						height: rn.position.height,
+						label: rn.color,
+						connect: rn.connect.slice()
 					}],
 					[{id: rn.id}]
 				);
-			}
-		);
+//			}
+//		);
 	});
 	$('#mi_sd').on('mouseup', function() {
 		let nodes = Node.nodesinselection();
@@ -3140,37 +3145,17 @@ function initTabDiagrams() {
 						return;
 					}
 
-					let ths = [];
 					let cm = Component.get(rn.component);
-					for (let i=0; i<cm.thrass.length; i++) {
-						let th = ThreatAssessment.get(cm.thrass[i]);
-						ths.push({
-							id: th.id,
-							title: th.title,
-							type: th.type,
-							description: th.description,
-							freq: th.freq,
-							impact: th.impact,
-							remark: th.remark
-						});
-					}
-
-					let suf2 = "";
-					if (cm.nodes.length==2) {
-						let otherid = (cm.nodes[0]==rn.id ? cm.nodes[1] : cm.nodes[0]);
-						suf2 = Node.get(otherid).suffix;
-					}
 					undo_data.push({
 						id: rn.id,
 						type: rn.type,
 						service: rn.service,
 						title: rn.title,
 						suffix: rn.suffix,
-						suffix2: suf2,
 						x: rn.position.x,
 						y: rn.position.y,
 						component: rn.component,
-						thrass: ths,
+						thrass: cm.threatdata(),
 						accordionopened: cm.accordionopened,
 						width: rn.position.width,
 						height: rn.position.height,
@@ -3180,6 +3165,7 @@ function initTabDiagrams() {
 					data.push({id: rn.id});
 				});
 				new Transaction('nodeCreate', undo_data, data);
+				$('#selectrect').hide();
 			},
 			function() {
 				// Stop any leftover pulsate effects
@@ -3418,46 +3404,30 @@ function workspacedrophandler(event, ui) {
 	if (typ=='tNOT' || typ=='tACT') {
 		new Transaction('nodeCreate',
 			[{id: newid}],
-			[{id: newid,
-			 type: typ,
-			 service: Service.cid,
-			 title: newtitle,
-			 x: newx,
-			 y: newy
+			[{
+				id: newid,
+				type: typ,
+				service: Service.cid,
+				title: newtitle,
+				x: newx,
+				y: newy
 			}]
 		);
-		return;
+	} else {
+		new Transaction('nodeCreate',
+			[{id: newid}],
+			[{
+				id: newid,
+				type: typ,
+				service: Service.cid,
+				title: newtitle,
+				x: newx,
+				y: newy,
+				component: createUUID(),
+				thrass: Project.get(Project.cid).defaultthreatdata(typ)
+			}]
+		);
 	}
-
-	// Set of default vulnerabilities
-	let newthr = [];
-	let p = Project.get(Project.cid);
-	for (let i of p.threats) {
-		let th = Threat.get(i);
-		if (th.type!=typ && typ!='tUNK') continue;
-		newthr.push({
-			id: createUUID(),
-			title: th.title,
-			type: th.type,
-			description: th.description,
-			freq: '-',
-			impact: '-',
-			remark: ''
-		});
-	}
-
-	new Transaction('nodeCreate',
-		[{id: newid}],
-		[{id: newid,
-		 type: typ,
-		 service: Service.cid,
-		 title: newtitle,
-		 x: newx,
-		 y: newy,
-		 component: createUUID(),
-		 thrass: newthr
-		}]
-	);
 }
 
 function refreshThreatsDialog(force) {

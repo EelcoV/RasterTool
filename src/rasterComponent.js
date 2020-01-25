@@ -29,14 +29,15 @@
  *	destroy(): destructor.
  *	absorbe(c): merge data from another component into this, then destroy() that other component
  *	mergeclipboard: paste ThreatAssessment.Clipboard into this. Returns the list of new TA's.
- *  _setalltitles:
- *	settitle(str): sets the header text to 'str'.
- *	changetitle(str): if permitted, sets the header text to 'str'.
+ *  repaintmembertitles: ensure all members have unique suffixes, then repaint all members
+ *	setclasstitle(str): set title of component and all members to 'str', and update DOM.
+ *	changeclasstitle(str): if permitted, sets the header text to 'str'.
  *	setproject(pid): sets the project to pid (numerical).
  *	addnode(n.id): add a node to this component
  *	removenode(n.id): remove the node from this component
  *	addthrass(te): add the ThreatAssessment object.
  *	removethrass(te): remove the ThreatAssessment object.
+ *  threatdata(): returns do/undo data for threats in thrass.
  *	threatsnotevaluated: returns the numer of threats that have not been evaluated.
  *	adddefaultthreatevaluations(): copy threat evals from another component or checklists.
  *	calculatemagnitude: calculate the overall vulnerability of this component.
@@ -131,6 +132,7 @@ Component.prototype = {
 			rn = Node.get(cm.nodes[i]);
 			this.addnode(rn.id);
 		}
+		cm.repaintmembertitles();
 		cm.nodes = [];
 		cm.destroy();
 	},
@@ -199,9 +201,8 @@ Component.prototype = {
 		function _newsuffix(cm,except) {
 			let n, j;
 			let sfx = [];
-			for (n of cm.nodes) {
-				sfx.push(Node.get(n).suffix);
-			}
+			cm.nodes.forEach(n => sfx.push(Node.get(n).suffix));
+
 			for (j=0; j<26; j++) {
 				var chr = String.fromCharCode(String('a').charCodeAt(0)+j);
 				if (sfx.indexOf(chr)==-1 && except.indexOf(chr)==-1) break;
@@ -228,69 +229,10 @@ Component.prototype = {
 		return arr;
 	},
 
-	_setalltitles: function() {
-		var len = this.nodes.length;
-		if (len==0)  return;
-
-		if (len==1) {
-			Node.get(this.nodes[0]).settitle(this.title,"");
-		} else {
-			// Collect all current suffixes for members of this component
-			var i, j;
-			var sfx = [];
-			for (i=0; i<this.nodes.length; i++) {
-				sfx.push(Node.get(this.nodes[i]).suffix);
-			}
-			var findNewSuffix = function(prefix) {
-				for (j=0; j<26; j++) {
-					var chr = String.fromCharCode(String('a').charCodeAt(0)+j);
-					if (sfx.indexOf(prefix+chr)==-1) break;
-				}
-				if (j==26) {
-					// This is silly. There are more than 26 members in the node class!
-					// Find a random number to fit.
-					for (;;) {
-						chr = '#' + Math.floor(Math.random()*100000);
-						if (sfx.indexOf(prefix+chr)==-1) break;
-					}
-				}
-				return prefix+chr;
-			};
-
-			for (i=0; i<this.nodes.length; i++) {
-				var rn = Node.get(this.nodes[i]);
-				if (this.single) {
-					rn.settitle(this.title,"");
-				} else if (rn.suffix=="") {
-					// Node has no suffix yet. Create one automatically.
-					sfx[i] = findNewSuffix('');
-					rn.settitle(this.title,sfx[i]);
-				} else {
-					// Check if another node already has this suffix
-					for (j=0; j<i; j++) {
-						if (sfx[j]==sfx[i]) break;
-					}
-					if (j==i) {
-						// Keep existing suffix
-						rn.settitle(
-							this.title,
-							(this.single ? "" : rn.suffix )
-						);
-					} else {
-						// Must find a new suffix for this node
-						sfx[i] = findNewSuffix(sfx[i]);
-						rn.settitle(this.title,sfx[i]);
-					}
-				}
-			}
-		}
-	},
-
-	changetitle: function(str) {
+	changeclasstitle: function(str) {
 		str = trimwhitespace(str);
-		if (str==this.title)  return;
 		// Blank title is not allowed. Retain current title.
-		if (str=="")  return;
+		if (str==this.title || str=='')  return;
 
 		new Transaction('classTitle',
 			[{id: this.id, title: this.title}],
@@ -298,14 +240,32 @@ Component.prototype = {
 		);
 	},
 
-	_settitle: function(str) {
+	setclasstitle: function(str) {
 		this.title = trimwhitespace(str);
+		this.repaintmembertitles();
 		this.store();
 	},
 
-	settitle: function(str) {
+	repaintmembertitles: function() {
+		// First: ensure that all suffixes are unique
+		if (this.nodes.length>1 && !this.single) {
+			let i, j;
+			for (i=0; i<this.nodes.length; i++) {
+				let rn = Node.get(this.nodes[i]);
+				// Check if another node already has this suffix
+				for (j=0; j<i; j++) {
+					var othn = Node.get(this.nodes[j]);
+					if (rn.suffix==othn.suffix) break;
+				}
+				if (j<i || rn.suffix=='')  rn.suffix = this.newsuffix();
+			}
+		}
+		// Second: repaint all member titles. This will do .store() on all member nodes
+		this.nodes.forEach(n => Node.get(n).settitle(this.title));
+	},
+
+	_settitle: function(str) {
 		this.title = trimwhitespace(str);
-		this._setalltitles();
 		this.store();
 	},
 
@@ -338,7 +298,6 @@ Component.prototype = {
 			// present in the clusters.
 			nd.addtonodeclusters();
 		}
-		this._setalltitles();
 		this.store();
 		if (this.id==Component.ThreatsComponent) {
 			$('#componentthreats').dialog('option', 'title',
@@ -361,7 +320,6 @@ Component.prototype = {
 		if (this.nodes.length<2) {
 			this.single = false;
 		}
-		this._setalltitles();
 		if (i==0 && wassingle) {
 			// Removing the one node that was present in the node clusters
 			//var rn = Node.get(id);
@@ -400,6 +358,23 @@ Component.prototype = {
 		this.store();
 	},
 	
+	threatdata: function() {
+		let ths = [];
+		this.thrass.forEach(tid => {
+			let th = ThreatAssessment.get(tid);
+			ths.push({
+				id: th.id,
+				title: th.title,
+				type: th.type,
+				description: th.description,
+				freq: th.freq,
+				impact: th.impact,
+				remark: th.remark
+			});
+		});
+		return ths;
+	},
+
 	threatsnotevaluated: function() {
 		var mustdoevals=0;
 		for (var i=0; i<this.thrass.length; i++) {
@@ -506,7 +481,7 @@ Component.prototype = {
 			return;
 		}
 		this.single = newval;
-		this._setalltitles();
+		this.repaintmembertitles();
 		this.store();
 	},
 	

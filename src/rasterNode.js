@@ -15,12 +15,13 @@
  *	get(i): returns the object with id 'i'.
  *	projecthastitle(p,str): project 'p' has a node with title 'str'.
  *	servicehastitle(s,str): service 's' has a node with title 'str'.
- *	autotitle(type,str): create a unique title based on 'str' for a node of type 'typ'.
+ *	autotitle(type,str): create a unique title based on 'str' for a node of type 'typ' IN THE CURRENT PROJECT AND SERVICE.
  * Instance properties:
  *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK', 'tNOT'
  *  index: index of the icon in the current iconset
  *	title: name of the node
- *	suffix: letter a,b,c... or user-set string to distiguish nodes with the same title (set by Component)
+ *	suffix: letter a,b,c... or user-set string to distiguish nodes with the same title. The suffix is retained
+ *		even when the node is the only remember member of its class.
  *	id: UUID
  *	component: component object for this node; null for tNOT and tACT
  *	nid (getter): node ID in DOM format
@@ -40,14 +41,15 @@
  *	setposition(x,y,snap): set the position of the HTML document object to (x,y).
  *		If snap==false then do not restrict to 20x20 pixel grid positions.
  *	setcomponent(cm): set the id of the component object to cm.
- *	changetitle(str): change the header text to 'str' if allowed, and update all components and node classes.
- *	settitle(str,suff): sets the header text to 'str' and suffix 'suff'.
- *	changesuffix(str): change the suffix to 'str' if allowed, and update all other nodes in the class.
+ *	changetitle(str): post a transaction to change the header text to 'str' if allowed.
+ *	settitle(str,suff): sets the header text to 'str' and suffix 'suff', and update DOM.
+ *	changesuffix(str): post a transaction to change the suffix to 'str' if allowed
+ *	setsuffix(str): set the suffix to 'str' and update DOM.
  *	htmltitle(): returns this title, properly html formatted when the node has a suffix (except for css classes)
  *	setmarker(): sets or hides the rule violation marker.
  *	hidemarker(): hides the rule violation marker.
  *	showmarker(): shows the rule violation marker.
- *	setlabel(): sets the color.
+ *	setlabel(): sets the color and updats the DOM.
  *	try_attach_center(dst): called when this node gets connected to Node dst.
  *	attach_center(dst): create and draw the connector.
  *	detach_center(dst): called when the connection from this node to Node dst
@@ -85,7 +87,7 @@ var Node = function(type, serv, id) {
 	this._normh = 0;
 	this.component = null;
 	this.title = "";
-	this.suffix = "";
+	this.suffix = 'a';
 	// Sticky notes are traditionally yellow
 	this.color = (this.type=='tNOT' ? "yellow" : "none");
 
@@ -136,10 +138,28 @@ Node.autotitle = function(typ,newtitle) {
 	if (!newtitle)  newtitle = Rules.nodetypes[typ];
 	if (typ=='tNOT')  return newtitle;
 
-	let targettitle = newtitle;
-	let n=0;
-	while (Node.projecthastitle(Project.cid,targettitle)!=-1) {
-		targettitle = newtitle + ' (' + (++n) + ')';
+	// Non-greedy match for anything, optionally followed by space and digits between parentheses
+	let targettitle, n;
+	let res = newtitle.match(/^(.+?)( \((\d+)\))?$/);
+	if (res[3]) {
+		n = parseInt(res[3],10)+1;
+		newtitle = res[1];
+		targettitle = newtitle + ' (' + n + ')';
+	} else {
+		n = 0;
+		targettitle = newtitle;
+	}
+	// Actors must be unique within the service, other nodes must be unique within the project
+	if (typ=='tACT') {
+		while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
+			n++;
+			targettitle = newtitle + ' (' + n + ')';
+		}
+	} else {
+		while (Node.projecthastitle(Project.cid,targettitle)!=-1) {
+			n++;
+			targettitle = newtitle + ' (' + n + ')';
+		}
 	}
 	return targettitle;
 };
@@ -164,6 +184,7 @@ Node.prototype = {
 		if (this.component!=null) {
 			var cm = Component.get(this.component);
 			cm.removenode(this.id);
+			cm.repaintmembertitles();
 			this.component = null;
 		}
 
@@ -272,129 +293,80 @@ Node.prototype = {
 	
 	changetitle: function(str) {
 		str = trimwhitespace(str);
-		if (str==this.title)  return;
+		// Blank title is not allowed. Retain current title.
+		if (str==this.title || str=='')  return;
 
-		if (str=="") {
-			// Blank title is not allowed. Retain current title.
-			return;
-		}
-		// Notes can be identical (can have the same 'title').
-		if (this.type=='tNOT') {
+		switch (this.type) {
+		case 'tNOT':
+			// Notes can be identical (can have the same 'title').
 			new Transaction('nodeTitle',
 				[{id: this.id, title: this.title}],
 				[{id: this.id, title: str}]
 			);
-			return;
-		}
-		// Actors don't have (nor need) components, since they have no threat evaluations
-		if (this.type=='tACT') {
-			let i=0;
-			let prevtitle = this.title;
-			let targettitle = str;
-			// If there is an actor "abc" and an actor "abc (1)", then renaming that second actor
-			// to "abc" should not result in a name "abc (2)"
-			this.title='NoSuchNameNoSuchNameNoSuchNameNoSuchName';
-			while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
-				targettitle = str + ' (' + (++i) + ')';
-			}
-			new Transaction('nodeTitle',
-				[{id: this.id, title: prevtitle}],
-				[{id: this.id, title: targettitle}]
-			);
-			return;
-		}
+			break;
 
-		let prevcomponent = Component.get(this.component);
-		if (!prevcomponent) {
-			bugreport("no such component","Node.changetitle");
-		}
-		// See if there is an existing component with this title & type
-		let n = Component.hasTitleTypeProject(str,this.type,Project.cid);
-		if (n==-1 && prevcomponent.nodes.length==1) {
-			// Simple case, no classes involved
+		case 'tACT':
+			// Actors don't have (nor need) components, but have unique names within the service
 			new Transaction('nodeTitle',
 				[{id: this.id, title: this.title}],
-				[{id: this.id, title: str}]
+				[{id: this.id, title: Node.autotitle('tACT',str)}]
 			);
-		} else if (n==prevcomponent.id) {
-			// New title is strictly different, but case-insensitive identical
-			new Transaction('nodeTitle',
-							[{id: this.id, title: this.title}],
-							[{id: this.id, title: str}]
-							);
-		} else if (n==-1) {
-			// Set of default vulnerabilities
-			let thr = [];
-			var p = Project.get(prevcomponent.project);
-			for (let i of p.threats) {
-				var th = Threat.get(i);
-				if (th.type!=prevcomponent.type && prevcomponent.type!='tUNK') continue;
-				thr.push({
-					id: createUUID(),
-					title: th.title,
-					type: th.type,
-					description: th.description,
-					freq: '-',
-					impact: '-',
-					remark: ''
-				});
-			}
+			break;
 
-			if (prevcomponent.nodes.length==2) {
-				// Class with only two nodes and this is dropping out; the class ceases to exist
-				let othernode = Node.get( prevcomponent.nodes[0]==this.id ? prevcomponent.nodes[1] : prevcomponent.nodes[0]);
+		default:
+			var prevcomponent = Component.get(this.component);
+			if (!prevcomponent) {
+				bugreport("no such component","Node.changetitle");
+			}
+			// See if there is an existing component with this title & type
+			var n = Component.hasTitleTypeProject(str,this.type,this.project);
+			if (n==-1 && prevcomponent.nodes.length==1) {
+				// Simple case, no classes involved
 				new Transaction('nodeTitle',
-					[{id: this.id, title: this.title, suffix: this.suffix, suffix2: othernode.suffix, component: prevcomponent.id}],
-					[{id: this.id, title: str, component: createUUID(), thrass: thr}]
+					[{id: this.id, title: this.title}],
+					[{id: this.id, title: str}]
 				);
-			} else { //  prevcomponent.nodes.length>2
+			} else if (n==prevcomponent.id) {
+				// New title is strictly different, but case-insensitive identical
+				// Only allow case-change when there is no class involved. Changing the name of the
+				// class requires the node menu: Class | Rename class
+				if (prevcomponent.nodes.length>1)  return;
+				new Transaction('nodeTitle',
+								[{id: this.id, title: this.title}],
+								[{id: this.id, title: str}]
+								);
+			} else if (n==-1) {
+				// This node drops out of a class
+				let p = Project.get(prevcomponent.project);
+
 				// This node drops out of the class, but the class continues to exist
 				new Transaction('nodeTitle',
 					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id}],
-					[{id: this.id, title: str, component: createUUID(), thrass: thr}]
-				);
-			}
-		} else {
-			// The new name of this node matches an existing Component.
-			// add this node to that component
-			var cm = Component.get( n );
-			// Not allowed if the component is 'single' and this node's service already contains a member of the component.
-			if (cm.single) {
-				for (const n of cm.nodes) {
-					let rn = Node.get(n);
-					if (rn.service==this.service) {
-						// do not change the title
-						$(this.jnid).effect('pulsate', { times:2 }, 800);
-						$(rn.jnid).effect('pulsate', { times:2 }, 800);
-						return;
-					}
-				}
-			}
-			let thr = [];
-			for (const t of prevcomponent.thrass) {
-				let ta = ThreatAssessment.get(t);
-				thr.push({
-					id: ta.id,
-					title: ta.title,
-					type: ta.type,
-					description: ta.description,
-					freq: ta.freq,
-					impact: ta.impact,
-					remark: ta.remark
-				});
-			}
-			if (cm.nodes.length==1) {
-				// A new class is created
-				let sf = cm.newsuffix(2);
-				new Transaction('nodeTitle',
-					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id, thrass: thr, accordionopened: prevcomponent.accordionopened}],
-					[{id: this.id, title: str, suffix: sf[1], suffix2: sf[0], component: n}]
+					[{id: this.id, title: str, component: createUUID(), thrass: p.defaultthreatdata(prevcomponent.type)}]
 				);
 			} else {
-				// Becomes member of an existing class
+				// The new name of this node matches an existing Component: join a class
+				// add this node to that component
+				var cm = Component.get( n );
+				// Not allowed if the component is 'single' and this node's service already contains a member of the component.
+				if (cm.single) {
+					for (const n of cm.nodes) {
+						let rn = Node.get(n);
+						if (rn.service==this.service) {
+							// do not change the title
+							$(this.jnid).effect('pulsate', { times:2 }, 800);
+							$(rn.jnid).effect('pulsate', { times:2 }, 800);
+							return;
+						}
+					}
+				}
+
 				new Transaction('nodeTitle',
-					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id, thrass: thr, accordionopened: prevcomponent.accordionopened}],
-					[{id: this.id, title: str, suffix: cm.newsuffix(), component: n}]
+					[{
+						id: this.id, title: this.title, suffix: this.suffix,
+						component: prevcomponent.id, thrass: prevcomponent.threatdata(), accordionopened: prevcomponent.accordionopened
+					}],
+					[{id: this.id, title: str, suffix: cm.newsuffix(), component: cm.id}]
 				);
 			}
 		}
@@ -402,32 +374,49 @@ Node.prototype = {
 
 	settitle: function(str,suff) {
 		this.title=str;
-		this.suffix=(suff==null ? "" : suff);
-		if (this.component!=null) {
-			var cm = Component.get(this.component);
+		if (suff!=null)  this.suffix=suff;
+if (suff=='') bugreport('empty suffix','Node.settitle');
+
+		let cm = Component.get(this.component);
+		if (cm) {
 			$('#nodetitle'+this.id).removeClass('marktitleM marktitleS');
 			if (cm.nodes.length>1) {
 				$('#nodetitle'+this.id).addClass( (cm.single?'marktitleS':'marktitleM') );
 			}
 		}
 		$('#titlemain'+this.id).html(H(this.title));
-		$('#titlesuffix'+this.id).html(this.suffix=='' ? '' : '&thinsp;<sup>'+H(this.suffix)+'</sup>');
+		if (cm && cm.nodes.length>1 && !cm.single) {
+			$('#titlesuffix'+this.id).html('&thinsp;<sup>'+H(this.suffix)+'</sup>');
+		} else {
+			$('#titlesuffix'+this.id).html('');
+		}
 		if ($('#nodereport').data('DialogNode')==this.id)  RefreshNodeReportDialog();
 		this.store();
 	},
-	
+
 	changesuffix: function(str) {
 		str = trimwhitespace(str);
 		if (str==this.suffix || str=="")  return;
-		
+
 		new Transaction('nodeSuffix',
 			[{id: this.id, suffix: this.suffix}],
 			[{id: this.id, suffix: str}]
 		);
 	},
-	
+
+	setsuffix: function(str) {
+		this.suffix = str;
+		this.settitle(this.title,this.suffix);
+	},
+
 	htmltitle: function() {
-		return H(this.title) + (this.suffix!='' ? '<sup>&thinsp;'+H(this.suffix)+'</sup>' : '');
+		// Node may have a suffix even when the only member of its "class"
+		let cm = Component.get(this.component);
+		if (cm && cm.nodes.length>1) {
+			return H(this.title) + '<sup>&thinsp;'+H(this.suffix)+'</sup>';
+		} else {
+			return H(this.title);
+		}
 	},
 	
 	_edgecount: function () {
@@ -711,7 +700,7 @@ Node.prototype = {
 	},
 
 	paint: function(effect) {
-		var p = Project.get(Project.cid);
+		var p = Project.get(this.project);
 		if (!this.index)  this.iconinit();
 
 		var icn = p.icondata.icons[this.index];
@@ -774,17 +763,8 @@ Node.prototype = {
 		$(this.jnid).width(this.position.width);
 		$(this.jnid).height(this.position.height);
 
-		if (this.component!=null) {
-			var cm = Component.get(this.component);
-			cm.setmarkeroid(null);
-			$('#nodetitle'+this.id).removeClass('marktitleS marktitleM');
-			if (cm.nodes.length>1) {
-				$('#nodetitle'+this.id).addClass( (cm.single?'marktitleS':'marktitleM') );
-			}
-		}
-		$('#titlemain'+this.id).html(H(this.title));
-		$('#titlesuffix'+this.id).html(this.suffix=='' ? '' : '&thinsp;<sup>'+H(this.suffix)+'</sup>');
-		
+		this.settitle(this.title);
+
 		if (effect==undefined || effect==true) {
 			$(this.jnid).fadeIn(500);
 		} else {
@@ -1113,8 +1093,6 @@ Node.prototype = {
 	_showpopupmenu: function(evt) {
 		var p = Project.get(Project.cid);
 		var cm = Component.get(this.component);
-//		$('#nodemenu').css('left', x);
-//		$('#nodemenu').css('top', y);
 		$('#nodemenu .ui-menu-item').removeClass('ui-state-disabled');
 		if (this.type=='tNOT') {
 			$('#mi_th').addClass('ui-state-disabled');

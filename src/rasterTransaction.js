@@ -96,6 +96,8 @@ Transaction.updateUI = function() {
 
 Transaction.undo = function() {
 	if (Transaction.current==Transaction.base)  return;
+// Is TransactionCancel really necessary? We test whether the action is legal before
+// creating a new transaction, so why cancel?
 	try {
 
 // Test!
@@ -186,16 +188,7 @@ Transaction.prototype = {
 			//  title: title of the node class
 			for (const d of data) {
 				let cm = Component.get(d.id);
-				let typ = Node.get(cm.nodes[0]).type;
-				// Check that this title is not in use for this type in the project
-				var it = new NodeIterator({project: cm.project, type: typ});
-				for (it.first(); it.notlast(); it.next()) {
-					let rn = it.getnode();
-					if (isSameString(rn.title,d.title)) {
-						throw('TransactionCancel');
-					}
-				}
-				cm.settitle(d.title);
+				cm.setclasstitle(d.title);
 			}
 			break;
 
@@ -231,13 +224,12 @@ Transaction.prototype = {
 			break;
 
 		case 'nodeCreate':
-			// Create a new node
+			// Create a new node, or recreate (undo a Delete)
 			// data: array of objects; each object has these properties
 			//  id: id of the node; this is the *only* property in the undo data
 			//  type: type of the node
 			//  title: name of the node
 			//  suffix: suffix of the node
-			//  suffix2: suffix of the other node in this class
 			//  service: service to which the node belongs
 			//  label: color of the node
 			//  title: title of the node class
@@ -256,14 +248,13 @@ Transaction.prototype = {
 
 				let rn = new Node(d.type, d.service, d.id);
 				rn.iconinit();
-				rn.settitle(d.title,d.suffix);
+				rn.title = d.title;
+				if (d.suffix)  rn.suffix = d.suffix;
 				if (d.label)  rn.color = d.label;
 				rn.setposition(d.x,d.y);
-				if (d.width && d.height) {
-					rn.position.width = d.width;
-					rn.position.height = d.height;
-					rn.store();
-				}
+				if (d.width)  rn.position.width = d.width;
+				if (d.height)  rn.position.height = d.height;
+				rn.store();
 // Change to true when not debugging
 				rn.paint(false);
 				if (d.connect) {
@@ -288,12 +279,10 @@ Transaction.prototype = {
 						cm.addthrass(ta);
 					}
 					cm.accordionopened = d.accordionopened;
-				} else if (cm.nodes.length==1) {
-					let othernd = Node.get(cm.nodes[0]);
-					othernd.settitle(othernd.title,d.suffix2);
+					cm.title = d.title;
 				}
 				cm.addnode(d.id);
-				cm.settitle(d.title);
+				cm.repaintmembertitles();
 				rn.setmarker();
 			}
 			break;
@@ -350,37 +339,27 @@ Transaction.prototype = {
 			//  id: id of the node
 			//  title: title of the node
 			//  suffix: suffix of the node
-			//  suffix2: suffix of the other node in the class
 			//  thrass: array of threat assessments when the component needs to be created
 			//		id, title, description, frequecy, impact, total, remark: as of the threat assessment
 			//  component: id of the component
 			for (const d of data) {
 				let rn = Node.get(d.id);
 				if (rn.type=='tNOT' || rn.type=='tACT') {
-					if (rn.type=='tACT' && Node.projecthastitle(Project.cid,d.title)!=-1) {
-						throw('TransactionCancel');
-					}
 					rn.settitle(d.title);
 					continue;
 				}
 				if (!d.component) {
 					// Simple case, no classes involved
-					if (Node.projecthastitle(Project.cid,d.title)!=-1) {
-						throw('TransactionCancel');
-					}
-					let cm = Component.get(rn.component);
-					cm._settitle(d.title);
-					rn.settitle(d.title,'');
+					rn.settitle(d.title,d.suffix);
 					continue;
 				}
+
 				// More complex cases
 				let cm = Component.get(d.component);
 				if (!cm) {
-					if (Component.hasTitleTypeProject(d.title,rn.type,Project.cid)!=-1) {
-						throw('TransactionCancel');
-					}
 					// create a new component
 					cm = new Component(rn.type,rn.project,d.component);
+					cm.title = d.title;
 					for (const t of d.thrass) {
 						let ta = new ThreatAssessment(t.type, t.id);
 						ta.settitle(t.title);
@@ -395,18 +374,14 @@ Transaction.prototype = {
 				if (d.component!=rn.component) {
 					let oldcm = Component.get(rn.component);
 					oldcm.removenode(rn.id);
-				}
-				cm._settitle(d.title);
-				if (d.suffix2) {
-					let othernode = Node.get(cm.nodes[0]);
-					othernode.settitle(othernode.title,d.suffix2);
+					oldcm.repaintmembertitles();
 				}
 				if (cm.nodes.indexOf(rn.id)==-1) {
 					cm.addnode(rn.id);
 				}
-				if (!d.suffix)  d.suffix=null;
 				rn.settitle(d.title,d.suffix);
 				rn.setmarker();
+				cm.repaintmembertitles();
 				RefreshNodeReportDialog();
 			}
 			break;

@@ -50,6 +50,7 @@
  *	removeservice(id): remove and destroy a Service object from this project.
  *  addthreat(id): add a checklist threat to the project.
  *	removethreat(id): remove a checklist threat from the project.
+ *  defaultthreatdata(t): returns do/undo data for default threats of type t.
  *	unload(): remove all DOM elements for this project.
  *	load(): create and set all DOM elements for this project.
  *	adddefaultthreats: add the predefined checklist threats to this project.
@@ -529,6 +530,24 @@ Project.prototype = {
 		this.store();
 	},
 	
+	defaultthreatdata: function(typ) {
+		let thr = [];
+		for (let i of this.threats) {
+			var th = Threat.get(i);
+			if (th.type!=typ && typ!='tUNK') continue;
+			thr.push({
+				id: createUUID(),
+				title: th.title,
+				type: th.type,
+				description: th.description,
+				freq: '-',
+				impact: '-',
+				remark: ''
+			});
+		}
+		return thr;
+	},
+
 	seticonset: function(iconset) {
 		this.iconset = iconset;
 		this.store();

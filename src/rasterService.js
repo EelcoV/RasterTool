@@ -424,7 +424,6 @@ Service.prototype = {
 		$('#diagrams_workspace'+this.id).append('<div id="selectrect"></div>');
 		$('#selectrect').on('contextmenu', function(e) {
 			e.preventDefault();
-//			$('#selectmenu').css('left', e.pageX+4).css('top', e.pageY+4);
 			$('#selectmenu').menu('collapseAll');
 			$('#selectmenu').show();
 			$('#selectmenu').position({
@@ -462,11 +461,6 @@ Service.prototype = {
 				}
 			},
 			stop: function(/*event,ui*/) {
-//				for (var i=0; i<NodesBeingDragged.length; i++) {
-//					var n = Node.get(NodesBeingDragged[i]);
-//					n.setposition(n.position.x,n.position.y);
-//				}
-//				transactionCompleted("Node move selection");
 				NodesBeingDragged = Node.nodesinselection();
 				let do_data = [];
 				for (let i=0; i<NodesBeingDragged.length; i++) {
