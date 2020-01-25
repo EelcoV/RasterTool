@@ -4,7 +4,6 @@ See LICENSE.md
 
 BUGS
 Option Hide/Show color does not have immediate effect.
-Resizing nodes now gives an error.
 With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
 On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.

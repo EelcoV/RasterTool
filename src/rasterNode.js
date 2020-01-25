@@ -1045,7 +1045,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 			maxWidth: (this.type=='tNOT' ? 3 : 2) * this._normw,
 			minHeight: this._normh,
 			maxHeight: (this.type=='tNOT' ? 3 : 2) * this._normh,
-			start: function(event,ui) {
+			start: function(/*event,ui*/) {
 				let rn = Node.get( nid2id(this.id) );
 				rn.undo_data = {};
 				for (let i in rn.position)  rn.undo_data[i] = rn.position[i];
@@ -1058,15 +1058,14 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 				rn.position.height=ui.size.height;
 				rn.setposition(rn.position.x,rn.position.y);
 			},
-			stop: function (event,ui) {
+			stop: function (/*event,ui*/) {
 				let rn = Node.get( nid2id(this.id) );
 				let newposition = {};
 				// Save new geometry
 				for (let i in rn.position)  newposition[i] = rn.position[i];
 				// Restore starting geometry
 				for (let i in rn.undo_data)  rn.position[i] = rn.undo_data[i];
-// rn.store() is necessary for testing
-//				rn.store();
+				rn.store();
 				new Transaction('nodeGeometry',
 					[{id: rn.id, x: rn.undo_data.x, y: rn.undo_data.y, width: rn.undo_data.width, height: rn.undo_data.height}],
 					[{id: rn.id, x: newposition.x, y: newposition.y, width: newposition.width, height: newposition.height}]
