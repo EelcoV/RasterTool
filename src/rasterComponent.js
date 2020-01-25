@@ -539,6 +539,8 @@ Component.prototype = {
 		}
 		if (lsval && lsval!=this._stringify()) {
 			errors += offender+" local storage is not up to date.\n";
+			console.log('local storage: ' + lsval);
+			console.log('current state: ' + this._stringify());
 		}
 		for (i=0; i<this.nodes.length; i++) {
 			var rn = Node.get(this.nodes[i]);

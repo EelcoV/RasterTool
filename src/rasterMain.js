@@ -3358,24 +3358,29 @@ function showLabelEditForm() {
 	dbuttons.push({
 		text: _("Done"),
 		click: function() {
-				p.labels[0] = trimwhitespace(String($('#field_red').val())).substr(0,50);
-				p.labels[1] = trimwhitespace(String($('#field_orange').val())).substr(0,50);
-				p.labels[2] = trimwhitespace(String($('#field_yellow').val())).substr(0,50);
-				p.labels[3] = trimwhitespace(String($('#field_green').val())).substr(0,50);
-				p.labels[4] = trimwhitespace(String($('#field_blue').val())).substr(0,50);
-				p.labels[5] = trimwhitespace(String($('#field_pink').val())).substr(0,50);
-				p.labels[6] = trimwhitespace(String($('#field_purple').val())).substr(0,50);
-				p.labels[7] = trimwhitespace(String($('#field_grey').val())).substr(0,50);
+			let newlabels = [];
+			newlabels[0] = trimwhitespace(String($('#field_red').val())).substr(0,50);
+			newlabels[1] = trimwhitespace(String($('#field_orange').val())).substr(0,50);
+			newlabels[2] = trimwhitespace(String($('#field_yellow').val())).substr(0,50);
+			newlabels[3] = trimwhitespace(String($('#field_green').val())).substr(0,50);
+			newlabels[4] = trimwhitespace(String($('#field_blue').val())).substr(0,50);
+			newlabels[5] = trimwhitespace(String($('#field_pink').val())).substr(0,50);
+			newlabels[6] = trimwhitespace(String($('#field_purple').val())).substr(0,50);
+			newlabels[7] = trimwhitespace(String($('#field_grey').val())).substr(0,50);
 				for (var i=0; i<=7; i++) {
-					if (p.labels[i]=="") {
-						p.labels[i] = Project.defaultlabels[i];
+					if (newlabels[i]=="") {
+						newlabels[i] = Project.defaultlabels[i];
 					}
 				}
-				p.store();
-				$(this).dialog('close');
-				transactionCompleted("Label edit");
-				$(this).remove();
-			}
+//			p.store();
+//			$(this).dialog('close');
+//			transactionCompleted("Label edit");
+			new Transaction('labelEdit',
+				[{id: p.id, labels: p.labels}],
+				[{id: p.id, labels: newlabels}]
+			);
+			$(this).remove();
+		}
 	});
 	dialog.dialog({
 		title: _("Edit labels"),

@@ -287,6 +287,18 @@ Transaction.prototype = {
 			}
 			break;
 
+		case 'labelEdit':
+			// Edit the project color labels
+			// data: array of objects; each object has these properties
+			//  id: id of the project
+			//  labels: array of the labels of the project
+			for (const d of data) {
+				let p = Project.get(d.id);
+				p.labels = d.labels.slice();
+				p.store();
+			}
+			break;
+
 		case 'nodeGeometry':
 			// Change the size and/or position of nodes
 			// data: array of objects; each object has these properties

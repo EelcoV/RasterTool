@@ -1176,6 +1176,8 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		}
 		if (lsval && lsval!=this._stringify()) {
 			errors += offender+" local storage is not up to date.\n";
+			console.log('local storage: ' + lsval);
+			console.log('current state: ' + this._stringify());
 		}
 		if (Rules.nodetypes[this.type]==undefined) {
 			errors += offender+" has weird type-value "+this.type+".\n";
