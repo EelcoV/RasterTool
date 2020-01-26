@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm, refreshThreatsDialog
+bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, NodeClusterIterator, Transaction, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm, refreshThreatsDialog
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -193,9 +193,9 @@ ThreatAssessment.prototype = {
 				// silently ignore
 				if (isSameString(ta.title,t) && ta.type==this.type)  return;
 			}
-			NodeCluster.removecomponent_threat(Project.cid,this.component,this.title,this.type,true);
+//			NodeCluster.removecomponent_threat(Project.cid,this.component,this.title,this.type,true);
 			this.title = t;
-			NodeCluster.addcomponent_threat(Project.cid,this.component,this.title,this.type,false);
+//			NodeCluster.addcomponent_threat(Project.cid,this.component,this.title,this.type,false);
 		} else {
 			this.title = t;
 		}
@@ -358,9 +358,8 @@ ThreatAssessment.prototype = {
 				bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 				callback: function(oid, enteredText) {
 					var old_t = te.title;
-					te.settitle(enteredText);
-					globalChangeThreatOrDescription(Project.cid, te.type, old_t, te.title, null, null);
-					transactionCompleted("Vuln rename");
+//					te.settitle(enteredText);
+					globalChangeThreatOrDescription(Project.cid, te.type, old_t, enteredText, null, null);
 					return H(te.title);
 				}
 			});
@@ -503,55 +502,11 @@ ThreatAssessment.prototype = {
 	}
 };
 
-/* globalChangeThreatOrDescription: replace title/description of vulnerabilities
- * over all templates and components.
- *
- * pid: id of the project
- * type: tWLS, tWRD or tEQT
- * old_t, new_t: title old_t will be replaced by new_t (may be identical)
- * old_d, new_d: description old_d will be replaced by new_d (may be identical)
- *
- * Either old_t or old_d may be null, indicating that title/description does not need
- * to be considered/changed.
- */
 function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
-	var it;
-
-	if (typ!='tWLS' && typ!='tWRD' && typ!='tEQT') {
-		bugreport("invalid type","globalChangeThreatOrDescription");
-		return;
-	}
-
-	it = new ThreatIterator(pid,typ);
-	for (it.first(); it.notlast(); it.next()) {
-		var th = it.getthreat();
-		if (old_t && isSameString(th.title,old_t)) {
-			th.settitle(new_t);
-			// Must update the template text field (after editing a node's vulnerability list)
-			$('#thname'+th.id).html(H(new_t));
-		}
-		if (old_d && isSameString(th.description,old_d)) {
-			// Must update the template description field
-			th.setdescription(new_d);
-			$('#thdesc'+th.id).html(H(new_d));
-		}
-	}
-
-	it = new ComponentIterator({project: pid, match: typ});
-	for (it.first(); it.notlast(); it.next()) {
-		var cm = it.getcomponent();
-		for (var i=0; i<cm.thrass.length; i++) {
-			var ta = ThreatAssessment.get(cm.thrass[i]);
-			if (old_t && isSameString(ta.title,old_t)) {
-				ta.settitle(new_t);
-			}
-			if (old_d && isSameString(ta.description,old_d)) {
-				ta.setdescription(new_d);
-			}
-		}
-	}
-
-	refreshThreatsDialog();
+	new Transaction('threatRename',
+		[{project: pid, type: typ, new_t: old_t, old_t: new_t, new_d: old_d, old_d: new_d}],
+		[{project: pid, type: typ, old_t: old_t, new_t: new_t, old_d: old_d, new_d: new_d}]
+	);
 }
 
 var DefaultThreats = [
@@ -630,6 +585,13 @@ Threat.prototype = {
 			if (th.id==this.id) continue;
 			if (isSameString(th.title,t))  return;
 		}
+		// There should be a root cluster with the old title. Change that as well
+		it = new NodeClusterIterator({project: this.project, isroot: true, type: this.type});
+		for (it.first(); it.notlast(); it.next()) {
+			let nc = it.getNodeCluster();
+			if (!isSameString(nc.title,this.title))  continue;
+			nc.settitle(t);
+		}
 		this.title = t;
 		this.store();
 	},
@@ -653,10 +615,9 @@ Threat.prototype = {
 			callback: function(domid, enteredText) { 
 				var th = Threat.get( nid2id(domid) );
 				var old_t = th.title;
-				th.settitle(enteredText);
-				globalChangeThreatOrDescription(th.project, th.type, old_t, th.title, null, null);
-				transactionCompleted("Checklist rename");
-				return H(th.title); 
+//				th.settitle(enteredText);
+				globalChangeThreatOrDescription(th.project, th.type, old_t, enteredText, null, null);
+				return H(th.title);
 			}
 		});
 		$('#thdesc'+this.id).editInPlace({
@@ -664,10 +625,9 @@ Threat.prototype = {
 			callback: function(domid, enteredText) { 
 				var th = Threat.get( nid2id(domid) );
 				var old_d = th.description;
-				th.setdescription(enteredText);
-				globalChangeThreatOrDescription(th.project, th.type, null, null, old_d, th.description);
-				transactionCompleted("Checklist description");
-				return H(th.description); 
+//				th.setdescription(enteredText);
+				globalChangeThreatOrDescription(th.project, th.type, null, null, old_d, enteredText);
+				return H(th.description);
 			}
 		});
 		$('#thdel'+this.id).on('click',  function() {

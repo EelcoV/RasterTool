@@ -4,6 +4,7 @@ See LICENSE.md
 
 BUGS
 Option Hide/Show color does not have immediate effect.
+Replace #modaldialog by an anonymous <div></div>.
 The How to use help-panel is useless. Either improve or remove. A help-panel on keyboard shortcuts might be useful instead.
 With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
 On standalone: offer Save as an option when closing with unsaved changes.

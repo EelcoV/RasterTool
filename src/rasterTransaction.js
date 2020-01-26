@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals Component, DEBUG, Project, RefreshNodeReportDialog, Service, ThreatAssessment, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, setModified
+/* globals Component, ComponentIterator, DEBUG, H, Project, RefreshNodeReportDialog, Service, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshThreatsDialog, setModified
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -420,6 +420,52 @@ Transaction.prototype = {
 // Enable when not debugging
 //					$('#diagramstabtitle'+s.id).trigger('click');
 				}
+			}
+			break;
+
+		case 'threatRename':
+			// Global edit of title and description of vulnerabilities and node templates
+			// data: array of objects; each object has these properties
+			//	project: id of the project in which to edit
+			//	type: type of the vulnerability (only wired, wireless, equipmemt allowed)
+			//	old_t: previous title (may be null, indicating no change)
+			//	old_d: previous description (may be null, indicating no change)
+			//	new_t: changed title
+			//	new_d: changed description
+			for (const d of data) {
+				var it;
+				if (d.type!='tWLS' && d.type!='tWRD' && d.type!='tEQT') {
+					bugreport("invalid type","Transaction.threatRename");
+					return;
+				}
+
+				it = new ThreatIterator(d.project,d.type);
+				for (it.first(); it.notlast(); it.next()) {
+					let th = it.getthreat();
+					if (d.old_t && isSameString(th.title,d.old_t)) {
+						th.settitle(d.new_t);
+						$('#thname'+th.id).html(H(d.new_t));
+					}
+					if (d.old_d && isSameString(th.description,d.old_d)) {
+						th.setdescription(d.new_d);
+						$('#thdesc'+th.id).html(H(d.new_d));
+					}
+				}
+
+				it = new ComponentIterator({project: d.project, match: d.type});
+				for (it.first(); it.notlast(); it.next()) {
+					let cm = it.getcomponent();
+					cm.thrass.forEach(t => {
+						let ta = ThreatAssessment.get(t);
+						if (d.old_t && isSameString(ta.title,d.old_t)) {
+							ta.settitle(d.new_t);
+						}
+						if (d.old_d && isSameString(ta.description,d.old_d)) {
+							ta.setdescription(d.new_d);
+						}
+					});
+				}
+				refreshThreatsDialog();
 			}
 			break;
 

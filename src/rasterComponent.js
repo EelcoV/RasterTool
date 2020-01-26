@@ -485,8 +485,8 @@ Component.prototype = {
 	_stringify: function() {
 		var data = {};
 		// When comparing projects (e.g. for debugging) it is useful if the order of
-		// items in the project file is the same.
-		// Therefore sort nodes and thrass
+		// items in the project file is the same, but only if the order is not relevant.
+		// Therefore sort nodes (but not thrass)
 		// For singular classes nodes[0] must remain fixed!
 		if (this.single) {
 			let sub = this.nodes.slice(1);
@@ -496,7 +496,6 @@ Component.prototype = {
 		} else {
 			this.nodes.sort();
 		}
-		this.thrass.sort();
 		data.t=this.type;
 		data.p=this.project;
 		data.l=this.title;
