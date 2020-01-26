@@ -47,7 +47,6 @@
 		494B6F6718796E9D00400328 /* Bugs and Features.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Bugs and Features.txt"; sourceTree = "<group>"; };
 		494B6F6818796E9D00400328 /* designAtomicActions.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = designAtomicActions.txt; sourceTree = "<group>"; };
 		494B6F6918796E9D00400328 /* encodedecode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = encodedecode.js; sourceTree = "<group>"; };
-		494B6F6A18796E9D00400328 /* eventsource.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = eventsource.js; sourceTree = "<group>"; };
 		494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.editinplace-2.2.1.js"; sourceTree = "<group>"; };
 		494B6F7A18796E9D00400328 /* layout.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = layout.odg; sourceTree = "<group>"; };
 		494B6F7F18796E9D00400328 /* rasterComponent.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterComponent.js; sourceTree = "<group>"; wrapsLines = 0; };
@@ -292,7 +291,6 @@
 		49F279FB1F91DB10003F360B /* server */ = {
 			isa = PBXGroup;
 			children = (
-				49F27A011F91E472003F360B /* js */,
 				494B702918796E9D00400328 /* share.inc */,
 				494B6FA118796E9D00400328 /* sse_projmon.inc */,
 				494B702C18796E9D00400328 /* index.html */,
@@ -370,14 +368,6 @@
 				49CD587E1F933CD600A9F17F /* e-translation-EN.js */,
 			);
 			path = standalone;
-			sourceTree = "<group>";
-		};
-		49F27A011F91E472003F360B /* js */ = {
-			isa = PBXGroup;
-			children = (
-				494B6F6A18796E9D00400328 /* eventsource.js */,
-			);
-			path = js;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
