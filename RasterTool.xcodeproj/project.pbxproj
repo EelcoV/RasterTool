@@ -80,13 +80,11 @@
 		496C1508233E95BF00769318 /* jsplumb-2.12.0.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jsplumb-2.12.0.min.js"; sourceTree = "<group>"; };
 		496C1509233E999B00769318 /* jquery-3.4.1.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.4.1.min.js"; sourceTree = "<group>"; };
 		49797D0923B8B54800D01C97 /* find-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "find-hi.png"; sourceTree = "<group>"; };
-		49797D0A23B8B54900D01C97 /* find-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "find-lo.png"; sourceTree = "<group>"; };
 		4997D9131F8A5DF200E3481A /* barB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barB.png; sourceTree = "<group>"; };
 		4997D9141F8A5DF300E3481A /* barC.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barC.png; sourceTree = "<group>"; };
 		4997D9151F8A5DF300E3481A /* barCV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barCV.png; sourceTree = "<group>"; };
 		4997D9161F8A5DF300E3481A /* barV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barV.png; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-hi.png"; sourceTree = "<group>"; };
-		499804E4187F29D10063E8C5 /* qm-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qm-lo.png"; sourceTree = "<group>"; };
 		4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "preprocess-server.sh"; sourceTree = "<group>"; };
 		4999EB5F1F9004D0009BBF18 /* clean.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
 		4999EB651F9007CE009BBF18 /* build-electron.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-electron.sh"; sourceTree = "<group>"; };
@@ -243,9 +241,7 @@
 				4997D9151F8A5DF300E3481A /* barCV.png */,
 				4997D9161F8A5DF300E3481A /* barV.png */,
 				49797D0923B8B54800D01C97 /* find-hi.png */,
-				49797D0A23B8B54900D01C97 /* find-lo.png */,
 				499804E3187F29D10063E8C5 /* qm-hi.png */,
-				499804E4187F29D10063E8C5 /* qm-lo.png */,
 				491CD6D3187DA7600028B84D /* dropedit.png */,
 				494B6FF318796E9D00400328 /* dropdown.png */,
 				494B700218796E9D00400328 /* nolabel.png */,

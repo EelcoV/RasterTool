@@ -371,28 +371,40 @@ function initAllAndSetup() {
 				return;
 			}
 		}
+
+		// Make a button appear active, wait 50ms, click, wait 100ms, make inactive
+		function simulateClick(elem) {
+			$(elem).addClass('ui-state-active');
+			window.setTimeout(function() {
+				$(elem).trigger('click');
+				window.setTimeout(function() {
+					$(elem).removeClass('ui-state-active');
+				}, 100);
+			}, 50);
+		}
+
 #ifdef SERVER
 		// F1 (mostly for Windows): to trigger the Help panel
 		if (evt.key=='F1') {
-			$('#helpbutton img').trigger('click');
+			simulateClick('#helpbutton');
 			evt.preventDefault();
 			return;
 		}
 		// Cmd-F for MacOS or Ctrl-F for Windows: to trigger the Find panel
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='f') {
-			$('#findbutton img').trigger('click');
+			simulateClick('#findbutton');
 			evt.preventDefault();
 			return;
 		}
 		// Cmd-L for MacOS or Ctrl-L for Windows: to trigger the Library panel
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='l') {
-			$('#libraryactivator').trigger('click');
+			simulateClick('#libraryactivator');
 			evt.preventDefault();
 			return;
 		}
 		// Cmd-O for MacOS or Ctrl-O for Windows: to trigger the Options panel
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='o') {
-			$('#optionsactivator').trigger('click');
+			simulateClick('#optionsactivator');
 			evt.preventDefault();
 			return;
 		}
@@ -403,21 +415,35 @@ function initAllAndSetup() {
 			evt.preventDefault();
 			return;
 		}
-		// Cmd-2 for MacOS or Ctrl-2 for Windows: to trigger the Diagrams screen
+		// Cmd-2 for MacOS or Ctrl-2 for Windows: to trigger the Single Failures screen
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='2') {
 			forceSelectVerticalTab(1);
 			evt.preventDefault();
 			return;
 		}
-		// Cmd-3 for MacOS or Ctrl-3 for Windows: to trigger the Diagrams screen
+		// Cmd-3 for MacOS or Ctrl-3 for Windows: to trigger the Common cause failures screen
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='3') {
 			forceSelectVerticalTab(2);
 			evt.preventDefault();
 			return;
 		}
-		// Cmd-4 for MacOS or Ctrl-4 for Windows: to trigger the Diagrams screen
+		// Cmd-4 for MacOS or Ctrl-4 for Windows: to trigger the Analsys screen
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='4') {
 			forceSelectVerticalTab(3);
+			evt.preventDefault();
+			return;
+		}
+
+		// Cmd-Z for MacOS or Ctrl-Z for Windows: to trigger Undo
+		if ((evt.ctrlKey || evt.metaKey) && !evt.shiftKey && evt.key=='z') {
+			simulateClick('#undobutton');
+			evt.preventDefault();
+			return;
+		}
+		// Shift-Cmd-Z for MacOS or Ctrl-Y for Windows: to trigger Redo
+		if ((evt.metaKey && evt.shiftKey && evt.key=='z')
+		 || (evt.ctrlKey && evt.key=='y')) {
+			simulateClick('#redobutton');
 			evt.preventDefault();
 			return;
 		}

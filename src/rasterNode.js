@@ -902,8 +902,10 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 			// Previous label
 			if (evt.key=='<') {
 				i = Project.colors.indexOf(rn.color);
-				i = (i-1+Project.colors.length) % Project.colors.length; // add devisor to prevent negative result
-				rn.setlabel(Project.colors[i]);
+				i = (i-1+Project.colors.length) % Project.colors.length; // add length to prevent negative result
+				$('#nodemenu').data('menunode',rn.id);
+				$('#mi_cc'+Project.colors[i]).trigger('mouseup');
+//				rn.setlabel(Project.colors[i]);
 				evt.preventDefault();
 				return;
 			}
@@ -911,7 +913,9 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 			if (evt.key=='>') {
 				i = Project.colors.indexOf(rn.color);
 				i = (i+1) % Project.colors.length;
-				rn.setlabel(Project.colors[i]);
+				$('#nodemenu').data('menunode',rn.id);
+				$('#mi_cc'+Project.colors[i]).trigger('mouseup');
+//				rn.setlabel(Project.colors[i]);
 				evt.preventDefault();
 				return;
 			}
@@ -934,7 +938,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 				evt.preventDefault();
 				return;
 			}
-			// Delete, after confirmation
+			// Delete
 			if (evt.key=='Delete' || evt.key=='Backspace') {
 				$('#nodemenu').data('menunode', rn.id);
 				$('#mi_de').trigger('mouseup');

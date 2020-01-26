@@ -112,18 +112,12 @@ body {
 #findbutton {
 	background-size: 85%;
 	background-repeat: no-repeat;
-	background-image: url(../img/find-lo.png);
-}
-#findbutton:hover {
 	background-image: url(../img/find-hi.png);
 }
 
 #helpbutton {
 	background-size: 85%;
 	background-repeat: no-repeat;
-	background-image: url(../img/qm-lo.png);
-}
-#helpbutton:hover {
 	background-image: url(../img/qm-hi.png);
 }
 
