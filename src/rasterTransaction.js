@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals Component, ComponentIterator, DEBUG, H, Project, RefreshNodeReportDialog, Service, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshThreatsDialog, setModified
+/* globals _, Component, ComponentIterator, DEBUG, H, Project, RefreshNodeReportDialog, Service, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshThreatsDialog, setModified
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -84,13 +84,17 @@ Transaction.head = Transaction.base;
 Transaction.updateUI = function() {
 	if (Transaction.current==Transaction.base) {
 		$('#undobutton').removeClass('possible');
+		$('#undobutton').attr('title', _("Undo"));
 	} else {
 		$('#undobutton').addClass('possible');
+		$('#undobutton').attr('title', _("Undo") + ' ' + H(Transaction.current.kind));
 	}
 	if (Transaction.current==Transaction.head) {
 		$('#redobutton').removeClass('possible');
+		$('#redobutton').attr('title', _("Redo"));
 	} else {
 		$('#redobutton').addClass('possible');
+		$('#redobutton').attr('title', _("Redo") + ' ' + H(Transaction.current.next.kind));
 	}
 };
 
