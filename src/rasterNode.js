@@ -40,6 +40,7 @@
  *	destroy(): destructor.
  *	setposition(x,y,snap): set the position of the HTML document object to (x,y).
  *		If snap==false then do not restrict to 20x20 pixel grid positions.
+ *	iconinit: choose an icon and set the width/height of the node.
  *	setcomponent(cm): set the id of the component object to cm.
  *	changetitle(str): post a transaction to change the header text to 'str' if allowed.
  *	settitle(str,suff): sets the header text to 'str' and suffix 'suff', and update DOM.
@@ -128,11 +129,12 @@ Node.nodesinselection = function() {
 	return a;
 };
 Node.destroyselection = function () {
-	var a = Node.nodesinselection();
-	for (var i=0; i<a.length; i++) {
-		var rn = Node.get(a[i]);
-		rn.destroy();
-	}
+	Node.nodesinselection().forEach(n => Node.get(n).destroy());
+//	var a = Node.nodesinselection();
+//	for (var i=0; i<a.length; i++) {
+//		var rn = Node.get(a[i]);
+//		rn.destroy();
+//	}
 };
 Node.autotitle = function(typ,newtitle) {
 	if (!newtitle)  newtitle = Rules.nodetypes[typ];
@@ -144,11 +146,19 @@ Node.autotitle = function(typ,newtitle) {
 	if (res[3]) {
 		n = parseInt(res[3],10)+1;
 		newtitle = res[1];
-		targettitle = newtitle + ' (' + n + ')';
 	} else {
 		n = 0;
-		targettitle = newtitle;
 	}
+	// If the title resembles that of a type, make sure it's the correct one (e.g. the Change type menuitem)
+	for (const t in Rules.nodetypes) {
+		if (Rules.nodetypes[t] != newtitle)  continue;
+		newtitle = Rules.nodetypes[typ];
+		n = 0;
+		break;
+	}
+
+	targettitle = newtitle;
+	if (n>0)  targettitle = targettitle + ' (' + n + ')';
 	// Actors must be unique within the service, other nodes must be unique within the project
 	if (typ=='tACT') {
 		while (Node.servicehastitle(Service.cid,targettitle)!=-1) {
@@ -218,30 +228,7 @@ Node.prototype = {
 			if (node.length>0)  jsP.remove(this.nid);
 		}
 	},
-	
-	changetype: function(typ) {
-		if (this.type=='tNOT') {
-			bugreport("Attempt to change the type of a note","Node.changetype");
-		}
-		var i;
-		var newn = new Node(typ, this.service);
-		newn.position.x = this.position.x;
-		newn.position.y = this.position.y;
-		newn.position.w = 0;
-		newn.position.h = 0;
-		newn.position.v = 0;
-		newn.position.g = 0;
-		newn.color = this.color;
-		newn.changetitle(this.title);
-		newn.store();
-		newn.paint(false);
-		for (i=0; i<this.connect.length; i++) {
-			newn.attach_center( Node.get(this.connect[i]) );
-		}
-		newn.setmarker();
-		this.destroy(false);
-	},
-	
+
 	setposition: function(px,py,snaptogrid) {
 		var jsP = Service.get(this.service)._jsPlumb;
 		var fh = $('.fancyworkspace').height();
@@ -687,7 +674,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 	},
 
 	iconinit: function() {
-		var p = Project.get(Service.get(this.service).project);
+		var p = Project.get(this.project);
 		// Locate the first possible index
 		for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
 			// empty
@@ -1112,6 +1099,8 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		if (cm!=null && cm.single) {
 			$('#mi_du').addClass('ui-state-disabled');
 		}
+		// Do not allow a type change into its own type
+		$('#mi_ct'+this.type).addClass('ui-state-disabled');
 		populateLabelMenu();
 		var s=p.strToLabel(this.color);
 		if (s=='') {
@@ -1272,7 +1261,7 @@ var NodeIterator = function(opt) {
 	this.item = [];
 	for (var i in Node._all) {
 		var rn = Node._all[i];
-		if (opt.project!=undefined && Service.get(rn.service).project!=opt.project) continue;
+		if (opt.project!=undefined && rn.project!=opt.project) continue;
 		if (opt.service!=undefined && rn.service!=opt.service) continue;
 		if (opt.type!=undefined && rn.type!=opt.type) continue;
 		if (opt.match!=undefined && 

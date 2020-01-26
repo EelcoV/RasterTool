@@ -2848,36 +2848,72 @@ function initTabDiagrams() {
 		}
 		displayThreatsDialog(rn.component,e);
 	});
-	$('#mi_cttWLS').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tWLS');
-		transactionCompleted("Node change type tWLS");
-	});
-	$('#mi_cttWRD').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tWRD');
-		transactionCompleted("Node change type tWRD");
-	});
-	$('#mi_cttEQT').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tEQT');
-		transactionCompleted("Node change type tEQT");
-	});
-	$('#mi_cttACT').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tACT');
-		transactionCompleted("Node change type tACT");
-	});
-	$('#mi_cttUNK').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tUNK');
-		transactionCompleted("Node change type tUNK");
-	});
+
+	function ctfunction(t) {
+		return function() {
+			$('#nodemenu').hide();
+			let rn = Node.get( $('#nodemenu').data('menunode') );
+			let newid = createUUID();
+			let newcmid = createUUID();
+			// Two simultaneous transactions, both for do and undo: create new node, destroy old node
+			// We first do the new node, then the old one
+			let do_data=[], undo_data=[];
+			do_data.push({
+				//  id: id of the node; this is the *only* property in the undo data
+				//  type: type of the node
+				//  title: name of the node
+				//  suffix: suffix of the node
+				//  service: service to which the node belongs
+				//  label: color of the node
+				//  x, y: position of the node
+				//  width, height: size of the node (optional)
+				//  component: id of the component object
+				//  thrass: info on the blank vulnerabilities
+				//  connect: array of node IDs to connect to
+				id: newid,
+				type: t,
+				title: Node.autotitle(t,rn.title),
+				suffix: 'a',
+				service: rn.service,
+				label: rn.label,
+				x: rn.position.x,
+				y: rn.position.y,
+				connect: rn.connect.slice(),
+				component: newcmid,
+				thrass: Project.get(rn.project).defaultthreatdata(t),
+				accordionopened: false
+			});
+			undo_data.push({id: newid});
+			do_data.push({id: rn.id});
+			let ud = {
+				id: rn.id,
+				type: rn.type,
+				title: rn.title,
+				suffix: rn.suffix,
+				service: rn.service,
+				label: rn.label,
+				x: rn.position.x,
+				y: rn.position.y,
+				width: rn.position.width,
+				height: rn.position.height,
+				connect: rn.connect.slice()
+			};
+			if (rn.component) {
+				let cm = Component.get(rn.component);
+				ud.component = cm.id;
+				ud.accordionopened = cm.accordionopened;
+				ud.thrass = cm.threatdata();
+			}
+			undo_data.push(ud);
+			new Transaction('nodeCreate', undo_data, do_data);
+		};
+	}
+	$('#mi_cttWLS').on('mouseup', ctfunction('tWLS'));
+	$('#mi_cttWRD').on('mouseup', ctfunction('tWRD'));
+	$('#mi_cttEQT').on('mouseup', ctfunction('tEQT'));
+	$('#mi_cttACT').on('mouseup', ctfunction('tACT'));
+	$('#mi_cttUNK').on('mouseup', ctfunction('tUNK'));
+
 	$('#mi_rc').on('mouseup', function() {
 		$('#nodemenu').hide();
 		var rn = Node.get( $('#nodemenu').data('menunode') );

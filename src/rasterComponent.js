@@ -67,6 +67,7 @@ var Component = function(type, pid, id) {
 	this.magnitude = '-';
 	this.single = false;
 	this._markeroid = null;
+	this.accordionopened = false;
 
 	this.store();
 	Component._all[this.id] = this;

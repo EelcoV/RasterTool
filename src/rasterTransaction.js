@@ -232,12 +232,12 @@ Transaction.prototype = {
 			//  suffix: suffix of the node
 			//  service: service to which the node belongs
 			//  label: color of the node
-			//  title: title of the node class
 			//  x, y: position of the node
 			//  width, height: size of the node (optional)
+			//  connect: array of node IDs to connect to
 			//  component: id of the component object
 			//  thrass: info on the blank vulnerabilities
-			//  connect: array of node IDs to connect to
+			//  accordionopened: state of the component in Single Failures view
 			for (const d of data) {
 				if (d.type==null) {
 					// This is undo_data: delete the node
