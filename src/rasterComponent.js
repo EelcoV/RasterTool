@@ -443,45 +443,25 @@ Component.prototype = {
 	
 	setsingle: function(single) {
 		var i, rn;
-		var newval = (single===true);
-		if (newval) {
-			// Make sure that this component has at most one node per service
-			var count = [];
-			for (i=0; i<this.nodes.length; i++) {
-				rn = Node.get(this.nodes[i]);
-				if (count[rn.service]>0) {
-					newval = false;
-					break;
-				} else {
-					count[rn.service] = 1;
-				}
-			}
-		}
-		if (this.single && !newval) {
+		if (this.single && !single) {
 			// Change from single to multiple
 			// Add all but the first node to all node clusters
 			for (i=1; i<this.nodes.length; i++) {
 				rn = Node.get(this.nodes[i]);
 				rn.addtonodeclusters();
 			}
-		} else if (!this.single && newval) {
+		} else if (!this.single && single) {
 			// Change from multiple to single
 			// Remove all but the first node from all node clusters
 			for (i=1; i<this.nodes.length; i++) {
 				rn = Node.get(this.nodes[i]);
 				rn.removefromnodeclusters();
 			}
-		} else if (this.single != (single===true)) {
-			// Disallow change, flash all visible nodes
-			for (i=0; i<this.nodes.length; i++) {
-				$('#node'+this.nodes[i]).effect('pulsate', { times:2 }, 800);
-			}
-			return;
 		} else {
 			// No change
 			return;
 		}
-		this.single = newval;
+		this.single = single;
 		this.repaintmembertitles();
 		this.store();
 	},

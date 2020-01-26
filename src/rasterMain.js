@@ -3041,11 +3041,23 @@ function initTabDiagrams() {
 	});
 	$('#mi_sm').on('mouseup', function() {
 		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
+		let rn = Node.get( $('#nodemenu').data('menunode') );
 		// Actors and notes don't have components
 		if (rn.component==null)  return;
 
-		var cm = Component.get(rn.component);
+		let cm = Component.get(rn.component);
+		if (!cm.single) {
+			// Only allow Class to become singular iff there is at most one member node per service
+			let count = {};
+			Project.get(cm.project).services.forEach(s => count[s]=0);
+			cm.nodes.forEach(n => count[Node.get(n).service]++);
+			for (const s in count) {
+				if(count[s]<2) continue;
+				// Flash the offending nodes
+				cm.nodes.forEach(n => $('#node'+n).effect('pulsate', { times:2 }, 800) );
+				return;
+			}
+		}
 		new Transaction('classSingular',
 			[{id: cm.id, singular: cm.single}],
 			[{id: cm.id, singular: cm.single==false}]
