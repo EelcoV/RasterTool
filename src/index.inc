@@ -23,7 +23,6 @@ See LICENSE.md
 <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
 <script type="text/javascript" src="../js/jquery-ui-1.12.1.min.js"></script>
 #ifdef SERVER
-<script type="text/javascript" src="../js/eventsource.js"></script>
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
 #endif
 <script type="text/javascript" src="../js/jsplumb-2.12.0.min.js"></script>
