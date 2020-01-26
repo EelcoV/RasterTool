@@ -192,6 +192,18 @@ Transaction.prototype = {
 			}
 			break;
 
+		case 'labelEdit':
+			// Edit the project color labels
+			// data: array of objects; each object has these properties
+			//  id: id of the project
+			//  labels: array of the labels of the project
+			for (const d of data) {
+				let p = Project.get(d.id);
+				p.labels = d.labels.slice();
+				p.store();
+			}
+			break;
+
 		case 'nodeConnect':
 			// (Dis)connect nodes
 			// data: array of objects; each object has these properties
@@ -287,18 +299,6 @@ Transaction.prototype = {
 			}
 			break;
 
-		case 'labelEdit':
-			// Edit the project color labels
-			// data: array of objects; each object has these properties
-			//  id: id of the project
-			//  labels: array of the labels of the project
-			for (const d of data) {
-				let p = Project.get(d.id);
-				p.labels = d.labels.slice();
-				p.store();
-			}
-			break;
-
 		case 'nodeGeometry':
 			// Change the size and/or position of nodes
 			// data: array of objects; each object has these properties
@@ -361,8 +361,8 @@ Transaction.prototype = {
 					continue;
 				}
 				if (!d.component) {
-					// Simple case, no classes involved
-					rn.settitle(d.title,d.suffix);
+					// Simple case, no classes involved. Set title on component and its node
+					Component.get(rn.component).setclasstitle(d.title);
 					continue;
 				}
 

@@ -242,7 +242,7 @@ Component.prototype = {
 	},
 
 	setclasstitle: function(str) {
-		this.title = trimwhitespace(str);
+		this.title = str;
 		this.repaintmembertitles();
 		this.store();
 	},

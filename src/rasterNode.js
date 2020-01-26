@@ -997,7 +997,6 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 			callback: function(domid, enteredText) {
 				var rn = Node.get( nid2id(domid) );
 				rn.changetitle(enteredText);
-//				rn.store();
 				return H(rn.title);
 			},
 			/* Make sure that the editor is above all node decorations. */
