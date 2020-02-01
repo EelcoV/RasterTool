@@ -1742,8 +1742,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	}
 	for (i=0; i<lThreatlen; i++) {
 		var lth = lThreat[i];
-		var th = new Threat(lth.t,lth.id);
-		th.setproject(lth.p);
+		var th = new Threat(lth.p,lth.t,lth.id);
 		th.setdescription(lth.d);
 		if (upgrade_1_2) {
 			// Check if there is another threat in this project with the same type and case-insensitive name
@@ -2405,12 +2404,7 @@ function initLibraryPanel() {
 				rasterConfirm(_('Delete all?'),
 					_("Really sure? You will lose <b>all private</b> projects!\n"),
 					_("Yes, really erase all"),_("Cancel"),
-					function() {
-						localStorage.clear();
-						// Preserve the user's preferences
-						Preferences.settab(0);
-						window.location.reload();
-					}
+					Zap
 				);
 			}
 		);
@@ -2443,6 +2437,14 @@ function initLibraryPanel() {
 		startPeriodicProjectListRefresh();
 #endif
 	});
+}
+
+/* Reset the tool. Useful from the CLI when debugging */
+function Zap() {
+	localStorage.clear();
+	// Preserve the user's preferences
+	Preferences.settab(0);
+	window.location.reload();
 }
 
 /* Show an alert if there are any errors in the projects (e.g. in a newly loaded project).
@@ -3284,23 +3286,21 @@ function initTabDiagrams() {
 
 	var addhandler = function(typ) {
 		return function() {
-			var t = new Threat(typ);
-			var p = Project.get( Project.cid );
-			p.addthreat(t.id);
-			t.addtablerow("#"+typ+"threats");
+			let do_data=[], undo_data=[];
+			let newid = createUUID();
+			let newcluster = createUUID();
+			let newtitle = Threat.autotitle(Project.cid,typ,_("New vulnerability"));
+
+			do_data.push({project: Project.cid, threat: newid, type: typ, title: newtitle, description: newtitle, cluster: newcluster, thrid: createUUID()});
+			undo_data.push({project: Project.cid, threat: newid, cluster: newcluster});
 			// Apply the change to all components of matching type
-			var it = new ComponentIterator({project: p.id, match: typ});
+			var it = new ComponentIterator({project: Project.cid, match: typ});
 			for (it.first(); it.notlast(); it.next()) {
-				var cm = it.getcomponent();
-				var ta = new ThreatAssessment(typ);
-				ta.settitle(t.title);
-				ta.setdescription(t.description);
-				cm.addthrass(ta);
+				let newid = createUUID();
+				do_data.push({component: it.getcomponentid(), threat: newid, type: typ, title: newtitle, description: newtitle});
+				undo_data.push({component: it.getcomponentid(), threat: newid});
 			}
-			// Start editing the name of the new vulnerability
-			$('#thname'+t.id).click();
-			refreshThreatsDialog();
-			transactionCompleted("Checklist vuln add");
+			new Transaction('threatCreate', undo_data, do_data);
 		};
 	};
 	var copyhandler = function(typ) {
@@ -3331,7 +3331,7 @@ function initTabDiagrams() {
 					th.addtablerow('#'+typ+'threats');
 				} else {
 					// Create a new threat
-					th = new Threat(typ);  // Ignore the type in the Clipboard. Must always be typ.
+					th = new Threat(Project.cid,typ);  // Ignore the type in the Clipboard. Must always be typ.
 					th.settitle(ThreatAssessment.Clipboard[j].t);
 					th.setdescription(ThreatAssessment.Clipboard[j].d);
 					Project.get(Project.cid).addthreat(th.id);

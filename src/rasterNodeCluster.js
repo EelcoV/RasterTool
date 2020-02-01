@@ -56,6 +56,9 @@
  *	store(): store the object into localStorage.
 */
 var NodeCluster = function(type, id) {
+	if (!id) {
+		console.warn("*** No id specified for new NodeCluster");
+	}
 	if (id!=null && NodeCluster._all[id]!=null) {
 		bugreport("NodeCluster with id "+id+" already exists","NodeCluster.constructor");
 	}

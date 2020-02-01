@@ -49,6 +49,9 @@
  *	store(): store the object into localStorage.
 */
 var Component = function(type, pid, id) {
+	if (!id) {
+		console.warn("*** Warning: no id specified for new Component");
+	}
 	if (type=='tACT') {
 		bugreport("attempt to create component for actor node","Component.constructor");
 	}

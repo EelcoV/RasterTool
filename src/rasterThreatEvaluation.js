@@ -58,6 +58,9 @@ bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, NodeClusterIter
  *	store(): store the object into localStorage.
  */
 var ThreatAssessment = function(type,id) {
+	if (!id) {
+		console.warn("*** No id specified for new ThreatAssessment");
+	}
 	if (id!=null && ThreatAssessment._all[id]!=null) {
 		bugreport("ThreatAssessment with id "+id+" already exists","ThreatAssessment.constructor");
 	}
@@ -546,13 +549,16 @@ var DefaultThreats = [
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
  */
-var Threat = function(type,id) {
+var Threat = function(pid,type,id) {
+	if (!id) {
+		console.warn("*** No id specified for new Threat");
+	}
 	if (id!=null && Threat._all[id]!=null) {
 		bugreport("Vulnerability with id "+id+" already exists","Threat.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);
 	this.type = type;
-	this.project = Project.cid;
+	this.project = pid;
 	this.title = _("Vulnerability ")+this.id;
 	this.description = _("Description vulnerability ")+this.id;
 	
@@ -561,6 +567,17 @@ var Threat = function(type,id) {
 };
 Threat.get = function(id) { return Threat._all[id]; };
 Threat._all = new Object();
+Threat.autotitle = function(pid,type,newtitle) {
+	if (!newtitle)  newtitle = Rules.nodetypes[type];
+	let p = Project.get(pid);
+	let targettitle = newtitle;
+	let n = 0;
+	while (p.threats.some(t => (Threat.get(t).title==targettitle))) {
+		targettitle = newtitle + ' (' + (++n) + ')';
+	}
+	return targettitle;
+};
+
 Threat.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS + 'T:' + this.id);

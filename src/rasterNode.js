@@ -75,7 +75,9 @@
  *	store(): store the object into localStorage.
  */
 var Node = function(type, serv, id) {
-	if (id!=null && Node._all[id]!=null) {
+	if (!id) {
+		console.warn("*** No id specified for new Node");
+	}if (id!=null && Node._all[id]!=null) {
 		bugreport("Node with id "+id+" already exists","Node.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);

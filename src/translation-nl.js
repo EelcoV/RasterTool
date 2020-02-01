@@ -386,3 +386,5 @@ _t["Services '%%' and '%%'."] = "Diensten '%%' en '%%'.";
 
 _t["Classroom version"] = "Cursusomgeving";
 _t[" - personal copy"] = " - eigen kopie";
+
+_t["New vulnerability"] = "Nieuwe kwetsbaarheid";

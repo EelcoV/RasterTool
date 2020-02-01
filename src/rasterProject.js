@@ -501,7 +501,9 @@ Project.prototype = {
 		this.store();
 	},
 
-	addthreat: function(id) {
+	addthreat: function(id,clid,thrid) {
+		if (!clid)  clid = createUUID();
+		if (!thrid)  thrid = createUUID();
 		var th = Threat.get(id);
 		if (this.threats.indexOf(th.id)!=-1) {
 			bugreport("threat already added","Project.addthreat");
@@ -513,10 +515,10 @@ Project.prototype = {
 		// Make sure that the project has a rootcluster for this threat
 		let it = new NodeClusterIterator({project: this.id, title: th.title, type: th.type, isroot: true});
 		if (!it.notlast()) {
-			let nc = new NodeCluster(th.type);
+			let nc = new NodeCluster(th.type,clid);
 			nc.setproject(this.id);
 			nc.settitle(th.title);
-			nc.addthrass();
+			nc.addthrass(thrid);
 		}
 	},
 	
@@ -530,6 +532,15 @@ Project.prototype = {
 		this.store();
 	},
 	
+	adddefaultthreats: function() {
+		for (var i=0; i<DefaultThreats.length; i++) {
+			var th = new Threat(this.id,DefaultThreats[i][0],createUUID());
+			th.settitle(DefaultThreats[i][1]);
+			th.setdescription(DefaultThreats[i][2]);
+			this.addthreat(th.id,createUUID(),createUUID());
+		}
+	},
+
 	defaultthreatdata: function(typ) {
 		let thr = [];
 		for (let i of this.threats) {
@@ -682,17 +693,6 @@ Project.prototype = {
 //		Service.get(Service.cid).paintall();
 		Preferences.setcurrentproject(this.title);
 	},
-	
-	adddefaultthreats: function() {
-		for (var i=0; i<DefaultThreats.length; i++) {
-			var th = new Threat(DefaultThreats[i][0]);
-			th.setproject(this.id);
-			th.settitle(DefaultThreats[i][1]);
-			th.setdescription(DefaultThreats[i][2]);
-			this.addthreat(th.id);
-		}
-	},
-
 
 	strToLabel: function(str) {
 		var i = Project.colors.indexOf(str);
