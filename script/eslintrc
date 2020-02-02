@@ -24,7 +24,7 @@
 		"no-useless-return": ["warn"],
 		"brace-style": ["warn", "1tbs", {"allowSingleLine": true}],
 		"no-bitwise": ["error"],
-		"no-lonely-if": ["warn"],
+		"no-lonely-if": ["off"],
 		"no-negated-condition": ["off"],
 		"comma-dangle": ["error", {
 			"arrays": "never",

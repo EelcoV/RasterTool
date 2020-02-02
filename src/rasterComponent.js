@@ -35,7 +35,7 @@
  *	setproject(pid): sets the project to pid (numerical).
  *	addnode(n.id): add a node to this component
  *	removenode(n.id): remove the node from this component
- *	addthrass(te): add the ThreatAssessment object.
+ *	addthrass(ta,idx): add the ThreatAssessment object at index idx.
  *	removethrass(te): remove the ThreatAssessment object.
  *  threatdata(): returns do/undo data for threats in thrass.
  *	threatsnotevaluated: returns the numer of threats that have not been evaluated.
@@ -345,8 +345,10 @@ Component.prototype = {
 		}
 	},
 	
-	addthrass: function(te) {
-		this.thrass.push(te.id);
+	addthrass: function(te,idx) {
+//		this.thrass.push(te.id);
+		if (!idx)  idx = this.thrass.length()-1;
+		this.thrass.splice(idx,0,te.id);
 		te.setcomponent(this.id);
 		for (var i=0; i<(this.single?1:this.nodes.length); i++) {
 			NodeCluster.addnode_threat(this.project,this.nodes[i],te.title,te.type,false);

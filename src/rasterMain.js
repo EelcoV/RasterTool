@@ -2874,7 +2874,7 @@ function initTabDiagrams() {
 		if (rn.type=='tACT' || rn.type=='tNOT') {
 			return;
 		}
-		displayThreatsDialog(rn.component,e);
+		displayComponentThreatAssessmentsDialog(rn.component,e);
 	});
 
 	function ctfunction(t) {
@@ -3510,7 +3510,7 @@ function workspacedrophandler(event, ui) {
 	}
 }
 
-function refreshThreatsDialog(force) {
+function refreshComponentThreatAssessmentsDialog(force) {
 	if (!$('#componentthreats').dialog('isOpen') && force!==true)  return;
 
 	// Dialog is open, nog repaint its contents
@@ -3589,7 +3589,7 @@ function refreshThreatsDialog(force) {
 				newlist.push( nid2id(this.children[i].id) );
 			}
 			if (newlist.length != c.thrass.length) {
-				bugreport("internal error in sorting","refreshThreatsDialog");
+				bugreport("internal error in sorting","refreshComponentThreatAssessmentsDialog");
 			}
 			c.thrass = newlist;
 			c.store();
@@ -3598,14 +3598,26 @@ function refreshThreatsDialog(force) {
 	});
 }
 
-function displayThreatsDialog(cid,where) {
+function refreshChecklistsDialog(type,force) {
+	if (!$('#componentthreats').dialog('isOpen') && force!==true)  return;
+	// Remove DOM for all checklist threats, and re-add them in the right order
+	$('#'+type+'threats').empty();
+	let p = Project.get(Project.cid);
+	p.threats.forEach( id=> {
+		let th = Threat.get(id);
+		if (th.type!=type)  return;
+		th.addtablerow('#'+type+'threats');
+	});
+}
+
+function displayComponentThreatAssessmentsDialog(cid,where) {
 	var c = Component.get(cid);
 	Component.ThreatsComponent = cid;
 
 	if ($('#componentthreats').dialog('isOpen')) {
 		$('#componentthreats').dialog('close');
 	}
-	refreshThreatsDialog(true);
+	refreshComponentThreatAssessmentsDialog(true);
 	$('#componentthreats').dialog({
 		title: _("Vulnerability assessment for '%%'", c.title) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
 		position: {my: 'left top', at: 'right', of: where, collision: 'fit'},

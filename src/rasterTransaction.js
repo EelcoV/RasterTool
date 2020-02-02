@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshThreatsDialog, setModified
+/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -470,7 +470,7 @@ Transaction.prototype = {
 					});
 				}
 			}
-			refreshThreatsDialog();
+			refreshComponentThreatAssessmentsDialog();
 			break;
 
 		case 'threatCreate':
@@ -481,11 +481,15 @@ Transaction.prototype = {
 			//		OR  id of the component's ThreatAssessment
 			//  component: id of the component to which a ThreatAssessment should be added (or removed, when type==null)
 			//		*either* threat&project *or* component should be specified
-			//	type: type of the threat (only wired, wireless, equipmemt allowed); empty for undo
-			//	title: title of the threat (optional)
+			//	index: position of the threat(assessment) within the project (component)
+			//	type: type of the threat(assessment) (only wired, wireless, equipmemt allowed); empty for undo
+			//	title: title of the threat(assessment)
 			//  cluster: id of the new cluster
-			//  thrid: id of the ThreatAssessment of the cluster
-			//	description: description of the threat (optional)
+			//  clusterthrid: id of the ThreatAssessment of the cluster
+			//	description: description of the threat(assessment)
+			//	freq: frequency-value of the threatassessment
+			//	impact: impact-value of the threatassessment
+			//	remark: remark of the threatassessment
 			for (const d of data) {
 				if (d.type) {
 					// Add to the checklist, etc
@@ -494,15 +498,18 @@ Transaction.prototype = {
 						var ta = new ThreatAssessment(d.type,d.threat);
 						if (d.title)  ta.settitle(d.title);
 						if (d.description)  ta.setdescription(d.description);
-						cm.addthrass(ta);
+						if (d.remark)  ta.setremark(d.remark);
+						if (d.freq)  ta.setfreq(d.freq);
+						if (d.impact)  ta.setimpact(d.impact);
+						cm.addthrass(ta,d.index);
 					} else {
 						let t = new Threat(d.project,d.type,d.threat);
 						if (d.title)  t.title = d.title;
 						if (d.description)  t.description = d.description;
 						t.store();
 						let p = Project.get(d.project);
-						p.addthreat(t.id,d.cluster,d.thrid);
-						t.addtablerow("#"+d.type+"threats");
+						p.addthreat(t.id,d.cluster,d.clusterthrid,d.index);
+						refreshChecklistsDialog(d.type,true);
 					}
 				} else {
 					// Remove from the checklist, etc
@@ -520,7 +527,7 @@ Transaction.prototype = {
 					}
 				}
 			}
-			refreshThreatsDialog();
+			refreshComponentThreatAssessmentsDialog();
 			break;
 
 		default:
@@ -560,8 +567,16 @@ function logdiff(s1, s2, header) {
 	a1.forEach((line,i) => {
 		if (a1[i]==a2[i])  return;
 		if (!print)  console.log("===== "+header+" =======================");
-		console.log("<< " + a1[i]);
-		console.log(">> " + a2[i]);
+		if (a1[i]==a2[i+1]) {
+			console.log("<< " + "(deleted)");
+			console.log(">> " + a2[i]);
+		} else if (a1[i+1]==a2[i]) {
+			console.log("<< " + a1[i]);
+			console.log(">> " + "(deleted)");
+		} else {
+			console.log("<< " + a1[i]);
+			console.log(">> " + a2[i]);
+		}
 		console.log("--");
 		print=true;
 	});

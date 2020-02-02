@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, NodeClusterIterator, Transaction, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm, refreshThreatsDialog
+bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, NodeClusterIterator, Transaction, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm, refreshComponentThreatAssessmentsDialog
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -467,7 +467,7 @@ ThreatAssessment.prototype = {
 					var nc = NodeCluster.removecomponent_threat(Project.cid,th.component,th.title,th.type);
 					$('#dth'+prefix+'_'+th.id).remove();
 					c.setmarker();
-					refreshThreatsDialog();
+					refreshComponentThreatAssessmentsDialog();
 					transactionCompleted("Vuln delete");
 				};
 				newRasterConfirm(_("Delete vulnerability?"),
@@ -648,27 +648,68 @@ Threat.prototype = {
 			}
 		});
 		$('#thdel'+this.id).on('click',  function() {
-			var th = Threat.get(nid2id(this.id));
+			let th = Threat.get(nid2id(this.id));
 			newRasterConfirm(_("Delete vulnerability?"),
 				_("Do you want to delete the vulnerability '%%' for <i>all current</i> and future %% nodes?", H(th.title), Rules.nodetypes[th.type]),
 				_("Remove"),_("Cancel")
 			)
 			.done(function() {
-				Project.get(th.project).removethreat(th.id);
-				// Count how many components have this threat
-				var it = new ComponentIterator({project: th.project, match: th.type});
+				let p = Project.get(Project.cid);
+				let undo_data = [];
+				let do_data = [];
+				let it = new NodeClusterIterator({project: this.project, isroot: true, type: th.type, title: th.title});
+				if (it.itemlength!=1) {
+					bugreport("No or too many node clusters","threat delete");
+				}
+				let cl = it.getNodeCluster();
+
+				do_data.push({project: p.id, threat: th.id, cluster: cl.id});
+				undo_data.push({project: p.id,
+					threat: th.id,
+					index: p.threats.indexOf(th.id),
+					type: th.type,
+					title: th.title,
+					description: th.description,
+					cluster: cl.id,
+					clusterthrid: cl.thrass
+				});
+
+				it = new ComponentIterator({project: th.project, match: th.type});
 				for (it.first(); it.notlast(); it.next()) {
-					var cm = it.getcomponent();
-					NodeCluster.removecomponent_threat(Project.cid,cm.id,th.title,th.type,true);
-					for (var i=0; i<cm.thrass.length; i++) {
-						var ta = ThreatAssessment.get(cm.thrass[i]);
-						if (isSameString(ta.title,th.title)) {
-							cm.removethrass(ta.id);
-						}
+					let cm = it.getcomponent();
+					for (let i=0; i<cm.thrass.length; i++) {
+						let ta = ThreatAssessment.get(cm.thrass[i]);
+						if (!isSameString(th.title,ta.title))  continue;
+						do_data.push({component: cm.id, threat: ta.id});
+						undo_data.push({component: cm.id,
+							threat: ta.id,
+							index: i,
+							title: ta.title,
+							type: ta.type,
+							description: ta.description,
+							freq: ta.freq,
+							impact: ta.impact,
+							remark: ta.remark
+						});
 					}
 				}
-				refreshThreatsDialog();
-				transactionCompleted("Checklist remove");
+
+				new Transaction('threatCreate', undo_data, do_data);
+//				Project.get(th.project).removethreat(th.id);
+//				// Count how many components have this threat
+//				var it = new ComponentIterator({project: th.project, match: th.type});
+//				for (it.first(); it.notlast(); it.next()) {
+//					var cm = it.getcomponent();
+//					NodeCluster.removecomponent_threat(Project.cid,cm.id,th.title,th.type,true);
+//					for (var i=0; i<cm.thrass.length; i++) {
+//						var ta = ThreatAssessment.get(cm.thrass[i]);
+//						if (isSameString(ta.title,th.title)) {
+//							cm.removethrass(ta.id);
+//						}
+//					}
+//				}
+//				refreshComponentThreatAssessmentsDialog();
+//				transactionCompleted("Checklist remove");
 			});
 		});
 	},

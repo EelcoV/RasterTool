@@ -38,10 +38,10 @@ x- rename vuln				[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"
 x- setFrequency(vuln,freq)	[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"freq"+this.id).editInPlace callback]
 x- setImpact(vuln,impact)	[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"impact"+this.id).editInPlace callback]
 x- setRemark(vuln,remark)	[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"remark"+this.id).editInPlace callback]
-x- paste					[displayThreatsDialog: $('#dthpastedia'+cid).click handler]
+x- paste					[displayComponentThreatAssessmentsDialog: $('#dthpastedia'+cid).click handler]
 x- paste					[paintSingleFailures: function pastehandler]
 x- removeVuln(vuln)			[ThreatAssessment.addtablerow_behavioronly: $("#dth_"+prefix+"del"+this.id).click]
-x- addVuln					[displayThreatsDialog: $('#dthadddia'+cid).click handler]
+x- addVuln					[displayComponentThreatAssessmentsDialog: $('#dthadddia'+cid).click handler]
 x- addVuln					[paintSingleFailures: function addhandler]
 
 NodeCluster:

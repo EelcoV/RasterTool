@@ -48,7 +48,8 @@
  *		Either settitle() or autosettitle() must be called.
  *	addservice(id,title): add an existing Service object to this project.
  *	removeservice(id): remove and destroy a Service object from this project.
- *  addthreat(id): add a checklist threat to the project.
+ *  addthreat(id,clid,clthrid,idx): add a checklist threat to the project, including id of new root cluster,
+ *		id of the threatassessment of that cluster, and the index of the threat within threats[].
  *	removethreat(id): remove a checklist threat from the project.
  *  defaultthreatdata(t): returns do/undo data for default threats of type t.
  *	unload(): remove all DOM elements for this project.
@@ -501,15 +502,17 @@ Project.prototype = {
 		this.store();
 	},
 
-	addthreat: function(id,clid,thrid) {
+	addthreat: function(id,clid,thrid,idx) {
 		if (!clid)  clid = createUUID();
 		if (!thrid)  thrid = createUUID();
+		if (!idx)  idx = this.threats.indexOf(id);
 		var th = Threat.get(id);
 		if (this.threats.indexOf(th.id)!=-1) {
 			bugreport("threat already added","Project.addthreat");
 		}
 		th.setproject(this.id);
-		this.threats.push(th.id);
+//		this.threats.push(th.id);
+		this.threats.splice(idx,0,th.id);
 		this.store();
 
 		// Make sure that the project has a rootcluster for this threat

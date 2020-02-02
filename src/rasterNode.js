@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Threat, ThreatAssessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace, displayThreatsDialog
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Threat, ThreatAssessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace, displayComponentThreatAssessmentsDialog
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -935,7 +935,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 				} else if (rn.type=='tACT') {
 					/* do nothing */
 				} else {
-					displayThreatsDialog(rn.component,rn.jnid);
+					displayComponentThreatAssessmentsDialog(rn.component,rn.jnid);
 				}
 				evt.preventDefault();
 				return;
