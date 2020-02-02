@@ -347,7 +347,7 @@ Component.prototype = {
 	
 	addthrass: function(te,idx) {
 //		this.thrass.push(te.id);
-		if (!idx)  idx = this.thrass.length()-1;
+		if (idx==null)  idx = this.thrass.length;
 		this.thrass.splice(idx,0,te.id);
 		te.setcomponent(this.id);
 		for (var i=0; i<(this.single?1:this.nodes.length); i++) {

@@ -204,7 +204,7 @@ img.tC {
 
 #currentProject {
     position: absolute;
-    right: 0px;
+    right: 4px;
     color: #999;
     font-size: 1.3em !important;
     white-space: nowrap;

@@ -505,7 +505,7 @@ Project.prototype = {
 	addthreat: function(id,clid,thrid,idx) {
 		if (!clid)  clid = createUUID();
 		if (!thrid)  thrid = createUUID();
-		if (!idx)  idx = this.threats.indexOf(id);
+		if (idx==null)  idx = this.threats.length;
 		var th = Threat.get(id);
 		if (this.threats.indexOf(th.id)!=-1) {
 			bugreport("threat already added","Project.addthreat");
