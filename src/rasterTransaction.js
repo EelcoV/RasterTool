@@ -427,6 +427,17 @@ Transaction.prototype = {
 			}
 			break;
 
+		case 'serviceRename':
+			// Change the name of a service
+			// data: array of objects; each object has these properties
+			//  id: id of service
+			//  title: title of the new service; this is null for undo data
+			for (const d of data) {
+				let s = Service.get(d.id);
+				s.settitle(d.title);
+			}
+			break;
+
 		case 'threatAssess':
 			// Change the frequency and/or impact of a ThreatAssessment
 			// data: array of objects; each object has these properties

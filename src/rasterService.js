@@ -568,6 +568,8 @@ function diagramTabEditStart(/*event*/) {
 	var dialog = $('<div></div>');
 	var snippet ='\
 		<form id="form_servicerename">\
+			<!-- Prevent implicit submission of the form -->\
+			<button type="submit" disabled style="display: none" aria-hidden="true"></button>\
 		<input id="field_servicerename" class="field_rename" name="fld" type="text" value="_SN_">\
 		</form>\
 	';
@@ -583,10 +585,12 @@ function diagramTabEditStart(/*event*/) {
 	dbuttons.push({
 		text: _("Change name"),
 		click: function() {
-				var name = $('#field_servicerename');
-				s.settitle(name.val());
+				let name = $('#field_servicerename');
+				new Transaction('serviceRename',
+					[{id: s.id, title: s.title}],
+					[{id: s.id, title: name.val()}]
+				);
 				$(this).dialog('close');
-				transactionCompleted("Service rename");
 			}
 	});
 	dialog.dialog({
@@ -598,12 +602,14 @@ function diagramTabEditStart(/*event*/) {
 		buttons: dbuttons,
 		open: function() {
 			$('#field_servicerename').focus().select();
-			$('#form_servicerename').submit(function() {
-				var name = $('#field_servicerename');
-				s.settitle(name.val());
-				dialog.dialog('close');
-				transactionCompleted("Service rename");
-			});
+//			$('#form_servicerename').submit(function() {
+//				let name = $('#field_servicerename');
+//				new Transaction('serviceRename',
+//					[{id: s.id, title: s.title}],
+//					[{id: s.id, title: name.val()}]
+//				);
+//				$(this).dialog('close');
+//			});
 		},
 		close: function(/*event, ui*/) {
 			dialog.remove();
