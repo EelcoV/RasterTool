@@ -265,15 +265,15 @@ Transaction.prototype = {
 				let rn = new Node(d.type, d.service, d.id);
 				rn.iconinit();
 				rn.title = d.title;
-				if (d.suffix)  rn.suffix = d.suffix;
-				if (d.label)  rn.color = d.label;
+				if (d.suffix!=null)  rn.suffix = d.suffix;
+				if (d.label!=null)  rn.color = d.label;
 				rn.setposition(d.x,d.y);
-				if (d.width)  rn.position.width = d.width;
-				if (d.height)  rn.position.height = d.height;
+				if (d.width!=null)  rn.position.width = d.width;
+				if (d.height!=null)  rn.position.height = d.height;
 				rn.store();
 // Change to true when not debugging
 				rn.paint(false);
-				if (d.connect) {
+				if (d.connect!=null) {
 					d.connect.forEach(n => {
 						let othernode = Node.get(n);
 						rn.attach_center(othernode);
@@ -427,6 +427,79 @@ Transaction.prototype = {
 			}
 			break;
 
+		case 'threatAssess':
+			// Change the frequency and/or impact of a ThreatAssessment
+			// data: array of objects; each object has these properties
+			//	threat: id of theThreatAssessment
+			//	freq: frequency-value of the threatassessment
+			//	impact: impact-value of the threatassessment
+			//	remark: remark of the threatassessment
+			for (const d of data) {
+				let ta = ThreatAssessment.get(d.threat);
+				if (d.remark!=null)  ta.setremark(d.remark);
+				if (d.freq!=null)  ta.setfreq(d.freq);
+				if (d.impact!=null)  ta.setimpact(d.impact);
+			}
+			refreshComponentThreatAssessmentsDialog();
+			break;
+
+		case 'threatCreate':
+			// Add (or remove) a threat to (or from) a checklist, and update all components
+			// data: array of objects; each object has these properties
+			//	project: id of the project in which to edit
+			//	threat: id of the checklist threat (new, or to be removed when type==null)
+			//		OR  id of the component's ThreatAssessment
+			//  component: id of the component to which a ThreatAssessment should be added (or removed, when type==null)
+			//		*either* threat&project *or* component should be specified
+			//	index: position of the threat(assessment) within the project (component)
+			//	type: type of the threat(assessment) (only wired, wireless, equipmemt allowed); empty for undo
+			//	title: title of the threat(assessment)
+			//  cluster: id of the new cluster
+			//  clusterthrid: id of the ThreatAssessment of the cluster
+			//	description: description of the threat(assessment)
+			//	freq: frequency-value of the threatassessment
+			//	impact: impact-value of the threatassessment
+			//	remark: remark of the threatassessment
+			for (const d of data) {
+				if (d.type) {
+					// Add to the checklist, etc
+					if (d.component) {
+						let cm = Component.get(d.component);
+						var ta = new ThreatAssessment(d.type,d.threat);
+						if (d.title!=null)  ta.settitle(d.title);
+						if (d.description!=null)  ta.setdescription(d.description);
+						if (d.remark!=null)  ta.setremark(d.remark);
+						if (d.freq!=null)  ta.setfreq(d.freq);
+						if (d.impact!=null)  ta.setimpact(d.impact);
+						cm.addthrass(ta,d.index);
+					} else {
+						let t = new Threat(d.project,d.type,d.threat);
+						if (d.title!=null)  t.title = d.title;
+						if (d.description!=null)  t.description = d.description;
+						t.store();
+						let p = Project.get(d.project);
+						p.addthreat(t.id,d.cluster,d.clusterthrid,d.index);
+						refreshChecklistsDialog(d.type,true);
+					}
+				} else {
+					// Remove from the checklist, etc
+					if (d.component) {
+						let cm = Component.get(d.component);
+						let ta = ThreatAssessment.get(d.threat);
+						cm.removethrass(ta.id);
+						ta.destroy();
+					} else {
+						let th = Threat.get(d.threat);
+						let p = Project.get(th.project);
+						p.removethreat(th.id);
+						let cl = NodeCluster.get(d.cluster);
+						cl.destroy();
+					}
+				}
+			}
+			refreshComponentThreatAssessmentsDialog();
+			break;
+
 		case 'threatRename':
 			// Global edit of title and description of vulnerabilities and node templates
 			// data: array of objects; each object has these properties
@@ -468,63 +541,6 @@ Transaction.prototype = {
 							ta.setdescription(d.new_d);
 						}
 					});
-				}
-			}
-			refreshComponentThreatAssessmentsDialog();
-			break;
-
-		case 'threatCreate':
-			// Add (or remove) a threat to (or from) a checklist, and update all components
-			// data: array of objects; each object has these properties
-			//	project: id of the project in which to edit
-			//	threat: id of the checklist threat (new, or to be removed when type==null)
-			//		OR  id of the component's ThreatAssessment
-			//  component: id of the component to which a ThreatAssessment should be added (or removed, when type==null)
-			//		*either* threat&project *or* component should be specified
-			//	index: position of the threat(assessment) within the project (component)
-			//	type: type of the threat(assessment) (only wired, wireless, equipmemt allowed); empty for undo
-			//	title: title of the threat(assessment)
-			//  cluster: id of the new cluster
-			//  clusterthrid: id of the ThreatAssessment of the cluster
-			//	description: description of the threat(assessment)
-			//	freq: frequency-value of the threatassessment
-			//	impact: impact-value of the threatassessment
-			//	remark: remark of the threatassessment
-			for (const d of data) {
-				if (d.type) {
-					// Add to the checklist, etc
-					if (d.component) {
-						let cm = Component.get(d.component);
-						var ta = new ThreatAssessment(d.type,d.threat);
-						if (d.title)  ta.settitle(d.title);
-						if (d.description)  ta.setdescription(d.description);
-						if (d.remark)  ta.setremark(d.remark);
-						if (d.freq)  ta.setfreq(d.freq);
-						if (d.impact)  ta.setimpact(d.impact);
-						cm.addthrass(ta,d.index);
-					} else {
-						let t = new Threat(d.project,d.type,d.threat);
-						if (d.title)  t.title = d.title;
-						if (d.description)  t.description = d.description;
-						t.store();
-						let p = Project.get(d.project);
-						p.addthreat(t.id,d.cluster,d.clusterthrid,d.index);
-						refreshChecklistsDialog(d.type,true);
-					}
-				} else {
-					// Remove from the checklist, etc
-					if (d.component) {
-						let cm = Component.get(d.component);
-						let ta = ThreatAssessment.get(d.threat);
-						cm.removethrass(ta.id);
-						ta.destroy();
-					} else {
-						let th = Threat.get(d.threat);
-						let p = Project.get(th.project);
-						p.removethreat(th.id);
-						let cl = NodeCluster.get(d.cluster);
-						cl.destroy();
-					}
 				}
 			}
 			refreshComponentThreatAssessmentsDialog();

@@ -392,41 +392,41 @@ Component.prototype = {
 		return mustdoevals;
 	},
 
-	adddefaultthreatevaluations: function(id) {
-		if (id!=null) {
-			// Copy threat evaluations from Component id
-			var te;
-			var cm = Component.get(id);
-			for (var i=0; i<cm.thrass.length; i++) {
-				var oldte = ThreatAssessment.get(cm.thrass[i]);
-				te = new ThreatAssessment(oldte.type);
-				te.setcomponent(this.id);
-				te.settitle(oldte.title);
-				te.setdescription(oldte.description);
-				te.setfreq(oldte.freq);
-				te.setimpact(oldte.impact);
-				te.setremark(oldte.remark);
-				te.computetotal();
-				this.thrass.push(te.id);
-			}
-		} else {
-			// Copy default threats, preserving the order in which they appear in the project.
-			var p = Project.get(Project.cid);
-			for (i=0; i<p.threats.length; i++) {
-				var th = Threat.get(p.threats[i]);
-				if (th.type!=this.type && this.type!='tUNK') continue;
-				// ThreatAssessments on a node/component of type tUNK will have the type of
-				// the Threat, not tUNK. So a tUNK component will have TAs with a type that
-				// differs from the node/component itself.
-				te = new ThreatAssessment(th.type);
-				te.setcomponent(this.id);
-				te.settitle(th.title);
-				te.setdescription(th.description);
-				this.thrass.push(te.id);
-			}
-		}
-		this.store();
-	},
+//	adddefaultthreatevaluations: function(id) {
+//		if (id!=null) {
+//			// Copy threat evaluations from Component id
+//			var te;
+//			var cm = Component.get(id);
+//			for (var i=0; i<cm.thrass.length; i++) {
+//				var oldte = ThreatAssessment.get(cm.thrass[i]);
+//				te = new ThreatAssessment(oldte.type);
+//				te.setcomponent(this.id);
+//				te.settitle(oldte.title);
+//				te.setdescription(oldte.description);
+//				te.setfreq(oldte.freq);
+//				te.setimpact(oldte.impact);
+//				te.setremark(oldte.remark);
+//				te.computetotal();
+//				this.thrass.push(te.id);
+//			}
+//		} else {
+//			// Copy default threats, preserving the order in which they appear in the project.
+//			var p = Project.get(Project.cid);
+//			for (i=0; i<p.threats.length; i++) {
+//				var th = Threat.get(p.threats[i]);
+//				if (th.type!=this.type && this.type!='tUNK') continue;
+//				// ThreatAssessments on a node/component of type tUNK will have the type of
+//				// the Threat, not tUNK. So a tUNK component will have TAs with a type that
+//				// differs from the node/component itself.
+//				te = new ThreatAssessment(th.type);
+//				te.setcomponent(this.id);
+//				te.settitle(th.title);
+//				te.setdescription(th.description);
+//				this.thrass.push(te.id);
+//			}
+//		}
+//		this.store();
+//	},
 
 	calculatemagnitude: function() {
 		if (this.thrass.length==0) {

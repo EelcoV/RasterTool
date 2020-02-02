@@ -373,10 +373,14 @@ ThreatAssessment.prototype = {
 			select_options: selectoptions,
 			select_text: "",
 			callback: function(oid, enteredText) {
-				te.setfreq(enteredText);
-				$('#dth_'+prefix+'total'+te.id).text(te.total);
-				c.setmarker();
-				transactionCompleted("Vuln setfreq");
+				new Transaction('threatAssess',
+					[{threat: te.id, freq: te.freq}],
+					[{threat: te.id, freq: enteredText}]
+				);
+//				te.setfreq(enteredText);
+//				$('#dth_'+prefix+'total'+te.id).text(te.total);
+//				c.setmarker();
+//				transactionCompleted("Vuln setfreq");
 				return '<span>'+enteredText+'</span>';
 			}
 		});
@@ -434,11 +438,15 @@ ThreatAssessment.prototype = {
 				$('#outerimpacthint').hide();	// When editing impact of CCFs
 			},
 			callback: function(oid, enteredText) {
-				te.setimpact(enteredText);
-				$('#dth_'+prefix+'total'+te.id).text(te.total);
-				te.setminimpact(te.minimpact);
-				c.setmarker();
-				transactionCompleted("Vuln setimpact");
+				new Transaction('threatAssess',
+					[{threat: te.id, impact: te.impact}],
+					[{threat: te.id, impact: enteredText}]
+				);
+//				te.setimpact(enteredText);
+//				$('#dth_'+prefix+'total'+te.id).text(te.total);
+//				te.setminimpact(te.minimpact);
+//				c.setmarker();
+//				transactionCompleted("Vuln setimpact");
 				return '<span>'+enteredText+'</span>';
 			}
 		});
@@ -447,8 +455,12 @@ ThreatAssessment.prototype = {
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			default_text: '-',
 			callback: function(oid, enteredText) {
-				te.setremark(enteredText);
-				transactionCompleted("Vuln setremark");
+				new Transaction('threatAssess',
+					[{threat: te.id, remark: te.remark}],
+					[{threat: te.id, remark: enteredText}]
+				);
+//				te.setremark(enteredText);
+//				transactionCompleted("Vuln setremark");
 				return H(te.remark); 
 			}
 		});
