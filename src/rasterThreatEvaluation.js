@@ -474,13 +474,18 @@ ThreatAssessment.prototype = {
 				} else {
 					bugreport("Was expecting a Component","ThreatAssessment.addtablerow");
 				}
+				var idx = c.thrass.indexOf(th.id);
 				var dokill = function() {
-					c.removethrass(th.id);
-					var nc = NodeCluster.removecomponent_threat(Project.cid,th.component,th.title,th.type);
-					$('#dth'+prefix+'_'+th.id).remove();
-					c.setmarker();
-					refreshComponentThreatAssessmentsDialog();
-					transactionCompleted("Vuln delete");
+					new Transaction('threatAssessCreate',
+						[{component: c.id, threat: th.id, index: idx, type: th.type, title: th.title, description: th.description, remark: th.remark, freq: th.freq, impact: th.impact}],
+						[{component: c.id, threat: th.id, prefix: prefix}]
+					);
+//					c.removethrass(th.id);
+//					var nc = NodeCluster.removecomponent_threat(Project.cid,th.component,th.title,th.type);
+//					$('#dth'+prefix+'_'+th.id).remove();
+//					c.setmarker();
+//					refreshComponentThreatAssessmentsDialog();
+//					transactionCompleted("Vuln delete");
 				};
 				newRasterConfirm(_("Delete vulnerability?"),
 					_("Vulnerabilities should only be deleted when physically impossible.")+

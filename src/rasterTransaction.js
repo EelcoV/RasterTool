@@ -67,9 +67,9 @@ this.perform();
 checkForErrors();
 let S4 = exportProject(Project.cid);
 if (S1!=S3) {
-	logdiff(S1,S3,"in new: undo != undo");
+	logdiff(S1,S3,"in new: perform + undo != initial situation");
 } else if (S2!=S4) {
-	logdiff(S2,S4,"in new: perform != perform");
+	logdiff(S2,S4,"in new: perform != perform + undo + redo");
 }
 
 	Transaction.current = this;
@@ -450,6 +450,40 @@ Transaction.prototype = {
 				if (d.remark!=null)  ta.setremark(d.remark);
 				if (d.freq!=null)  ta.setfreq(d.freq);
 				if (d.impact!=null)  ta.setimpact(d.impact);
+			}
+			refreshComponentThreatAssessmentsDialog();
+			break;
+
+		case 'threatAssessCreate':
+			// Change the frequency and/or impact of a ThreatAssessment
+			// data: array of objects; each object has these properties
+			//	component: component on which to create (or delete) the threatassessment
+			//  threat: ID of the ThreatAssessment to create (or delete)
+			//	type: type of the ThreatAssessment
+			//		Delete when type is null, create when type is not null
+			//	freq: frequency-value of the threatassessment
+			//	impact: impact-value of the threatassessment
+			//	remark: remark of the threatassessment
+			//  description: description of the threatassessment
+			//  title: name of the threatassessment
+			//  index: position of the threatassessment within the component
+			for (const d of data) {
+				let cm = Component.get(d.component);
+				if (d.type) {
+					let ta = new ThreatAssessment(d.type,d.threat);
+					if (d.title!=null)  ta.settitle(d.title);
+					if (d.description!=null)  ta.setdescription(d.description);
+					if (d.remark!=null)  ta.setremark(d.remark);
+					if (d.freq!=null)  ta.setfreq(d.freq);
+					if (d.impact!=null)  ta.setimpact(d.impact);
+					cm.addthrass(ta,d.index);
+				} else {
+					let th = ThreatAssessment.get(d.threat);
+					cm.removethrass(d.threat);
+					NodeCluster.removecomponent_threat(cm.project,th.component,th.title,th.type);
+					$('#dth'+d.prefix+'_'+th.id).remove();
+					cm.setmarker();
+				}
 			}
 			refreshComponentThreatAssessmentsDialog();
 			break;
