@@ -153,12 +153,11 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 		nc.removechildnode(cm.nodes[i]);
 	}
 	nc.normalize();
-// Do not remove root-cluster
-//	if (nc.childclusters.length==0 && nc.childnodes.length==0 && nc.parentcluster==null) {
-//		nc.destroy();
-//	} else {
+	if (nc.childclusters.length==0 && nc.childnodes.length==0 && nc.parentcluster==null) {
+		nc.destroy();
+	} else {
 		repaintCluster(nc.id);
-//	}
+	}
 	return nc;
 };
 

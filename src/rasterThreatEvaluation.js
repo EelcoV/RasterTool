@@ -156,6 +156,39 @@ ThreatAssessment.sum = function(a,b) {
 };
 ThreatAssessment.worst = ThreatAssessment.sum;
 
+ThreatAssessment.autotitle = function(pid,newtitle) {
+	// Non-greedy match for anything, optionally followed by space and digits between parentheses
+	let targettitle, n;
+	let res = newtitle.match(/^(.+?)( \((\d+)\))?$/);
+	if (res[3]) {
+		n = parseInt(res[3],10)+1;
+		newtitle = res[1];
+	} else {
+		n = 0;
+	}
+
+	targettitle = newtitle;
+	if (n>0)  targettitle = targettitle + ' (' + n + ')';
+	// Vulnerabilitiess must be unique within the project
+	while (ThreatAssessment.projecthastitle(pid,targettitle)!=-1) {
+		n++;
+		targettitle = newtitle + ' (' + n + ')';
+	}
+	return targettitle;
+};
+
+ThreatAssessment.projecthastitle= function(pid,str) {
+	for (const ci in Component._all) {
+		let cm = Component.get(ci);
+		if (cm.project!=pid)  continue;
+		for (const ti of cm.thrass) {
+			let ta = ThreatAssessment.get(ti);
+			if (isSameString(ta.title,str))  return ti;
+		}
+	}
+	return -1;
+};
+
 ThreatAssessment.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS + 'E:' + this.id);

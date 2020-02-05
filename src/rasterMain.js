@@ -3552,11 +3552,28 @@ function refreshComponentThreatAssessmentsDialog(force) {
 	$('#dthcopydia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#dthpastedia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#dthadddia'+c.id).on('click',  function() {
-		var c = Component.get(nid2id(this.id));
-		var th = new ThreatAssessment((c.type=='tUNK' ? 'tEQT' : c.type));
-		c.addthrass(th);
-		th.addtablerow('#threats'+c.id,'dia');
-		transactionCompleted("Vuln add");
+		let c = Component.get(nid2id(this.id));
+		let tid = createUUID();
+		new Transaction('threatAssessCreate',
+			[{component: c.id, threat: tid, prefix: 'dia'}],
+			[{component: c.id,
+				clid: createUUID(),
+				thrid: createUUID(),
+				threat: tid,
+				index: c.thrass.length,
+				type: (c.type=='tUNK' ? 'tEQT' : c.type),
+				title: ThreatAssessment.autotitle(Project.cid,_("New vulnerability")),
+				description: "",
+				remark: "",
+				freq: '-',
+				impact: '-'
+			 }]
+		);
+//		var c = Component.get(nid2id(this.id));
+//		var th = new ThreatAssessment((c.type=='tUNK' ? 'tEQT' : c.type));
+//		c.addthrass(th);
+//		th.addtablerow('#threats'+c.id,'dia');
+//		transactionCompleted("Vuln add");
 	});
 	$('#dthcopydia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
