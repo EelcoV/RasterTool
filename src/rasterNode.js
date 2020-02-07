@@ -246,7 +246,7 @@ Node.prototype = {
 		if (py<10) py=10;
 		if (px+this.position.width>fw) px=fw-this.position.width;
 		if (py+this.position.height>fh) py=fh-this.position.height;
-		
+
 		if (snaptogrid) {
 			var cx = px+this.position.width/2;
 			var cy = py+this.position.height/2;
@@ -254,7 +254,7 @@ Node.prototype = {
 			cy = 20*Math.round(cy/20);
 			px = cx - this.position.width/2;
 			py = cy - this.position.height/2;
-		}
+}
 		
 		this.position.x = px;
 		this.position.y = py;
@@ -759,7 +759,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		} else {
 			$(this.jnid).css('display', 'block');
 		}
-		this.setposition(this.position.x, this.position.y, false);
+		this.setposition(this.position.x, this.position.y, true);
 
 		/* This is *not* jQuery's draggable, but Katavorio's!
 		 * See https://github.com/jsplumb/katavorio/wiki
