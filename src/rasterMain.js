@@ -1821,8 +1821,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		if (lrn.f) rn.suffix = trimwhitespace(lrn.f);
 		rn.iconinit();
 		rn.position = {x: lrn.x, y: lrn.y, width: lrn.w, height: lrn.h};
-		rn._normw = lrn.v;
-		rn._normh = lrn.g;
+//		rn._normw = lrn.v;
+//		rn._normh = lrn.g;
 		rn.component = lrn.m;
 		rn.connect = lrn.c.slice(0);
 		if (lrn.o) {

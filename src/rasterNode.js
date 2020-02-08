@@ -255,7 +255,7 @@ Node.prototype = {
 			px = cx - this.position.width/2;
 			py = cy - this.position.height/2;
 }
-		
+
 		this.position.x = px;
 		this.position.y = py;
 		this.store();
@@ -1139,8 +1139,8 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		data.y=Math.round(this.position.y);
 		data.w=Math.round(this.position.width);
 		data.h=Math.round(this.position.height);
-		data.v=Math.round(this._normw);
-		data.g=Math.round(this._normh);
+//		data.v=Math.round(this._normw);
+//		data.g=Math.round(this._normh);
 		data.s=this.service;
 		data.c=this.connect;
 		data.m=this.component;
