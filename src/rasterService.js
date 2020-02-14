@@ -251,6 +251,10 @@ Service.prototype = {
 		$('#diagrams_body').tabs('refresh');
 		$('#diagrams_body ul li').removeClass('ui-corner-top');
 
+		/* Note: Firefox warns about scroll-linked positioning effects in combination with asynchronous
+		 * scrolling. It may be better to implement this event handler asynchronously, although the
+		 * improvement may be small because the visual impact of the scroller_region movement is tiny.
+		 */
 		// Update the scroll_region when the workspace is scrolled.
 		$('#diagrams'+this.id).on('scroll', function(/*event*/){
 			if (ScrollerDragging)  return;

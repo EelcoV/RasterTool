@@ -366,18 +366,7 @@ Component.prototype = {
 	
 	threatdata: function() {
 		let ths = [];
-		this.thrass.forEach(tid => {
-			let th = ThreatAssessment.get(tid);
-			ths.push({
-				id: th.id,
-				title: th.title,
-				type: th.type,
-				description: th.description,
-				freq: th.freq,
-				impact: th.impact,
-				remark: th.remark
-			});
-		});
+		this.thrass.forEach(tid => ths.push(ThreatAssessment.get(tid).toobject));
 		return ths;
 	},
 

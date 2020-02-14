@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog
+/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster, repaintClusterDetails
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -175,7 +175,7 @@ Transaction.prototype = {
 		switch (this.kind) {
 
 		case 'classSingular':
-			// Edit the title of a node class
+			// Change the class from regular to singular, and vice verse
 			// data: array of objects; each object has these properties
 			//  id: id of the component of the class
 			//  singular: true iff the component should be a singular class, false otherwise
@@ -239,8 +239,8 @@ Transaction.prototype = {
 			}
 			break;
 
-		case 'nodeCreate':
-			// Create a new node, or recreate (undo a Delete)
+		case 'nodeCreateDelete':
+			// Create or delete a node
 			// data: array of objects; each object has these properties
 			//  id: id of the node; this is the *only* property in the undo data
 			//  type: type of the node
@@ -252,8 +252,17 @@ Transaction.prototype = {
 			//  width, height: size of the node (optional)
 			//  connect: array of node IDs to connect to
 			//  component: id of the component object
-			//  thrass: info on the blank vulnerabilities
+			//  thrass: array of objects containing info on the vulnerabilities:
+			//    id, title, description, freq, impact, remark: as of the threat assessment
 			//  accordionopened: state of the component in Single Failures view
+			//  cluster: an array of objects with the following properties
+			//    id: ID of the cluster object
+			//    title: title of the cluster
+			//    parent: ID of the parent cluster
+			//    thrass: object containing info on the threat assessment for the cluster (as see above)
+			//    index: position of the node within the childnodes of this cluster
+			//    childnode: ID of an additional (existing) child node of this cluster
+			//    childcluster: object containing the same properties (except childnode/childcluster)
 			for (const d of data) {
 				if (d.type==null) {
 					// This is undo_data: delete the node
@@ -300,6 +309,58 @@ Transaction.prototype = {
 				cm.addnode(d.id);
 				cm.repaintmembertitles();
 				rn.setmarker();
+
+// When finished, check whether this if-statement is still necessary
+				if (d.cluster) {
+					// cm.addnode added rn to the root of node clusters.
+					rn.removefromnodeclusters();
+					d.cluster.forEach(c => {
+						let cl = NodeCluster.get(c.id);
+						if (!cl) {
+							cl = new NodeCluster(d.type,c.id);
+							cl.setproject(rn.project);
+							cl.setparent(c.parent);
+							cl.settitle(c.title);
+							let ta = new ThreatAssessment(d.type,c.thrass.id);
+							ta.settitle(c.thrass.title);
+							ta.setdescription(c.thrass.description);
+							ta.setremark(c.thrass.remark);
+							ta.setfreq(c.thrass.freq);
+							ta.setimpact(c.thrass.impact);
+							cl.addthrass(c.thrass.id);
+							if (c.childnode) {
+								// Remove this node from its current cluster, then add it to this
+								let cn = Node.get(c.childnode);
+								cn.removefromnodeclusters();
+								cl.addchildnode(c.childnode);
+							}
+						}
+						if (c.childcluster) {
+							let ccl = new NodeCluster(c.type,c.childcluster.id);
+							ccl.setproject(rn.project);
+							ccl.setparent(c.id);
+							ccl.settitle(c.childcluster.title);
+							let ta = new ThreatAssessment(c.childcluster.thrass.type,c.childcluster.thrass.id);
+							ta.settitle(c.childcluster.thrass.title);
+							ta.setdescription(c.childcluster.thrass.description);
+							ta.setremark(c.childcluster.thrass.remark);
+							ta.setfreq(c.childcluster.thrass.freq);
+							ta.setimpact(c.childcluster.thrass.impact);
+							ccl.thrass = ta.id;
+							ta.setcluster(ccl.id);
+							ccl.store();
+							// migrate childen
+							cl.childnodes.forEach(nid => ccl.addchildnode(nid));
+							cl.childnodes = [];
+							cl.addchildcluster(ccl.id);
+							cl.store();
+						}
+						cl.childnodes.splice(c.index,0,rn.id);
+						cl.store();
+						repaintCluster(cl.root());
+						repaintClusterDetails(NodeCluster.get(cl.root()));
+					});
+				}
 			}
 			break;
 
@@ -356,7 +417,7 @@ Transaction.prototype = {
 			//  title: title of the node
 			//  suffix: suffix of the node
 			//  thrass: array of threat assessments when the component needs to be created
-			//		id, title, description, frequecy, impact, total, remark: as of the threat assessment
+			//		id, title, description, freq, impact, remark: as of the threat assessment
 			//  component: id of the component
 			for (const d of data) {
 				let rn = Node.get(d.id);
@@ -636,21 +697,30 @@ function logdiff(s1, s2, header) {
 
 	a1.sort();
 	a2.sort();
-	a1.forEach((line,i) => {
-		if (a1[i]==a2[i])  return;
-		if (!print)  console.log("===== "+header+" =======================");
-		if (a1[i]==a2[i+1]) {
-			console.log("<< " + "(deleted)");
-			console.log(">> " + a2[i]);
-		} else if (a1[i+1]==a2[i]) {
-			console.log("<< " + a1[i]);
-			console.log(">> " + "(deleted)");
+	let i=0, j=0;
+	while (i<a1.length || j<a2.length) {
+		if (i<a1.length && j<a2.length && a1[i]==a2[j]) {
+			null; // do nothing
 		} else {
-			console.log("<< " + a1[i]);
-			console.log(">> " + a2[i]);
+			if (!print)  console.log("===== "+header+" =======================");
+			if (i>=a1.length || a1[i]==a2[j+1]) {
+				console.log("<< " + "(deleted)");
+				console.log(">> " + a2[j]);
+				j++;
+			} else if (j>=a2.length || a1[i+1]==a2[j]) {
+				console.log("<< " + a1[i]);
+				console.log(">> " + "(deleted)");
+				i++;
+			} else {
+				console.log("<< " + a1[i]);
+				console.log(">> " + a2[j]);
+			}
+
+			console.log("--");
+			print=true;
 		}
-		console.log("--");
-		print=true;
-	});
+		i++;
+		j++;
+	}
 }
 

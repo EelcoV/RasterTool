@@ -2887,17 +2887,6 @@ function initTabDiagrams() {
 			// We first do the new node, then the old one
 			let do_data=[], undo_data=[];
 			do_data.push({
-				//  id: id of the node; this is the *only* property in the undo data
-				//  type: type of the node
-				//  title: name of the node
-				//  suffix: suffix of the node
-				//  service: service to which the node belongs
-				//  label: color of the node
-				//  x, y: position of the node
-				//  width, height: size of the node (optional)
-				//  component: id of the component object
-				//  thrass: info on the blank vulnerabilities
-				//  connect: array of node IDs to connect to
 				id: newid,
 				type: t,
 				title: Node.autotitle(t,rn.title),
@@ -2933,7 +2922,7 @@ function initTabDiagrams() {
 				ud.thrass = cm.threatdata();
 			}
 			undo_data.push(ud);
-			new Transaction('nodeCreate', undo_data, do_data);
+			new Transaction('nodeCreateDelete', undo_data, do_data);
 		};
 	}
 	$('#mi_cttWLS').on('mouseup', ctfunction('tWLS'));
@@ -3080,7 +3069,7 @@ function initTabDiagrams() {
 		}
 
 		if (rn.type=='tNOT' || rn.type=='tACT') {
-			new Transaction('nodeCreate',
+			new Transaction('nodeCreateDelete',
 				[{id: newid}],
 				[{
 					id: newid,
@@ -3098,7 +3087,7 @@ function initTabDiagrams() {
 			return;
 		}
 
-		new Transaction('nodeCreate',
+		new Transaction('nodeCreateDelete',
 			[{id: newid}],
 			[{
 				id: newid,
@@ -3144,7 +3133,7 @@ function initTabDiagrams() {
 //			_("Delete"),_("Cancel"),
 //			function() {
 				if (rn.type=='tNOT' || rn.type=='tACT') {
-					new Transaction('nodeCreate',
+					new Transaction('nodeCreateDelete',
 						[{
 							id: rn.id,
 							type: rn.type,
@@ -3162,8 +3151,37 @@ function initTabDiagrams() {
 					return;
 				}
 
+				let clusterdata = [];
+				let it = new NodeClusterIterator({project: rn.project});
+				for (it.first(); it.notlast(); it.next()) {
+					let cl = it.getNodeCluster();
+					if (cl.childnodes.indexOf(rn.id)==-1)  continue;
+					let ta = ThreatAssessment.get(cl.thrass);
+					let d = {
+						id: cl.id,
+						type: cl.type,
+						title: cl.title,
+						parent: cl.parentcluster,
+						index: cl.childnodes.indexOf(rn.id),
+						thrass: ta.toobject
+					};
+					if (cl.childnodes.length==2 && cl.childclusters.length==0) {
+						d.childnode = (cl.childnodes[0]==rn.id ? cl.childnodes[1] : cl.childnodes[0]);
+					}
+					if (cl.childnodes.length==1 && cl.childclusters.length==1) {
+						let ccl = NodeCluster.get(cl.childclusters[0]);
+						d.childcluster = {
+							id: ccl.id,
+							title: ccl.title,
+							parent: ccl.parent,
+							thrass: ThreatAssessment.get(ccl.thrass).toobject,
+							index: 0
+						};
+					}
+					clusterdata.push(d);
+				}
 				let cm = Component.get(rn.component);
-				new Transaction('nodeCreate',
+				new Transaction('nodeCreateDelete',
 					[{
 						id: rn.id,
 						type: rn.type,
@@ -3178,7 +3196,8 @@ function initTabDiagrams() {
 						width: rn.position.width,
 						height: rn.position.height,
 						label: rn.color,
-						connect: rn.connect.slice()
+						connect: rn.connect.slice(),
+						cluster: clusterdata
 					}],
 					[{id: rn.id}]
 				);
@@ -3241,7 +3260,7 @@ function initTabDiagrams() {
 					});
 					data.push({id: rn.id});
 				});
-				new Transaction('nodeCreate', undo_data, data);
+				new Transaction('nodeCreateDelete', undo_data, data);
 				$('#selectrect').hide();
 			},
 			function() {
@@ -3482,7 +3501,7 @@ function workspacedrophandler(event, ui) {
 	let newy = event.originalEvent.pageY-10-r.top +$('#diagrams'+Service.cid).scrollTop();
 
 	if (typ=='tNOT' || typ=='tACT') {
-		new Transaction('nodeCreate',
+		new Transaction('nodeCreateDelete',
 			[{id: newid}],
 			[{
 				id: newid,
@@ -3494,7 +3513,7 @@ function workspacedrophandler(event, ui) {
 			}]
 		);
 	} else {
-		new Transaction('nodeCreate',
+		new Transaction('nodeCreateDelete',
 			[{id: newid}],
 			[{
 				id: newid,

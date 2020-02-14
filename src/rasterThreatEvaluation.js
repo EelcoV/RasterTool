@@ -36,6 +36,7 @@ bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, NodeClusterIter
  *  _impactoid: object id of the impact <div> on which edit-in-place is possible.
  *	total: overall magnitude of this threat evaluation
  *	remark: free form text (200 chars max)
+ *	toobject (getter): this assessments do/undo data as an object
  * Methods:
  *	destroy: destructor.
  *	setcomponent(id): set the owning Component object to id.
@@ -528,6 +529,18 @@ ThreatAssessment.prototype = {
 				).done(dokill);
 			});
 		}
+	},
+
+	get toobject() {
+		return {
+			id: this.id,
+			title: this.title,
+			type: this.type,
+			description: this.description,
+			freq: this.freq,
+			impact: this.impact,
+			remark: this.remark
+		};
 	},
 
 	_stringify: function() {
