@@ -2901,6 +2901,7 @@ function initTabDiagrams() {
 				accordionopened: false
 			});
 			undo_data.push({id: newid});
+			// Now do the new node
 			do_data.push({id: rn.id});
 			let ud = {
 				id: rn.id,
@@ -2921,6 +2922,38 @@ function initTabDiagrams() {
 				ud.accordionopened = cm.accordionopened;
 				ud.thrass = cm.threatdata();
 			}
+/* The same code appears in handler for mi_de */
+			// Node will be part of a node cluster
+			let clusterdata = [];
+			let it = new NodeClusterIterator({project: rn.project});
+			for (it.first(); it.notlast(); it.next()) {
+				let cl = it.getNodeCluster();
+				if (cl.childnodes.indexOf(rn.id)==-1)  continue;
+				let ta = ThreatAssessment.get(cl.thrass);
+				let d = {
+					id: cl.id,
+					type: cl.type,
+					title: cl.title,
+					parent: cl.parentcluster,
+					index: cl.childnodes.indexOf(rn.id),
+					thrass: ta.toobject
+				};
+				if (cl.childnodes.length==2 && cl.childclusters.length==0) {
+					d.childnode = (cl.childnodes[0]==rn.id ? cl.childnodes[1] : cl.childnodes[0]);
+				}
+				if (cl.childnodes.length==1 && cl.childclusters.length==1) {
+					let ccl = NodeCluster.get(cl.childclusters[0]);
+					d.childcluster = {
+						id: ccl.id,
+						title: ccl.title,
+						parent: ccl.parent,
+						thrass: ThreatAssessment.get(ccl.thrass).toobject,
+						index: 0
+					};
+				}
+				clusterdata.push(d);
+			}
+			ud.cluster = clusterdata;
 			undo_data.push(ud);
 			new Transaction('nodeCreateDelete', undo_data, do_data);
 		};

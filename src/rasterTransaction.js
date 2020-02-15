@@ -9,11 +9,11 @@
  *
  * Transaction: object representing an undoable, shareable action.
  *
- * Transaction form a doubly linked list with three pointers (class properties:
+ * Transaction form a doubly linked list with three pointers (class properties):
  *  base: the start of the list, a special transaction with id==null
  *  current: the most recently performed transaction
  *  head: the most recently posted transaction
- * When undoing/redoing, current steps through the list while base and head remain unchanged.
+ * When undoing/redoing, 'current' steps through the list while 'base' and 'head' remain unchanged.
  *
  * Class properties
  *  base: the start of the list, a special transaction with id==null
@@ -253,7 +253,7 @@ Transaction.prototype = {
 			//  connect: array of node IDs to connect to
 			//  component: id of the component object
 			//  thrass: array of objects containing info on the vulnerabilities:
-			//    id, title, description, freq, impact, remark: as of the threat assessment
+			//    id, type, title, description, freq, impact, remark: as of the threat assessment
 			//  accordionopened: state of the component in Single Failures view
 			//  cluster: an array of objects with the following properties
 			//    id: ID of the cluster object
