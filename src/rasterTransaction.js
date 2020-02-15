@@ -358,7 +358,7 @@ Transaction.prototype = {
 						cl.childnodes.splice(c.index,0,rn.id);
 						cl.store();
 						repaintCluster(cl.root());
-						repaintClusterDetails(NodeCluster.get(cl.root()));
+						repaintClusterDetails(NodeCluster.get(cl.root()),false);
 					});
 				}
 			}
@@ -511,6 +511,9 @@ Transaction.prototype = {
 				if (d.remark!=null)  ta.setremark(d.remark);
 				if (d.freq!=null)  ta.setfreq(d.freq);
 				if (d.impact!=null)  ta.setimpact(d.impact);
+				if (ta.cluster) {
+					repaintCluster(NodeCluster.get(ta.cluster).root());
+				}
 			}
 			refreshComponentThreatAssessmentsDialog();
 			break;
@@ -658,6 +661,25 @@ Transaction.prototype = {
 							ta.setdescription(d.new_d);
 						}
 					});
+				}
+
+				it = new NodeClusterIterator({project: d.project});
+				for (it.first(); it.notlast(); it.next()) {
+					let cl = it.getNodeCluster();
+					let ta = ThreatAssessment.get(cl.thrass);
+					let repaint = false;
+					if (d.old_t && isSameString(cl.title,d.old_t)) {
+						cl.settitle(d.new_t);
+						repaint = true;
+					}
+					if (d.old_d && isSameString(ta.description,d.old_d)) {
+						ta.setdescription(d.new_d);
+						repaint = true;
+					}
+					if (repaint) {
+						repaintCluster(cl.root());
+						repaintClusterDetails(NodeCluster.get(cl.root()),false);
+					}
 				}
 			}
 			refreshComponentThreatAssessmentsDialog();

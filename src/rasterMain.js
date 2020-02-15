@@ -4641,7 +4641,10 @@ function repaintCluster(elem) {
 	nc.setallmarkeroid('#ccfamark');
 }
 
-function repaintClusterDetails(nc) {
+function repaintClusterDetails(nc,force) {
+	if (force==null)  force=true;
+	if (CurrentCluster!=nc.id && !force)  return;
+
 	CurrentCluster = nc.id;
 	$('#ccfs_details').empty().scrollTop(0);
 	$('#ccfs_details').append( listFromCluster(nc) );
