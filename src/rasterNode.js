@@ -649,13 +649,14 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		}
 	},
 	
-	removefromnodeclusters: function() {
-		var it =  new NodeClusterIterator({project: Project.cid, isroot: true});
+	removefromnodeclusters: function(norm) {
+		if (norm==null)  norm = true;
+		var it =  new NodeClusterIterator({project: this.project, isroot: true});
 		for (it.first(); it.notlast(); it.next()) {
 			var nc = it.getNodeCluster();
 			if (nc.containsnode(this.id)) {
 				nc.removechildnode(this.id);
-				nc.normalize();
+				if (norm)  nc.normalize();
 //				if (nc.childclusters.length==0 && nc.childnodes.length==0 && nc.parentcluster==null) {
 //					nc.destroy();
 //				}

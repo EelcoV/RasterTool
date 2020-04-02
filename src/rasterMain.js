@@ -2884,15 +2884,15 @@ function initTabDiagrams() {
 			let newid = createUUID();
 			let newcmid = createUUID();
 			// Two simultaneous transactions, both for do and undo: create new node, destroy old node
-			// We first do the new node, then the old one
-			let do_data=[], undo_data=[];
-			do_data.push({
+			// We first do the creation of the new node
+			let do_data={nodes: [], clusters: []}, undo_data={nodes: [], clusters: []};
+			do_data.nodes.push({
 				id: newid,
 				type: t,
 				title: Node.autotitle(t,rn.title),
 				suffix: 'a',
 				service: rn.service,
-				label: rn.label,
+				label: rn.color,
 				x: rn.position.x,
 				y: rn.position.y,
 				connect: rn.connect.slice(),
@@ -2900,16 +2900,16 @@ function initTabDiagrams() {
 				thrass: Project.get(rn.project).defaultthreatdata(t),
 				accordionopened: false
 			});
-			undo_data.push({id: newid});
-			// Now do the new node
-			do_data.push({id: rn.id});
+			undo_data.nodes.push({id: newid});
+			// Now do the deletion of the old node
+			do_data.nodes.push({id: rn.id});
 			let ud = {
 				id: rn.id,
 				type: rn.type,
 				title: rn.title,
 				suffix: rn.suffix,
 				service: rn.service,
-				label: rn.label,
+				label: rn.color,
 				x: rn.position.x,
 				y: rn.position.y,
 				width: rn.position.width,
@@ -2922,40 +2922,9 @@ function initTabDiagrams() {
 				ud.accordionopened = cm.accordionopened;
 				ud.thrass = cm.threatdata();
 			}
-/* The same code appears in handler for mi_de */
-			// Node will be part of a node cluster
-			let clusterdata = [];
-			let it = new NodeClusterIterator({project: rn.project});
-			for (it.first(); it.notlast(); it.next()) {
-				let cl = it.getNodeCluster();
-				if (cl.childnodes.indexOf(rn.id)==-1)  continue;
-				let ta = ThreatAssessment.get(cl.thrass);
-				let d = {
-					id: cl.id,
-					type: cl.type,
-					title: cl.title,
-					parent: cl.parentcluster,
-					index: cl.childnodes.indexOf(rn.id),
-					thrass: ta.toobject
-				};
-				if (cl.childnodes.length==2 && cl.childclusters.length==0) {
-					d.childnode = (cl.childnodes[0]==rn.id ? cl.childnodes[1] : cl.childnodes[0]);
-				}
-				if (cl.childnodes.length==1 && cl.childclusters.length==1) {
-					let ccl = NodeCluster.get(cl.childclusters[0]);
-					d.childcluster = {
-						id: ccl.id,
-						title: ccl.title,
-						parent: ccl.parent,
-						thrass: ThreatAssessment.get(ccl.thrass).toobject,
-						index: 0
-					};
-				}
-				clusterdata.push(d);
-			}
-			ud.cluster = clusterdata;
-			undo_data.push(ud);
-			new Transaction('nodeCreateDelete', undo_data, do_data);
+			undo_data.nodes.push(ud);
+			undo_data.clusters = NodeCluster.structuredata(rn.project);
+			new Transaction('nodeCreateDelete', undo_data, do_data, _("Change type"));
 		};
 	}
 	$('#mi_cttWLS').on('mouseup', ctfunction('tWLS'));
@@ -3102,40 +3071,50 @@ function initTabDiagrams() {
 		}
 
 		if (rn.type=='tNOT' || rn.type=='tACT') {
-			new Transaction('nodeCreateDelete',
-				[{id: newid}],
-				[{
-					id: newid,
-					type: rn.type,
-					service: rn.service,
-					title: Node.autotitle(rn.type,rn.title),
-					x: (rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70) + Math.random()*20 - 10,
-					y: (rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30) + Math.random()*20 - 10,
-					width: rn.position.width,
-					height: rn.position.height,
-					label: rn.color,
-					connect: rn.connect.slice()
-				}]
+			new Transaction('nodeCreateDelete', {
+					nodes: [{id: newid}],
+					clusters: []
+				}, {
+					nodes: [{
+						id: newid,
+						type: rn.type,
+						service: rn.service,
+						title: Node.autotitle(rn.type,rn.title),
+						x: (rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70) + Math.random()*20 - 10,
+						y: (rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30) + Math.random()*20 - 10,
+						width: rn.position.width,
+						height: rn.position.height,
+						label: rn.color,
+						connect: []
+					}],
+					clusters: []
+				},
+				_("Duplicate")
 			);
 			return;
 		}
 
-		new Transaction('nodeCreateDelete',
-			[{id: newid}],
-			[{
-				id: newid,
-				type: rn.type,
-				service: rn.service,
-				title: rn.title,
-				suffix: cm.newsuffix(),
-				x: (rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70) + Math.random()*20 - 10,
-				y: (rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30) + Math.random()*20 - 10,
-				component: rn.component,
-				width: rn.position.width,
-				height: rn.position.height,
-				label: rn.color,
-				connect: []
-			}]
+		new Transaction('nodeCreateDelete', {
+				nodes: [{id: newid}],
+				clusters: []
+			}, {
+				nodes: [{
+					id: newid,
+					type: rn.type,
+					service: rn.service,
+					title: rn.title,
+					suffix: cm.newsuffix(),
+					x: (rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70) + Math.random()*20 - 10,
+					y: (rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30) + Math.random()*20 - 10,
+					component: rn.component,
+					width: rn.position.width,
+					height: rn.position.height,
+					label: rn.color,
+					connect: []
+				}],
+				clusters: []
+			},
+			_("Duplicate")
 		);
 	});
 	function colorfunc(c) {
@@ -3166,73 +3145,53 @@ function initTabDiagrams() {
 //			_("Delete"),_("Cancel"),
 //			function() {
 				if (rn.type=='tNOT' || rn.type=='tACT') {
-					new Transaction('nodeCreateDelete',
-						[{
-							id: rn.id,
-							type: rn.type,
-							service: rn.service,
-							title: rn.title,
-							x: rn.position.x,
-							y: rn.position.y,
-							width: rn.position.width,
-							height: rn.position.height,
-							label: rn.color,
-							connect: rn.connect.slice()
-						}],
-						[{id: rn.id}]
+					new Transaction('nodeCreateDelete', {
+							nodes: [{
+								id: rn.id,
+								type: rn.type,
+								service: rn.service,
+								title: rn.title,
+								x: rn.position.x,
+								y: rn.position.y,
+								width: rn.position.width,
+								height: rn.position.height,
+								label: rn.color,
+								connect: rn.connect.slice()
+								}],
+							clusters: []
+						}, {
+							nodes: [{id: rn.id}],
+							clusters: []
+						},
+						_("Delete node")
 					);
 					return;
 				}
 
-				let clusterdata = [];
-				let it = new NodeClusterIterator({project: rn.project});
-				for (it.first(); it.notlast(); it.next()) {
-					let cl = it.getNodeCluster();
-					if (cl.childnodes.indexOf(rn.id)==-1)  continue;
-					let ta = ThreatAssessment.get(cl.thrass);
-					let d = {
-						id: cl.id,
-						type: cl.type,
-						title: cl.title,
-						parent: cl.parentcluster,
-						index: cl.childnodes.indexOf(rn.id),
-						thrass: ta.toobject
-					};
-					if (cl.childnodes.length==2 && cl.childclusters.length==0) {
-						d.childnode = (cl.childnodes[0]==rn.id ? cl.childnodes[1] : cl.childnodes[0]);
-					}
-					if (cl.childnodes.length==1 && cl.childclusters.length==1) {
-						let ccl = NodeCluster.get(cl.childclusters[0]);
-						d.childcluster = {
-							id: ccl.id,
-							title: ccl.title,
-							parent: ccl.parent,
-							thrass: ThreatAssessment.get(ccl.thrass).toobject,
-							index: 0
-						};
-					}
-					clusterdata.push(d);
-				}
 				let cm = Component.get(rn.component);
-				new Transaction('nodeCreateDelete',
-					[{
-						id: rn.id,
-						type: rn.type,
-						service: rn.service,
-						title: rn.title,
-						suffix: rn.suffix,
-						x: rn.position.x,
-						y: rn.position.y,
-						component: rn.component,
-						thrass: cm.threatdata(),
-						accordionopened: cm.accordionopened,
-						width: rn.position.width,
-						height: rn.position.height,
-						label: rn.color,
-						connect: rn.connect.slice(),
-						cluster: clusterdata
-					}],
-					[{id: rn.id}]
+				new Transaction('nodeCreateDelete', {
+						nodes: [{
+							id: rn.id,
+							type: rn.type,
+							service: rn.service,
+							title: rn.title,
+							suffix: rn.suffix,
+							x: rn.position.x,
+							y: rn.position.y,
+							component: rn.component,
+							thrass: cm.threatdata(),
+							accordionopened: cm.accordionopened,
+							width: rn.position.width,
+							height: rn.position.height,
+							label: rn.color,
+							connect: rn.connect.slice()
+							}],
+						clusters: NodeCluster.structuredata(rn.project)
+					}, {
+						nodes: [{id: rn.id}],
+						clusters: []
+					},
+					_("Delete node")
 				);
 //			}
 //		);
@@ -3253,12 +3212,11 @@ function initTabDiagrams() {
 			function() {
 				// Stop any leftover pulsate effects
 				nodes.forEach(n => $(Node.get(n).jnid).stop(true,true) );
-				let undo_data = [];
-				let data = [];
+				let do_data={nodes: [], clusters: []}, undo_data={nodes: [], clusters: []};
 				nodes.forEach(n => {
 					let rn = Node.get(n);
 					if (rn.type=='tNOT' || rn.type=='tACT') {
-						undo_data.push({
+						undo_data.nodes.push({
 							id: rn.id,
 							type: rn.type,
 							service: rn.service,
@@ -3270,12 +3228,12 @@ function initTabDiagrams() {
 							label: rn.color,
 							connect: rn.connect.slice()
 						});
-						data.push({id: rn.id});
+						do_data.nodes.push({id: rn.id});
 						return;
 					}
 
 					let cm = Component.get(rn.component);
-					undo_data.push({
+					undo_data.nodes.push({
 						id: rn.id,
 						type: rn.type,
 						service: rn.service,
@@ -3291,9 +3249,10 @@ function initTabDiagrams() {
 						label: rn.color,
 						connect: rn.connect.slice()
 					});
-					data.push({id: rn.id});
+					do_data.nodes.push({id: rn.id});
 				});
-				new Transaction('nodeCreateDelete', undo_data, data);
+				undo_data.clusters = NodeCluster.structuredata(Node.get(nodes[0]).project);
+				new Transaction('nodeCreateDelete', undo_data, do_data, _("Delete selection"));
 				$('#selectrect').hide();
 			},
 			function() {
@@ -3535,20 +3494,22 @@ function workspacedrophandler(event, ui) {
 
 	if (typ=='tNOT' || typ=='tACT') {
 		new Transaction('nodeCreateDelete',
-			[{id: newid}],
-			[{
+			{nodes: [{id: newid}], clusters: []},
+			{nodes: [{
 				id: newid,
 				type: typ,
 				service: Service.cid,
 				title: newtitle,
 				x: newx,
 				y: newy
-			}]
+				}], clusters: []},
+			_("New node")
 		);
 	} else {
+		let project = Project.get(Project.cid);
 		new Transaction('nodeCreateDelete',
-			[{id: newid}],
-			[{
+			{nodes: [{id: newid}], clusters: []},
+			{ nodes: [{
 				id: newid,
 				type: typ,
 				service: Service.cid,
@@ -3556,8 +3517,9 @@ function workspacedrophandler(event, ui) {
 				x: newx,
 				y: newy,
 				component: createUUID(),
-				thrass: Project.get(Project.cid).defaultthreatdata(typ)
-			}]
+				thrass: project.defaultthreatdata(typ)
+				}], clusters: []},
+			_("New node")
 		);
 	}
 }
@@ -4075,8 +4037,6 @@ function collapseAllSingleF(sid) {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-// Time for submenu
-var ccfmsm_timer;
 // The cluster for which details are currently displayed on the right-hand side.
 var CurrentCluster;
 
@@ -4676,7 +4636,7 @@ function repaintCluster(elem) {
 
 function repaintClusterDetails(nc,force) {
 	if (force==null)  force=true;
-	if (CurrentCluster!=nc.id && !force)  return;
+	if (CurrentCluster && CurrentCluster!=nc.id && !force)  return;
 
 	CurrentCluster = nc.id;
 	$('#ccfs_details').empty().scrollTop(0);

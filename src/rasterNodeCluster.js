@@ -16,6 +16,7 @@
  *	addcomponent_threat(p,cid,ti,ty,dupl): update clusters when component with id 'cid' has a threat
  *		named 'ti' of type 'ty'.
  *	removecomponent_threat: reverse of addcomponent_threat().
+ *  structuredata: object describing the structure of all clusters, for undoing node deletion
  * Instance properties:
  *	id: UUID
  *  type:
@@ -61,6 +62,9 @@ var NodeCluster = function(type, id) {
 	}
 	if (id!=null && NodeCluster._all[id]!=null) {
 		bugreport("NodeCluster with id "+id+" already exists","NodeCluster.constructor");
+	}
+	if (type=='tACT' || type=='tUNK' || type=='tNOT') {
+		bugreport("NodeCluster with id "+id+" has illegal type "+type,"NodeCluster.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);
 	this.type = type;
@@ -161,6 +165,50 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 	return nc;
 };
 
+NodeCluster.structuredata = function(pid) {
+	function clusterstructuredata(cid) {
+		let cl = NodeCluster.get(cid);
+		let ta = ThreatAssessment.get(cl.thrass);
+		let c = {};
+		// id: ID of the cluster object
+		// type: type of the cluster
+		// project: project to which this cluster belongs
+		// parent: ID of the parent cluster (null, if root cluster)
+		// title: title of the cluster
+		// accordionopened: cluster is folded open in CCF view
+		// thrass: object containing info on the cluster's vulnerability assessment
+		//   id, type, title, description, freq, impact, remark: as of the threat assessment
+		// childnode: array of IDs of all child nodes of this cluster
+		// childcluster: object containing the same properties (except childnode/childcluster)
+		c.id = cl.id;
+		c.type = cl.type;
+		c.project = pid;
+		c.parent = cl.parentcluster;
+		c.title = cl.title;
+		c.accordionopened = cl.accordionopened;
+		c.thrass = {
+			id: ta.id,
+			type: ta.type,
+			title: ta.title,
+			description: ta.description,
+			freq: ta.freq,
+			impact: ta.impact,
+			remark: ta.remark
+		};
+		c.childnode = cl.childnodes.slice();
+		c.childcluster = [];
+		cl.childclusters.forEach(cc => c.childcluster.push(clusterstructuredata(cc)));
+		return c;
+	}
+
+	let res = [];
+	let it = new NodeClusterIterator({project: pid, isroot: true});
+	for (it.first(); it.notlast(); it.next()) {
+		res.push(clusterstructuredata(it.getNodeClusterid()));
+	}
+	return res;
+};
+
 NodeCluster.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS+'L:'+this.id);
@@ -193,12 +241,14 @@ NodeCluster.prototype = {
 		this.store();
 	},
 	
-	addchildcluster: function(childid) {
+	addchildcluster: function(childid,force) {
+		if (force==null)  force==true;
+		NodeCluster.get(childid).setparent(this.id);
 		if (DEBUG && this.childclusters.indexOf(childid)!=-1) {
+			if (!force)  return;
 			bugreport("NodeCluster already contains that child cluster","NodeCluster.addchildcluster");
 		}
 		this.childclusters.push(childid);
-		NodeCluster.get(childid).setparent(this.id);
 		this.store();
 	},
 	
@@ -211,9 +261,11 @@ NodeCluster.prototype = {
 		this.store();
 	},
 	
-	addchildnode: function(childid) {
+	addchildnode: function(childid,force) {
+		if (force==null)  force==true;
 		if (DEBUG && this.childnodes.indexOf(childid)!=-1) {
 			bugreport("NodeCluster already contains that child node","NodeCluster.addchildnode");
+			if (!force)  return;
 		}
 		this.childnodes.push(childid);
 		this.store();
@@ -265,7 +317,8 @@ NodeCluster.prototype = {
 	
 	addthrass: function(newid) {
 		if (!newid) newid = createUUID();
-		var ta = new ThreatAssessment(this.type, newid);
+		var ta = ThreatAssessment.get(newid);
+		if (ta==null)  ta = new ThreatAssessment(this.type, newid);
 		this.thrass = ta.id;
 		ta.setcluster(this.id);
 		ta.settitle(this.title);
@@ -505,6 +558,7 @@ var NodeClusterIterator = function(opt) {
 		if (opt && opt.isstub!=undefined && (nc.childnodes.length+nc.childclusters.length<2)!=opt.isstub) continue;
 		if (opt && opt.isempty!=undefined && (nc.childnodes.length+nc.childclusters.length==0)!=opt.isempty) continue;
 		if (opt && opt.type!=undefined && nc.type!=opt.type) continue;
+		if (opt && opt.match!=undefined && opt.match!='tUNK' && nc.type!=opt.match) continue;
 		if (opt && opt.title!=undefined && !isSameString(nc.title,opt.title)) continue;
 		this.item.push(i);
 	}

@@ -25,6 +25,7 @@
  *  updateUI: update the status of the Undo and Redo buttons
  * Instance properties:
  *  kind: (String) the type of transaction
+ *  descr: (String, optional) UI description of the transaction
  *  timestamp: (integer) time of this transaction's creation
  *  prev: previous
  *  undo_data: (any) an object or literal containing all information to undo the transaction
@@ -33,8 +34,9 @@
  *  perform(data): perform the action using data; data defaults to this.do
  *  undo: perform the action using this.undo.
  */
-var Transaction = function(knd,undo_data,do_data) {
+var Transaction = function(knd,undo_data,do_data,descr) {
 	this.kind = knd;
+	this.descr = (descr ? descr : knd);
 	this.timestamp = Date.now();
 	this.undo_data = undo_data;
 	this.do_data = do_data;
@@ -87,14 +89,14 @@ Transaction.updateUI = function() {
 		$('#undobutton').attr('title', _("Undo"));
 	} else {
 		$('#undobutton').addClass('possible');
-		$('#undobutton').attr('title', _("Undo") + ' ' + H(Transaction.current.kind));
+		$('#undobutton').attr('title', _("Undo") + ' ' + H(Transaction.current.descr));
 	}
 	if (Transaction.current==Transaction.head) {
 		$('#redobutton').removeClass('possible');
 		$('#redobutton').attr('title', _("Redo"));
 	} else {
 		$('#redobutton').addClass('possible');
-		$('#redobutton').attr('title', _("Redo") + ' ' + H(Transaction.current.next.kind));
+		$('#redobutton').attr('title', _("Redo") + ' ' + H(Transaction.current.next.descr));
 	}
 };
 
@@ -174,7 +176,7 @@ Transaction.prototype = {
 		if (!data)  data = this.do_data;
 		switch (this.kind) {
 
-		case 'classSingular':
+		case 'classSingular': {
 			// Change the class from regular to singular, and vice verse
 			// data: array of objects; each object has these properties
 			//  id: id of the component of the class
@@ -184,8 +186,9 @@ Transaction.prototype = {
 				cm.setsingle(d.singular);
 			}
 			break;
+		}
 
-		case 'classTitle':
+		case 'classTitle': {
 			// Edit the title of a node class
 			// data: array of objects; each object has these properties
 			//  id: id of the component of the class
@@ -195,8 +198,9 @@ Transaction.prototype = {
 				cm.setclasstitle(d.title);
 			}
 			break;
+		}
 
-		case 'labelEdit':
+		case 'labelEdit': {
 			// Edit the project color labels
 			// data: array of objects; each object has these properties
 			//  id: id of the project
@@ -207,8 +211,9 @@ Transaction.prototype = {
 				p.store();
 			}
 			break;
+		}
 
-		case 'nodeConnect':
+		case 'nodeConnect': {
 			// (Dis)connect nodes
 			// data: array of objects; each object has these properties
 			//  id: id of one node
@@ -238,34 +243,47 @@ Transaction.prototype = {
 				}
 			}
 			break;
+		}
 
-		case 'nodeCreateDelete':
+		case 'nodeCreateDelete': {
 			// Create or delete a node
-			// data: array of objects; each object has these properties
-			//  id: id of the node; this is the *only* property in the undo data
-			//  type: type of the node
-			//  title: name of the node
-			//  suffix: suffix of the node
-			//  service: service to which the node belongs
-			//  label: color of the node
-			//  x, y: position of the node
-			//  width, height: size of the node (optional)
-			//  connect: array of node IDs to connect to
-			//  component: id of the component object
-			//  thrass: array of objects containing info on the vulnerabilities:
-			//    id, type, title, description, freq, impact, remark: as of the threat assessment
-			//  accordionopened: state of the component in Single Failures view
-			//  cluster: an array of objects with the following properties
+			//  Deleting one or more nodes is hard, because it can have a huge impact on node clusters. Clusters must
+			//  have at least 2 childnodes or -clusters; if not, they will be normalized (removed). When undoing the
+			//  deletion of multiple nodes, their order of recreation is important. Recreated nodes must be re-added
+			//  to their previous clusters, which may not exist anymore. Simply recreating their cluster is not always
+			//  possible, as the parent cluster also may not exist.
+			//  We solve this problem by storing the entire cluster structure, for all root clusters.
+			//  When creating a new node, there is no problem in undoing (i.e. deleting that node). Creation of nodes
+			//  does not modify the cluster structure, the node is always added to the root clusters of its
+			//  vulnerabilities, which are guaranteed to exist, and the node can threfore always be safely deleted.
+			//
+			// data: an object with these two properties
+			//  nodes: array of objects; each object has these properties
+			//   id: id of the node; this is the *only* node property when deleting the node
+			//   type: type of the node
+			//   title: name of the node
+			//   suffix: suffix of the node
+			//   service: service to which the node belongs
+			//   label: color of the node
+			//   x, y: position of the node
+			//   width, height: size of the node (optional)
+			//   connect: array of node IDs to connect to
+			//   component: id of the component object
+			//   thrass: array of objects containing info on the vulnerabilities:
+			//     id, type, title, description, freq, impact, remark: as of the threat assessment
+			//   accordionopened: state of the component in Single Failures view
+			//  cluster: an array of objects with the following properties (may be absent only if creating tACT or tNOT)
 			//    id: ID of the cluster object
 			//    title: title of the cluster
-			//    parent: ID of the parent cluster
+			//    project: project to which this cluster belongs
+			//    parent: ID of the parent cluster (null, if root cluster)
 			//    thrass: object containing info on the threat assessment for the cluster (as see above)
-			//    index: position of the node within the childnodes of this cluster
-			//    childnode: ID of an additional (existing) child node of this cluster
+			//    accordionopened: cluster is folded open in CCF view
+			//    childnode: array of IDs of all child nodes of this cluster
 			//    childcluster: object containing the same properties (except childnode/childcluster)
-			for (const d of data) {
+			for (const d of data.nodes) {
 				if (d.type==null) {
-					// This is undo_data: delete the node
+					// Delete the node
 // Change to true when not debugging
 					Node.get(d.id).destroy(false);
 					continue;
@@ -309,62 +327,21 @@ Transaction.prototype = {
 				cm.addnode(d.id);
 				cm.repaintmembertitles();
 				rn.setmarker();
+			}
 
-// When finished, check whether this if-statement is still necessary
-				if (d.cluster) {
-					// cm.addnode added rn to the root of node clusters.
-					rn.removefromnodeclusters();
-					d.cluster.forEach(c => {
-						let cl = NodeCluster.get(c.id);
-						if (!cl) {
-							cl = new NodeCluster(d.type,c.id);
-							cl.setproject(rn.project);
-							cl.setparent(c.parent);
-							cl.settitle(c.title);
-							let ta = new ThreatAssessment(d.type,c.thrass.id);
-							ta.settitle(c.thrass.title);
-							ta.setdescription(c.thrass.description);
-							ta.setremark(c.thrass.remark);
-							ta.setfreq(c.thrass.freq);
-							ta.setimpact(c.thrass.impact);
-							cl.addthrass(c.thrass.id);
-							if (c.childnode) {
-								// Remove this node from its current cluster, then add it to this
-								let cn = Node.get(c.childnode);
-								cn.removefromnodeclusters();
-								cl.addchildnode(c.childnode);
-							}
-						}
-						if (c.childcluster) {
-							let ccl = new NodeCluster(c.type,c.childcluster.id);
-							ccl.setproject(rn.project);
-							ccl.setparent(c.id);
-							ccl.settitle(c.childcluster.title);
-							let ta = new ThreatAssessment(c.childcluster.thrass.type,c.childcluster.thrass.id);
-							ta.settitle(c.childcluster.thrass.title);
-							ta.setdescription(c.childcluster.thrass.description);
-							ta.setremark(c.childcluster.thrass.remark);
-							ta.setfreq(c.childcluster.thrass.freq);
-							ta.setimpact(c.childcluster.thrass.impact);
-							ccl.thrass = ta.id;
-							ta.setcluster(ccl.id);
-							ccl.store();
-							// migrate childen
-							cl.childnodes.forEach(nid => ccl.addchildnode(nid));
-							cl.childnodes = [];
-							cl.addchildcluster(ccl.id);
-							cl.store();
-						}
-						cl.childnodes.splice(c.index,0,rn.id);
-						cl.store();
-						repaintCluster(cl.root());
-						repaintClusterDetails(NodeCluster.get(cl.root()),false);
-					});
-				}
+			for (const d of data.clusters) {
+				rebuildCluster(d);
+			}
+			let it = new NodeClusterIterator({project: Project.cid, isroot: true});
+			for (it.first(); it.notlast(); it.next()) {
+				let cl = it.getNodeCluster();
+				repaintCluster(cl.id);
+				repaintClusterDetails(cl,false);
 			}
 			break;
+		}
 
-		case 'nodeGeometry':
+		case 'nodeGeometry': {
 			// Change the size and/or position of nodes
 			// data: array of objects; each object has these properties
 			//  id: id of the node
@@ -379,8 +356,9 @@ Transaction.prototype = {
 				rn.setposition(d.x,d.y);
 			}
 			break;
+		}
 
-		case 'nodeLabel':
+		case 'nodeLabel': {
 			// Change the label color of nodes
 			// data: array of objects; each object has these properties
 			//  id: id of the node
@@ -390,8 +368,9 @@ Transaction.prototype = {
 				rn.setlabel(d.label);
 			}
 			break;
+		}
 
-		case 'nodeSuffix':
+		case 'nodeSuffix': {
 			// Edit the suffix of a node in a class
 			// data: array of objects; each object has these properties
 			//  id: id of the node
@@ -409,8 +388,9 @@ Transaction.prototype = {
 				rn.settitle(rn.title,d.suffix);
 			}
 			break;
+		}
 
-		case 'nodeTitle':
+		case 'nodeTitle': {
 			// Change the name of a node
 			// data: array of objects; each object has these properties (some properties are optional)
 			//  id: id of the node
@@ -462,8 +442,9 @@ Transaction.prototype = {
 				RefreshNodeReportDialog();
 			}
 			break;
+		}
 
-		case 'serviceCreate':
+		case 'serviceCreate': {
 			// Add/remove service
 			// data: array of objects; each object has these properties
 			//  id: id of service
@@ -487,8 +468,9 @@ Transaction.prototype = {
 				}
 			}
 			break;
+		}
 
-		case 'serviceRename':
+		case 'serviceRename': {
 			// Change the name of a service
 			// data: array of objects; each object has these properties
 			//  id: id of service
@@ -498,8 +480,9 @@ Transaction.prototype = {
 				s.settitle(d.title);
 			}
 			break;
+		}
 
-		case 'threatAssess':
+		case 'threatAssess': {
 			// Change the frequency and/or impact of a ThreatAssessment
 			// data: array of objects; each object has these properties
 			//	threat: id of theThreatAssessment
@@ -517,8 +500,9 @@ Transaction.prototype = {
 			}
 			refreshComponentThreatAssessmentsDialog();
 			break;
+		}
 
-		case 'threatAssessCreate':
+		case 'threatAssessCreate': {
 			// Change the frequency and/or impact of a ThreatAssessment
 			// data: array of objects; each object has these properties
 			//	component: component on which to create (or delete) the threatassessment
@@ -562,8 +546,9 @@ Transaction.prototype = {
 			}
 			refreshComponentThreatAssessmentsDialog();
 			break;
+		}
 
-		case 'threatCreate':
+		case 'threatCreate': {
 			// Add (or remove) a threat to (or from) a checklist, and update all components
 			// data: array of objects; each object has these properties
 			//	project: id of the project in which to edit
@@ -619,8 +604,9 @@ Transaction.prototype = {
 			}
 			refreshComponentThreatAssessmentsDialog();
 			break;
+		}
 
-		case 'threatRename':
+		case 'threatRename': {
 			// Global edit of title and description of vulnerabilities and node templates
 			// data: array of objects; each object has these properties
 			//	project: id of the project in which to edit
@@ -630,7 +616,7 @@ Transaction.prototype = {
 			//	new_t: changed title
 			//	new_d: changed description
 			for (const d of data) {
-				var it;
+				let it;
 				if (d.type!='tWLS' && d.type!='tWRD' && d.type!='tEQT') {
 					bugreport("invalid type","Transaction.threatRename");
 					return;
@@ -684,12 +670,56 @@ Transaction.prototype = {
 			}
 			refreshComponentThreatAssessmentsDialog();
 			break;
+		}
 
 		default:
 			bugreport('Unknown transaction id','Transaction.perform');
-		}
+		} // end switch
 	}
 };
+
+
+// rebuildCluster: restore one root cluster and its subclusters to its original state
+//		to undo the deletion of one or more nodes.
+//		It will re-create subclusters and re-add nodes to them as required, but does not
+//		verify whether these nodes actually exist.
+//
+// id: ID of the cluster object
+// type: type of the cluster
+// project: project to which this cluster belongs
+// parent: ID of the parent cluster (null, if root cluster)
+// title: title of the cluster
+// accordionopened: cluster is folded open in CCF view
+// thrass: object containing info on the cluster's vulnerability assessment
+//   id, type, title, description, freq, impact, remark: as of the threat assessment
+// childnode: array of IDs of all child nodes of this cluster
+// childcluster: object containing the same properties (except childnode/childcluster)
+function rebuildCluster(c) {
+	let cl = NodeCluster.get(c.id);
+	if (!cl) {
+		cl = new NodeCluster(c.type,c.id);
+		cl.settitle(c.title);
+		cl.setproject(c.project);
+		cl.setaccordionopened(c.accordionopened);
+	}
+	// Try to set both parent->child and child->parent data
+	let parent = NodeCluster.get(c.parent);
+	if (parent) {
+		parent.addchildcluster(cl.id,false);
+	} else {
+		cl.setparent(c.parent);
+	}
+	cl.childnodes = c.childnode.slice();
+	cl.addthrass(c.thrass.id);
+	let ta = ThreatAssessment.get(c.thrass.id);
+	ta.setdescription(c.thrass.description);
+	ta.setremark(c.thrass.remark);
+	ta.setfreq(c.thrass.freq);
+	ta.setimpact(c.thrass.impact);
+	c.childcluster.forEach(cc => rebuildCluster(cc));
+	cl.store();
+}
+
 
 function transactionCompleted(str) {
 	if (DEBUG)  console.log(str);
