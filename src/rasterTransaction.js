@@ -336,7 +336,6 @@ Transaction.prototype = {
 			for (it.first(); it.notlast(); it.next()) {
 				let cl = it.getNodeCluster();
 				repaintCluster(cl.id);
-				repaintClusterDetails(cl,false);
 			}
 			break;
 		}
@@ -474,7 +473,7 @@ Transaction.prototype = {
 			// Change the name of a service
 			// data: array of objects; each object has these properties
 			//  id: id of service
-			//  title: title of the new service; this is null for undo data
+			//  title: title of the new service
 			for (const d of data) {
 				let s = Service.get(d.id);
 				s.settitle(d.title);
@@ -482,8 +481,8 @@ Transaction.prototype = {
 			break;
 		}
 
-		case 'threatAssess': {
-			// Change the frequency and/or impact of a ThreatAssessment
+		case 'threatAssessDetails': {
+			// Change the details of a ThreatAssessment
 			// data: array of objects; each object has these properties
 			//	threat: id of theThreatAssessment
 			//	freq: frequency-value of the threatassessment
@@ -503,7 +502,7 @@ Transaction.prototype = {
 		}
 
 		case 'threatAssessCreate': {
-			// Change the frequency and/or impact of a ThreatAssessment
+			// Create or remove a ThreatAssessment
 			// data: array of objects; each object has these properties
 			//	component: component on which to create (or delete) the threatassessment
 			//  threat: ID of the ThreatAssessment to create (or delete)
@@ -515,8 +514,9 @@ Transaction.prototype = {
 			//  description: description of the threatassessment
 			//  title: name of the threatassessment
 			//  index: position of the threatassessment within the component
-			//  clid: id of the new root cluster
+			//  clid: id of the new root cluster (when adding a new threat and assessment)
 			//  thrid: id of the threat assessment of the new root cluster
+			//  cluster: object describing the cluster, its subclusters, childnodes etc. Used on undo, see nodeCreateDelete.
 			for (const d of data) {
 				let cm = Component.get(d.component);
 				if (d.type) {
@@ -529,10 +529,12 @@ Transaction.prototype = {
 					if (d.freq!=null)  ta.setfreq(d.freq);
 					if (d.impact!=null)  ta.setimpact(d.impact);
 					// Root cluster
-					let nc = new NodeCluster(d.type,d.clid);
-					nc.setproject(cm.project);
-					nc.settitle(ta.title);
-					nc.addthrass(d.thrid);
+					if (d.clid) {
+						let nc = new NodeCluster(d.type,d.clid);
+						nc.setproject(cm.project);
+						nc.settitle(ta.title);
+						nc.addthrass(d.thrid);
+					}
 					// Update component
 					cm.addthrass(ta,d.index);
 				} else {
@@ -542,6 +544,11 @@ Transaction.prototype = {
 					NodeCluster.removecomponent_threat(cm.project,th.component,th.title,th.type);
 					$('#dth'+d.prefix+'_'+th.id).remove();
 					cm.setmarker();
+				}
+				if (d.cluster) {
+					rebuildCluster(d.cluster);
+					let cl = NodeCluster.get(d.cluster.id);
+					repaintCluster(cl.id);
 				}
 			}
 			refreshComponentThreatAssessmentsDialog();
@@ -664,7 +671,6 @@ Transaction.prototype = {
 					}
 					if (repaint) {
 						repaintCluster(cl.root());
-						repaintClusterDetails(NodeCluster.get(cl.root()),false);
 					}
 				}
 			}

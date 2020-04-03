@@ -407,7 +407,7 @@ ThreatAssessment.prototype = {
 			select_options: selectoptions,
 			select_text: "",
 			callback: function(oid, enteredText) {
-				new Transaction('threatAssess',
+				new Transaction('threatAssessDetails',
 					[{threat: te.id, freq: te.freq}],
 					[{threat: te.id, freq: enteredText}]
 				);
@@ -472,7 +472,7 @@ ThreatAssessment.prototype = {
 				$('#outerimpacthint').hide();	// When editing impact of CCFs
 			},
 			callback: function(oid, enteredText) {
-				new Transaction('threatAssess',
+				new Transaction('threatAssessDetails',
 					[{threat: te.id, impact: te.impact}],
 					[{threat: te.id, impact: enteredText}]
 				);
@@ -489,7 +489,7 @@ ThreatAssessment.prototype = {
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			default_text: '-',
 			callback: function(oid, enteredText) {
-				new Transaction('threatAssess',
+				new Transaction('threatAssessDetails',
 					[{threat: te.id, remark: te.remark}],
 					[{threat: te.id, remark: enteredText}]
 				);
@@ -501,8 +501,8 @@ ThreatAssessment.prototype = {
 	
 		if (interact) {
 			$('#dth_'+prefix+"del"+this.id).on('click',  function() {
-				var th = ThreatAssessment.get(nid2id(this.id));
-				var c;
+				let th = ThreatAssessment.get(nid2id(this.id));
+				let c;
 				if (th.component!=null) {
 					c = Component.get(th.component);
 				} else {
@@ -510,8 +510,22 @@ ThreatAssessment.prototype = {
 				}
 				var idx = c.thrass.indexOf(th.id);
 				var dokill = function() {
+					// Locate the corresponding cluster in the project.
+					// There should be exactly one.
+					let it = new NodeClusterIterator({project: c.project, isroot: true, type: th.type, title: th.title});
+					let nc = it.getNodeCluster();
 					new Transaction('threatAssessCreate',
-						[{component: c.id, threat: th.id, index: idx, type: th.type, title: th.title, description: th.description, remark: th.remark, freq: th.freq, impact: th.impact}],
+						[{component: c.id,
+						  threat: th.id,
+						  index: idx,
+						  type: th.type,
+						  title: th.title,
+						  description: th.description,
+						  remark: th.remark,
+						  freq: th.freq,
+						  impact: th.impact,
+						  cluster: nc.structure()
+						}],
 						[{component: c.id, threat: th.id, prefix: prefix}]
 					);
 //					c.removethrass(th.id);

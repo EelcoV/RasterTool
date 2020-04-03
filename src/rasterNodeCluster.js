@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, nextUnusedIndex, _, addClusterElements, repaintCluster, Component, createUUID, DEBUG, LS, ThreatAssessment, H, createUUID, isSameString */
+/* global bugreport, nextUnusedIndex, _, addClusterElements, repaintCluster, Component, createUUID, DEBUG, LS, ThreatAssessment, ThreatIterator, H, createUUID, isSameString */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -16,7 +16,7 @@
  *	addcomponent_threat(p,cid,ti,ty,dupl): update clusters when component with id 'cid' has a threat
  *		named 'ti' of type 'ty'.
  *	removecomponent_threat: reverse of addcomponent_threat().
- *  structuredata: object describing the structure of all clusters, for undoing node deletion
+ *  structuredata(pid): object describing the structure of all clusters in a project, for undoing node deletion
  * Instance properties:
  *	id: UUID
  *  type:
@@ -52,6 +52,7 @@
  *	setmarkeroid(oid): set this._markeroid to 'oid'.
  *	setmarker: set HTML of _markeroid based on this.magnitude.
  *	setallmarkeroid(): set _markeroid's of clusters in this tree based on 'prefix' and the id of the cluster.
+ *  structure(): return an object describing this nodecluster
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
@@ -157,7 +158,16 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 		nc.removechildnode(cm.nodes[i]);
 	}
 	nc.normalize();
-	if (nc.childclusters.length==0 && nc.childnodes.length==0 && nc.parentcluster==null) {
+	// Test whether this node cluster has an associated Threat
+	let hasthreat = false;
+	it = new ThreatIterator(nc.project,nc.type);
+	for (it.first(); it.notlast(); it.next()) {
+		let th = it.getthreat();
+		if (th.title!=nc.title)  continue;
+		hasthreat = true;
+		break;
+	}
+	if (nc.childclusters.length==0 && nc.childnodes.length==0 && nc.parentcluster==null && !hasthreat) {
 		nc.destroy();
 	} else {
 		repaintCluster(nc.id);
@@ -166,45 +176,10 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 };
 
 NodeCluster.structuredata = function(pid) {
-	function clusterstructuredata(cid) {
-		let cl = NodeCluster.get(cid);
-		let ta = ThreatAssessment.get(cl.thrass);
-		let c = {};
-		// id: ID of the cluster object
-		// type: type of the cluster
-		// project: project to which this cluster belongs
-		// parent: ID of the parent cluster (null, if root cluster)
-		// title: title of the cluster
-		// accordionopened: cluster is folded open in CCF view
-		// thrass: object containing info on the cluster's vulnerability assessment
-		//   id, type, title, description, freq, impact, remark: as of the threat assessment
-		// childnode: array of IDs of all child nodes of this cluster
-		// childcluster: object containing the same properties (except childnode/childcluster)
-		c.id = cl.id;
-		c.type = cl.type;
-		c.project = pid;
-		c.parent = cl.parentcluster;
-		c.title = cl.title;
-		c.accordionopened = cl.accordionopened;
-		c.thrass = {
-			id: ta.id,
-			type: ta.type,
-			title: ta.title,
-			description: ta.description,
-			freq: ta.freq,
-			impact: ta.impact,
-			remark: ta.remark
-		};
-		c.childnode = cl.childnodes.slice();
-		c.childcluster = [];
-		cl.childclusters.forEach(cc => c.childcluster.push(clusterstructuredata(cc)));
-		return c;
-	}
-
 	let res = [];
 	let it = new NodeClusterIterator({project: pid, isroot: true});
 	for (it.first(); it.notlast(); it.next()) {
-		res.push(clusterstructuredata(it.getNodeClusterid()));
+		res.push(it.getNodeCluster().structure());
 	}
 	return res;
 };
@@ -432,6 +407,40 @@ NodeCluster.prototype = {
 		this.store();
 	},
 	
+	structure: function() {
+		let ta = ThreatAssessment.get(this.thrass);
+		let c = {};
+		// id: ID of the cluster object
+		// type: type of the cluster
+		// project: project to which this cluster belongs
+		// parent: ID of the parent cluster (null, if root cluster)
+		// title: title of the cluster
+		// accordionopened: cluster is folded open in CCF view
+		// thrass: object containing info on the cluster's vulnerability assessment
+		//   id, type, title, description, freq, impact, remark: as of the threat assessment
+		// childnode: array of IDs of all child nodes of this cluster
+		// childcluster: object containing the same properties (except childnode/childcluster)
+		c.id = this.id;
+		c.type = this.type;
+		c.project = this.project;
+		c.parent = this.parentcluster;
+		c.title = this.title;
+		c.accordionopened = this.accordionopened;
+		c.thrass = {
+			id: ta.id,
+			type: ta.type,
+			title: ta.title,
+			description: ta.description,
+			freq: ta.freq,
+			impact: ta.impact,
+			remark: ta.remark
+		};
+		c.childnode = this.childnodes.slice();
+		c.childcluster = [];
+		this.childclusters.forEach(cc => c.childcluster.push(NodeCluster.get(cc).structure()));
+		return c;
+	},
+
 	_stringify: function() {
 		var data = {};
 		// When comparing projects (e.g. for debugging) it is useful if the order of

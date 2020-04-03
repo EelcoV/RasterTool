@@ -4276,7 +4276,6 @@ function removeCluster(cluster) {
 	root.normalize();
 	root.calculatemagnitude();
 	repaintCluster(root.id);
-	repaintClusterDetails(root);
 }
 
 function moveCluster(from_cluster,to_cluster) {
@@ -4289,7 +4288,6 @@ function moveCluster(from_cluster,to_cluster) {
 	root.normalize();
 	root.calculatemagnitude();
 	repaintCluster(root.id);
-	repaintClusterDetails(root);
 }
 
 function moveToClusterHandler(/*event*/) {
@@ -4321,7 +4319,6 @@ function moveSelectionToCluster(cluster) {
 	root.normalize();
 	root.calculatemagnitude();
 	repaintCluster(root.id);
-	repaintClusterDetails(root);
 	// Wait for the repaint to finish, the new cluster to be painted, then
 	// trigger a rename
 	setTimeout(function(){
@@ -4632,6 +4629,7 @@ function repaintCluster(elem) {
 
 	$('#ccfaccordion'+nc.id).css('display', 'block');
 	nc.setallmarkeroid('#ccfamark');
+	repaintClusterDetails(nc,false);
 }
 
 function repaintClusterDetails(nc,force) {
@@ -5008,7 +5006,6 @@ function nodeClusterReorder(event,ui) {
 			root_cluster.calculatemagnitude();
 			root_cluster.normalize();
 			repaintCluster(root_cluster.id);
-			repaintClusterDetails(root_cluster);
 			transactionCompleted("Create cluster");
 		} else if (drop_n!=null && drag!=drop) {
 			bugreport("Node dropped on node of a different cluster","nodeClusterReorder");
