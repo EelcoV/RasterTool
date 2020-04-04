@@ -398,6 +398,7 @@ input.inplace_field, textarea.inplace_field {
 .actpanel select { width: 34em; margin: 0 0 10px;}
 .actpanel optgroup {color: #888; font-style: normal; font-weight: normal; margin: 0 0 4px 2px; }
 .actpanel option {background-repeat: no-repeat; padding-left:20px; color: black;}
+.actpanel #libcheck  {float: right; margin-left: 4px;}
 .actpanel #libzap  {float: right;}
 fieldset {
     margin: 0;

@@ -109,7 +109,6 @@ See LICENSE.md
         <input id="libexport" type="button" value="Export">
         <input id="libdel" type="button" value="Delete">
         <input id="libmerge" type="button" value="Merge">
-        <input id="libcheck" type="button" value="?">
     </td></tr>
     <tr><td>
         <select id="libselect" size="8"></select>
@@ -119,6 +118,7 @@ See LICENSE.md
         <input id="libimport" type="button" value="Import">
         <input id="libexportall" type="button" value="Export library">
         <input id="fileElem" type="file">
+        <input id="libcheck" type="button" value="?">
         <input id="libzap" type="button" value="Zap library">
     </td>
     </tr>

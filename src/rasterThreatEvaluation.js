@@ -739,6 +739,7 @@ Threat.prototype = {
 					bugreport("No or too many node clusters","threat delete");
 				}
 				let cl = it.getNodeCluster();
+				let ta = ThreatAssessment.get(cl.thrass);
 
 				do_data.push({project: p.id, threat: th.id, cluster: cl.id});
 				undo_data.push({project: p.id,
@@ -748,7 +749,11 @@ Threat.prototype = {
 					title: th.title,
 					description: th.description,
 					cluster: cl.id,
-					clusterthrid: cl.thrass
+					clusterthrid: cl.thrass,
+					tdescription: ta.description,
+					remark: ta.remark,
+					freq: ta.freq,
+					impact: ta.impact
 				});
 
 				it = new ComponentIterator({project: th.project, match: th.type});

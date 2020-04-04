@@ -1842,7 +1842,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			for (j=i+1; j<lComponentlen; j++) {
 				if (lc.p==lComponent[j].p && isSameString(lc.l,lComponent[j].l)) {
 					// Append a sequence number to the title of lComponent[j],
-					// or increase the number it it already had one.
+					// or increase the number if it already had one.
 					oldtitle = lComponent[j].l;
 					seq = oldtitle.match(/^(.+) \((\d+)\)$/);
 					if (seq==null) {
@@ -1852,13 +1852,20 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 						newtitle = seq[1] + ' (' + seq[2] + ')';
 					}
 					lComponent[j].l = newtitle;
-					// Als change the title on all nodes sharing this component
 					Flag_Upgrade_Done = true;
 					Upgrade_Description += '<LI>' + _("Components '%%' and '%%'.", lc.l, lComponent[j].l);
 				}
 			}
 		}
 		cm.title = lc.l;
+		if (upgrade_1_2) {
+			// Component title may have been made unique case-insensitive
+			cm.nodes.forEach(n => {
+				rn = Node.get(n);
+				rn.settitle(cm.title);
+				rn.store();
+			});
+		}
 		cm.store();
 		// Delay calculation until ThrEvals have been loaded
 		//cm.calculatemagnitude();
@@ -2104,8 +2111,7 @@ function vertTabSelected(/*event, ui*/) {
 	case 2:		// tab Common Cause Failures
 		$('#selectrect').hide();
 		$('#templates').hide();
-		$('#ccfs_body').empty();
-		AddAllClusters();
+		PaintAllClusters();
 		Preferences.settab(2);
 		break;
 	case 3:		// tab Analysis
@@ -3300,9 +3306,10 @@ function initTabDiagrams() {
 			let do_data=[], undo_data=[];
 			let newid = createUUID();
 			let newcluster = createUUID();
+			let newclusterthrid = createUUID();
 			let newtitle = Threat.autotitle(Project.cid,typ,_("New vulnerability"));
 
-			do_data.push({project: Project.cid, threat: newid, type: typ, title: newtitle, description: newtitle, cluster: newcluster, thrid: createUUID()});
+			do_data.push({project: Project.cid, threat: newid, type: typ, title: newtitle, description: newtitle, cluster: newcluster, clusterthrid: newclusterthrid});
 			undo_data.push({project: Project.cid, threat: newid, cluster: newcluster});
 			// Apply the change to all components of matching type
 			var it = new ComponentIterator({project: Project.cid, match: typ});
@@ -4049,6 +4056,31 @@ function initTabCCFs() {
 	$('#ccfmenu').menu().hide();
 
 	// Event handlers for mouse actions
+	$('#ccfs_body').on('click', '.ccfaccordionbody', function(event) {
+		var nc = nid2id(this.id);
+		if (nc!=CurrentCluster) {
+			repaintClusterDetails(NodeCluster.get(nc));
+		}
+		event.stopPropagation();
+	});
+	$('#ccfs_body').on('click', '#expandallccf', function(){
+		$('#ccfs_body').scrollTop(0);
+		expandAllCCF();
+	});
+	$('#ccfs_body').on('click', '#collapseallccf', function(){
+		$('#ccfs_body').scrollTop(0);
+		collapseAllCCF();
+	});
+	var create_ccf_sortfunc = function(opt) {
+		return function() {
+			CCFSortOpt = opt;
+			PaintAllClusters();
+		};
+	};
+	$('#ccfs_body').on('click', '[for=ccfsort_alph]', create_ccf_sortfunc('alph'));
+	$('#ccfs_body').on('click', '[for=ccfsort_type]', create_ccf_sortfunc('type'));
+	$('#ccfs_body').on('click', '[for=ccfsort_thrt]', create_ccf_sortfunc('thrt'));
+
 	$('#ccfs_details').on('click', '.childnode', clickSelectHandler);
 	$('#ccfs_details').on('click', '.clusternode', clickCollapseHandler);
 	$('#ccfs_details').on('contextmenu', '.tlistitem', contextMenuHandler);
@@ -4329,7 +4361,7 @@ function moveSelectionToCluster(cluster) {
 var CCFSortOpt = 'alph';
 //var CCFMinOpt = '-';
 
-function AddAllClusters() {
+function PaintAllClusters() {
 	var snippet = '\
 		<h1 class="printonly underlay">_LCCF_</h1>\
 		<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\
@@ -4369,7 +4401,7 @@ function AddAllClusters() {
 	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
 	snippet = snippet.replace(/_PJ_/g, Project.cid);
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
-	$('#ccfs_body').append(snippet);
+	$('#ccfs_body').html(snippet);
 	$('#someccf').headroom({
 		scroller: document.querySelector('#ccfs_body'),
 		tolerance : {
@@ -4398,25 +4430,6 @@ function AddAllClusters() {
 
 	$('#noccf').css('display', 'none');
 	$('#someccf').css('display', 'block');
-	$('#expandallccf').on('click',  function(){
-		$('#ccfs_body').scrollTop(0);
-		expandAllCCF();
-	});
-	$('#collapseallccf').on('click',  function(){
-		$('#ccfs_body').scrollTop(0);
-		collapseAllCCF();
-	});
-	var create_ccf_sortfunc = function(opt) {
-		return function() {
-			CCFSortOpt = opt;
-			$('#ccfs_body').empty();
-			AddAllClusters();
-		};
-	};
-
-	$('[for=ccfsort_alph]').on('click', create_ccf_sortfunc('alph'));
-	$('[for=ccfsort_type]').on('click', create_ccf_sortfunc('type'));
-	$('[for=ccfsort_thrt]').on('click', create_ccf_sortfunc('thrt'));
 
 	for (it.first(); it.notlast(); it.next()) {
 		var nc = it.getNodeCluster();
@@ -4436,14 +4449,6 @@ function AddAllClusters() {
 			break;
 		}
 	}
-
-	$('.ccfaccordionbody').on('click', function(event) {
-		var nc = nid2id(this.id);
-		if (nc!=CurrentCluster) {
-			repaintClusterDetails(NodeCluster.get(nc));
-		}
-		event.stopPropagation();
-	});
 }
 
 function sortClustersToCurrentOrder(it) {
@@ -4461,7 +4466,7 @@ function sortClustersToCurrentOrder(it) {
 		it.sortByLevel();
 		break;
 	default:
-		bugreport("Unknown node sort option","AddAllClusters");
+		bugreport("Unknown node sort option","PaintAllClusters");
 	}
 }
 
@@ -4627,6 +4632,8 @@ function repaintCluster(elem) {
 		return;
 	}
 
+	$('#noccf').css('display', 'none');
+	$('#someccf').css('display', 'block');
 	$('#ccfaccordion'+nc.id).css('display', 'block');
 	nc.setallmarkeroid('#ccfamark');
 	repaintClusterDetails(nc,false);

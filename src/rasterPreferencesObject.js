@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global nid2id, AddAllClusters, DefaultIconset, bugreport, createUUID, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global nid2id, PaintAllClusters, DefaultIconset, bugreport, createUUID, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
 
 /*
  *
@@ -31,8 +31,7 @@ var PreferencesObject = function() {
 			});
 		}
 		if (this.tab==2) {
-			$('#ccfs_body').empty();
-			AddAllClusters();
+			PaintAllClusters();
 		}
 		this.store();
 	};

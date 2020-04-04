@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster, repaintClusterDetails
+/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster, repaintClusterDetails
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -300,13 +300,6 @@ Transaction.prototype = {
 				rn.store();
 // Change to true when not debugging
 				rn.paint(false);
-				if (d.connect!=null) {
-					d.connect.forEach(n => {
-						let othernode = Node.get(n);
-						rn.attach_center(othernode);
-						othernode.setmarker();
-					});
-				}
 				if (d.type=='tNOT' || d.type=='tACT')  continue;
 
 				let cm = Component.get(d.component);
@@ -328,7 +321,19 @@ Transaction.prototype = {
 				cm.repaintmembertitles();
 				rn.setmarker();
 			}
-
+			// Loop again, adding connections
+			for (const d of data.nodes) {
+				if (d.type==null)  continue;
+				let rn = Node.get(d.id);
+				if (d.connect!=null) {
+					d.connect.forEach(n => {
+						let othernode = Node.get(n);
+						rn.attach_center(othernode);
+						othernode.setmarker();
+					});
+				}
+			}
+			
 			for (const d of data.clusters) {
 				rebuildCluster(d);
 			}
@@ -569,6 +574,7 @@ Transaction.prototype = {
 			//  cluster: id of the new cluster
 			//  clusterthrid: id of the ThreatAssessment of the cluster
 			//	description: description of the threat(assessment)
+			//	tdescription: descriptopm of the cluster threat
 			//	freq: frequency-value of the threatassessment
 			//	impact: impact-value of the threatassessment
 			//	remark: remark of the threatassessment
@@ -591,6 +597,12 @@ Transaction.prototype = {
 						t.store();
 						let p = Project.get(d.project);
 						p.addthreat(t.id,d.cluster,d.clusterthrid,d.index);
+						let ta = ThreatAssessment.get(d.clusterthrid);
+						if (d.tdescription!=null)  ta.setdescription(d.tdescription);
+						if (d.remark!=null)  ta.setremark(d.remark);
+						if (d.freq!=null)  ta.setfreq(d.freq);
+						if (d.impact!=null)  ta.setimpact(d.impact);
+						PaintAllClusters();
 						refreshChecklistsDialog(d.type,true);
 					}
 				} else {
@@ -606,6 +618,7 @@ Transaction.prototype = {
 						p.removethreat(th.id);
 						let cl = NodeCluster.get(d.cluster);
 						cl.destroy();
+						PaintAllClusters();
 					}
 				}
 			}
