@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster, repaintClusterDetails
+/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -272,7 +272,7 @@ Transaction.prototype = {
 			//   thrass: array of objects containing info on the vulnerabilities:
 			//     id, type, title, description, freq, impact, remark: as of the threat assessment
 			//   accordionopened: state of the component in Single Failures view
-			//   single: id of the representing node iff single, or null iff not single
+			//   single: id of the representing node iff single, or false iff not single
 			//  cluster: an array of objects with the following properties (may be absent only if creating tACT or tNOT)
 			//    id: ID of the cluster object
 			//    title: title of the cluster
@@ -295,9 +295,9 @@ Transaction.prototype = {
 				rn.title = d.title;
 				if (d.suffix!=null)  rn.suffix = d.suffix;
 				if (d.label!=null)  rn.color = d.label;
-				rn.setposition(d.x,d.y);
 				if (d.width!=null)  rn.position.width = d.width;
 				if (d.height!=null)  rn.position.height = d.height;
+				rn.setposition(d.x,d.y);
 				rn.store();
 // Change to true when not debugging
 				rn.paint(false);
@@ -318,10 +318,9 @@ Transaction.prototype = {
 					cm.accordionopened = d.accordionopened;
 					cm.title = d.title;
 				}
-				cm.single = (d.single!=null);
+				cm.single = (d.single!=false);
 				cm.addnode(d.id, (d.id==d.single));
 				cm.repaintmembertitles();
-				rn.setmarker();
 			}
 			// Loop again, adding connections
 			for (const d of data.nodes) {
@@ -334,6 +333,7 @@ Transaction.prototype = {
 						othernode.setmarker();
 					});
 				}
+				rn.setmarker();
 			}
 
 			for (const d of data.clusters) {
