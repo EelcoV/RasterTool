@@ -255,7 +255,7 @@ Transaction.prototype = {
 			//  We solve this problem by storing the entire cluster structure, for all root clusters.
 			//  When creating a new node, there is no problem in undoing (i.e. deleting that node). Creation of nodes
 			//  does not modify the cluster structure, the node is always added to the root clusters of its
-			//  vulnerabilities, which are guaranteed to exist, and the node can threfore always be safely deleted.
+			//  vulnerabilities, which are guaranteed to exist, and the node can therefore always be safely deleted.
 			//
 			// data: an object with these two properties
 			//  nodes: array of objects; each object has these properties
@@ -272,6 +272,7 @@ Transaction.prototype = {
 			//   thrass: array of objects containing info on the vulnerabilities:
 			//     id, type, title, description, freq, impact, remark: as of the threat assessment
 			//   accordionopened: state of the component in Single Failures view
+			//   single: id of the representing node iff single, or null iff not single
 			//  cluster: an array of objects with the following properties (may be absent only if creating tACT or tNOT)
 			//    id: ID of the cluster object
 			//    title: title of the cluster
@@ -317,7 +318,8 @@ Transaction.prototype = {
 					cm.accordionopened = d.accordionopened;
 					cm.title = d.title;
 				}
-				cm.addnode(d.id);
+				cm.single = (d.single!=null);
+				cm.addnode(d.id, (d.id==d.single));
 				cm.repaintmembertitles();
 				rn.setmarker();
 			}
@@ -333,7 +335,7 @@ Transaction.prototype = {
 					});
 				}
 			}
-			
+
 			for (const d of data.clusters) {
 				rebuildCluster(d);
 			}

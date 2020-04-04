@@ -33,7 +33,8 @@
  *	setclasstitle(str): set title of component and all members to 'str', and update DOM.
  *	changeclasstitle(str): if permitted, sets the header text to 'str'.
  *	setproject(pid): sets the project to pid (numerical).
- *	addnode(n.id): add a node to this component
+ *	addnode(n.id, asproxy): add a node to this component. asproxy: if the component is singular
+ *		then add this node as it representative in the node clusters.
  *	removenode(n.id): remove the node from this component
  *	addthrass(ta,idx): add the ThreatAssessment object at index idx.
  *	removethrass(te): remove the ThreatAssessment object.
@@ -283,24 +284,34 @@ Component.prototype = {
 		this.store();
 	},
 	
-	addnode: function(id) {
+	addnode: function(id, asproxy) {
+		if (asproxy==null)  asproxy=false;
 		if (this.nodes.indexOf(id)!=-1) {
 			bugreport('node already belongs to component','Component.addnode');
 		}
-		this.nodes.push(id);
 		var nd = Node.get(id);
 		if (!nd) {
 			bugreport('no such node','Component.addnode');
 		}
 		nd.setcomponent(this.id);
+		if (this.single && asproxy) {
+			this.nodes.unshift(id);
+		} else {
+			this.nodes.push(id);
+		}
 		// Since the list of vulns on 'nd' may be different from those of 'this' component,
 		// remove 'nd' from all node clusters, and re-add it to the ones it should belong to,
 		// based on the new nd.component. Unless the component is singular.
 		nd.removefromnodeclusters();
-		if (!this.single) {
+		if (!this.single || asproxy) {
 			// If this is a 'single' node cluster, then only this.nodes[0] must be
 			// present in the clusters.
 			nd.addtonodeclusters();
+		}
+		if (asproxy) {
+			// remove the previous representative
+			let n = Node.get(this.nodes[1]);
+			n.removefromnodeclusters();
 		}
 		this.store();
 		if (this.id==Component.ThreatsComponent) {
