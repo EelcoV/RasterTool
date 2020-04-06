@@ -35,6 +35,7 @@
  *  undo: perform the action using this.undo.
  */
 var Transaction = function(knd,undo_data,do_data,descr) {
+console.debug("do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes");
 	this.kind = knd;
 	this.descr = (descr ? descr : knd);
 	this.timestamp = Date.now();
@@ -318,7 +319,7 @@ Transaction.prototype = {
 					cm.accordionopened = d.accordionopened;
 					cm.title = d.title;
 				}
-				cm.single = (d.single!=false);
+				cm.single = (d.single ? d.single!=false : false);
 				cm.addnode(d.id, (d.id==d.single));
 				cm.repaintmembertitles();
 			}
