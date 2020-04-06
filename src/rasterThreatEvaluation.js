@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, nextUnusedIndex, _, LS, Component, ComponentIterator, NodeClusterIterator, Transaction, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, transactionCompleted, newRasterConfirm, nid2id, rasterConfirm, refreshComponentThreatAssessmentsDialog
+bugreport, _, LS, Component, ComponentIterator, NodeClusterIterator, Transaction, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -589,7 +589,7 @@ function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
 	);
 }
 
-var DefaultThreats = [
+var DefaultThreats = [		// eslint-disable-line no-unused-vars
 /* [ type , title , description ] */
 ["tWLS",_("Interference"),		_("Unintentional interference by a radio source using the same frequency band.")],
 ["tWLS",_("Jamming"),			_("Intentional interference by some third party.")],
@@ -836,8 +836,8 @@ var ThreatIterator = function(pid,t) {
 	this.item = [];
 	for (var i in Threat._all) {
 		if (Threat._all[i].project==pid
-			&& (t=='tUNK' || t==Threat._all[i].type))
-		{
+			&& (t=='tUNK' || t==Threat._all[i].type)
+		) {		// eslint-disable-line brace-style
 			this.item.push(i);
 		}
 	}

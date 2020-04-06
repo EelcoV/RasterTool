@@ -445,7 +445,7 @@ function initAllAndSetup() {
 		 || (evt.ctrlKey && evt.key=='y')) {
 			simulateClick('#redobutton');
 			evt.preventDefault();
-			return;
+			return;	// eslint-disable-line no-useless-return
 		}
 //		console.log("key pressed: "
 //			+ (evt.metaKey ? "Cmd-" : "")
@@ -648,8 +648,8 @@ var updateFind = function() {
 		// Scroll the node into view
 		var scrolldist_l = 0;
 		var scrolldist_t = 0;
-		var view_l = $('#diagrams'+svc_id).scrollLeft();
-		var view_t = $('#diagrams'+svc_id).scrollTop();
+//		var view_l = $('#diagrams'+svc_id).scrollLeft();
+//		var view_t = $('#diagrams'+svc_id).scrollTop();
 		var view_o = $('#diagrams'+svc_id).offset();
 		var view_w = $('#diagrams'+svc_id).width();
 		var view_h = $('#diagrams'+svc_id).height();
@@ -896,7 +896,7 @@ function _(s) {
  *  mylang('NL') --> 'Not English'
  *  mylang('ES') --> undefined
  */
-function mylang(obj) {
+function mylang(obj) {		// eslint-disable-line no-unused-vars
 #ifdef SERVER
 	var lang = $.localise.defaultLanguage.toUpperCase();
 #else
@@ -1145,7 +1145,7 @@ function plural(singular,plural,num) {
 
 /* Prepend string 'a' to 'b' and join with a space, unless 'a' already occurs within 'b'.
 */
-function prependIfMissing(a,b) {
+function prependIfMissing(a,b) {		// eslint-disable-line no-unused-vars
 	a = trimwhitespace(a);
 	b = trimwhitespace(b);
 	if (b=="") {
@@ -1161,12 +1161,12 @@ function isSameString(a,b) {
 	return a.toUpperCase()===b.toUpperCase();
 }
 
-/* nextUnusedIndex: return first index that doesn't exist or is null
- */
-function nextUnusedIndex(arr) {
-	for (var i=0,alen=arr.length; i<alen && arr[i]!=null; i++) { /* Do nothing */ }
-	return i;
-}
+///* nextUnusedIndex: return first index that doesn't exist or is null
+// */
+//function nextUnusedIndex(arr) {
+//	for (var i=0,alen=arr.length; i<alen && arr[i]!=null; i++) { /* Do nothing */ }
+//	return i;
+//}
 
 /* H: make a string safe to use inside HTML code
  * MOVED TO BOTTOM OF THIS FILE.
@@ -1384,7 +1384,7 @@ function stopWatching(pid) {
 	}
 }
 
-function autoSaveFunction() {
+function autoSaveFunction() {		// eslint-disable-line no-unused-vars
 	var p = Project.get(Project.cid);
 	if (!p.shared || !Preferences.online) {
 		if (!Preferences.online) {
@@ -1496,7 +1496,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		str = jQuery.trim(str);
 		if (str.length!=0) throw new Error("Invalid text");
 		if (lProject.length==0 && allowempty)  return null;
-	}
+	}		// eslint-disable-line brace-style
 	catch(e) {
 		if (!showerrors)  return null;
 		$('#splash').hide();
@@ -1616,7 +1616,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			/* lNodeCluster[i].e must be the ID of a threat assessment */
 			if (!containsID(lThrEval,lNodeCluster[i].e)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid vulnerability evaluation.');
 		}
-	}
+	}		// eslint-disable-line brace-style
 	catch (e) {
 		if (DEBUG) console.log("Error: "+e.message);
 		if (!showerrors)  return null;
@@ -1948,17 +1948,17 @@ function checkUpgradeDone() {
 	);
 }
 
-/* Find the lowest unused number in arr. Array arr must not contain negative numbers.
- */
-function lowestunused(arr) {
-	var lu = 0;
-	arr.sort(function(a,b){return a - b;});
-	for (var i=0,alen=arr.length; i<alen; i++) {
-		if (lu<arr[i]) break;
-		lu=arr[i]+1;
-	}
-	return lu;
-}
+///* Find the lowest unused number in arr. Array arr must not contain negative numbers.
+// */
+//function lowestunused(arr) {
+//	var lu = 0;
+//	arr.sort(function(a,b){return a - b;});
+//	for (var i=0,alen=arr.length; i<alen; i++) {
+//		if (lu<arr[i]) break;
+//		lu=arr[i]+1;
+//	}
+//	return lu;
+//}
 
 /* singleProjectExport(p): save all data into a local file.
  */
@@ -3486,7 +3486,7 @@ function showLabelEditForm() {
 	});
 }
 
-function workspacedrophandler(event, ui) {
+function workspacedrophandler(event, ui) {		// eslint-disable-line no-unused-vars
 	let typ = ui.draggable[0].id;
 	// The id of the template must be a valid type
 	if (!Rules.nodetypes[typ]) {
@@ -3638,7 +3638,7 @@ function refreshComponentThreatAssessmentsDialog(force) {
 	});
 }
 
-function refreshChecklistsDialog(type,force) {
+function refreshChecklistsDialog(type,force) {		// eslint-disable-line no-unused-vars
 	if (!$('#componentthreats').dialog('isOpen') && force!==true)  return;
 	// Remove DOM for all checklist threats, and re-add them in the right order
 	$('#'+type+'threats').empty();
@@ -3685,7 +3685,7 @@ function displayChecklistsDialog(type) {
  * str: the joining word
  * E.g. arrayJoinAsString(["red","green","orange","blue"],"and") = "red, green, orange and blue"
  */
-function arrayJoinAsString(a,str) {
+function arrayJoinAsString(a,str) {		// eslint-disable-line no-unused-vars
 	if (a.length==0)  return _("(none)");
 	if (a.length==1)  return a[0];
 	var last = a.pop();

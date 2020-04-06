@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, nextUnusedIndex, _, addClusterElements, repaintCluster, Component, createUUID, DEBUG, LS, ThreatAssessment, ThreatIterator, H, createUUID, isSameString */
+/* global bugreport, _, repaintCluster, Component, createUUID, DEBUG, LS, ThreatAssessment, ThreatIterator, H, createUUID, isSameString */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *

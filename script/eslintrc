@@ -19,7 +19,7 @@
 		"semi": ["error","always"],
 		"consistent-return": ["error"],
 		"curly": ["error", "multi-line"],
-		"no-mixed-spaces-and-tabs": ["warn"],
+		"no-mixed-spaces-and-tabs": ["off"],
 		"no-unused-vars": ["warn", {"args": "after-used"}],
 		"no-useless-return": ["warn"],
 		"brace-style": ["warn", "1tbs", {"allowSingleLine": true}],

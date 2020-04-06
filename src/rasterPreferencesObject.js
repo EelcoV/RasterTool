@@ -2,13 +2,13 @@
  * See LICENSE.md
  */
 
-/* global nid2id, PaintAllClusters, DefaultIconset, bugreport, createUUID, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global nid2id, PaintAllClusters, bugreport, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
 
 /*
  *
  */
-var PreferencesObject = function() {
-	this.settheme = function(theme) {
+var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
+	this.settheme = function(/*theme*/) {
 		/* Obsolete */
 	};
 	

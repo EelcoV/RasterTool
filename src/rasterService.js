@@ -3,7 +3,7 @@
  */
 
 /* globals
- H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nextUnusedIndex, nid2id, removetransientwindows, transactionCompleted, trimwhitespace, workspacedrophandler
+ H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, transactionCompleted, trimwhitespace, workspacedrophandler
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

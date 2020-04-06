@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals bugreport, createUUID, Rules, Project, _, isSameString, LS, Threat, ThreatAssessment, Transaction, NodeCluster, NodeClusterIterator, prependIfMissing, trimwhitespace, H */
+/* globals bugreport, createUUID, Rules, _, isSameString, LS, ThreatAssessment, Transaction, NodeCluster, NodeClusterIterator, prependIfMissing, trimwhitespace, H */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -204,7 +204,7 @@ Component.prototype = {
 	// Called with a numerical argument >1, returns an array of unused suffixes
 	newsuffix: function(n) {
 		function _newsuffix(cm,except) {
-			let n, j;
+			let j;
 			let sfx = [];
 			cm.nodes.forEach(n => sfx.push(Node.get(n).suffix));
 

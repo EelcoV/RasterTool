@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Threat, ThreatAssessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, transactionCompleted, trimwhitespace, displayComponentThreatAssessmentsDialog
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, ThreatAssessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, trimwhitespace, displayComponentThreatAssessmentsDialog
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -584,7 +584,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 	
 	attach_center: function(dst) {
 		var jsP = Service.get(this.service)._jsPlumb;
-		var edge = jsP.connect({
+		var edge = jsP.connect({		// eslint-disable-line no-unused-vars
 			sourceEndpoint: this.centerpoint,
 			targetEndpoint: dst.centerpoint,
 			connector: 'Straight',
@@ -770,7 +770,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 			distance: 10,	// prevent drags when clicking the menu activator
 			opacity: 0.8,
 			filter: '.ui-resizable-handle',
-			start: function(event,ui) {
+			start: function(event/*,ui*/) {
 				// Remember the original positions in the (scratchpad) undo_data property of the node
 				let rn = Node.get( nid2id(event.el.id) );
 				if (event.e.shiftKey) {
@@ -946,7 +946,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 				$('#nodemenu').data('menunode', rn.id);
 				$('#mi_de').trigger('mouseup');
 				evt.preventDefault();
-				return;
+				return;		// eslint-disable-line no-useless-return
 			}
 		});
 
