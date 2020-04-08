@@ -27,6 +27,7 @@
  *  kind: (String) the type of transaction
  *  descr: (String, optional) UI description of the transaction
  *  timestamp: (integer) time of this transaction's creation
+ *  chain: (boolean) treat this and the next transaction as one, when (un)doing.
  *  prev: previous
  *  undo_data: (any) an object or literal containing all information to undo the transaction
  *  do_data: (any) an object or literal containing all information to perform the transaction
@@ -34,10 +35,11 @@
  *  perform(data): perform the action using data; data defaults to this.do
  *  undo: perform the action using this.undo.
  */
-var Transaction = function(knd,undo_data,do_data,descr) {
+var Transaction = function(knd,undo_data,do_data,descr,chain) {
 console.debug("do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes");
 	this.kind = knd;
 	this.descr = (descr ? descr : knd);
+	this.chain = (chain ? chain : false);
 	this.timestamp = Date.now();
 	this.undo_data = undo_data;
 	this.do_data = do_data;
@@ -103,15 +105,12 @@ Transaction.updateUI = function() {
 
 Transaction.undo = function() {
 	if (Transaction.current==Transaction.base)  return;
-// Is TransactionCancel really necessary? We test whether the action is legal before
-// creating a new transaction, so why cancel?
-	try {
 
+	do {
 // Test!
 checkForErrors();
 let S1 = exportProject(Project.cid);
 		Transaction.current.undo();
-		transactionCompleted("< "+Transaction.current.kind);
 checkForErrors();
 let S2 = exportProject(Project.cid);
 Transaction.current.perform();
@@ -120,50 +119,41 @@ let S3 = exportProject(Project.cid);
 Transaction.current.undo();
 checkForErrors();
 let S4 = exportProject(Project.cid);
-
 if (S1!=S3) {
 	logdiff(S1,S3,"in undo: undo,redo != nil");
 } else if (S2!=S4) {
 	logdiff(S2,S4,"in undo: redo,undo != nil");
 }
-
-	} catch (e) {
-console.log(e);
-		if (e!='TransactionCancel')  bugreport(e,"Transaction.undo");
-	}
-	Transaction.current = Transaction.current.prev;
+		transactionCompleted("<"+ (Transaction.current.chain?"↑":" ") +" "+Transaction.current.kind);
+		Transaction.current = Transaction.current.prev;
+	} while (Transaction.current.chain==true);
 	Transaction.updateUI();
 };
 
 Transaction.redo = function() {
 	if (Transaction.current==Transaction.head)  return;
-	try {
 
+	do {
 // Test!
 checkForErrors();
 let S1 = exportProject(Project.cid);
-		Transaction.current.next.perform();
-		transactionCompleted("> "+Transaction.current.next.kind);
+		Transaction.current = Transaction.current.next;
+		Transaction.current.perform();
 checkForErrors();
 let S2 = exportProject(Project.cid);
-Transaction.current.next.undo();
+Transaction.current.undo();
 checkForErrors();
 let S3 = exportProject(Project.cid);
-Transaction.current.next.perform();
+Transaction.current.perform();
 checkForErrors();
 let S4 = exportProject(Project.cid);
-
 if (S1!=S3) {
 	logdiff(S1,S3,"in redo: redo,undo != nil");
 } else if (S2!=S4) {
 	logdiff(S2,S4,"in redo: undo,redo != nil");
 }
-
-	} catch (e) {
-console.log(e);
-		if (e!='TransactionCancel')  bugreport(e,"Transaction.redo");
-	}
-	Transaction.current = Transaction.current.next;
+		transactionCompleted("<"+ (Transaction.current.chain?"↓":" ") +" "+Transaction.current.kind);
+	} while(Transaction.current.chain==true);
 	Transaction.updateUI();
 };
 
@@ -456,22 +446,21 @@ Transaction.prototype = {
 			// data: array of objects; each object has these properties
 			//  id: id of service
 			//  project: project to which the service is to belong
+			//  index: position of this service within the project
 			//  title: title of the new service; this is null for undo data
 			for (const d of data) {
+				let p = Project.get(d.project);
 				if (!d.title) {
 					// this is undo data
-					let p = Project.get(d.project);
 					p.removeservice(d.id);
 					continue;
 				}
-				let p = Project.get(d.project);
 				let s = new Service(d.project,d.id);
-				p.addservice(s.id);
+				p.addservice(s.id,d.index);
 				s.settitle(d.title);
 				if (d.project==Project.cid) {
 					s.load();
-// Enable when not debugging
-//					$('#diagramstabtitle'+s.id).trigger('click');
+					$('#diagramstabtitle'+s.id).trigger('click');
 				}
 			}
 			break;

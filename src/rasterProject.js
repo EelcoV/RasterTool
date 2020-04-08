@@ -46,7 +46,7 @@
  *	setdate(d): change date to 'd'.
  *	autosettitle: choose a unique standard name.
  *		Either settitle() or autosettitle() must be called.
- *	addservice(id,title): add an existing Service object to this project.
+ *	addservice(id,idx): add an existing Service object to this project, at position idx.
  *	removeservice(id): remove and destroy a Service object from this project.
  *  addthreat(id,clid,clthrid,idx): add a checklist threat to the project, including id of new root cluster,
  *		id of the threatassessment of that cluster, and the index of the threat within threats[].
@@ -482,13 +482,14 @@ Project.prototype = {
 		this.store();
 	},
 	
-	addservice: function(id) {
+	addservice: function(id,idx) {
 		var s = Service.get(id);
 		if (this.services.indexOf(s.id)!=-1) {
 			bugreport("service already added","Project.addservice");
 		}
 		s.setproject(this.id);
-		this.services.push(s.id);
+		if (idx==null)  idx = this.services.length;
+		this.services.splice(idx,0,s.id);
 		this.store();
 	},
 	

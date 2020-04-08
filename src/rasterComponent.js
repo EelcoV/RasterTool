@@ -241,7 +241,8 @@ Component.prototype = {
 
 		new Transaction('classTitle',
 			[{id: this.id, title: this.title}],
-			[{id: this.id, title: str}]
+			[{id: this.id, title: str}],
+			_("Rename class")
 		);
 	},
 

@@ -2757,13 +2757,25 @@ function bottomTabsCloseHandler(event) {
 	$('#selectrect').hide();
 	var s = Service.get(nid2id(event.target.id));
 	rasterConfirm(_("Delete service?"),
-		_("Are you sure you want to remove service '%%' from project '%%'?\nThis cannot be undone.", H(s.title), H(p.title)),
+		_("Are you sure you want to remove service '%%' from project '%%'?", H(s.title), H(p.title)),
 		_("Remove service"),_("Cancel"),
 		function() {
-			p.removeservice( s.id );
-			$('#diagrams_body').tabs('refresh');
-			$('#singlefs_body').tabs('refresh');
-			transactionCompleted("Service delete");
+			let nodes = [];
+			var it = new NodeIterator({service: s.id});
+			for (it.first(); it.notlast(); it.next()) {
+				nodes.push(it.getnodeid());
+			}
+			nodesDelete(nodes,_("Remove service %%", s.title),true);
+			new Transaction('serviceCreate',
+				[{id: s.id, project: s.project, title: s.title, index: p.services.indexOf(s.id)}],
+				[{id: s.id, project: s.project}],
+				_("Remove service %%", s.title),
+				false
+			);
+//			p.removeservice( s.id );
+//			$('#diagrams_body').tabs('refresh');
+//			$('#singlefs_body').tabs('refresh');
+//			transactionCompleted("Service delete");
 		}
 	);
 }
@@ -2858,7 +2870,8 @@ function initTabDiagrams() {
 		let newtitle = Service.autotitle(Project.cid);
 		new Transaction('serviceCreate',
 			[{id: newid, project: Project.cid}],
-			[{id: newid, project: Project.cid, title: newtitle}]
+			[{id: newid, project: Project.cid, title: newtitle}],
+			_("Add a service")
 		);
 	});
 
@@ -3059,7 +3072,8 @@ function initTabDiagrams() {
 		}
 		new Transaction('classSingular',
 			[{id: cm.id, singular: cm.single}],
-			[{id: cm.id, singular: cm.single==false}]
+			[{id: cm.id, singular: cm.single==false}],
+			_("singular/class")
 		);
 	});
 	$('#mi_du').on('mouseup', function() {
@@ -3095,7 +3109,7 @@ function initTabDiagrams() {
 					}],
 					clusters: []
 				},
-				_("Duplicate")
+				_("Duplicate node")
 			);
 			return;
 		}
@@ -3129,7 +3143,8 @@ function initTabDiagrams() {
 			var rn = Node.get( $('#nodemenu').data('menunode') );
 			new Transaction('nodeLabel',
 				[{id: rn.id, label: rn.color}],
-				[{id: rn.id, label: c}]
+				[{id: rn.id, label: c}],
+				_("Change color to %%",c)
 			);
 		};
 	}
@@ -3219,48 +3234,7 @@ function initTabDiagrams() {
 			function() {
 				// Stop any leftover pulsate effects
 				nodes.forEach(n => $(Node.get(n).jnid).stop(true,true) );
-				let do_data={nodes: [], clusters: []}, undo_data={nodes: [], clusters: []};
-				nodes.forEach(n => {
-					let rn = Node.get(n);
-					if (rn.type=='tNOT' || rn.type=='tACT') {
-						undo_data.nodes.push({
-							id: rn.id,
-							type: rn.type,
-							service: rn.service,
-							title: rn.title,
-							x: rn.position.x,
-							y: rn.position.y,
-							width: rn.position.width,
-							height: rn.position.height,
-							label: rn.color,
-							connect: rn.connect.slice()
-						});
-						do_data.nodes.push({id: rn.id});
-						return;
-					}
-
-					let cm = Component.get(rn.component);
-					undo_data.nodes.push({
-						id: rn.id,
-						type: rn.type,
-						service: rn.service,
-						title: rn.title,
-						suffix: rn.suffix,
-						x: rn.position.x,
-						y: rn.position.y,
-						component: rn.component,
-						thrass: cm.threatdata(),
-						accordionopened: cm.accordionopened,
-						single: (cm.single ? cm.nodes[0] : false),
-						width: rn.position.width,
-						height: rn.position.height,
-						label: rn.color,
-						connect: rn.connect.slice()
-					});
-					do_data.nodes.push({id: rn.id});
-				});
-				undo_data.clusters = NodeCluster.structuredata(Node.get(nodes[0]).project);
-				new Transaction('nodeCreateDelete', undo_data, do_data, _("Delete selection"));
+				nodesDelete(nodes, _("Delete selection"), false);
 				$('#selectrect').hide();
 			},
 			function() {
@@ -3289,7 +3263,7 @@ function initTabDiagrams() {
 				undo_data.push({id: n, label: rn.color});
 				data.push({id: n, label: c});
 			});
-			new Transaction('nodeLabel', undo_data, data);
+			new Transaction('nodeLabel', undo_data, data, _("Change color to %%",c));
 		};
 	}
 	$('#mi_scnone').on('mouseup', selcolorfunc('none') );
@@ -3320,7 +3294,7 @@ function initTabDiagrams() {
 				do_data.push({component: it.getcomponentid(), threat: newid, type: typ, title: newtitle, description: newtitle});
 				undo_data.push({component: it.getcomponentid(), threat: newid});
 			}
-			new Transaction('threatCreate', undo_data, do_data);
+			new Transaction('threatCreate', undo_data, do_data, _("Add vulnerability '%%'",newtitle));
 		};
 	};
 	var copyhandler = function(typ) {
@@ -3381,6 +3355,57 @@ function initTabDiagrams() {
 	if (DEBUG && !Rules.consistent()) {
 		bugreport('the rules are not internally consistent','initTabDiagrams');
 	}
+}
+
+/* nodesDelete: create a transaction to delete multiple nodes
+ * nodes: array of Node IDs
+ * descr: description of the transaction
+ * chain: the chain-attribute of the transaction
+ */
+function nodesDelete(nodes,descr,chain) {
+	let pid = Node.get(nodes[0]).project;
+	let do_data={nodes: [], clusters: []}, undo_data={nodes: [], clusters: []};
+	nodes.forEach(n => {
+		let rn = Node.get(n);
+		if (rn.type=='tNOT' || rn.type=='tACT') {
+			undo_data.nodes.push({
+				id: rn.id,
+				type: rn.type,
+				service: rn.service,
+				title: rn.title,
+				x: rn.position.x,
+				y: rn.position.y,
+				width: rn.position.width,
+				height: rn.position.height,
+				label: rn.color,
+				connect: rn.connect.slice()
+			});
+			do_data.nodes.push({id: rn.id});
+			return;
+		}
+
+		let cm = Component.get(rn.component);
+		undo_data.nodes.push({
+			id: rn.id,
+			type: rn.type,
+			service: rn.service,
+			title: rn.title,
+			suffix: rn.suffix,
+			x: rn.position.x,
+			y: rn.position.y,
+			component: rn.component,
+			thrass: cm.threatdata(),
+			accordionopened: cm.accordionopened,
+			single: (cm.single ? cm.nodes[0] : false),
+			width: rn.position.width,
+			height: rn.position.height,
+			label: rn.color,
+			connect: rn.connect.slice()
+		});
+		do_data.nodes.push({id: rn.id});
+	});
+	undo_data.clusters = NodeCluster.structuredata(pid);
+	new Transaction('nodeCreateDelete', undo_data, do_data, descr, chain);
 }
 
 function initChecklistsDialog(type) {
@@ -3472,7 +3497,8 @@ function showLabelEditForm() {
 //			transactionCompleted("Label edit");
 			new Transaction('labelEdit',
 				[{id: p.id, labels: p.labels}],
-				[{id: p.id, labels: newlabels}]
+				[{id: p.id, labels: newlabels}],
+				_("Edit labels")
 			);
 			$(this).remove();
 		}
@@ -3590,7 +3616,8 @@ function refreshComponentThreatAssessmentsDialog(force) {
 				remark: "",
 				freq: '-',
 				impact: '-'
-			 }]
+			 }],
+			 _("New vulnerability")
 		);
 //		var c = Component.get(nid2id(this.id));
 //		var th = new ThreatAssessment((c.type=='tUNK' ? 'tEQT' : c.type));
@@ -3724,7 +3751,8 @@ function initTabSingleFs() {
 		let newtitle = Service.autotitle(Project.cid);
 		new Transaction('serviceCreate',
 			[{id: newid, project: Project.cid}],
-			[{id: newid, project: Project.cid, title: newtitle}]
+			[{id: newid, project: Project.cid, title: newtitle}],
+			_("Add a service")
 		);
 	});
 }

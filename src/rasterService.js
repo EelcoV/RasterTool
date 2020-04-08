@@ -35,8 +35,8 @@
  *	unload(): remove all DOM elements for this service, except nodes.
  *  removetab(prefix): remove DOM elements for diagrams or single failures
  *	load(): create and set all DOM elements for this service, except nodes.
- *  addtabdiagrams(): create and set DOM elements for this service's diagram
- *  addtabsinglefs(): create and set DOM elements for this service's single failures
+ *  addtabdiagrams(idx): create and set DOM elements for this service's diagram, at position idx
+ *  addtabsinglefs(dx): create and set DOM elements for this service's single failures, at position idx
  *	unpaintall(): remove all Nodes for this service.
  *	paintall(): create and set all Nodes for this service.
  *	_stringify: create a JSON text string representing this object's data.
@@ -154,9 +154,10 @@ Service.prototype = {
 	},
 
 	load: function() {
+		let p = Project.get(this.project);
 		this._jsPlumb.bind('beforeDrop', dropfunction );
-		this.addtabdiagrams();
-		this.addtabsinglefs();
+		this.addtabdiagrams(p.services.indexOf(this.id));
+		this.addtabsinglefs(p.services.indexOf(this.id));
 		$('#bottomtabsdia').sortable({
 			stop: function(/*evt,ui*/) {
 				var p = Project.get(Project.cid);
@@ -199,7 +200,7 @@ Service.prototype = {
 		this._loaded=true;
 	},
 	
-	_addtabdiagrams_tabonly: function() {
+	_addtabdiagrams_tabonly: function(idx) {
 		/* Create a new tab */
 		var snippet = '<li id="diaservicetab_I_">\
 			<a href="#_PF__I_">\
@@ -211,7 +212,14 @@ Service.prototype = {
 		snippet = snippet.replace(/_T_/g, H(this.title));
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_PF_/g, 'diagrams');
-		$(snippet).appendTo( '#diagrams_body .ui-tabs-nav' );
+		if (idx==null) {
+			$('#diagrams_body .ui-tabs-nav').append(snippet);
+		} else if (idx==0) {
+			$('#diagrams_body .ui-tabs-nav').prepend(snippet);
+		} else {
+			$('#diagrams_body .ui-tabs-nav li').eq(idx-1).after(snippet);
+		}
+//		$(snippet).appendTo( '#diagrams_body .ui-tabs-nav' );
 		
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('a[href^="#diagrams'+this.id+'"]').on('dblclick',  diagramTabEditStart );
@@ -221,9 +229,9 @@ Service.prototype = {
 		} );
 	},
 	
-	addtabdiagrams: function() {
+	addtabdiagrams: function(idx) {
 		var serviceid = this.id; // For use in event handler functions
-		this._addtabdiagrams_tabonly();
+		this._addtabdiagrams_tabonly(idx);
 		
 		/* Add content to the new tab */
 		var snippet = '\n\
@@ -353,7 +361,7 @@ Service.prototype = {
 		});
 	},
 
-	_addtabsinglefs_tabonly: function() {
+	_addtabsinglefs_tabonly: function(idx) {
 		/* Create a new tab */
 		var snippet = '<li id="sfservicetab_I_">\
 			<a href="#_PF__I_">\
@@ -365,7 +373,14 @@ Service.prototype = {
 		snippet = snippet.replace(/_T_/g, H(this.title));
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_PF_/g, 'singlefs');
-		$(snippet).appendTo( '#singlefs_body .ui-tabs-nav' );
+		if (idx==null) {
+			$('#singlefs_body .ui-tabs-nav').append(snippet);
+		} else if (idx==0) {
+			$('#singlefs_body .ui-tabs-nav').prepend(snippet);
+		} else {
+			$('#singlefs_body .ui-tabs-nav li').eq(idx-1).after(snippet);
+		}
+//		$(snippet).appendTo( '#singlefs_body .ui-tabs-nav' );
 		
 		/* We have bottom tabs, so have to correct the tab corners */
 		$('a[href^="#singlefs'+this.id+'"]').on('dblclick',  diagramTabEditStart );
@@ -375,8 +390,8 @@ Service.prototype = {
 		} );
 	},
 	
-	addtabsinglefs: function() {
-		this._addtabsinglefs_tabonly();
+	addtabsinglefs: function(idx) {
+		this._addtabsinglefs_tabonly(idx);
 
 		/* Add content to the new tab */
 		var snippet = '\n\
@@ -479,7 +494,7 @@ Service.prototype = {
 					n.position.y = d.y;
 					n.store();
 				}
-				new Transaction('nodeGeometry', undo_data, do_data);
+				new Transaction('nodeGeometry', undo_data, do_data, _("Move nodes"));
 				$('#selectrect').removeData('undo_data');
 			},
 			cursor: 'move'
@@ -592,7 +607,8 @@ function diagramTabEditStart(/*event*/) {
 				let name = $('#field_servicerename');
 				new Transaction('serviceRename',
 					[{id: s.id, title: s.title}],
-					[{id: s.id, title: name.val()}]
+					[{id: s.id, title: name.val()}],
+					_("Rename service")
 				);
 				$(this).dialog('close');
 			}

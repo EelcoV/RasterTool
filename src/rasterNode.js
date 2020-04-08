@@ -290,7 +290,8 @@ Node.prototype = {
 			// Notes can be identical (can have the same 'title').
 			new Transaction('nodeTitle',
 				[{id: this.id, title: this.title}],
-				[{id: this.id, title: str}]
+				[{id: this.id, title: str}],
+				_("Edit note")
 			);
 			break;
 
@@ -298,7 +299,8 @@ Node.prototype = {
 			// Actors don't have (nor need) components, but have unique names within the service
 			new Transaction('nodeTitle',
 				[{id: this.id, title: this.title}],
-				[{id: this.id, title: Node.autotitle('tACT',str)}]
+				[{id: this.id, title: Node.autotitle('tACT',str)}],
+				_("Rename node")
 			);
 			break;
 
@@ -313,7 +315,8 @@ Node.prototype = {
 				// Simple case, no classes involved
 				new Transaction('nodeTitle',
 					[{id: this.id, title: this.title}],
-					[{id: this.id, title: str}]
+					[{id: this.id, title: str}],
+					_("Rename node")
 				);
 			} else if (n==prevcomponent.id) {
 				// New title is strictly different, but case-insensitive identical
@@ -322,7 +325,8 @@ Node.prototype = {
 				if (prevcomponent.nodes.length>1)  return;
 				new Transaction('nodeTitle',
 								[{id: this.id, title: this.title}],
-								[{id: this.id, title: str}]
+								[{id: this.id, title: str}],
+								_("Rename node")
 								);
 			} else if (n==-1) {
 				// This node drops out of a class
@@ -331,7 +335,8 @@ Node.prototype = {
 				// This node drops out of the class, but the class continues to exist
 				new Transaction('nodeTitle',
 					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id}],
-					[{id: this.id, title: str, component: createUUID(), thrass: p.defaultthreatdata(prevcomponent.type)}]
+					[{id: this.id, title: str, component: createUUID(), thrass: p.defaultthreatdata(prevcomponent.type)}],
+					_("Rename node")
 				);
 			} else {
 				// The new name of this node matches an existing Component: join a class
@@ -355,7 +360,8 @@ Node.prototype = {
 						id: this.id, title: this.title, suffix: this.suffix,
 						component: prevcomponent.id, thrass: prevcomponent.threatdata(), accordionopened: prevcomponent.accordionopened
 					}],
-					[{id: this.id, title: str, suffix: cm.newsuffix(), component: cm.id}]
+					[{id: this.id, title: str, suffix: cm.newsuffix(), component: cm.id}],
+					_("Rename node")
 				);
 			}
 		}
@@ -389,7 +395,8 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 
 		new Transaction('nodeSuffix',
 			[{id: this.id, suffix: this.suffix}],
-			[{id: this.id, suffix: str}]
+			[{id: this.id, suffix: str}],
+			_("Edit suffix")
 		);
 	},
 
@@ -576,7 +583,8 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 			/* Move the begin and endpoints to the center points */
 			new Transaction('nodeConnect',
 				[{id: this.id, otherid: dst.id, connect: false}],
-				[{id: this.id, otherid: dst.id, connect: true}]
+				[{id: this.id, otherid: dst.id, connect: true}],
+				_("Connect nodes")
 			);
 			RefreshNodeReportDialog();
 		}
@@ -600,7 +608,8 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 							var dst = Node.get(nid2id(node2));
 							new Transaction('nodeConnect',
 								[{id: src.id, otherid: dst.id, connect: true}],
-								[{id: src.id, otherid: dst.id, connect: false}]
+								[{id: src.id, otherid: dst.id, connect: false}],
+								_("Disconnect nodes")
 							);
 						}
 					}
@@ -809,7 +818,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 						n.position.y = d.y;
 						n.store();
 					}
-					new Transaction('nodeGeometry', rn.undo_data, do_data);
+					new Transaction('nodeGeometry', rn.undo_data, do_data, _("Move node"));
 				}
 				delete rn.undo_data;
 				// Disallow dragging for 100msec
@@ -1061,7 +1070,8 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 				rn.store();
 				new Transaction('nodeGeometry',
 					[{id: rn.id, x: rn.undo_data.x, y: rn.undo_data.y, width: rn.undo_data.width, height: rn.undo_data.height}],
-					[{id: rn.id, x: newposition.x, y: newposition.y, width: newposition.width, height: newposition.height}]
+					[{id: rn.id, x: newposition.x, y: newposition.y, width: newposition.width, height: newposition.height}],
+					_("Resize node")
 				);
 				delete rn.undo_data;
 			}

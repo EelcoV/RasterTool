@@ -409,7 +409,8 @@ ThreatAssessment.prototype = {
 			callback: function(oid, enteredText) {
 				new Transaction('threatAssessDetails',
 					[{threat: te.id, freq: te.freq}],
-					[{threat: te.id, freq: enteredText}]
+					[{threat: te.id, freq: enteredText}],
+					_("Edit frequency")
 				);
 //				te.setfreq(enteredText);
 //				$('#dth_'+prefix+'total'+te.id).text(te.total);
@@ -474,7 +475,8 @@ ThreatAssessment.prototype = {
 			callback: function(oid, enteredText) {
 				new Transaction('threatAssessDetails',
 					[{threat: te.id, impact: te.impact}],
-					[{threat: te.id, impact: enteredText}]
+					[{threat: te.id, impact: enteredText}],
+					_("Edit impact")
 				);
 //				te.setimpact(enteredText);
 //				$('#dth_'+prefix+'total'+te.id).text(te.total);
@@ -491,7 +493,8 @@ ThreatAssessment.prototype = {
 			callback: function(oid, enteredText) {
 				new Transaction('threatAssessDetails',
 					[{threat: te.id, remark: te.remark}],
-					[{threat: te.id, remark: enteredText}]
+					[{threat: te.id, remark: enteredText}],
+					_("Edit remark")
 				);
 //				te.setremark(enteredText);
 //				transactionCompleted("Vuln setremark");
@@ -526,7 +529,8 @@ ThreatAssessment.prototype = {
 						  impact: th.impact,
 						  cluster: nc.structure()
 						}],
-						[{component: c.id, threat: th.id, prefix: prefix}]
+						[{component: c.id, threat: th.id, prefix: prefix}],
+						_("Remove vulnerability '%%'",th.title)
 					);
 //					c.removethrass(th.id);
 //					var nc = NodeCluster.removecomponent_threat(Project.cid,th.component,th.title,th.type);
@@ -585,7 +589,8 @@ ThreatAssessment.prototype = {
 function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
 	new Transaction('threatRename',
 		[{project: pid, type: typ, new_t: old_t, old_t: new_t, new_d: old_d, old_d: new_d}],
-		[{project: pid, type: typ, old_t: old_t, new_t: new_t, old_d: old_d, new_d: new_d}]
+		[{project: pid, type: typ, old_t: old_t, new_t: new_t, old_d: old_d, new_d: new_d}],
+		_("Edit threat")
 	);
 }
 
@@ -776,7 +781,7 @@ Threat.prototype = {
 					}
 				}
 
-				new Transaction('threatCreate', undo_data, do_data);
+				new Transaction('threatCreate', undo_data, do_data, _("Remove threat"));
 //				Project.get(th.project).removethreat(th.id);
 //				// Count how many components have this threat
 //				var it = new ComponentIterator({project: th.project, match: th.type});
