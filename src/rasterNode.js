@@ -686,13 +686,23 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 	},
 
 	iconinit: function() {
+		// Try to preserve the center-position of the node
+		let oldcx, oldcy;
+		if (this.position.width>10 && this.position.height>10 ) {
+			// Make sure we have sane size of the node
+			oldcx = this.position.x+this.position.width/2;
+			oldcy = this.position.y+this.position.height/2;
+			oldcx = 20*Math.round(oldcx/20);
+			oldcy = 20*Math.round(oldcy/20);
+		}
+
 		let p = Project.get(this.project);
 		// Locate the first possible index
 		for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
 			// empty
 		}
-		this.position.width = p.icondata.icons[this.index].width;
-		this.position.height = p.icondata.icons[this.index].height;
+		if (!this.position.width)  this.position.width = p.icondata.icons[this.index].width;
+		if (!this.position.height)  this.position.height = p.icondata.icons[this.index].height;
 		this._normw = this.position.width;
 		this._normh = this.position.height;
 
@@ -710,10 +720,16 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		$(this.jnid).width(this.position.width);
 		$(this.jnid).height(this.position.height);
 
-		let cx = this.position.x+this.position.width/2;
-		let cy = this.position.y+this.position.height/2;
-		cx = 20*Math.round(cx/20);
-		cy = 20*Math.round(cy/20);
+		let cx, cy;
+		if (oldcx && oldcy) {
+			cx = oldcx;
+			cy = oldcy;
+		} else {
+			cx = this.position.x+this.position.width/2;
+			cy = this.position.y+this.position.height/2;
+			cx = 20*Math.round(cx/20);
+			cy = 20*Math.round(cy/20);
+		}
 		this.position.x = cx - this.position.width/2;
 		this.position.y = cy - this.position.height/2;
 
