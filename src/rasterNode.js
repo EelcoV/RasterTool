@@ -254,7 +254,7 @@ Node.prototype = {
 			cy = 20*Math.round(cy/20);
 			px = cx - this.position.width/2;
 			py = cy - this.position.height/2;
-}
+		}
 
 		this.position.x = px;
 		this.position.y = py;
@@ -686,7 +686,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 	},
 
 	iconinit: function() {
-		var p = Project.get(this.project);
+		let p = Project.get(this.project);
 		// Locate the first possible index
 		for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
 			// empty
@@ -695,12 +695,37 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		this.position.height = p.icondata.icons[this.index].height;
 		this._normw = this.position.width;
 		this._normh = this.position.height;
+
+		// Under a different iconset the aspect ratio may be off. Enlarge it, if necessary
+		let icn = p.icondata.icons[this.index];
+		if (icn.maintainAspect) {
+			var newh = this.position.width * icn.height/icn.width;
+			if (newh > this.position.height) {
+				this.position.height = newh;
+			} else {
+				this.position.width = this.position.height * icn.width/icn.height;
+			}
+			this.store();
+		}
+		$(this.jnid).width(this.position.width);
+		$(this.jnid).height(this.position.height);
+
+		let cx = this.position.x+this.position.width/2;
+		let cy = this.position.y+this.position.height/2;
+		cx = 20*Math.round(cx/20);
+		cy = 20*Math.round(cy/20);
+		this.position.x = cx - this.position.width/2;
+		this.position.y = cy - this.position.height/2;
+
 		this.store();
 	},
 
 	paint: function(effect) {
 		var p = Project.get(this.project);
-		if (!this.index)  this.iconinit();
+		if (this.index==null) {
+			bugreport("Node index is null","Node.paint");
+			this.iconinit();
+		}
 
 		var icn = p.icondata.icons[this.index];
 		var jsP = Service.get(this.service)._jsPlumb;
@@ -748,19 +773,6 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		str = '<div id="tinynode_ID_" class="tinynode"></div>\n';
 		str = str.replace(/_ID_/g, this.id);
 		$('#scroller_overview'+this.service).append(str);
-
-		// Under a different iconset the aspect ratio may be off. Enlarge it, if necessary
-		if (icn.maintainAspect) {
-			var newh = this.position.width * icn.height/icn.width;
-			if (newh > this.position.height) {
-				this.position.height = newh;
-			} else {
-				this.position.width = this.position.height * icn.width/icn.height;
-			}
-			this.store();
-		}
-		$(this.jnid).width(this.position.width);
-		$(this.jnid).height(this.position.height);
 
 		this.settitle(this.title);
 

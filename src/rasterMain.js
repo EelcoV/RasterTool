@@ -1819,8 +1819,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		var rn = new Node(lrn.t,lrn.s,lrn.id);
 		rn.title = trimwhitespace(lrn.l);
 		if (lrn.f) rn.suffix = trimwhitespace(lrn.f);
-		rn.iconinit();
 		rn.position = {x: lrn.x, y: lrn.y, width: lrn.w, height: lrn.h};
+		rn.iconinit();
 //		rn._normw = lrn.v;
 //		rn._normh = lrn.g;
 		rn.component = lrn.m;
