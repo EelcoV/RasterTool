@@ -36,7 +36,6 @@
  *  undo: perform the action using this.undo.
  */
 var Transaction = function(knd,undo_data,do_data,descr,chain) {
-console.debug("do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes");
 	this.kind = knd;
 	this.descr = (descr ? descr : knd);
 	this.chain = (chain ? chain : false);
@@ -61,7 +60,7 @@ console.debug("do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSO
 checkForErrors();
 let S1 = exportProject(Project.cid);
 	this.perform();
-	transactionCompleted("+ "+this.kind);
+	transactionCompleted("+  "+this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
 
 checkForErrors();
 let S2 = exportProject(Project.cid);

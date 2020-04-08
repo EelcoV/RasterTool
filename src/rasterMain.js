@@ -364,9 +364,10 @@ function initAllAndSetup() {
 
 	$('body').on('keydown', function(evt){
 		// Backspace, unfortunately, is bound in the browser to 'Return to previous page'
-		if (evt.key=='Backspace') {
+		if (evt.key=='Delete' || evt.key=='Backspace') {
 			if (!$(evt.target).is('input:not([readonly]):not([type=radio]):not([type=checkbox]), textarea, [contentEditable], [contentEditable=true]')) {
 				// Only when focus is NOT on input or textarea
+				$('#mi_sd').trigger('mouseup');
 				evt.preventDefault();
 				return;
 			}
