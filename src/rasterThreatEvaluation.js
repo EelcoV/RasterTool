@@ -527,6 +527,8 @@ ThreatAssessment.prototype = {
 						  remark: th.remark,
 						  freq: th.freq,
 						  impact: th.impact,
+						  clid: nc.id,
+						  thrid: nc.thrass,
 						  cluster: nc.structure()
 						}],
 						[{component: c.id, threat: th.id, prefix: prefix}],
@@ -781,7 +783,7 @@ Threat.prototype = {
 					}
 				}
 
-				new Transaction('threatCreate', undo_data, do_data, _("Remove threat"));
+				new Transaction('threatCreate', undo_data, do_data, _("Remove vulnerability '%%'",cl.title));
 //				Project.get(th.project).removethreat(th.id);
 //				// Count how many components have this threat
 //				var it = new ComponentIterator({project: th.project, match: th.type});

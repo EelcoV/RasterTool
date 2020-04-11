@@ -411,4 +411,3 @@ _t["Edit impact"] = "Wijzig impact";
 _t["Edit remark"] = "Wijzig opmerking";
 _t["Remove vulnerability '%%'"] = "Verwijder kwetsbaarheid '%%'";
 _t["Edit threat"] = "Wijzig kwetsbaarheid";
-_t["Remove threat"] = "Verwijder kwetsbaarheid";
