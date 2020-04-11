@@ -91,14 +91,14 @@ Transaction.updateUI = function() {
 		$('#undobutton').attr('title', _("Undo"));
 	} else {
 		$('#undobutton').addClass('possible');
-		$('#undobutton').attr('title', _("Undo") + ' ' + H(Transaction.current.descr));
+		$('#undobutton').attr('title', _("Undo") + ' ' + Transaction.current.descr);
 	}
 	if (Transaction.current==Transaction.head) {
 		$('#redobutton').removeClass('possible');
 		$('#redobutton').attr('title', _("Redo"));
 	} else {
 		$('#redobutton').addClass('possible');
-		$('#redobutton').attr('title', _("Redo") + ' ' + H(Transaction.current.next.descr));
+		$('#redobutton').attr('title', _("Redo") + ' ' + Transaction.current.next.descr);
 	}
 };
 
@@ -525,7 +525,7 @@ Transaction.prototype = {
 					if (d.freq!=null)  ta.setfreq(d.freq);
 					if (d.impact!=null)  ta.setimpact(d.impact);
 					// Root cluster
-					if (d.clid) {
+					if (d.clid && !NodeCluster.get(d.clid)) {
 						let nc = new NodeCluster(d.type,d.clid);
 						nc.setproject(cm.project);
 						nc.settitle(ta.title);
