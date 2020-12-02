@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+Missing keyboard shortcuts for node menu.
 On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
@@ -14,6 +15,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
+Allow upload of image to replace shape?
 Change node shapes from image to SVG, helps for cleaner resizes.
 Try IndexDB instead of localStorage. This will benefit concurrent use in multiple tabs, and may ease the implementation of Undo and concurrent use across computers.
 When renaming a node, split at the ^ sign and treat the latter part as the suffix?
