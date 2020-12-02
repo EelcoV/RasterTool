@@ -1916,7 +1916,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		let it = new NodeClusterIterator({project: lth.p, title: lth.l, type: lth.t, isroot: true});
 		// If the project has a rootcluster with that type and title, then OK.
 		if (it.notlast())  continue;
-		// else make sure than a stub rootcluster exists, and has a threat assessment.
+		// else make sure that a stub rootcluster exists, and has a threat assessment.
 		nc = new NodeCluster(lth.t);
 		nc.setproject(lth.p);
 		nc.settitle(lth.l);

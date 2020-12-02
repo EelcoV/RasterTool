@@ -12,7 +12,7 @@ To create a new project group called 'samplegroup':
 4. Modify the settings file 'group.json', if required.
 
 ## group.json
-The settings for a group are stored in a JSON configuration file. Currently the file may contain two fields.
+The settings for a group are stored in a JSON configuration file. Currently the file may contain these fields.
 * classroom: (boolean, default is false) If true, classroom functionality is enabled on this group. See below.
 * template: (string, default is "Project Template") The name of the project that will be used as the starting point when a new project is created. If no shared project by this name exists, an empty project is used instead.
 * iconset: (string, default is "default") The name of the iconset for new projects. If both 'template' and 'iconset' are specified, the template has precedence.

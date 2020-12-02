@@ -26,16 +26,17 @@ Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 ## Build and install the Standalone version
 In addition to the tools required for the Intranet version, you need:
 1. MacOS is required to build the standalone version for MacOS. The special utilities xattr, defaults, iconutil, and hdiutil are necessary to manipulate packages, disk images and icons. Those are not available on non-Mac platforms.
-2. A (virtualised) Microsoft Windows installation is required to build the standalone version for Windows. The X:-drive must be mapped to the source directory (e.g. x:\build contain the build data).
+2. Wine (CodeWeavers' CrossOver, or https://www.winehq.org/) is required to build the standalone version for WIndows under MacOS. If you build the tools under Windows, and if you have the basic Unix shell and utilities available, you should be able to build the standalone versions without Wine.
+3. Alternatively, you can use (virtualised) Microsoft Windows installation to build the standalone version for Windows. The X:-drive must be mapped to the source directory (e.g. x:\build contain the build data).
 
 To build, run these scripts from the root of the Raster tools project:
 1. 'script/fillcache.sh' to download Electron and prepare the required Windows utilities.
 2. 'script/build-electron.sh' to build the MacOS and Windows versions.
-3. Under Windows, run the 'winbuild.bat' batch file to create the Windows ZIP, exe and full installer.
+3. If you cannot use Wine, or if you attempt to build on Windows,  run the 'winbuild.bat' batch file to create the Windows ZIP, exe and full installer.
 
 The build results are found in the 'build' directory. For both platforms, the tool is available in English (EN) or Dutch (NL).
 The MacOS version is distributed using the DMG files. To install, doubleclick the DMG file, and drag the Raster application to your Applications folder.
 The Windows version is distributed in three formats.
-* The full installer required Administrator rights. It will install in 'C:\Program Files', create an uninstall option in the Control Panel, and will associate .raster files with the tool.
+* The full installer requires Administrator rights. It will install in 'C:\Program Files', create an uninstall option in the Control Panel, and will associate .raster files with the tool.
 * The unpack-version requires no special rights. It will simply unpack the files in a location of choice. The user will have to associate .raster files manually, using the Open With option in Explorer.
 * The Zip-version is for those who do not trust exe files. It contains the same files as the unpacker.

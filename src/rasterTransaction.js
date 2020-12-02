@@ -388,6 +388,13 @@ Transaction.prototype = {
 
 		case 'nodeTitle': {
 			// Change the name of a node
+			// What can change when you rename one single node?
+			// 1- only the node title is changed (actor, notes)
+			// 2- the node title and its component title are changed (no classes involved)
+			// 3- the node title is changed, its old component loses a node, and a fresh component is created
+			// 4- the node title is changed, its old component loses a node and stops being a class; a fresh node is created
+			// 5- the node title is changed, its old component loses a node, the node gains a suffix and becomes part of a class
+			// 6- the node title is changed, its old component loses a node and stops being a class; the node gains a suffix and becomes part of a class
 			// data: array of objects; each object has these properties (some properties are optional)
 			//  id: id of the node
 			//  title: title of the node

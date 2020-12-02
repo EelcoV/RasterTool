@@ -741,7 +741,7 @@ Threat.prototype = {
 				let p = Project.get(Project.cid);
 				let undo_data = [];
 				let do_data = [];
-				let it = new NodeClusterIterator({project: this.project, isroot: true, type: th.type, title: th.title});
+				let it = new NodeClusterIterator({project: Project.cid, isroot: true, type: th.type, title: th.title});
 				if (it.itemlength!=1) {
 					bugreport("No or too many node clusters","threat delete");
 				}
