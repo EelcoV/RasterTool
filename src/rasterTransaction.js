@@ -732,6 +732,68 @@ Transaction.prototype = {
 			break;
 		}
 
+		case 'threatReorder': {
+			// Global change in the order of checklist vulnerabilities
+			// data: a single object containing these fields:
+			//	project: the id of the project
+			//	list: the re-ordered list of threats
+			// No threats will or should be added or removed in this transaction.
+			let p = Project.get(data.project);
+			// Compile arrays before and after move. With this information we can repaint
+			// only the threat panel that was modified, and we avoid repainting the ones that
+			// dit not change.
+			let old_tWLS=[], old_tWRD=[], old_tEQT=[];
+			let new_tWLS=[], new_tWRD=[], new_tEQT=[];
+			p.threats.forEach( function(v) {
+				let th = Threat.get(v);
+				switch (th.type) {
+					case 'tWLS': old_tWLS.push(v); break;
+					case 'tWRD': old_tWRD.push(v); break;
+					case 'tEQT': old_tEQT.push(v); break;
+				}
+			});
+			data.list.forEach( function(v) {
+				let th = Threat.get(v);
+				if (!th) {
+					bugreport('unknown threat assessment', 'Transaction.threatReorder');
+					return;
+				}
+				switch (th.type) {
+					case 'tWLS': new_tWLS.push(v); break;
+					case 'tWRD': new_tWRD.push(v); break;
+					case 'tEQT': new_tEQT.push(v); break;
+				}
+			});
+			if (!old_tWLS.every( function(v,i) { new_tWLS[i]==v; } )) {
+				// repaint the tWLS panel
+				$('#tWLSthreats').empty();
+				new_tWLS.forEach( function(v) {
+					let th = Threat.get(v);
+					if (th.type=='tWLS') th.addtablerow('#tWLSthreats');
+				});
+			}
+			if (!old_tWRD.every( function(v,i) { new_tWRD[i]==v; } )) {
+				// repaint the tWRD panel
+				$('#tWRDthreats').empty();
+				new_tWRD.forEach( function(v) {
+					let th = Threat.get(v);
+					if (th.type=='tWRD') th.addtablerow('#tWRDthreats');
+				});
+			}
+			if (!old_tEQT.every( function(v,i) { new_tEQT[i]==v; } )) {
+				// repaint the tEQT panel
+				$('#tEQTthreats').empty();
+				new_tEQT.forEach( function(v) {
+					let th = Threat.get(v);
+					if (th.type=='tEQT') th.addtablerow('#tEQTthreats');
+				});
+			}
+
+			p.threats = data.list;
+			p.store();
+			break;
+		}
+		
 		default:
 			bugreport('Unknown transaction id','Transaction.perform');
 		} // end switch
