@@ -503,6 +503,30 @@ Transaction.prototype = {
 			break;
 		}
 
+		case 'serviceReorder': {
+			// Change the order of services on the diagrams and single failures tabs.
+			// data: a single object containing these fields:
+			//	project: the id of the project
+			//	list: the re-ordered list of services
+			// No services will or should be added or removed in this transaction.
+			let p = Project.get(data.project);
+			
+			p.services = data.list;
+
+			// Remove all service tabs on Diagrams and Single Failures, and re-create.
+			$('#bottomtabssf').empty();
+			$('#bottomtabsdia').empty();
+			data.list.forEach(function(v) {
+				var s = Service.get(v);
+				s._addtabsinglefs_tabonly();
+				s._addtabdiagrams_tabonly();
+			});
+			p.store();
+			$('#diagrams_body').tabs('refresh');
+			$('#singlefs_body').tabs('refresh');
+			break;
+		}
+
 		case 'swapProxy': {
 			// Change the proxy-node used in clusters on behalf of a singular class.
 			// Performing this transaction twice restores the original situation.

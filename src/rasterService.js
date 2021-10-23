@@ -159,41 +159,31 @@ Service.prototype = {
 		this.addtabdiagrams(p.services.indexOf(this.id));
 		this.addtabsinglefs(p.services.indexOf(this.id));
 		$('#bottomtabsdia').sortable({
+			axis: 'x',
 			stop: function(/*evt,ui*/) {
-				var p = Project.get(Project.cid);
 				// Set the new order of services
 				var arr = $('#bottomtabsdia').sortable('toArray');
 				arr.forEach(function(v,i,a) {a[i] = nid2id(v);});
-				p.services = arr;
-				// Remove all service tabs on Single Failures, and re-create.
-				$('#bottomtabssf').empty();
-				arr.forEach(function(v/*,i,a*/) {
-					var s = Service.get(v);
-					s._addtabsinglefs_tabonly();
-				});
-				p.store();
-				$('#diagrams_body').tabs('refresh');
-				$('#singlefs_body').tabs('refresh');
-				transactionCompleted("reordering services");
+
+				new Transaction('serviceReorder',
+					{project: p.id, list: p.services},
+					{project: p.id, list: arr},
+					_("Reorder services")
+				);
 			}
 		});
 		$('#bottomtabssf').sortable({
+			axis: 'x',
 			stop: function(/*evt,ui*/) {
-				var p = Project.get(Project.cid);
 				// Set the new order of services
 				var arr = $('#bottomtabssf').sortable('toArray');
 				arr.forEach(function(v,i,a) {a[i] = nid2id(v);});
-				p.services = arr;
-				// Remove all service tabs on Diagrams, and re-create.
-				$('#bottomtabsdia').empty();
-				arr.forEach(function(v/*,i,a*/) {
-					var s = Service.get(v);
-					s._addtabdiagrams_tabonly();
-				});
-				p.store();
-				$('#diagrams_body').tabs('refresh');
-				$('#singlefs_body').tabs('refresh');
-				transactionCompleted("reordering services");
+
+				new Transaction('serviceReorder',
+					{project: p.id, list: p.services},
+					{project: p.id, list: arr},
+					_("Reorder services")
+				);
 			}
 		});
 		SizeDOMElements();

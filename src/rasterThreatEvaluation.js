@@ -412,10 +412,6 @@ ThreatAssessment.prototype = {
 					[{threat: te.id, freq: enteredText}],
 					_("Edit frequency")
 				);
-//				te.setfreq(enteredText);
-//				$('#dth_'+prefix+'total'+te.id).text(te.total);
-//				c.setmarker();
-//				transactionCompleted("Vuln setfreq");
 				return '<span>'+enteredText+'</span>';
 			}
 		});
@@ -478,11 +474,6 @@ ThreatAssessment.prototype = {
 					[{threat: te.id, impact: enteredText}],
 					_("Edit impact")
 				);
-//				te.setimpact(enteredText);
-//				$('#dth_'+prefix+'total'+te.id).text(te.total);
-//				te.setminimpact(te.minimpact);
-//				c.setmarker();
-//				transactionCompleted("Vuln setimpact");
 				return '<span>'+enteredText+'</span>';
 			}
 		});
@@ -496,9 +487,7 @@ ThreatAssessment.prototype = {
 					[{threat: te.id, remark: enteredText}],
 					_("Edit remark")
 				);
-//				te.setremark(enteredText);
-//				transactionCompleted("Vuln setremark");
-				return H(te.remark); 
+				return H(te.remark);
 			}
 		});
 	
@@ -534,12 +523,6 @@ ThreatAssessment.prototype = {
 						[{component: c.id, threat: th.id, prefix: prefix}],
 						_("Remove vulnerability '%%'",th.title)
 					);
-//					c.removethrass(th.id);
-//					var nc = NodeCluster.removecomponent_threat(Project.cid,th.component,th.title,th.type);
-//					$('#dth'+prefix+'_'+th.id).remove();
-//					c.setmarker();
-//					refreshComponentThreatAssessmentsDialog();
-//					transactionCompleted("Vuln delete");
 				};
 				newRasterConfirm(_("Delete vulnerability?"),
 					_("Vulnerabilities should only be deleted when physically impossible.")+
@@ -784,21 +767,6 @@ Threat.prototype = {
 				}
 
 				new Transaction('threatCreate', undo_data, do_data, _("Remove vulnerability '%%'",cl.title));
-//				Project.get(th.project).removethreat(th.id);
-//				// Count how many components have this threat
-//				var it = new ComponentIterator({project: th.project, match: th.type});
-//				for (it.first(); it.notlast(); it.next()) {
-//					var cm = it.getcomponent();
-//					NodeCluster.removecomponent_threat(Project.cid,cm.id,th.title,th.type,true);
-//					for (var i=0; i<cm.thrass.length; i++) {
-//						var ta = ThreatAssessment.get(cm.thrass[i]);
-//						if (isSameString(ta.title,th.title)) {
-//							cm.removethrass(ta.id);
-//						}
-//					}
-//				}
-//				refreshComponentThreatAssessmentsDialog();
-//				transactionCompleted("Checklist remove");
 			});
 		});
 	},
