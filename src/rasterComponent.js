@@ -309,7 +309,7 @@ Component.prototype = {
 			// present in the clusters.
 			nd.addtonodeclusters();
 		}
-		if (asproxy) {
+		if (this.single && asproxy) {
 			// remove the previous representative
 			let n = Node.get(this.nodes[1]);
 			n.removefromnodeclusters();

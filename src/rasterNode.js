@@ -331,10 +331,24 @@ Node.prototype = {
 			} else if (n==-1) {
 				// This node drops out of a class
 				let p = Project.get(prevcomponent.project);
-
-				// This node drops out of the class, but the class continues to exist
+				
+				// If the class is singular and continues to exist, and if this node is the proxy for that
+				// class in the node clusters, a new proxy node has to be selected.
+				if (prevcomponent.single && prevcomponent.nodes[0]==this.id && prevcomponent.nodes.length>2) {
+					// Two chained transactions: first select a new proxy (and fix all clusters), then rename the node.
+					// To undo that, rename the node, then make it the proxy again.
+					new Transaction('swapProxy',
+						[prevcomponent.id],
+						[prevcomponent.id],
+						null, true
+					);
+				}
 				new Transaction('nodeTitle',
-					[{id: this.id, title: this.title, suffix: this.suffix, component: prevcomponent.id}],
+					[{id: this.id, title: this.title, suffix: this.suffix,
+						component: prevcomponent.id, accordionopened: prevcomponent.accordionopened, single: prevcomponent.single,
+						asproxy: (prevcomponent.single && prevcomponent.nodes[0]==this.id),
+						clusters: NodeCluster.structuredata(p.id)
+					}],
 					[{id: this.id, title: str, component: createUUID(), thrass: p.defaultthreatdata(prevcomponent.type)}],
 					_("Rename node")
 				);
@@ -408,7 +422,7 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 	htmltitle: function() {
 		// Node may have a suffix even when the only member of its "class"
 		let cm = Component.get(this.component);
-		if (cm && cm.nodes.length>1) {
+		if (cm && cm.nodes.length>1 && !cm.single) {
 			return H(this.title) + '<sup>&thinsp;'+H(this.suffix)+'</sup>';
 		} else {
 			return H(this.title);

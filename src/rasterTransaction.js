@@ -60,7 +60,7 @@ var Transaction = function(knd,undo_data,do_data,descr,chain) {
 checkForErrors();
 let S1 = exportProject(Project.cid);
 	this.perform();
-	transactionCompleted("+  "+this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
+	transactionCompleted("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
 
 checkForErrors();
 let S2 = exportProject(Project.cid);
@@ -72,10 +72,12 @@ checkForErrors();
 let S4 = exportProject(Project.cid);
 if (S1!=S3) {
 	logdiff(S1,S3,"in new: perform + undo != initial situation");
-} else if (S2!=S4) {
+}
+if (S2!=S4) {
 	logdiff(S2,S4,"in new: perform != perform + undo + redo");
 }
-
+/* ^^ end test */
+	
 	Transaction.current = this;
 	Transaction.head = this;
 	Transaction.updateUI();
@@ -151,7 +153,7 @@ if (S1!=S3) {
 } else if (S2!=S4) {
 	logdiff(S2,S4,"in redo: undo,redo != nil");
 }
-		transactionCompleted("<"+ (Transaction.current.chain?"↓":" ") +" "+Transaction.current.kind);
+		transactionCompleted(">"+ (Transaction.current.chain?"↓":" ") +" "+Transaction.current.kind);
 	} while(Transaction.current.chain==true);
 	Transaction.updateUI();
 };
@@ -388,13 +390,13 @@ Transaction.prototype = {
 
 		case 'nodeTitle': {
 			// Change the name of a node
-			// What can change when you rename one single node?
-			// 1- only the node title is changed (actor, notes)
-			// 2- the node title and its component title are changed (no classes involved)
-			// 3- the node title is changed, its old component loses a node, and a fresh component is created
-			// 4- the node title is changed, its old component loses a node and stops being a class; a fresh node is created
-			// 5- the node title is changed, its old component loses a node, the node gains a suffix and becomes part of a class
-			// 6- the node title is changed, its old component loses a node and stops being a class; the node gains a suffix and becomes part of a class
+			// What can change, in addition to the node title, when you rename one single node?
+			// 1- nothing (actor, notes)
+			// 2- only the component title is changed (all other types, when no classes are involved)
+			// 3- its old component loses a node, and a fresh component is created
+			// 4- its old component loses a node and stops being a class; a fresh component is created
+			// 5- its old component loses a node, the node gains a suffix and becomes part of a class
+			// 6- its old component loses a node and stops being a class; the node gains a suffix and becomes part of a class
 			// data: array of objects; each object has these properties (some properties are optional)
 			//  id: id of the node
 			//  title: title of the node
@@ -402,47 +404,64 @@ Transaction.prototype = {
 			//  thrass: array of threat assessments when the component needs to be created
 			//		id, title, description, freq, impact, remark: as of the threat assessment
 			//  component: id of the component
+			//	accordionopened: folding state of the component
+			//	single: class-type of the component
+			//	asproxy: node should be added as proxy for the class to which it will belong
 			for (const d of data) {
 				let rn = Node.get(d.id);
+				let cm;
 				if (rn.type=='tNOT' || rn.type=='tACT') {
 					rn.settitle(d.title);
 					continue;
 				}
 				if (!d.component) {
 					// Simple case, no classes involved. Set title on component and its node
-					Component.get(rn.component).setclasstitle(d.title);
-					continue;
-				}
-
-				// More complex cases
-				let cm = Component.get(d.component);
-				if (!cm) {
-					// create a new component
-					cm = new Component(rn.type,rn.project,d.component);
-					cm.title = d.title;
-					for (const t of d.thrass) {
-						let ta = new ThreatAssessment(t.type, t.id);
-						ta.settitle(t.title);
-						ta.setdescription(t.description);
-						ta.setremark(t.remark);
-						ta.setfreq(t.freq);
-						ta.setimpact(t.impact);
-						cm.addthrass(ta);
+					cm = Component.get(rn.component);
+					cm.setclasstitle(d.title);
+				} else {
+					// More complex cases
+					cm = Component.get(d.component);
+					if (!cm) {
+						// create a new component
+						cm = new Component(rn.type,rn.project,d.component);
+						cm.title = d.title;
+						for (const t of d.thrass) {
+							let ta = new ThreatAssessment(t.type, t.id);
+							ta.settitle(t.title);
+							ta.setdescription(t.description);
+							ta.setremark(t.remark);
+							ta.setfreq(t.freq);
+							ta.setimpact(t.impact);
+							cm.addthrass(ta);
+						}
 					}
-					cm.accordionopened = d.accordionopened;
+					if (d.component!=rn.component) {
+						let oldcm = Component.get(rn.component);
+						oldcm.removenode(rn.id);
+						oldcm.repaintmembertitles();
+					}
+					if (d.accordionopened) { cm.accordionopened = (d.accordionopened===true); }
+					if (d.single) { cm.single = (d.single===true); }
+					if (cm.nodes.indexOf(rn.id)==-1) {
+						cm.addnode(rn.id, d.asproxy);
+					}
+					rn.settitle(d.title,d.suffix);
+					rn.setmarker();
+					cm.repaintmembertitles();
 				}
-				if (d.component!=rn.component) {
-					let oldcm = Component.get(rn.component);
-					oldcm.removenode(rn.id);
-					oldcm.repaintmembertitles();
-				}
-				if (cm.nodes.indexOf(rn.id)==-1) {
-					cm.addnode(rn.id);
-				}
-				rn.settitle(d.title,d.suffix);
-				rn.setmarker();
-				cm.repaintmembertitles();
 				RefreshNodeReportDialog();
+				if (!d.clusters) { d.clusters = []; }
+				for (const cl of d.clusters) {
+					rebuildCluster(cl);
+				}
+				// Also repaint clusters in which this node appears
+				cm.thrass.forEach( function(v) {
+					let ta = ThreatAssessment.get(v);
+					let it = new NodeClusterIterator({project: cm.project, title: ta.title, type: ta.type});
+					for (it.first(); it.notlast(); it.next()) {
+						repaintCluster(it.getNodeClusterid());
+					}
+				});
 			}
 			break;
 		}
@@ -480,6 +499,30 @@ Transaction.prototype = {
 			for (const d of data) {
 				let s = Service.get(d.id);
 				s.settitle(d.title);
+			}
+			break;
+		}
+
+		case 'swapProxy': {
+			// Change the proxy-node used in clusters on behalf of a singular class.
+			// Performing this transaction twice restores the original situation.
+			// data: array of component-ids
+			for (const d of data) {
+				let cm = Component.get(d);
+				// Change the order for the nodes of the component
+				let oldid = cm.nodes[0];
+				let newid = cm.nodes[1];
+				cm.nodes[0] = newid;
+				cm.nodes[1] = oldid;
+				cm.store();
+				// Make changes to all clusters
+				let it = new NodeClusterIterator({project: cm.project, match: cm.type});
+				for (it.first(); it.notlast(); it.next()) {
+					let nc = it.getNodeCluster();
+					nc.childnodes.forEach(function(v,i,a) { if (a[i]==oldid) a[i]=newid; });
+					nc.store();
+					repaintCluster(nc.root());
+				}
 			}
 			break;
 		}
