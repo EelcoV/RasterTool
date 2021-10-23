@@ -3,7 +3,7 @@
  */
 
 /* globals
- H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, transactionCompleted, trimwhitespace, workspacedrophandler
+ H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, trimwhitespace, workspacedrophandler
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -159,7 +159,8 @@ Service.prototype = {
 		this.addtabdiagrams(p.services.indexOf(this.id));
 		this.addtabsinglefs(p.services.indexOf(this.id));
 		$('#bottomtabsdia').sortable({
-			axis: 'x',
+			containment: 'parent',
+			scroll: false,
 			stop: function(/*evt,ui*/) {
 				// Set the new order of services
 				var arr = $('#bottomtabsdia').sortable('toArray');
@@ -173,7 +174,8 @@ Service.prototype = {
 			}
 		});
 		$('#bottomtabssf').sortable({
-			axis: 'x',
+			containment: 'parent',
+			scroll: false,
 			stop: function(/*evt,ui*/) {
 				// Set the new order of services
 				var arr = $('#bottomtabssf').sortable('toArray');

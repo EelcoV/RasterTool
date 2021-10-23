@@ -2773,10 +2773,6 @@ function bottomTabsCloseHandler(event) {
 				_("Remove service %%", s.title),
 				false
 			);
-//			p.removeservice( s.id );
-//			$('#diagrams_body').tabs('refresh');
-//			$('#singlefs_body').tabs('refresh');
-//			transactionCompleted("Service delete");
 		}
 	);
 }
@@ -3493,9 +3489,6 @@ function showLabelEditForm() {
 						newlabels[i] = Project.defaultlabels[i];
 					}
 				}
-//			p.store();
-//			$(this).dialog('close');
-//			transactionCompleted("Label edit");
 			new Transaction('labelEdit',
 				[{id: p.id, labels: p.labels}],
 				[{id: p.id, labels: newlabels}],
@@ -3620,11 +3613,6 @@ function refreshComponentThreatAssessmentsDialog(force) {
 			 }],
 			 _("New vulnerability")
 		);
-//		var c = Component.get(nid2id(this.id));
-//		var th = new ThreatAssessment((c.type=='tUNK' ? 'tEQT' : c.type));
-//		c.addthrass(th);
-//		th.addtablerow('#threats'+c.id,'dia');
-//		transactionCompleted("Vuln add");
 	});
 	$('#dthcopydia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
