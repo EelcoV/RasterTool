@@ -201,7 +201,7 @@ Component.prototype = {
 		function _newsuffix(cm,except) {
 			let j;
 			let sfx = [];
-			cm.nodes.forEach(n => sfx.push(Node.get(n).suffix));
+			for (const n of cm.nodes) sfx.push(Node.get(n).suffix);
 
 			for (j=0; j<26; j++) {
 				var chr = String.fromCharCode(String('a').charCodeAt(0)+j);
@@ -262,7 +262,7 @@ Component.prototype = {
 			}
 		}
 		// Second: repaint all member titles. This will do .store() on all member nodes
-		this.nodes.forEach(n => Node.get(n).settitle(this.title));
+		for (const n of this.nodes) Node.get(n).settitle(this.title);
 	},
 
 	_settitle: function(str) {
@@ -373,7 +373,7 @@ Component.prototype = {
 	
 	threatdata: function() {
 		let ths = [];
-		this.thrass.forEach(tid => ths.push(ThreatAssessment.get(tid).toobject));
+		for (const tid of this.thrass) ths.push(ThreatAssessment.get(tid).toobject);
 		return ths;
 	},
 

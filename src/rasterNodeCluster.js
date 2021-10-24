@@ -428,7 +428,7 @@ NodeCluster.prototype = {
 		};
 		c.childnode = this.childnodes.slice();
 		c.childcluster = [];
-		this.childclusters.forEach(cc => c.childcluster.push(NodeCluster.get(cc).structure()));
+		for (const cc of this.childclusters) c.childcluster.push(NodeCluster.get(cc).structure());
 		return c;
 	},
 

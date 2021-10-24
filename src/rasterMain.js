@@ -1867,11 +1867,11 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		cm.title = lc.l;
 		if (upgrade_1_2) {
 			// Component title may have been made unique case-insensitive
-			cm.nodes.forEach(n => {
+			for (const n of cm.nodes) {
 				rn = Node.get(n);
 				rn.settitle(cm.title);
 				rn.store();
-			});
+			}
 		}
 		cm.store();
 		// Delay calculation until ThrEvals have been loaded
@@ -1995,8 +1995,8 @@ function exportProject(pid) {
 	p.date = olddate;
 	NodeExported = [];
 	ComponentExported = [];
-	p.threats.forEach(th => s += exportThreat(th));
-	p.services.forEach(s => s += exportService(s));
+	for (const th of p.threats) s += exportThreat(th);
+	for (const sid of p.services) s += exportService(sid);
 	var it = new NodeClusterIterator({project: pid});
 	for (it.first(); it.notlast(); it.next()) {
 		s += exportNodeCluster(it.getNodeClusterid());
@@ -2025,7 +2025,7 @@ function exportNode(n) {
 	var rn = Node.get(n);
 	var s = rn.exportstring();
 	NodeExported.push(n);
-	rn.connect.forEach(c => s += exportNode(c));
+	for (const c of rn.connect) s += exportNode(c);
 	if (rn.component!=null) {
 		s += exportComponent(rn.component);
 	}
@@ -2039,8 +2039,8 @@ function exportComponent(c) {
 	var cm = Component.get(c);
 	var s = cm.exportstring();
 	ComponentExported.push(c);
-	cm.nodes.forEach(n => s += exportNode(n));
-	cm.thrass.forEach(th => s += exportThreatAssessment(th));
+	for (const n of cm.nodes) s += exportNode(n);
+	for (const th of cm.thrass) s += exportThreatAssessment(th);
 	return s;
 }
 
@@ -3053,13 +3053,13 @@ function initTabDiagrams() {
 		let cm = Component.get(rn.component);
 		if (!cm.single) {
 			// Only allow Class to become singular iff there is at most one member node per service
-			let count = {};
-			Project.get(cm.project).services.forEach(s => count[s]=0);
-			cm.nodes.forEach(n => count[Node.get(n).service]++);
-			for (const s in count) {
+			let count =[];
+			for (const s of Project.get(cm.project).services) count[s]=0;
+			for (const n of cm.nodes) count[Node.get(n).service]++;
+			for (const s of count) {
 				if(count[s]<2) continue;
 				// Flash the offending nodes
-				cm.nodes.forEach(n => $('#node'+n).effect('pulsate', { times:2 }, 800) );
+				for (const n of cm.nodes) $('#node'+n).effect('pulsate', { times:2 }, 800);
 				return;
 			}
 		}
@@ -3220,19 +3220,19 @@ function initTabDiagrams() {
 			return;
 		}
 		// Start blinking
-		nodes.forEach(n => $(Node.get(n).jnid).effect('pulsate', { times:10 }, 4000) );
+		for (const n of nodes) $(Node.get(n).jnid).effect('pulsate', { times:10 }, 4000);
 		rasterConfirm(_("Delete %% %% in selection?", num, plural(_("node"),_("nodes"),num)),
 			_("Are you sure you want to delete all selected nodes?"),
 			_("Delete %% %%", num, plural(_("node"),_("nodes"),num)),_("Cancel"),
 			function() {
 				// Stop any leftover pulsate effects
-				nodes.forEach(n => $(Node.get(n).jnid).stop(true,true) );
+				for (const n of nodes) $(Node.get(n).jnid).stop(true,true);
 				nodesDelete(nodes, _("Delete selection"), false);
 				$('#selectrect').hide();
 			},
 			function() {
 				// Stop any leftover pulsate effects
-				nodes.forEach(n => $(Node.get(n).jnid).stop(true,true).show().css("opacity","") );
+				for (const n of nodes) $(Node.get(n).jnid).stop(true,true).show().css("opacity","");
 			});
 	});
 	$('#mi_sc').on('mouseenter',function(){
@@ -3251,11 +3251,11 @@ function initTabDiagrams() {
 			}
 			let undo_data = [];
 			let data = [];
-			nodes.forEach( n=> {
+			for (const n of nodes) {
 				let rn = Node.get(n);
 				undo_data.push({id: n, label: rn.color});
 				data.push({id: n, label: c});
-			});
+			}
 			new Transaction('nodeLabel', undo_data, data, _("Change color to %%",c));
 		};
 	}
@@ -3304,7 +3304,7 @@ function initTabDiagrams() {
 		return function() {
 			var it = new ThreatIterator(Project.cid,typ);
 			var newth = [];
-			ThreatAssessment.Clipboard.forEach(clip => {
+			for (const clip of ThreatAssessment.Clipboard) {
 				// Check whether a threat with same title already exists
 				for (it.first(); it.notlast(); it.next()) {
 					var th = it.getthreat();
@@ -3324,8 +3324,8 @@ function initTabDiagrams() {
 					Project.get(Project.cid).addthreat(th.id);
 					newth.push(th.id);
 				}
-			});
-			newth.forEach(th => Threat.get(th).addtablerow('#'+typ+'threats') );
+			}
+			for (const th of newth) Threat.get(th).addtablerow('#'+typ+'threats');
 			transactionCompleted("Checklist vuln paste");
 		};
 	};
@@ -3355,7 +3355,7 @@ function initTabDiagrams() {
 function nodesDelete(nodes,descr,chain) {
 	let pid = Node.get(nodes[0]).project;
 	let do_data={nodes: [], clusters: []}, undo_data={nodes: [], clusters: []};
-	nodes.forEach(n => {
+	for (const n of nodes) {
 		let rn = Node.get(n);
 		if (rn.type=='tNOT' || rn.type=='tACT') {
 			undo_data.nodes.push({
@@ -3393,7 +3393,7 @@ function nodesDelete(nodes,descr,chain) {
 			connect: rn.connect.slice()
 		});
 		do_data.nodes.push({id: rn.id});
-	});
+	}
 	undo_data.clusters = NodeCluster.structuredata(pid);
 	new Transaction('nodeCreateDelete', undo_data, do_data, descr, chain);
 }
@@ -3609,10 +3609,10 @@ function refreshComponentThreatAssessmentsDialog(force) {
 	$('#dthcopydia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
 		ThreatAssessment.Clipboard = [];
-		cm.thrass.forEach(tid => {
+		for (const tid of cm.thrass) {
 			var te = ThreatAssessment.get(tid);
 			ThreatAssessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
-		});
+		}
 	});
 	$('#dthpastedia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
@@ -3633,7 +3633,7 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		cursor: 'ns-resize',
 		deactivate: function(/*event,ui*/) {
 			var newlist = [];
-			this.children.forEach(ch => newlist.push(nid2id(ch.id)) );
+			for (const ch of this.children) newlist.push(nid2id(ch.id));
 			if (newlist.length != c.thrass.length) {
 				bugreport("internal error in sorting","refreshComponentThreatAssessmentsDialog");
 			}
@@ -3649,11 +3649,11 @@ function refreshChecklistsDialog(type,force) {		// eslint-disable-line no-unused
 	// Remove DOM for all checklist threats, and re-add them in the right order
 	$('#'+type+'threats').empty();
 	let p = Project.get(Project.cid);
-	p.threats.forEach( id=> {
+	for (const id of p.threats) {
 		let th = Threat.get(id);
 		if (th.type!=type)  return;
 		th.addtablerow('#'+type+'threats');
-	});
+	}
 }
 
 function displayComponentThreatAssessmentsDialog(cid,where) {

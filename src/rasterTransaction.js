@@ -220,8 +220,7 @@ Transaction.prototype = {
 					nd2.setmarker();
 				} else {
 					let jsP = Service.get(nd1.service)._jsPlumb;
-					let connA = jsP.getConnections({scope:'center'});
-					connA.forEach(conn => {
+					for (const conn of jsP.getConnections({scope:'center'})) {
 						// In jsPlumb, connections have a source and target, but in Raster connections are symmetric
 						let src = nid2id(conn.sourceId);
 						let dst = nid2id(conn.targetId);
@@ -231,7 +230,7 @@ Transaction.prototype = {
 							jsP.deleteConnection(conn);
 							nd1.detach_center(nd2);
 						}
-					});
+					}
 				}
 			}
 			break;
@@ -319,11 +318,11 @@ Transaction.prototype = {
 				if (d.type==null)  continue;
 				let rn = Node.get(d.id);
 				if (d.connect!=null) {
-					d.connect.forEach(n => {
+					for (const n of d.connect) {
 						let othernode = Node.get(n);
 						rn.attach_center(othernode);
 						othernode.setmarker();
-					});
+					}
 				}
 				rn.setmarker();
 			}
@@ -455,13 +454,13 @@ Transaction.prototype = {
 					rebuildCluster(cl);
 				}
 				// Also repaint clusters in which this node appears
-				cm.thrass.forEach(thid =>  {
+				for (const thid of cm.thrass) {
 					let ta = ThreatAssessment.get(thid);
 					let it = new NodeClusterIterator({project: cm.project, title: ta.title, type: ta.type});
 					for (it.first(); it.notlast(); it.next()) {
 						repaintCluster(it.getNodeClusterid());
 					}
-				});
+				}
 			}
 			break;
 		}
@@ -516,11 +515,11 @@ Transaction.prototype = {
 			// Remove all service tabs on Diagrams and Single Failures, and re-create.
 			$('#bottomtabssf').empty();
 			$('#bottomtabsdia').empty();
-			data.list.forEach(sid => {
+			for (const sid of data.list) {
 				var s = Service.get(sid);
 				s._addtabsinglefs_tabonly();
 				s._addtabdiagrams_tabonly();
-			});
+			}
 			p.store();
 			$('#diagrams_body').tabs('refresh');
 			$('#singlefs_body').tabs('refresh');
@@ -723,7 +722,7 @@ Transaction.prototype = {
 				it = new ComponentIterator({project: d.project, match: d.type});
 				for (it.first(); it.notlast(); it.next()) {
 					let cm = it.getcomponent();
-					cm.thrass.forEach(t => {
+					for (const t of cm.thrass) {
 						let ta = ThreatAssessment.get(t);
 						if (d.old_t && isSameString(ta.title,d.old_t)) {
 							ta.settitle(d.new_t);
@@ -731,7 +730,7 @@ Transaction.prototype = {
 						if (d.old_d && isSameString(ta.description,d.old_d)) {
 							ta.setdescription(d.new_d);
 						}
-					});
+					}
 				}
 
 				it = new NodeClusterIterator({project: d.project});
@@ -854,7 +853,7 @@ function rebuildCluster(c) {
 	ta.setremark(c.thrass.remark);
 	ta.setfreq(c.thrass.freq);
 	ta.setimpact(c.thrass.impact);
-	c.childcluster.forEach(cc => rebuildCluster(cc));
+	for (const cc of c.childcluster) rebuildCluster(cc);
 	cl.store();
 }
 

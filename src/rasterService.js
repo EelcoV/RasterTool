@@ -164,7 +164,7 @@ Service.prototype = {
 			stop: function(/*evt,ui*/) {
 				// Set the new order of services
 				var arr = $('#bottomtabsdia').sortable('toArray');
-				arr.forEach(function(v,i,a) {a[i] = nid2id(v);});
+				arr.forEach(function(v,i) {arr[i] = nid2id(v);});
 
 				new Transaction('serviceReorder',
 					{project: p.id, list: p.services},
@@ -179,7 +179,7 @@ Service.prototype = {
 			stop: function(/*evt,ui*/) {
 				// Set the new order of services
 				var arr = $('#bottomtabssf').sortable('toArray');
-				arr.forEach(function(v,i,a) {a[i] = nid2id(v);});
+				arr.forEach(function(v,i) {arr[i] = nid2id(v);});
 
 				new Transaction('serviceReorder',
 					{project: p.id, list: p.services},
