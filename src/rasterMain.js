@@ -1526,6 +1526,10 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			exists = (arr[j].id==id);
 		}
 		return exists;
+// Should we not write this as
+//		return (arr.indexOf(id)!=-1);
+// or
+//		return (arr.includes(id));
 	}
 	// Returns:
 	//  for all j, 0<=j<arr2.length, containsID(arr,arr2[j])
@@ -1537,6 +1541,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			}
 		}
 		return forall;
+// Should we not write this as
+//		return arr2.every(v => arr.includes(v));
 	}
 
 	var i,j,k,n;
@@ -1989,12 +1995,8 @@ function exportProject(pid) {
 	p.date = olddate;
 	NodeExported = [];
 	ComponentExported = [];
-	for (i=0; i<p.threats.length; i++) {
-		s += exportThreat(p.threats[i]);
-	}
-	for (var i=0; i<p.services.length; i++) {
-		s += exportService(p.services[i]);
-	}
+	p.threats.forEach(th => s += exportThreat(th));
+	p.services.forEach(s => s += exportService(s));
 	var it = new NodeClusterIterator({project: pid});
 	for (it.first(); it.notlast(); it.next()) {
 		s += exportNodeCluster(it.getNodeClusterid());
@@ -2023,9 +2025,7 @@ function exportNode(n) {
 	var rn = Node.get(n);
 	var s = rn.exportstring();
 	NodeExported.push(n);
-	for (var i=0; i<rn.connect.length; i++) {
-		s += exportNode(rn.connect[i]);
-	}
+	rn.connect.forEach(c => s += exportNode(c));
 	if (rn.component!=null) {
 		s += exportComponent(rn.component);
 	}
@@ -2039,12 +2039,8 @@ function exportComponent(c) {
 	var cm = Component.get(c);
 	var s = cm.exportstring();
 	ComponentExported.push(c);
-	for (var i=0; i<cm.nodes.length; i++) {
-		s += exportNode(cm.nodes[i]);
-	}
-	for (i=0; i<cm.thrass.length; i++) {
-		s += exportThreatAssessment(cm.thrass[i]);
-	}
+	cm.nodes.forEach(n => s += exportNode(n));
+	cm.thrass.forEach(th => s += exportThreatAssessment(th));
 	return s;
 }
 
@@ -3308,31 +3304,28 @@ function initTabDiagrams() {
 		return function() {
 			var it = new ThreatIterator(Project.cid,typ);
 			var newth = [];
-			for (var j=0; j<ThreatAssessment.Clipboard.length; j++) {
+			ThreatAssessment.Clipboard.forEach(clip => {
 				// Check whether a threat with same title already exists
 				for (it.first(); it.notlast(); it.next()) {
 					var th = it.getthreat();
-					if (ThreatAssessment.Clipboard[j].t==th.title) break;
+					if (clip.t==th.title) break;
 				}
 
 				if (it.notlast()) {
 					// Paste into existing threat
-					th.setdescription(ThreatAssessment.Clipboard[j].d);
+					th.setdescription(clip.d);
 					$('#threat'+th.id).remove();
 					th.addtablerow('#'+typ+'threats');
 				} else {
 					// Create a new threat
 					th = new Threat(Project.cid,typ);  // Ignore the type in the Clipboard. Must always be typ.
-					th.settitle(ThreatAssessment.Clipboard[j].t);
-					th.setdescription(ThreatAssessment.Clipboard[j].d);
+					th.settitle(clip.t);
+					th.setdescription(clip.d);
 					Project.get(Project.cid).addthreat(th.id);
 					newth.push(th.id);
 				}
-			}
-			for (var i=0; i<newth.length; i++) {
-				th = Threat.get(newth[i]);
-				th.addtablerow('#'+typ+'threats');
-			}
+			});
+			newth.forEach(th => Threat.get(th).addtablerow('#'+typ+'threats') );
 			transactionCompleted("Checklist vuln paste");
 		};
 	};
@@ -3583,10 +3576,9 @@ function refreshComponentThreatAssessmentsDialog(force) {
 	$('#componentthreats').html(snippet);
 	c.setmarkeroid(null);
 
-	for (var i=0; i<c.thrass.length; i++) {
-		if (c.thrass[i]==null) continue;
-		var th = ThreatAssessment.get(c.thrass[i]);
-		th.addtablerow('#threats'+c.id,'dia');
+	for (const th of c.thrass) {
+		if (th==null) continue;
+		ThreatAssessment.get(th).addtablerow('#threats'+c.id,'dia');
 	}
 	$('#dthadddia'+c.id).button();
 	$('#dthcopydia'+c.id).button();
@@ -3617,18 +3609,18 @@ function refreshComponentThreatAssessmentsDialog(force) {
 	$('#dthcopydia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
 		ThreatAssessment.Clipboard = [];
-		for (var i=0; i<cm.thrass.length; i++) {
-			var te = ThreatAssessment.get(cm.thrass[i]);
+		cm.thrass.forEach(tid => {
+			var te = ThreatAssessment.get(tid);
 			ThreatAssessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
-		}
+		});
 	});
 	$('#dthpastedia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
 		var newte = cm.mergeclipboard();
-		for (i=0; i<cm.thrass.length; i++) {
-			th = ThreatAssessment.get(cm.thrass[i]);
-			if (newte.indexOf(cm.thrass[i])==-1) {
-				$('#dthdia_'+th.id).remove();
+		for (const thid of cm.thrass) {
+			let th = ThreatAssessment.get(thid);
+			if (newte.indexOf(thid)==-1) {
+				$('#dthdia_'+thid).remove();
 			}
 			th.addtablerow('#threats'+cm.id,'dia');
 		}
@@ -3641,9 +3633,7 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		cursor: 'ns-resize',
 		deactivate: function(/*event,ui*/) {
 			var newlist = [];
-			for (var i=0; i<this.children.length; i++) {
-				newlist.push( nid2id(this.children[i].id) );
-			}
+			this.children.forEach(ch => newlist.push(nid2id(ch.id)) );
 			if (newlist.length != c.thrass.length) {
 				bugreport("internal error in sorting","refreshComponentThreatAssessmentsDialog");
 			}
@@ -3852,7 +3842,6 @@ function paintSingleFailures(s) {
 	$('#somesf'+s.id+' fieldset').controlgroup('refresh');
 
 	for (it.first(); it.notlast(); it.next()) {
-		var i;
 		var cm = it.getcomponent();
 		//if (cm.type=='tACT') continue;
 		var snippet = '\n\
@@ -3880,8 +3869,8 @@ function paintSingleFailures(s) {
 			var p = Project.get(cm.project);
 			var labels = [];
 			var str;
-			for (i=0; i<cm.nodes.length; i++) {
-				var rn = Node.get(cm.nodes[i]);
+			for (const n of cm.nodes) {
+				let rn = Node.get(n);
 				if (rn.color!='none' && labels.indexOf(rn.color)==-1) {
 					labels.push(rn.color);
 				}
@@ -3893,9 +3882,7 @@ function paintSingleFailures(s) {
 				snippet = snippet.replace(/_LB_/, str);
 			} else {
 				str = '<div class="sflabelgroup">';
-				for (i=0; i<labels.length; i++) {
-					str += '<div class="smallblock B'+labels[i]+'" title="' + H(p.strToLabel(labels[i])) + '"></div>';
-				}
+				for (const l of labels) str += '<div class="smallblock B'+l+'" title="' + H(p.strToLabel(l)) + '"></div>';
 				str += '</div>';
 				snippet = snippet.replace(/_LB_/, str);
 			}
@@ -3904,10 +3891,7 @@ function paintSingleFailures(s) {
 		}
 
 		snippet += "<div class='sfa_sortable'>\n";
-		for (i=0; i<cm.thrass.length; i++) {
-			var te = ThreatAssessment.get(cm.thrass[i]);
-			snippet += te.addtablerow_textonly("sfa"+s.id+'_'+cm.id);
-		}
+		for (const thid of cm.thrass) snippet += ThreatAssessment.get(thid).addtablerow_textonly("sfa"+s.id+'_'+cm.id);
 		snippet += "</div>\n";
 		snippet += '\n\
 			 <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="_BA_">\n\
@@ -3935,10 +3919,7 @@ function paintSingleFailures(s) {
 	for (it.first(); it.notlast(); it.next()) {
 		cm = it.getcomponent();
 		cm.setmarkeroid("#sfamark"+s.id+'_'+cm.id);
-		for (i=0; i<cm.thrass.length; i++) {
-			te = ThreatAssessment.get(cm.thrass[i]);
-			te.addtablerow_behavioronly('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
-		}
+		for (const thid of cm.thrass) ThreatAssessment.get(thid).addtablerow_behavioronly('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
 		var addhandler = function(s,cm) {
 			return function() {
 				var th = new ThreatAssessment( (cm.type=='tUNK' ? 'tEQT' : cm.type) );
@@ -3951,8 +3932,8 @@ function paintSingleFailures(s) {
 		var copyhandler = function(s,cm) {
 			return function() {
 				ThreatAssessment.Clipboard = [];
-				for (var i=0; i<cm.thrass.length; i++) {
-					var te = ThreatAssessment.get(cm.thrass[i]);
+				for (const thid of cm.thrass) {
+					var te = ThreatAssessment.get(thid);
 					ThreatAssessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
 				}
 			};
@@ -3960,9 +3941,9 @@ function paintSingleFailures(s) {
 		var pastehandler = function(s,cm) {
 			return function() {
 				var newte = cm.mergeclipboard();
-				for (i=0; i<cm.thrass.length; i++) {
-					var th = ThreatAssessment.get(cm.thrass[i]);
-					if (newte.indexOf(cm.thrass[i])==-1) {
+				for (const thid of cm.thrass) {
+					var th = ThreatAssessment.get(thid);
+					if (newte.indexOf(thid)==-1) {
 						$('#dthsfa'+s.id+'_'+cm.id+'_'+th.id).remove();
 					}
 					th.addtablerow('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
@@ -3995,10 +3976,7 @@ function paintSingleFailures(s) {
 			deactivate: function(/*event,ui*/) {
 				var newlist = [];
 				var cm = Component.get( nid2id(this.previousElementSibling.id) );
-				for (var i=0; i<this.children.length; i++) {
-//					var obj = $('#' + this.children[i].id);
-					newlist.push( nid2id(this.children[i].id) );
-				}
+				for (const ch of this.children) newlist.push( nid2id(ch.id) );
 				if (cm==null || newlist.length != cm.thrass.length) {
 					bugreport("internal error in sorting","paintSingleFailures");
 				}
@@ -4200,17 +4178,17 @@ function clickSelectHandler(ev) {
 				});
 				// find the from and to nodes
 				var fromi, toi;
-				for (var i=0; i<idlist.length; i++) {
-					var nd = internalID(idlist[i]);
+				idlist.forEach(function(v,i) {
+					var nd = internalID(v);
 					if (fromnid==nd) fromi = i;
 					if (tonid==nd) toi = i;
-				}
+				});
 				// Swap so that fromi <= toi
 				if (fromi>toi) {
-					i=fromi; fromi=toi; toi=i;
+					let i=fromi; fromi=toi; toi=i;
 				}
 				// Select all those nodes
-				for (i=fromi; i<=toi; i++) {
+				for (let i=fromi; i<=toi; i++) {
 					$('#'+idlist[i]).addClass('li_selected');
 				}
 			}
@@ -4276,13 +4254,12 @@ function populateClusterSubmenu(cluster,exceptions) {
 	var allclusters = NodeCluster.get(cluster.root()).allclusters();
 	var snippet = '';
 	/* Add all sub(sub)-clusters as submenuitems */
-	for (var i=0; i<allclusters.length; i++) {
-		var cl = NodeCluster.get(allclusters[i]);
+	for (const clid of allclusters) {
+		var cl = NodeCluster.get(clid);
 		snippet += '<li id="ccf_msm_CI_" class="_DIS_"><div><span class="lc">_CN_</span></div></li>';
-		snippet = snippet.replace(/_CI_/, cl.id);
-		snippet = snippet.replace(/_DIS_/, (exceptions.indexOf(cl.id)==-1 ? '' : 'ui-state-disabled'));
-		if (i==0) {
-			/* root cluster */
+		snippet = snippet.replace(/_CI_/, clid);
+		snippet = snippet.replace(/_DIS_/, (exceptions.indexOf(clid)==-1 ? '' : 'ui-state-disabled'));
+		if (cl.isroot()) {
 			snippet = snippet.replace(/_CN_/, cl.title + ' ' + _("(root)"));
 		} else {
 			snippet = snippet.replace(/_CN_/, cl.title);
@@ -4316,12 +4293,8 @@ function removeCluster(cluster) {
 	var parent = NodeCluster.get(cluster.parentcluster);
 	var root = NodeCluster.get(cluster.root());
 
-	for (var i=0; i<cluster.childnodes.length; i++) {
-		parent.addchildnode(cluster.childnodes[i]);
-	}
-	for (i=0; i<cluster.childclusters.length; i++) {
-		parent.addchildcluster(cluster.childclusters[i]);
-	}
+	for (const nid of cluster.childnodes) parent.addchildnode(nid);
+	for (const cid of cluster.childclusters) parent.addchildcluster(cid);
 	parent.removechildcluster(cluster.id);
 	cluster.destroy();
 	root.normalize();
@@ -4731,8 +4704,8 @@ function listFromCluster(nc) {
 	str = str.replace(/_TY_/g, Rules.nodetypes[nc.type]);
 
 	// Insert all child clusters, recursively
-	for (var i=0; i<nc.childclusters.length; i++) {
-		var cc = NodeCluster.get(nc.childclusters[i]);
+	for (const clid of nc.childclusters) {
+		var cc = NodeCluster.get(clid);
 		str += '<li';
 		if (!nc.isroot() && !nc.accordionopened) {
 			str += ' style="display: none;"';
@@ -4750,13 +4723,13 @@ function listFromCluster(nc) {
 	// Return array of nodes from 'fromarr' with color 'col', sorted by name
 	var sortednodeswithcolor = function(col,fromarr) {
 		var arr = [];
-		for (i=0; i<fromarr.length; i++) {
-			var rn = Node.get(nc.childnodes[i]);
+		for (const nid of fromarr) {
+			var rn = Node.get(nid);
 			if (rn==null) {
 				bugreport("Child node does not exist","listFromCluster:sortednodeswithcolor");
 			}
 			if (rn.color==col) {
-				arr.push(rn.id);
+				arr.push(nid);
 			}
 		}
 		// Array temp now holds all node of color 'col. Now sort those by name
@@ -4783,17 +4756,16 @@ function listFromCluster(nc) {
 	}
 
 	// Finally insert all child nodes
-	for (i=0; i<node.length; i++) {
-		var rn = Node.get(node[i]);
+	for (const nodeid of node) {
+		var rn = Node.get(nodeid);
 		var cm = Component.get(rn.component);
 		var sv = "";
 
 		// Single node classes can (will) be present in multiple services.
 		if (cm.single) {
-			for (var j=0; j<cm.nodes.length; j++) {
-				var n = Node.get(cm.nodes[j]);
+			for (const nid of cm.nodes) {
 				if (sv!='') sv += '; ';
-				sv += Service.get(n.service).title;
+				sv += Service.get(Node.get(nid).service).title;
 			}
 		} else {
 			sv = Service.get(rn.service).title;
@@ -4812,8 +4784,8 @@ function listFromCluster(nc) {
 			// Single node classes can have multiple labels
 			var labels = [];
 			if (cm.single) {
-				for (j=0; j<cm.nodes.length; j++) {
-					n = Node.get(cm.nodes[j]);
+				for (const nid of cm.nodes) {
+					let n = Node.get(nid);
 					if (n.color!='none' && labels.indexOf(n.color)==-1) {
 						labels.push(n.color);
 					}
@@ -4825,9 +4797,7 @@ function listFromCluster(nc) {
 				str += '<div class="ccflabelgroup"><div class="smallblock B'+rn.color+'"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
 			} else if (labels.length>1) {
 				str += '<div class="ccflabelgroup">';
-				for (j=0; j<labels.length; j++) {
-					str += '<div class="smallblock B'+labels[j]+'" title="' + H(p.strToLabel(labels[j])) + '"></div>';
-				}
+				for (const l of labels) str+='<div class="smallblock B'+l+'" title="' + H(p.strToLabel(l)) + '"></div>';
 				str += '</div>';
 			}
 		}
@@ -4901,10 +4871,7 @@ function computeRows(nc) {
 			SpacesMakeup[i][d-1] |= 1;
 		}
 //	}
-	for (i=0; i<nc.childclusters.length; i++) {
-		var cc = NodeCluster.get(nc.childclusters[i]);
-		computeRows(cc);
-	}
+	for (const clid of nc.childclusters) computeRows(NodeCluster.get(clid));
 }
 /* eslint-enable no-bitwise */
 
@@ -4950,10 +4917,7 @@ function appendAllThreats(nc,domid,prefix) {
 //		th.setfreq('-');
 //		th.setimpact('-');
 //	}
-	for (i=0; i<nc.childclusters.length; i++) {
-		var cc = NodeCluster.get(nc.childclusters[i]);
-		appendAllThreats(cc,domid,prefix);
-	}
+	for (const clid of nc.childclusters) appendAllThreats(NodeCluster.get(clid),domid,prefix);
 }
 
 /*
@@ -5250,12 +5214,8 @@ function paintNodeThreatTables() {
 		var exclCl = computeClusterQuickWins();
 		ComponentExclusions = { };
 		ClusterExclusions = { };
-		for (var i=0; i<exclCm.length; i++) {
-			ComponentExclusions[exclCm[i]] = true;
-		}
-		for (i=0; i<exclCl.length; i++) {
-			ClusterExclusions[exclCl[i]] = true;
-		}
+		for (const id of exclCm) ComponentExclusions[id] = true;
+		for (const id of exclCl) ComponentExclusions[id] = true;
 		paintSFTable();
 		paintCCFTable();
 		$('#clearexclusions').button('option','disabled', (exclCm.length==0 && exclCl.length==0));
@@ -5314,8 +5274,8 @@ function computeComponentQuickWins() {
 		// Cycle over all vulnerabilities, and count how many are equal to the overall magnitude.
 		// There must be at least one such vuln!
 		var cnt = 0;
-		for (var i=0; i<cm.thrass.length; i++) {
-			var ta = ThreatAssessment.get(cm.thrass[i]);
+		for (const thid of cm.thrass) {
+			var ta = ThreatAssessment.get(thid);
 			if (ta.total==cm.magnitude) {
 				var keepid = ta.id;
 				cnt++;
@@ -5340,11 +5300,11 @@ function computeClusterQuickWins() {
 		if (cl.magnitude=='-' || cl.magnitude=='L' || cl.magnitude=='U') continue;
 
 		var candidates = cl.allclusters();
-		for (var i=0; i<candidates.length; i++) {
+		for (const clid of candidates) {
 			var aarr = {};
-			exclusionsAdd(aarr,candidates[i],0);
+			exclusionsAdd(aarr,clid,0);
 			if (ClusterMagnitudeWithExclusions(cl,aarr) != cl.magnitude){
-				suggestions.push(candidates[i]+'_0');
+				suggestions.push(clid+'_0');
 			}
 		}
 	}
@@ -5436,8 +5396,8 @@ function paintSFTable() {
 			nc = tit.getNodeCluster();
 			// Find the threat assessment for this node
 			var ta = {};
-			for (var i=0; i<cm.thrass.length; i++) {
-				ta = ThreatAssessment.get(cm.thrass[i]);
+			for (const thid of cm.thrass) {
+				ta = ThreatAssessment.get(thid);
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
 			if (ta.title==nc.title && ta.type==nc.type) {
@@ -5616,8 +5576,8 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
 			snippet = snippet.replace(/_ZZ_/g, '<span class="reduced">' + _("reduced") + '</span>');
 		}
 	}
-	for (i=0; i<cl.childclusters.length; i++) {
-		var ccl = NodeCluster.get(cl.childclusters[i]);
+	for (const clid of cl.childclusters) {
+		var ccl = NodeCluster.get(clid);
 		ta = ThreatAssessment.get(ccl.thrass);
 		snippet += addCCFTableRow(col,numthreats,ta,ccl,indent+1);
 	}
@@ -5629,8 +5589,8 @@ function ClusterMagnitudeWithExclusions(cl,list) {
 	if (cl.thrass==null)  return '-';
 	var ta = ThreatAssessment.get(cl.thrass);
 	var mag = exclusionsContains(list,cl.id,0) ? "U" : ta.total;
-	for (var i=0; i<cl.childclusters.length; i++) {
-		var cc = NodeCluster.get(cl.childclusters[i]);
+	for (const clid of cl.childclusters) {
+		var cc = NodeCluster.get(clid);
 		mag = ThreatAssessment.sum(mag,ClusterMagnitudeWithExclusions(cc,list));
 	}
 	return mag;
@@ -5735,9 +5695,7 @@ function paintVulnsTableType(tabletype) {
 	var cit = new ComponentIterator({project: Project.cid});
 	for (cit.first(); cit.notlast(); cit.next()) {
 		var cm = cit.getcomponent();
-		for (var i=0; i<cm.thrass.length; i++) {
-			addUp(ThreatAssessment.get(cm.thrass[i]));
-		}
+		for (const thid of cm.thrass) addUp(ThreatAssessment.get(thid));
 	}
 	// Tterate over all cluster assessments
 	var tit = new NodeClusterIterator({project: Project.cid, isempty: false});
@@ -6068,11 +6026,11 @@ function showremovedvulns() {
 	';
 
 	// Do each of the table rows
-	for (i=0; i<CompIDs.length; i++) {
-		cm = Component.get(CompIDs[i]);
+	for (const cid of CompIDs) {
+		cm = Component.get(cid);
 		snippet += '<tr><td class="nodetitlecell">'+H(cm.title)+'</td>';
-		for (j=0; j<VulnIDs.length; j++) {
-			if (CompVulns[cm.id] && CompVulns[cm.id].indexOf(VulnIDs[j])==-1) {
+		for (const v of VulnIDs) {
+			if (CompVulns[cid] && CompVulns[cid].indexOf(v)==-1) {
 				snippet += '<td class="blankcell"></td>';
 			} else {
 				snippet += '<td class="blankcell">X</td>';
@@ -6111,7 +6069,6 @@ function showcustomvulns() {
 	var VulnTitles = [];// list of all threat titles that were removed at least once
 	var CompIDs = [];	// list of all component IDs that had at least one threat removed
 	var CompVulns = [];	// CompVulns[x] = list of threat titles removed for component with ID 'x'.
-	var i,j,cm;
 
 	// All checklist threats
 	var tit = new ThreatIterator(Project.cid,'tUNK');
@@ -6122,9 +6079,9 @@ function showcustomvulns() {
 	var cit = new ComponentIterator({project: Project.cid});
 	cit.sortByName();
 	for (cit.first(); cit.notlast(); cit.next()) {
-		cm = cit.getcomponent();
-		for (i=0; i<cm.thrass.length; i++) {
-			var ta = ThreatAssessment.get(cm.thrass[i]);
+		let cm = cit.getcomponent();
+		for (const thid of cm.thrass) {
+			var ta = ThreatAssessment.get(thid);
 			// Check whether this threat occurs in its checklist
 			for (tit.first(); tit.notlast(); tit.next()) {
 				var th = tit.getthreat();
@@ -6158,8 +6115,8 @@ function showcustomvulns() {
 	snippet = snippet.replace(/_WC_/, 1.7);
 	snippet = snippet.replace(/_TW_/, 20+1.7*VulnTitles.length);
 	snippet = snippet.replace(/_NT_/, VulnTitles.length);
-	for (j=0; j<VulnTitles.length; j++) {
-		snippet += '<td class="headercell">'+H(VulnTitles[j])+'</td>\n';
+	for (const vuln of VulnTitles) {
+		snippet += '<td class="headercell">'+H(vuln)+'</td>\n';
 	}
 	snippet += '\
 	  </tr>\n\
@@ -6168,11 +6125,11 @@ function showcustomvulns() {
 	';
 
 	// Do each of the table rows
-	for (i=0; i<CompIDs.length; i++) {
-		cm = Component.get(CompIDs[i]);
+	for (const id of CompIDs) {
+		let cm = Component.get(id);
 		snippet += '<tr><td class="nodetitlecell">'+H(cm.title)+'</td>';
-		for (j=0; j<VulnTitles.length; j++) {
-			if (CompVulns[cm.id] && CompVulns[cm.id].indexOf(VulnTitles[j])==-1) {
+		for (const vul of VulnTitles) {
+			if (CompVulns[cm.id] && CompVulns[cm.id].indexOf(vul)==-1) {
 				snippet += '<td class="blankcell"></td>';
 			} else {
 				snippet += '<td class="blankcell">+</td>';
@@ -6290,8 +6247,8 @@ function listSelectedRisks() {
 			var nc = tit.getNodeCluster();
 			// Find the threat assessment for this node
 			var ta = null;
-			for (var i=0; i<cm.thrass.length; i++) {
-				ta = ThreatAssessment.get(cm.thrass[i]);
+			for (const thid of cm.thrass) {
+				ta = ThreatAssessment.get(thid);
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
 			if (ta && ta.title==nc.title && ta.type==nc.type
@@ -6359,8 +6316,7 @@ function listSelectedRisks() {
 	var lastV = null;
 	var lastQW = null;
 	var count = [];
-	for (i=0; i<matches.length; i++) {
-		var m = matches[i];
+	for (const m of matches) {
 		if (m.v!=lastV || m.qw!=lastQW) {
 			if (snippet!='') snippet+='<br>\n';
 			snippet += '<b>' + H(ThreatAssessment.descr[m.v]) +
@@ -6381,7 +6337,7 @@ function listSelectedRisks() {
 	}
 	// Add a line with subtotals and totals to the front of the snippet.
 	var head = '';
-	for (i=ThreatAssessment.valueindex['A']; i<=ThreatAssessment.valueindex['X']; i++) {
+	for (let i=ThreatAssessment.valueindex['A']; i<=ThreatAssessment.valueindex['X']; i++) {
 		if (!count[i]) continue;
 		if (head=='') {
 			head += '(';
@@ -6395,9 +6351,7 @@ function listSelectedRisks() {
 	}
 
 	var total = 0;
-	for (i=0; i<count.length; i++) {
-		total += (count[i] ? count[i] : 0);
-	}
+	for (const c of count) total += (c ? c : 0);
 	head = _("Number of risks on longlist:") + ' ' + total + ' '+ head;
 	head += '<br>\n';
 

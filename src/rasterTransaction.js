@@ -32,7 +32,7 @@
  *  undo_data: (any) an object or literal containing all information to undo the transaction
  *  do_data: (any) an object or literal containing all information to perform the transaction
  * Instance methods:
- *  perform(data): perform the action using data; data defaults to this.do
+ *  perform(data): perform the action using data; data defaults to this.do_data
  *  undo: perform the action using this.undo.
  */
 var Transaction = function(knd,undo_data,do_data,descr,chain) {
@@ -455,8 +455,8 @@ Transaction.prototype = {
 					rebuildCluster(cl);
 				}
 				// Also repaint clusters in which this node appears
-				cm.thrass.forEach( function(v) {
-					let ta = ThreatAssessment.get(v);
+				cm.thrass.forEach(thid =>  {
+					let ta = ThreatAssessment.get(thid);
 					let it = new NodeClusterIterator({project: cm.project, title: ta.title, type: ta.type});
 					for (it.first(); it.notlast(); it.next()) {
 						repaintCluster(it.getNodeClusterid());
@@ -516,8 +516,8 @@ Transaction.prototype = {
 			// Remove all service tabs on Diagrams and Single Failures, and re-create.
 			$('#bottomtabssf').empty();
 			$('#bottomtabsdia').empty();
-			data.list.forEach(function(v) {
-				var s = Service.get(v);
+			data.list.forEach(sid => {
+				var s = Service.get(sid);
 				s._addtabsinglefs_tabonly();
 				s._addtabdiagrams_tabonly();
 			});
@@ -768,49 +768,41 @@ Transaction.prototype = {
 			// dit not change.
 			let old_tWLS=[], old_tWRD=[], old_tEQT=[];
 			let new_tWLS=[], new_tWRD=[], new_tEQT=[];
-			p.threats.forEach( function(v) {
-				let th = Threat.get(v);
+			for (const thid of p.threats) {
+				let th = Threat.get(thid);
 				switch (th.type) {
-					case 'tWLS': old_tWLS.push(v); break;
-					case 'tWRD': old_tWRD.push(v); break;
-					case 'tEQT': old_tEQT.push(v); break;
+					case 'tWLS': old_tWLS.push(thid); break;
+					case 'tWRD': old_tWRD.push(thid); break;
+					case 'tEQT': old_tEQT.push(thid); break;
 				}
-			});
-			data.list.forEach( function(v) {
-				let th = Threat.get(v);
+			}
+			for (const thid of data.list) {
+				let th = Threat.get(thid);
 				if (!th) {
 					bugreport('unknown threat assessment', 'Transaction.threatReorder');
 					return;
 				}
 				switch (th.type) {
-					case 'tWLS': new_tWLS.push(v); break;
-					case 'tWRD': new_tWRD.push(v); break;
-					case 'tEQT': new_tEQT.push(v); break;
+					case 'tWLS': new_tWLS.push(thid); break;
+					case 'tWRD': new_tWRD.push(thid); break;
+					case 'tEQT': new_tEQT.push(thid); break;
 				}
-			});
+			}
+			// if arrays old_tWLS and new_tWLS are not equal
 			if (!old_tWLS.every( function(v,i) { new_tWLS[i]==v; } )) {
 				// repaint the tWLS panel
 				$('#tWLSthreats').empty();
-				new_tWLS.forEach( function(v) {
-					let th = Threat.get(v);
-					if (th.type=='tWLS') th.addtablerow('#tWLSthreats');
-				});
+				for (const thid of new_tWLS) Threat.get(thid).addtablerow('#tWLSthreats');
 			}
 			if (!old_tWRD.every( function(v,i) { new_tWRD[i]==v; } )) {
 				// repaint the tWRD panel
 				$('#tWRDthreats').empty();
-				new_tWRD.forEach( function(v) {
-					let th = Threat.get(v);
-					if (th.type=='tWRD') th.addtablerow('#tWRDthreats');
-				});
+				for (const thid of new_tWRD) Threat.get(thid).addtablerow('#tWRDthreats');
 			}
 			if (!old_tEQT.every( function(v,i) { new_tEQT[i]==v; } )) {
 				// repaint the tEQT panel
 				$('#tEQTthreats').empty();
-				new_tEQT.forEach( function(v) {
-					let th = Threat.get(v);
-					if (th.type=='tEQT') th.addtablerow('#tEQTthreats');
-				});
+				for (const thid of new_tEQT) Threat.get(thid).addtablerow('#tEQTthreats');
 			}
 
 			p.threats = data.list;

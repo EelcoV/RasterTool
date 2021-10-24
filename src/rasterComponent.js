@@ -93,17 +93,15 @@ Component.prototype = {
 		if (this.id==Component.ThreatsComponent) {
 			$('#componentthreats').dialog('close');
 		}
-		for (var i=0; i<this.thrass.length; i++) {
-			ThreatAssessment.get(this.thrass[i]).destroy();
-		}
+		for (const thid of this.thrass) ThreatAssessment.get(thid).destroy();
 		delete Component._all[this.id];
 	},
 
 	absorbe: function(cm) {
 		// Merge all new threvals from cm into this. If both contain a threat with the
 		// same name, then use the worst values from each
-		for (var i=0; i<cm.thrass.length; i++) {
-			var ta =  ThreatAssessment.get(cm.thrass[i]);
+		for (const thid of cm.thrass) {
+			var ta =  ThreatAssessment.get(thid);
 			for (var j=0; j<this.thrass.length; j++) {
 				var ta2 = ThreatAssessment.get(this.thrass[j]);
 				if (isSameString(ta2.title,ta.title)) break;
@@ -131,12 +129,9 @@ Component.prototype = {
 					NodeCluster.addnode_threat(this.project,rn.id,ta2.title,ta2.type);
 				}
 			}
-		} 
-		// Move nodes over from cm into this
-		for (i=0; i<cm.nodes.length; i++) {
-			rn = Node.get(cm.nodes[i]);
-			this.addnode(rn.id);
 		}
+		// Move nodes over from cm into this
+		for (const nid of cm.nodes) this.addnode(nid);
 		cm.repaintmembertitles();
 		cm.nodes = [];
 		cm.destroy();
@@ -144,8 +139,8 @@ Component.prototype = {
 
 	mergeclipboard: function() {
 		var newte = [];
-		for (var j=0; j<ThreatAssessment.Clipboard.length; j++) {
-			if (ThreatAssessment.Clipboard[j].y=='tUNK') {
+		for (const clip of ThreatAssessment.Clipboard) {
+			if (clip.y=='tUNK') {
 				bugreport("Wrong type in clipboard data","Component.mergeclipboard");
 			}
 			// Try to find an identically named threat in our current list. If we are an
@@ -154,46 +149,46 @@ Component.prototype = {
 			// Break as soon as we find a match.
 			for (var i=0; i<this.thrass.length; i++) {
 				var te = ThreatAssessment.get(this.thrass[i]);
-				if (isSameString(ThreatAssessment.Clipboard[j].t,te.title)
-					&& (this.type!='tUNK' || ThreatAssessment.Clipboard[j].y==te.type)
+				if (isSameString(clip.t,te.title)
+					&& (this.type!='tUNK' || clip.y==te.type)
 				) break;
 			}
 			if (i==this.thrass.length) {
 				// Create a new threat evaluation
 				// If we are an unknown link, then the type of our threats can (and should) be differet from
 				// our own type. For wireless/wired/eqt, the threat type must be converted to our type.
-				var th = new ThreatAssessment( (this.type=='tUNK' ? ThreatAssessment.Clipboard[j].y : this.type) );
+				var th = new ThreatAssessment( (this.type=='tUNK' ? clip.y : this.type) );
 				th.setcomponent(this.id);
 				this.thrass.push(th.id);
-				th.settitle(ThreatAssessment.Clipboard[j].t);
-				th.setdescription(ThreatAssessment.Clipboard[j].d);
-				th.setfreq(ThreatAssessment.Clipboard[j].p);
-				th.setimpact(ThreatAssessment.Clipboard[j].i);
-				th.setremark(ThreatAssessment.Clipboard[j].r);
+				th.settitle(clip.t);
+				th.setdescription(clip.d);
+				th.setfreq(clip.p);
+				th.setimpact(clip.i);
+				th.setremark(clip.r);
 				newte.push(th.id);
 			} else {
 				// Paste into existing threat evaluation
-				te.description = prependIfMissing(ThreatAssessment.Clipboard[j].d, te.description);
+				te.description = prependIfMissing(clip.d, te.description);
 				// If neither one is set, the result will be '-'.
 				// If one is '-' but the other isn't, the result will be that non '-' value.
 				// If both are set, the result will be the worst of both.
 				if (te.freq=='-') {
-					te.setfreq(ThreatAssessment.Clipboard[j].p);
-				} else if (ThreatAssessment.Clipboard[j].p=='-') {
+					te.setfreq(clip.p);
+				} else if (clip.p=='-') {
 					/* Do nothing */
 				} else {
-					te.setfreq( ThreatAssessment.worst(ThreatAssessment.Clipboard[j].p,te.freq) );
+					te.setfreq( ThreatAssessment.worst(clip.p,te.freq) );
 				}
 
 				if (te.impact=='-') {
-					te.setimpact(ThreatAssessment.Clipboard[j].i);
-				} else if (ThreatAssessment.Clipboard[j].i=='-') {
+					te.setimpact(clip.i);
+				} else if (clip.i=='-') {
 					/* Do nothing */
 				} else {
-					te.setimpact( ThreatAssessment.worst(ThreatAssessment.Clipboard[j].i,te.impact) );
+					te.setimpact( ThreatAssessment.worst(clip.i,te.impact) );
 				}
 				
-				te.remark = prependIfMissing(ThreatAssessment.Clipboard[j].r, te.remark);
+				te.remark = prependIfMissing(clip.r, te.remark);
 			}
 		}
 		this.store();
@@ -384,9 +379,9 @@ Component.prototype = {
 
 	threatsnotevaluated: function() {
 		var mustdoevals=0;
-		for (var i=0; i<this.thrass.length; i++) {
-			if (ThreatAssessment.get(this.thrass[i]).freq=='-' ||
-				ThreatAssessment.get(this.thrass[i]).impact=='-') {
+		for (const thid of this.thrass) {
+			if (ThreatAssessment.get(thid).freq=='-' ||
+				ThreatAssessment.get(thid).impact=='-') {
 				mustdoevals++;
 			}
 		}
@@ -436,15 +431,13 @@ Component.prototype = {
 			return;
 		}
 		this.magnitude = ThreatAssessment.get(this.thrass[0]).total;
-		for (var i=1; i<this.thrass.length; i++) {
+		for (const thid of this.thrass) {
 			this.magnitude = ThreatAssessment.sum(
 				this.magnitude,
-				ThreatAssessment.get(this.thrass[i]).total
+				ThreatAssessment.get(thid).total
 			);
 		}
-		for (i=0; i<this.nodes.length; i++) {
-			Node.get(this.nodes[i]).setmarker();
-		}
+		for (const nid of this.nodes) Node.get(nid).setmarker();
 	},
 	
 	setsingle: function(single) {
@@ -557,9 +550,7 @@ Component.prototype = {
 			}
 		}
 		var sfx = [];
-		for (i=0; i<this.nodes.length; i++) {
-			sfx.push(Node.get(this.nodes[i]).suffix);
-		}
+		for (const nid of this.nodes) sfx.push(Node.get(nid).suffix);
 		for (i=0; !this.single && i<this.nodes.length; i++) {
 			if (sfx[i]=="") continue;
 			rn = Node.get(this.nodes[i]);

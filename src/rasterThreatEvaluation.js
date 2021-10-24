@@ -224,9 +224,9 @@ ThreatAssessment.prototype = {
 			// If the component already contains a threat with title "t" and the same type,
 			// then silently revert to the old title.
 			var cm = Component.get(this.component);
-			for (var i=0; i<cm.thrass.length; i++) {
-				if (cm.thrass[i]==this.id) continue;
-				var ta = ThreatAssessment.get(cm.thrass[i]);
+			for (const thid of cm.thrass) {
+				if (thid==this.id) continue;
+				var ta = ThreatAssessment.get(thid);
 				// silently ignore
 				if (isSameString(ta.title,t) && ta.type==this.type)  return;
 			}
@@ -284,9 +284,9 @@ ThreatAssessment.prototype = {
 		var rc = NodeCluster.get(nc.root());
 		var highscore = '-';
 		var highnodes = [];
-		for (var i=0; i<nc.childnodes.length; i++) {
+		for (const cid of nc.childnodes) {
 			// Find the impact for this cluster's vulnerability in the component of the node
-			var cm = Component.get( Node.get(nc.childnodes[i]).component );
+			var cm = Component.get( Node.get(cid).component );
 			var t;
 			for (var j=0; j<cm.thrass.length; j++) {
 				t = ThreatAssessment.get(cm.thrass[j]);
@@ -297,11 +297,11 @@ ThreatAssessment.prototype = {
 			}
 			if (t.impact == highscore) {
 				// Add to the list
-				highnodes.push(nc.childnodes[i]);
+				highnodes.push(cid);
 			// only for 'real' impact values
 			} else if ("ULMHV".indexOf(t.impact)!=-1 && ThreatAssessment.sum(highscore,t.impact) != highscore) {
 				highscore = t.impact;
-				highnodes = [ nc.childnodes[i] ];
+				highnodes = [ cid ];
 			}
 		}
 		this.setminimpact(highscore);

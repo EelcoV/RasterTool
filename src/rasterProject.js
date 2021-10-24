@@ -101,7 +101,7 @@ var Project = function(id,asstub) {
 			p.icondata.setName = data.setName;
 			p.icondata.setDescription = mylang(data.setDescription);
 			p.icondata.icons = [];
-			data.icons.forEach(function(r) {
+			for (const r of data.icons) {
 				var i;
 				// set somewhat sane default values for each attribute
 				i = {
@@ -138,7 +138,7 @@ var Project = function(id,asstub) {
 				i.maskid = i.mask.replace(/(.+)\.(\w+)$/, '$1-$2');
 				i.iconset = data.setName;
 				p.icondata.icons.push(i);
-			});
+			}
 		}
 	});
 
@@ -186,9 +186,10 @@ Project.merge = function(intoproject,otherproject) {
 	// Save a copy of the file that is merged
 	var savedcopy = exportProject(otherproject.id);
 	var saveddate = otherproject.date;
+	var i;
 	// Move each of the services over, one by one
-	for (var i=0; i<otherproject.services.length; i++) {
-		var s = Service.get(otherproject.services[i]);
+	for (const sid of otherproject.services) {
+		var s = Service.get(sid);
 		s.setproject(intoproject.id);
 		s.settitle(s.title); // intoproject may already have a service with title s.title
 		s.load(); // Because intoproject is currently active.
@@ -272,8 +273,7 @@ Project.updateStubs = function(doWhenReady) {
 			for (it.first(); it.notlast(); it.next()) {
 				it.getproject().destroy();
 			}
-			for (var i=0; i<data.length; i++) {
-				var rp = data[i];
+			for (const rp of data) {
 				// Skip the server version if we are already sharing this project (avoid duplicate)
 				var p = Project.withTitle(rp.name);
 				if (p!=null && Project.get(p).shared==true) continue;
@@ -411,12 +411,8 @@ Project.getProps = function(pname,doWhenReady) {
 
 Project.prototype = {
 	destroy: function() {
-		for (var i=0; i<this.threats.length; i++) {
-			Threat.get(this.threats[i]).destroy();
-		}
-		for (i=0; i<this.services.length; i++) {
-			Service.get(this.services[i]).destroy();
-		}
+		for (const thid of this.threats) Threat.get(thid).destroy();
+		for (const sid of this.services) Service.get(sid).destroy();
 		var it = new NodeClusterIterator({project: this.id});
 		for (it.first(); it.notlast(); it.next()) {
 			it.getNodeCluster().destroy();
@@ -537,18 +533,18 @@ Project.prototype = {
 	},
 	
 	adddefaultthreats: function() {
-		for (var i=0; i<DefaultThreats.length; i++) {
-			var th = new Threat(this.id,DefaultThreats[i][0],createUUID());
-			th.settitle(DefaultThreats[i][1]);
-			th.setdescription(DefaultThreats[i][2]);
+		for (const dt of DefaultThreats) {
+			var th = new Threat(this.id,dt[0],createUUID());
+			th.settitle(dt[1]);
+			th.setdescription(dt[2]);
 			this.addthreat(th.id,createUUID(),createUUID());
 		}
 	},
 
 	defaultthreatdata: function(typ) {
 		let thr = [];
-		for (let i of this.threats) {
-			var th = Threat.get(i);
+		for (const thid of this.threats) {
+			var th = Threat.get(thid);
 			if (th.type!=typ && typ!='tUNK') continue;
 			thr.push({
 				id: createUUID(),
@@ -569,9 +565,7 @@ Project.prototype = {
 	},
 
 	unload: function() {
-		for (var i=0; i<this.services.length; i++) {
-			Service.get( this.services[i] ).unload();
-		}
+		for (const sid of this.services) Service.get(sid).unload();
 		$('#tWLSthreats').empty();
 		$('#tWRDthreats').empty();
 		$('#tEQTthreats').empty();
@@ -579,12 +573,9 @@ Project.prototype = {
 	},
 
 	load: function() {
-		for (var i=0; i<this.services.length; i++) {
-			var s = Service.get( this.services[i] );
-			s.load();
-		}
-		for (i=0; i<this.threats.length; i++) {
-			var th = Threat.get( this.threats[i] );
+		for (const sid of this.services) Service.get(sid).load();
+		for (const thid of this.threats) {
+			var th = Threat.get(thid);
 			switch (th.type) {
 			case 'tWLS':
 				th.addtablerow('#tWLSthreats');
@@ -643,16 +634,14 @@ Project.prototype = {
 
 		// Mask images
 		$('#mask-collection').empty();
-		this.icondata.icons.forEach(function(r) {
-			$('#mask-collection').append('<img class="mask" id="'+r.maskid+'" src="../img/iconset/'+r.iconset+'/'+r.mask+'">');
-		});
+		for (const r of this.icondata.icons) $('#mask-collection').append('<img class="mask" id="'+r.maskid+'" src="../img/iconset/'+r.iconset+'/'+r.mask+'">');
 
 		// Template images. The first image of each type will be the default image.
 		$('#templates').empty();
-		var icn = this.icondata.icons;
-		Object.keys(Rules.nodetypes).forEach(function(t) {
-			for (i=0; i<icn.length; i++) {
-				if (icn[i].type!=t)  continue;
+		var icns = this.icondata.icons;
+		for (const t of Object.keys(Rules.nodetypes)) {
+			for (const icn of icns) {
+				if (icn.type!=t)  continue;
 				var str = '\
 					<div class="template"><div class="templateinner">\n\
 						<div id="_TY_" class="templatebg">\n\
@@ -662,18 +651,18 @@ Project.prototype = {
 						<img id="tC__TY_" class="tC" src="../img/dropedit.png">\n\
 					<div></div>\
 				';
-				str =str.replace(/_TY_/g, icn[i].type);
-				str =str.replace(/_TN_/g, Rules.nodetypes[icn[i].type]);
-				str =str.replace(/_IS_/g, icn[i].iconset);
-				str =str.replace(/_IM_/g, icn[i].image);
-				str =str.replace(/_IT_/g, icn[i].template);
+				str =str.replace(/_TY_/g, icn.type);
+				str =str.replace(/_TN_/g, Rules.nodetypes[icn.type]);
+				str =str.replace(/_IS_/g, icn.iconset);
+				str =str.replace(/_IM_/g, icn.image);
+				str =str.replace(/_IT_/g, icn.template);
 				$('#templates').append(str);
 				// See comments in raster.css at nodecolorbackground
-				$('#tbg_'+icn[i].type).css('-webkit-mask-image', 'url(../img/iconset/'+icn[i].iconset+'/'+icn[i].mask+')');
-				$('#tbg_'+icn[i].type).css('-webkit-mask-image', '-moz-element(#'+icn[i].maskid+')');
+				$('#tbg_'+icn.type).css('-webkit-mask-image', 'url(../img/iconset/'+icn.iconset+'/'+icn.mask+')');
+				$('#tbg_'+icn.type).css('-webkit-mask-image', '-moz-element(#'+icn.maskid+')');
 				break;
 			}
-		});
+		}
 		$('#tWLS').attr('title', _("Drag to add a wireless link."));
 		$('#tWRD').attr('title', _("Drag to add a wired link (cable)."));
 		$('#tEQT').attr('title', _("Drag to add an equipment item."));

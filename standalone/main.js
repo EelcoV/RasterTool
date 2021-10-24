@@ -336,8 +336,8 @@ function EnableMenuItems(val)  {
 function AllWindowsSetLabels(val) {
 	app.rasteroptions.labels = val;
 	var allwins = BrowserWindow.getAllWindows();
-	for (var i=0; i<allwins.length; i++) {
-		allwins[i].webContents.send('options', 'labels', val);
+	for (const win of allwins) {
+		win.webContents.send('options', 'labels', val);
 	}
 	SavePreferences();
 }
@@ -345,8 +345,8 @@ function AllWindowsSetLabels(val) {
 function AllWindowsSetVulnlevel(val) {
 	app.rasteroptions.vulnlevel = val;
 	var allwins = BrowserWindow.getAllWindows();
-	for (var i=0; i<allwins.length; i++) {
-		allwins[i].webContents.send('options', 'vulnlevel', val);
+	for (const win of allwins) {
+		win.webContents.send('options', 'vulnlevel', val);
 	}
 	SavePreferences();
 }

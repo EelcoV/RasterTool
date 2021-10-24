@@ -252,9 +252,7 @@ NodeCluster.prototype = {
 			this.childnodes.splice(pos,1);
 			this.store();
 		} else {
-			for (var i=0; i<this.childclusters.length; i++) {
-				NodeCluster.get(this.childclusters[i]).removechildnode(childid);
-			}
+			for (const clid of this.childclusters) NodeCluster.get(clid).removechildnode(childid);
 		}
 	},
 
@@ -276,17 +274,13 @@ NodeCluster.prototype = {
 	
 	allnodes: function() {
 		var arr = [].concat(this.childnodes);
-		for (var i=0; i<this.childclusters.length; i++) {
-			arr = arr.concat(NodeCluster.get(this.childclusters[i]).allnodes());
-		}
+		for (const clid of this.childclusters) arr = arr.concat(NodeCluster.get(clid).allnodes());
 		return arr;
 	},
 	
 	allclusters: function() {
 		var arr = [this.id];
-		for (var i=0; i<this.childclusters.length; i++) {
-			arr = arr.concat(NodeCluster.get(this.childclusters[i]).allclusters());
-		}
+		for (const clid of this.childclusters) arr = arr.concat(NodeCluster.get(clid).allclusters());
 		return arr;
 	},
 	
@@ -317,8 +311,8 @@ NodeCluster.prototype = {
 	},
 
 	normalize: function() {
-		for (var i=0; i<this.childclusters.length; i++) {
-			var cc = NodeCluster.get(this.childclusters[i]);
+		for (const clid of this.childclusters) {
+			var cc = NodeCluster.get(clid);
 			cc.normalize();
 			if (cc.childclusters.length + cc.childnodes.length < 2) {
 				// Assimilate the child cluster.
@@ -339,11 +333,11 @@ NodeCluster.prototype = {
 			// Assimilate the child cluster.
 			cc = NodeCluster.get(this.childclusters[0]);
 			this.childclusters = [];
-			for (i=0; i<cc.childclusters.length; i++) {
-				grandchild = NodeCluster.get(cc.childclusters[i]);
+			for (const clid of cc.childclusters) {
+				grandchild = NodeCluster.get(clid);
 				grandchild.parentcluster = this.id;
 				grandchild.store();
-				this.childclusters.push(cc.childclusters[i]);
+				this.childclusters.push(clid);
 			}
 			this.childnodes = cc.childnodes;
 			cc.destroy();
@@ -357,8 +351,8 @@ NodeCluster.prototype = {
 			return;
 		}
 		this.magnitude = ThreatAssessment.get(this.thrass).total;
-		for (var i=0; i<this.childclusters.length; i++) {
-			var cc = NodeCluster.get(this.childclusters[i]);
+		for (const clid of this.childclusters) {
+			var cc = NodeCluster.get(clid);
 			cc.calculatemagnitude();
 			this.magnitude = ThreatAssessment.sum(this.magnitude,cc.magnitude);
 		}
@@ -371,8 +365,8 @@ NodeCluster.prototype = {
 		if (ta.freq=="-" || ta.impact=="-") {
 			return true;
 		}
-		for (var i=0; i<this.childclusters.length; i++) {
-			var cc = NodeCluster.get(this.childclusters[i]);
+		for (const clid of this.childclusters) {
+			var cc = NodeCluster.get(clid);
 			if (cc.isincomplete())  return true;
 		}
 		return false;
@@ -396,10 +390,7 @@ NodeCluster.prototype = {
 	
 	setallmarkeroid: function(prefix) {
 		this.setmarkeroid(prefix+this.id);
-		for (var i=0; i<this.childclusters.length; i++) {
-			var cc = NodeCluster.get(this.childclusters[i]);
-			cc.setallmarkeroid(prefix);
-		}
+		for (const clid of this.childclusters) NodeCluster.get(clid).setallmarkeroid(prefix);
 	},
 	
 	setaccordionopened: function(b) {

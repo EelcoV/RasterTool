@@ -131,12 +131,7 @@ Node.nodesinselection = function() {
 	return a;
 };
 Node.destroyselection = function () {
-	Node.nodesinselection().forEach(n => Node.get(n).destroy());
-//	var a = Node.nodesinselection();
-//	for (var i=0; i<a.length; i++) {
-//		var rn = Node.get(a[i]);
-//		rn.destroy();
-//	}
+	for (const n of Node.nodesinselection()) Node.get(n).destroy();
 };
 Node.autotitle = function(typ,newtitle) {
 	if (!newtitle)  newtitle = Rules.nodetypes[typ];
@@ -207,10 +202,10 @@ Node.prototype = {
 			$('#componentthreats').dialog('close');
 		}
 		var neighbours = this.connect.slice(0); // duplicate the array
-		for (var i=0; i<neighbours.length; i++) {
-			var nb = Node.get(neighbours[i]);
+		for (const nid of neighbours) {
+			var nb = Node.get(nid);
 			this.detach_center( nb );
-			if (nb.id==$('#nodereport').data('DialogNode')) RefreshNodeReportDialog();
+			if (nid==$('#nodereport').data('DialogNode')) RefreshNodeReportDialog();
 		}
 		
 		this.removefromnodeclusters();
@@ -384,7 +379,7 @@ Node.prototype = {
 	settitle: function(str,suff) {
 		this.title=str;
 		if (suff!=null)  this.suffix=suff;
-if (suff=='') bugreport('empty suffix','Node.settitle');
+		if (suff=='') bugreport('empty suffix','Node.settitle');
 
 		let cm = Component.get(this.component);
 		if (cm) {
@@ -432,16 +427,15 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 	_edgecount: function () {
 		var jsP = Service.get(this.service)._jsPlumb;
 		var C = {'tWLS':0, 'tWRD':0, 'tEQT':0, 'tACT':0, 'tUNK':0, 'TOTAL':0};
-		var conn = jsP.getConnections({scope:'center'});
-		for (var i=0; i<conn.length; i++) {
-			/* Use conn[i].sourceId and conn[i].targetId */
-			if (this.nid==conn[i].sourceId) {
+		for (const conn of jsP.getConnections({scope:'center'})) {
+			/* Use conn.sourceId and conn.targetId */
+			if (this.nid==conn.sourceId) {
 				C['TOTAL']++;
-				C[Node.get(nid2id(conn[i].targetId)).type]++;
+				C[Node.get(nid2id(conn.targetId)).type]++;
 			}
-			if (this.nid==conn[i].targetId) {
+			if (this.nid==conn.targetId) {
 				C['TOTAL']++;
-				C[Node.get(nid2id(conn[i].sourceId)).type]++;
+				C[Node.get(nid2id(conn.sourceId)).type]++;
 			}
 		}
 		return C;
@@ -642,6 +636,10 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		}
 	},
 	
+	/* NOTE: attach_center also handles jsplumb, but detach_center does not.
+	 * detach_center does noet
+	 * Is it possible to make this more consistent?
+	 */
 	detach_center: function(dst) {
 		var i;
 		i = this.connect.indexOf(dst.id);
@@ -665,9 +663,8 @@ if (suff=='') bugreport('empty suffix','Node.settitle');
 		if (this.component==null) {
 			bugreport("Node's component has not been set","Node.addtonodeclusters");
 		}
-		var cm = Component.get(this.component);
-		for (var i=0; i<cm.thrass.length; i++) {
-			var ta = ThreatAssessment.get(cm.thrass[i]);
+		for (const thid of Component.get(this.component).thrass) {
+			var ta = ThreatAssessment.get(thid);
 			NodeCluster.addnode_threat(Project.cid,this.id,ta.title,ta.type);
 		}
 	},

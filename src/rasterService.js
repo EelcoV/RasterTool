@@ -455,8 +455,8 @@ Service.prototype = {
 				NodesBeingDragged = Node.nodesinselection();
 				// Remember the original positions in the (scratchpad) undo_data data-property of #selectrect
 				let undo_data = [];
-				for (let i=0; i<NodesBeingDragged.length; i++) {
-					let n = Node.get(NodesBeingDragged[i]);
+				for (const nid of NodesBeingDragged) {
+					let n = Node.get(nid);
 					undo_data.push({id: n.id, x: n.position.x, y: n.position.y});
 				}
 				$('#selectrect').data('undo_data',undo_data);
@@ -466,16 +466,16 @@ Service.prototype = {
 				var dx = (ui.position.left-origpos.left);
 				var dy = (ui.position.top-origpos.top);
 				origpos = ui.position;
-				for (var i=0; i<NodesBeingDragged.length; i++) {
-					var n = Node.get(NodesBeingDragged[i]);
+				for (const nid of NodesBeingDragged) {
+					var n = Node.get(nid);
 					n.setposition(n.position.x+dx,n.position.y+dy,false);
 				}
 			},
 			stop: function(/*event,ui*/) {
 				NodesBeingDragged = Node.nodesinselection();
 				let do_data = [];
-				for (let i=0; i<NodesBeingDragged.length; i++) {
-					let n = Node.get(NodesBeingDragged[i]);
+				for (const nid of NodesBeingDragged) {
+					let n = Node.get(nid);
 					do_data.push({id: n.id, x: n.position.x, y: n.position.y});
 				}
 				let undo_data = $('#selectrect').data('undo_data');

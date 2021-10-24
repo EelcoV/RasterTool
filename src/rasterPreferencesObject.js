@@ -43,9 +43,9 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 		 */
 		var css=document.getElementById('maincssfile').sheet;
 		var rule=null;
-		for (var i=0; i<css.cssRules.length; i++) {
-			if (css.cssRules[i].selectorText=='div.nodeMagnitude') {
-				rule = css.cssRules[i];
+		for (const r of css.cssRules) {
+			if (r.selectorText=='div.nodeMagnitude') {
+				rule = r;
 				break;
 			}
 		}
