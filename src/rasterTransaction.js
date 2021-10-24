@@ -319,6 +319,8 @@ Transaction.prototype = {
 				let rn = Node.get(d.id);
 				if (d.connect!=null) {
 					for (const n of d.connect) {
+						// Skip if already connected, to avoid duplicate connections
+						if (rn.connect.includes(n)) continue;
 						let othernode = Node.get(n);
 						rn.attach_center(othernode);
 						othernode.setmarker();
