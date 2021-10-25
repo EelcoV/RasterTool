@@ -604,8 +604,7 @@ Component.prototype = {
 		}
 		// Check all nodes that claim to belong to this component
 		it = new NodeIterator();
-		for (it.first(); it.notlast(); it.next()) {
-			rn = it.getnode();
+		for (const rn of it) {
 			if (rn.component!=this.id) continue;
 			if (this.nodes.indexOf(rn.id)==-1) {
 				errors += "Node "+rn.id+" claims to belong to component "+this.id+" but doesn't appear in the list.\n";

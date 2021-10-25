@@ -101,8 +101,8 @@ Service.prototype = {
 			this.unload();
 		}
 		var it = new NodeIterator({service: this.id});
-		for (it.first(); it.notlast(); it.next()) {
-			it.getnode().destroy(false);
+		for (const rn of it) {
+			rn.destroy(false);
 		}
 		localStorage.removeItem(LS+'S:'+this.id);
 		delete Service._all[this.id];
@@ -415,8 +415,8 @@ Service.prototype = {
 		}
 		// Be sure to only remove nodes from this service.
 		var it = new NodeIterator({service: this.id});
-		for (it.first(); it.notlast(); it.next()) {
-			it.getnode().unpaint();
+		for (const rn of it) {
+			rn.unpaint();
 		}
 		this._jsPlumb.reset();
 		this._painted=false;
@@ -499,8 +499,8 @@ Service.prototype = {
 		this._jsPlumb.setSuspendDrawing(true);
 		/* First paint all the nodes, before drawing the connectors */
 		var it = new NodeIterator({service: this.id});
-		for (it.first(); it.notlast(); it.next()) {
-			it.getnode().paint(false);
+		for (const rn of it) {
+			rn.paint(false);
 		}
 		
 		/* All nodes exist, now draw connectors. When node X is connected to
@@ -508,8 +508,7 @@ Service.prototype = {
 		 * only draw their connector once. We therefore only draw a connector
 		 * when X.id < Y.id
 		 */
-		for (it.first(); it.notlast(); it.next()) {
-			var rn = it.getnode();
+		for (const rn of it) {
 			for (var j=0; j<rn.connect.length; j++) {
 				var dst = Node.get(rn.connect[j]);
 				if (dst.service!=this.id) {
@@ -520,8 +519,7 @@ Service.prototype = {
 				}
 			}
 		}
-		for (it.first(); it.notlast(); it.next()) {
-			rn = it.getnode();
+		for (const rn of it) {
 			rn.setmarker();
 		}
 		RefreshNodeReportDialog();

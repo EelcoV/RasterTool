@@ -214,8 +214,7 @@ Project.merge = function(intoproject,otherproject) {
 		
 		// All nodes in this service need to be added to the proper NodeCluster in intoproject
 		it = new NodeIterator({service: s.id});
-		for (it.first(); it.notlast(); it.next()) {
-			var rn = it.getnode();
+		for (const rn of it) {
 			if (rn.type=='tACT' || rn.type=='tNOT') continue;
 
 			cm = Component.get(rn.component);
@@ -424,7 +423,7 @@ Project.prototype = {
 	totalnodes: function() {
 		var total=0;
 		var it = new NodeIterator({project: this.id});
-		for (it.first(); it.notlast(); it.next()) total++;
+		for (const rn of it) total++;		// eslint-disable-line no-unused-vars
 		return total;
 	},
 	
@@ -1014,8 +1013,7 @@ Project.prototype = {
 			}
 			// Check all nodes for this service
 			it = new NodeIterator({service: s.id});
-			for (it.first(); it.notlast(); it.next()) {
-				var rn = it.getnode();
+			for (const rn of it) {
 				errors += rn.internalCheck();
 			}
 		}

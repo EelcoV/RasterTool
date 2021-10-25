@@ -578,8 +578,7 @@ var updateFind = function() {
 	if (nodeFindString!='') {
 		var it = new NodeIterator({project: Project.cid});
 		it.sortByType();
-		for (it.first(); it.notlast(); it.next()) {
-			var rn = it.getnode();
+		for (const rn of it) {
 			var s = Service.get(rn.service);
 			if (rn.title.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1
 				|| (rn.suffix!='' && rn.suffix.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1)
@@ -2012,8 +2011,8 @@ function exportThreat(th) {
 function exportService(sid) {
 	var s = Service.get(sid).exportstring();
 	var it = new NodeIterator({service: sid});
-	for (it.first(); it.notlast(); it.next()) {
-		s += exportNode( it.getnodeid() );
+	for (const rn of it) {
+		s += exportNode(rn.id);
 	}
 	return s;
 }
@@ -2759,8 +2758,8 @@ function bottomTabsCloseHandler(event) {
 		function() {
 			let nodes = [];
 			var it = new NodeIterator({service: s.id});
-			for (it.first(); it.notlast(); it.next()) {
-				nodes.push(it.getnodeid());
+			for (const rn of it) {
+				nodes.push(rn.id);
 			}
 			nodesDelete(nodes,_("Remove service %%", s.title),true);
 			new Transaction('serviceCreate',
@@ -5884,8 +5883,7 @@ function paintNodeTypeStats() {
 		snippet = snippet.replace(/_LN_/g, _("Num") );
 		snippet = snippet.replace(/_SI_/g, s.id);
 		snippet = snippet.replace(/_SN_/g, H(s.title));
-		for (nit.first(); nit.notlast(); nit.next()) {
-			var rn = nit.getnode();
+		for (const rn of nit) {
 			var cm = Component.get(rn.component);
 			sStats[rn.type]++;
 			if (rn.type!='tNOT') sTot++;

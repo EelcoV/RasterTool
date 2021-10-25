@@ -122,8 +122,7 @@ Node.nodesinselection = function() {
 	var sw = $('#selectrect').width(); 	
 	var sh = $('#selectrect').height(); 
 	var ni = new NodeIterator({service: Service.cid});
-	for (ni.first(); ni.notlast(); ni.next()) {
-		var rn = ni.getnode();
+	for (const rn of ni) {
 		if (rn.iscontainedin(sl,st,sw,sh)) {
 			a.push(rn.id);
 		}
@@ -824,8 +823,7 @@ Node.prototype = {
 				if (event.e.shiftKey) {
 					rn.undo_data = [];
 					var ni = new NodeIterator({service: rn.service});
-					for (ni.first(); ni.notlast(); ni.next()) {
-						var n = ni.getnode();
+					for (const n of ni) {
 						rn.undo_data.push({id: n.id, x: n.position.x, y: n.position.y});
 					}
 				} else {
@@ -838,8 +836,7 @@ Node.prototype = {
 				if (event.e.shiftKey) {
 					do_data = [];
 					var ni = new NodeIterator({service: rn.service});
-					for (ni.first(); ni.notlast(); ni.next()) {
-						var n = ni.getnode();
+					for (const n of ni) {
 						do_data.push({id: n.id, x: n.position.x, y: n.position.y});
 					}
 				} else {
@@ -871,8 +868,7 @@ Node.prototype = {
 				if (event.e.shiftKey) {
 					// Drag the whole service diagram
 					var ni = new NodeIterator({service: rn.service});
-					for (ni.first(); ni.notlast(); ni.next()) {
-						var n = ni.getnode();
+					for (const n of ni) {
 						n.setposition(n.position.x+dx,n.position.y+dy);
 					}
 				} else {
@@ -1307,49 +1303,132 @@ function RefreshNodeReportDialog() {
  *	 		:
  *		}
  */
-var NodeIterator = function(opt) {
-	if (opt==null) opt = {};
-	/* On initialisation, walk through the Node._all array and store all
-	 * matching Nodes in this.item[].
-	 */
-	this.index = 0;
-	this.item = [];
-	for (var i in Node._all) {
-		var rn = Node._all[i];
-		if (opt.project!=undefined && rn.project!=opt.project) continue;
-		if (opt.service!=undefined && rn.service!=opt.service) continue;
-		if (opt.type!=undefined && rn.type!=opt.type) continue;
-		if (opt.match!=undefined && 
-			!(rn.type==opt.match
-				|| rn.type=='tUNK'
-				|| (rn.type!='tACT' && rn.type!='tNOT' && 'tUNK'==opt.match)
-			)
-		) continue;
-		this.item.push(i);
-	}
-	if (opt.type=='tACT') bugreport('type-option Actor specified','NodeIterator'); 
-	if (opt.match=='tACT') bugreport('match-option Actor specified','NodeIterator'); 
-};
+//var NodeIterator = function(opt) {
+//	if (opt==null) opt = {};
+//	/* On initialisation, walk through the Node._all array and store all
+//	 * matching Nodes in this.item[].
+//	 */
+//	this.index = 0;
+//	this.item = [];
+//	for (var i in Node._all) {
+//		var rn = Node._all[i];
+//		if (opt.project!=undefined && rn.project!=opt.project) continue;
+//		if (opt.service!=undefined && rn.service!=opt.service) continue;
+//		if (opt.type!=undefined && rn.type!=opt.type) continue;
+//		if (opt.match!=undefined &&
+//			!(rn.type==opt.match
+//				|| rn.type=='tUNK'
+//				|| (rn.type!='tACT' && rn.type!='tNOT' && 'tUNK'==opt.match)
+//			)
+//		) continue;
+//		this.item.push(i);
+//	}
+//	if (opt.type=='tACT') bugreport('type-option Actor specified','NodeIterator');
+//	if (opt.match=='tACT') bugreport('match-option Actor specified','NodeIterator');
+//};
+//
+//NodeIterator.prototype = {
+//	first: function() {this.index=0;},
+//	next: function() {this.index++;},
+//	notlast: function() {return (this.index < this.item.length);},
+//	getnode: function() {return Node._all[ this.item[this.index] ];},
+//	getnodeid: function() {return this.item[this.index] ;},
+//	sortByName: function() {
+//		this.item.sort( function(a,b) {
+//			var na = Node.get(a);
+//			var nb = Node.get(b);
+//			var ta = na.title+na.suffix;
+//			var tb = nb.title+nb.suffix;
+//			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
+//		});
+//	},
+//	sortByType: function() {
+//		this.item.sort( function(a,b) {
+//			var na = Node.get(a);
+//			var nb = Node.get(b);
+//			if (na.type<nb.type)  return -1;
+//			if (na.type>nb.type)  return 1;
+//			// When types are equal, sort alphabetically
+//			var ta = na.title+na.suffix;
+//			var tb = nb.title+nb.suffix;
+//			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
+//		});
+//	},
+//	sortByLevel: function() {
+//		this.item.sort( function(a,b) {
+//			var na = Node.get(a);
+//			var nb = Node.get(b);
+//			var ca = Component.get(na.component);
+//			var cb = Component.get(nb.component);
+//			var va = ThreatAssessment.valueindex[ca.magnitude];
+//			var vb = ThreatAssessment.valueindex[cb.magnitude];
+//			if (va==1)  va=8; // Ambiguous
+//			if (vb==1)  vb=8;
+//			if (va!=vb)  return vb - va;
+//			// When levels are equal, sort alphabetically
+//			var ta = na.title+na.suffix;
+//			var tb = nb.title+nb.suffix;
+//			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
+//		});
+//	}
+//};
 
-NodeIterator.prototype = {
-	first: function() {this.index=0;},
-	next: function() {this.index++;},
-	notlast: function() {return (this.index < this.item.length);},
-	getnode: function() {return Node._all[ this.item[this.index] ];},
-	getnodeid: function() {return this.item[this.index] ;},
-	sortByName: function() {
-		this.item.sort( function(a,b) {
-			var na = Node.get(a);
-			var nb = Node.get(b);
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * NodeIterator: iterate over all Node objects
+ *
+ * opt: object with options to restrict the iteration to specified items only.
+ *		Specify project (ID), service (ID), type (string), and/or match (string).
+ * Option 'match' is similar to 'type'; 'type' looks for equality, but 'match'
+ * looks for either equality or a cloud-type.
+ *
+ * usage:
+ * 		var it = new NNI({service: '1', type: 'tUNK'});
+ *		it.sortByLevel();
+ * 		for (const node of it) {
+ *			console.log(node.title);
+ *			console.log(node.id);
+ *	 		:
+ *		}
+ */
+class NodeIterator {
+	constructor(opt) {
+		if (opt==null) opt = {};
+		/* On initialisation, walk through the Node._all array and store all
+		 * matching Nodes in this.item[].
+		 */
+		this.item = [];
+		for (var i in Node._all) {
+			var rn = Node._all[i];
+			if (opt.project!=undefined && rn.project!=opt.project) continue;
+			if (opt.service!=undefined && rn.service!=opt.service) continue;
+			if (opt.type!=undefined && rn.type!=opt.type) continue;
+			if (opt.match!=undefined &&
+				!(rn.type==opt.match
+					|| rn.type=='tUNK'
+					|| (rn.type!='tACT' && rn.type!='tNOT' && 'tUNK'==opt.match)
+				)
+			) continue;
+			this.item.push(rn);
+		}
+		if (opt.type=='tACT') bugreport('type-option Actor specified','NodeIterator');
+		if (opt.match=='tACT') bugreport('match-option Actor specified','NodeIterator');
+	}
+
+	*[Symbol.iterator]() {
+		for (const id of this.item) {
+			yield id;
+		}
+	}
+
+	sortByName() {
+		this.item.sort( function(na,nb) {
 			var ta = na.title+na.suffix;
 			var tb = nb.title+nb.suffix;
 			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
 		});
-	},
-	sortByType: function() {
-		this.item.sort( function(a,b) {
-			var na = Node.get(a);
-			var nb = Node.get(b);
+	}
+	sortByType() {
+		this.item.sort( function(na,nb) {
 			if (na.type<nb.type)  return -1;
 			if (na.type>nb.type)  return 1;
 			// When types are equal, sort alphabetically
@@ -1357,11 +1436,9 @@ NodeIterator.prototype = {
 			var tb = nb.title+nb.suffix;
 			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
 		});
-	},
-	sortByLevel: function() {
-		this.item.sort( function(a,b) {
-			var na = Node.get(a);
-			var nb = Node.get(b);
+	}
+	sortByLevel() {
+		this.item.sort( function(na,nb) {
 			var ca = Component.get(na.component);
 			var cb = Component.get(nb.component);
 			var va = ThreatAssessment.valueindex[ca.magnitude];
@@ -1374,8 +1451,8 @@ NodeIterator.prototype = {
 			var tb = nb.title+nb.suffix;
 			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
 		});
-	}	
-};
+	}
+}
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  * Rules: an object that contains all rules for a valid diagram.
