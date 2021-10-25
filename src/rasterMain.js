@@ -4670,9 +4670,11 @@ function repaintClusterDetails(nc,force) {
 		text_size: 40,
 		callback: function(domid, enteredText) {
 			var nc = NodeCluster.get( nid2id(domid) );
-			nc.settitle(enteredText);
-			$('#dthE_ccf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
-			transactionCompleted("Rename cluster");
+			new Transaction('clusterTitle',
+				[{id: this.id, title: this.title}],
+				[{id: this.id, title: enteredText}],
+				_("Rename class")
+			);
 			return H(nc.title);
 		}
 	});

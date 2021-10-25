@@ -192,6 +192,19 @@ Transaction.prototype = {
 			break;
 		}
 
+		case 'clusterTitle': {
+			// Edit the title of a cluster
+			// data: array of objects; each object has these properties
+			//  id: id of the cluster
+			//  title: title of the cluster
+			for (const d of data) {
+				let nc = NodeCluster.get(d.id);
+				nc.settitle(d.title);
+				$('#dthE_ccf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
+			}
+			break;
+		}
+
 		case 'labelEdit': {
 			// Edit the project color labels
 			// data: array of objects; each object has these properties
