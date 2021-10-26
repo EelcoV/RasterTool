@@ -671,8 +671,7 @@ Node.prototype = {
 	removefromnodeclusters: function(norm) {
 		if (norm==null)  norm = true;
 		var it =  new NodeClusterIterator({project: this.project, isroot: true});
-		for (it.first(); it.notlast(); it.next()) {
-			var nc = it.getNodeCluster();
+		for (const nc of it) {
 			if (nc.containsnode(this.id)) {
 				nc.removechildnode(this.id);
 				if (norm)  nc.normalize();
@@ -1257,8 +1256,7 @@ Node.prototype = {
 		}
 		if (cm && cm.single && cm.nodes[0]!=this.id) {
 			var it = new NodeClusterIterator({isroot: true});
-			for (it.first(); it.notlast(); it.next()) {
-				var nc = it.getNodeCluster();
+			for (const nc of it) {
 				if (nc.containsnode(this.id)) {
 					errors += offender+" is member of a singular class, yet appears in cluster '"+nc.title+"'.\n";
 				}
@@ -1420,6 +1418,10 @@ class NodeIterator {
 		}
 	}
 
+	count() {
+		return this.item.length;
+	}
+	
 	sortByName() {
 		this.item.sort( function(na,nb) {
 			var ta = na.title+na.suffix;

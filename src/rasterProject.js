@@ -3,7 +3,7 @@
  */
 
 /* global
- Component, ComponentIterator, DefaultThreats, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, trimwhitespace, urlEncode
+ Component, ComponentIterator, DefaultThreats, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, trimwhitespace, urlEncode
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -196,12 +196,10 @@ Project.merge = function(intoproject,otherproject) {
 		intoproject.services.push(s.id);
 
 		var it = new ComponentIterator({service: s.id});
-		for (it.first(); it.notlast(); it.next()) {
-			var cm = it.getcomponent();
+		for (const cm of it) {
 			cm.setproject(intoproject.id);
 			var it2 = new ComponentIterator({project: intoproject.id, type: cm.type});
-			for (it2.first(); it2.notlast(); it2.next()) {
-				var cm2 = it2.getcomponent();
+			for (const cm2 of it2) {
 				if (cm2.id==cm.id) continue;
 				if (!isSameString(cm2.title,cm.title)) continue;
 
@@ -217,7 +215,7 @@ Project.merge = function(intoproject,otherproject) {
 		for (const rn of it) {
 			if (rn.type=='tACT' || rn.type=='tNOT') continue;
 
-			cm = Component.get(rn.component);
+			let cm = Component.get(rn.component);
 			// If the node was added to a singular component, it doesn't need to added,
 			// unless it is the first node in the singular class.
 			if (cm.single && cm.nodes[0]!=rn.id) continue;
@@ -269,8 +267,8 @@ Project.updateStubs = function(doWhenReady) {
 		success: function(data) {
 			// Remove all current stub projects
 			var it = new ProjectIterator({stubsonly: true});
-			for (it.first(); it.notlast(); it.next()) {
-				it.getproject().destroy();
+			for (const p of it) {
+				p.destroy();
 			}
 			for (const rp of data) {
 				// Skip the server version if we are already sharing this project (avoid duplicate)
@@ -413,8 +411,8 @@ Project.prototype = {
 		for (const thid of this.threats) Threat.get(thid).destroy();
 		for (const sid of this.services) Service.get(sid).destroy();
 		var it = new NodeClusterIterator({project: this.id});
-		for (it.first(); it.notlast(); it.next()) {
-			it.getNodeCluster().destroy();
+		for (const nc of it) {
+			nc.destroy();
 		}
 		localStorage.removeItem(LS+'P:'+this.id);
 		delete Project._all[this.id];
@@ -513,7 +511,7 @@ Project.prototype = {
 
 		// Make sure that the project has a rootcluster for this threat
 		let it = new NodeClusterIterator({project: this.id, title: th.title, type: th.type, isroot: true});
-		if (!it.notlast()) {
+		if (it.count()==0) {
 			let nc = new NodeCluster(th.type,clid);
 			nc.setproject(this.id);
 			nc.settitle(th.title);
@@ -1019,32 +1017,29 @@ Project.prototype = {
 		}
 		// Check all services that claim to belong to this project
 		it = new ServiceIterator({project: this.id});
-		for (it.first(); it.notlast(); it.next()) {
-			s = it.getservice();
+		for (const s of it) {
 			if (this.services.indexOf(s.id)==-1) {
 				errors += "Service "+s.id+" claims to belong to project "+this.id+" but is not known as a member.\n";
 			}
 		}
 		// Check all node clusters
 		it = new NodeClusterIterator({project: this.id});
-		if (this.stub && it.notlast()) {
+		if (this.stub && it.count()>0) {
 			errors += "Project "+this.id+" is marked as a stub, but does have node clusters.\n";
 		}
-		for (it.first(); it.notlast(); it.next()) {
-			var nc = it.getNodeCluster();
-			if (!nc) {
-				errors += "Node cluster "+it.getNodeClusterid()+" does not exist.\n";
-				continue;
-			}
-			errors += nc.internalCheck();
-		}
+//		for (const nc of it) {
+//			if (!nc) {
+//				errors += "Node cluster "+nc.id+" does not exist.\n";
+//				continue;
+//			}
+//			errors += nc.internalCheck();
+//		}
 		// Check all components
 		it = new ComponentIterator({project: this.id});
 		if (this.stub && it.notlast()) {
 			errors += "Project "+this.id+" is marked as a stub, but does have components.\n";
 		}
-		for (it.first(); it.notlast(); it.next()) {
-			var cm = it.getcomponent();
+		for (const cm of it) {
 			if (!cm) {
 				errors += "Component "+it.getcomponentid()+" does not exist.\n";
 				continue;
@@ -1065,23 +1060,22 @@ Project.prototype = {
 				errors += "Threat "+t.id+" belongs to a different project.\n";
 			}
 			let it = new NodeClusterIterator({project: this.id, title: t.title, type: t.type, isroot: true});
-			if (!it.notlast()) {
+			if (it.count()==0) {
 				errors += "Threat "+t.id+" does not have a corresponding node cluster.\n";
 			}
 
 		}
 		// Check all threats
 		it = new ThreatIterator(this.id,'tUNK');
-		if (this.stub && it.notlast()) {
+		if (this.stub && it.count()>0) {
 			errors += "Project "+this.id+" is marked as a stub, but does have threats.\n";
 		}
-		for (it.first(); it.notlast(); it.next()) {
-			t = it.getthreat();
-			if (!t) {
-				errors += "Component "+it.getthreatid()+" does not exist.\n";
-				continue;
-			}
-		}
+//		for (const t of it) {
+//			if (!t) {
+//				errors += "Component "+t.id+" does not exist.\n";
+//				continue;
+//			}
+//		}
 		return errors;
 	}
 };
@@ -1147,8 +1141,8 @@ function askForConflictResolution(proj,details) {
  * usage:
  * 		var it = new ProjectIterator({shared: true});
  *		it.sortByTitle();
- * 		for (it.first(); it.notlast(); it.next()) {
- *			var p = it.getproject();
+ * 		for (const prj of it) {
+ *			console.log(prj.id);
  *	 		:
  *		}
  * Options:
@@ -1157,43 +1151,45 @@ function askForConflictResolution(proj,details) {
  *	shared: only projects with this sharing status. Default: both shared and non-shared.
  *	stubsonly: true: only stubs, false: all projects. Undefined: only non-stubs.
  */
-var ProjectIterator = function(opt) {
-	this.index = 0;
-	this.item = [];
-	for (var i in Project._all) {
-		var p =  Project._all[i];
-		var ok = true;
-		if (opt && opt.title!=null) {
-			ok = ok && (isSameString(p.title,opt.title));
-		}
-		if (opt && opt.group!=null) {
-			ok = ok && (!p.shared || p.group===opt.group);
-		}
-		if (opt && opt.shared!=null) {
-			ok = ok && (p.shared===opt.shared);
-		}
-		if (opt && opt.stubsonly==null) {
-			ok = ok && (p.stub==false);
-		} else {
-			ok = ok && (p.stub || !(opt && opt.stubsonly));
-		}
-		if (ok) {
-			this.item.push(i);
+class ProjectIterator {
+	constructor(opt) {
+		this.item = [];
+		for (var i in Project._all) {
+			var p =  Project._all[i];
+			var ok = true;
+			if (opt && opt.title!=null) {
+				ok = ok && (isSameString(p.title,opt.title));
+			}
+			if (opt && opt.group!=null) {
+				ok = ok && (!p.shared || p.group===opt.group);
+			}
+			if (opt && opt.shared!=null) {
+				ok = ok && (p.shared===opt.shared);
+			}
+			if (opt && opt.stubsonly==null) {
+				ok = ok && (p.stub==false);
+			} else {
+				ok = ok && (p.stub || !(opt && opt.stubsonly));
+			}
+			if (ok) {
+				this.item.push(p);
+			}
 		}
 	}
-};
-ProjectIterator.prototype = {
-	first: function() {this.index=0;},
-	next: function() {this.index++;},
-	number: function() {return this.item.length;},
-	notlast: function() {return (this.index < this.item.length);},
-	getprojectid: function() {return this.item[this.index];},
-	getproject: function() {return Project.get( this.item[this.index] );},
-	sortByTitle: function() {
-		this.item.sort( function(a,b) {
-			var pa = Project.get(a);
-			var pb = Project.get(b);
+
+	*[Symbol.iterator]() {
+		for (const id of this.item) {
+			yield id;
+		}
+	}
+
+	count() {
+		return this.item.length;
+	}
+	
+	sortByTitle() {
+		this.item.sort( function(pa,pb) {
 			return pa.title.toLocaleLowerCase().localeCompare(pb.title.toLocaleLowerCase());
 		});
 	}
-};
+}

@@ -586,7 +586,7 @@ Component.prototype = {
 			// Each node in this component should belong to a cluster whose rootcluster has the same 
 			// type and title as this ThreatAssessment
 			var it = new NodeClusterIterator({project: this.project, type: ta.type, title: ta.title});
-			if (!it.notlast()) {
+			if (it.count()==0) {
 				errors += offender+"has a vuln assessment "+ta.id+" that does not have a corresponding node cluster.\n";
 				continue;
 			}
@@ -594,7 +594,8 @@ Component.prototype = {
 				errors += offender+"has a vuln assessment "+ta.id+" that has more than one corresponding node cluster.\n";
 				continue;
 			}
-			var cc = it.getNodeCluster();
+			var cc;
+			for (cc of it) break;
 			cc = NodeCluster.get(cc.root());
 			for (j=0; j<(this.single? 1 : this.nodes.length); j++) {
 				if (!cc.containsnode(this.nodes[j])) {
@@ -635,68 +636,70 @@ Component.prototype = {
  *
  * usage:
  * 		var it = new ComponentIterator({project: ppppp, service: sssss, type: ttttt});
- * 		for (it.first(); it.notlast(); it.next()) {
- *			var cm = it.getcomponent();
+ * 		for (const cm of it) {
+ *			console.log(cm.title);
+ *			console.log(cm.id);
  *	 		:
  *		}
  */
-var ComponentIterator = function(opt) {
-	this.index = 0;
-	this.item = [];
-	for (var i in Component._all) {
-		var cm =  Component._all[i];
-		// The component is part of a project if one of its nodes belongs to a
-		// service that belongs to that project.
-		var ok = true, j, occurs;
-		if (opt.project!=null) {
-			ok = ok && (cm.project==opt.project);
-		}
-		if (ok && opt.type!=null) {
-			ok = ok && (cm.type==opt.type);
-		}
-		if (ok && opt.match!=null) {
-			ok = ok && (cm.type==opt.match
-				|| cm.type=='tUNK'
-				|| opt.match=='tUNK'
-			);
-		}
-		if (ok && opt.service!=null) {
-			occurs=false;
-			for (j=0; !occurs && j<cm.nodes.length; j++) {
-				occurs = (Node.get(cm.nodes[j]).service==opt.service);
+class ComponentIterator {
+	constructor(opt) {
+		this.item = [];
+		for (var i in Component._all) {
+			var cm =  Component._all[i];
+			// The component is part of a project if one of its nodes belongs to a
+			// service that belongs to that project.
+			var ok = true, j, occurs;
+			if (opt.project!=null) {
+				ok = ok && (cm.project==opt.project);
 			}
-			ok = ok && occurs;
+			if (ok && opt.type!=null) {
+				ok = ok && (cm.type==opt.type);
+			}
+			if (ok && opt.match!=null) {
+				ok = ok && (cm.type==opt.match
+					|| cm.type=='tUNK'
+					|| opt.match=='tUNK'
+				);
+			}
+			if (ok && opt.service!=null) {
+				occurs=false;
+				for (j=0; !occurs && j<cm.nodes.length; j++) {
+					occurs = (Node.get(cm.nodes[j]).service==opt.service);
+				}
+				ok = ok && occurs;
+			}
+			if (ok) this.item.push(cm);
 		}
-		if (ok) this.item.push(i);
 	}
-};
-ComponentIterator.prototype = {
-	first: function() {this.index=0;},
-	next: function() {this.index++;},
-	notlast: function() {return (this.index < this.item.length);},
-	getcomponentid: function() {return this.item[this.index];},
-	getcomponent: function() {return Component.get( this.item[this.index] );},
-	sortByName: function() {
-		this.item.sort( function(a,b) {
-			var ca = Component.get(a);
-			var cb = Component.get(b);
+
+	*[Symbol.iterator]() {
+		for (const id of this.item) {
+			yield id;
+		}
+	}
+
+	count() {
+		return this.item.length;
+	}
+	
+	sortByName() {
+		this.item.sort( function(ca,cb) {
 			return ca.title.toLocaleLowerCase().localeCompare(cb.title.toLocaleLowerCase());
 		});
-	},
-	sortByType: function() {
-		this.item.sort( function(a,b) {
-			var ca = Component.get(a);
-			var cb = Component.get(b);
+	}
+	
+	sortByType() {
+		this.item.sort( function(ca,cb) {
 			if (ca.type<cb.type)  return -1;
 			if (ca.type>cb.type)  return 1;
 			// When types are equal, sort alphabetically
 			return ca.title.toLocaleLowerCase().localeCompare(cb.title.toLocaleLowerCase());
 		});
-	},
-	sortByLevel: function() {
-		this.item.sort( function(a,b) {
-			var ca = Component.get(a);
-			var cb = Component.get(b);
+	}
+	
+	sortByLevel() {
+		this.item.sort( function(ca,cb) {
 			var va = ThreatAssessment.valueindex[ca.magnitude];
 			var vb = ThreatAssessment.valueindex[cb.magnitude];
 			if (va==1) va=8; // Ambiguous
@@ -708,4 +711,4 @@ ComponentIterator.prototype = {
 			return ca.title.toLocaleLowerCase().localeCompare(cb.title.toLocaleLowerCase());
 		});
 	}	
-};
+}

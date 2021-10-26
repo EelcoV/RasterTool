@@ -346,8 +346,7 @@ Transaction.prototype = {
 				rebuildCluster(d);
 			}
 			let it = new NodeClusterIterator({project: Project.cid, isroot: true});
-			for (it.first(); it.notlast(); it.next()) {
-				let cl = it.getNodeCluster();
+			for (const cl of it) {
 				repaintCluster(cl.id);
 			}
 			break;
@@ -472,8 +471,8 @@ Transaction.prototype = {
 				for (const thid of cm.thrass) {
 					let ta = ThreatAssessment.get(thid);
 					let it = new NodeClusterIterator({project: cm.project, title: ta.title, type: ta.type});
-					for (it.first(); it.notlast(); it.next()) {
-						repaintCluster(it.getNodeClusterid());
+					for (const nc of it) {
+						repaintCluster(nc.id);
 					}
 				}
 			}
@@ -555,8 +554,7 @@ Transaction.prototype = {
 				cm.store();
 				// Make changes to all clusters
 				let it = new NodeClusterIterator({project: cm.project, match: cm.type});
-				for (it.first(); it.notlast(); it.next()) {
-					let nc = it.getNodeCluster();
+				for (const nc of it) {
 					nc.childnodes.forEach(function(v,i,a) { if (a[i]==oldid) a[i]=newid; });
 					nc.store();
 					repaintCluster(nc.root());
@@ -722,8 +720,7 @@ Transaction.prototype = {
 				}
 
 				it = new ThreatIterator(d.project,d.type);
-				for (it.first(); it.notlast(); it.next()) {
-					let th = it.getthreat();
+				for (const th of it) {
 					if (d.old_t && isSameString(th.title,d.old_t)) {
 						th.settitle(d.new_t);
 						$('#thname'+th.id).html(H(d.new_t));
@@ -735,8 +732,7 @@ Transaction.prototype = {
 				}
 
 				it = new ComponentIterator({project: d.project, match: d.type});
-				for (it.first(); it.notlast(); it.next()) {
-					let cm = it.getcomponent();
+				for (const cm of it) {
 					for (const t of cm.thrass) {
 						let ta = ThreatAssessment.get(t);
 						if (d.old_t && isSameString(ta.title,d.old_t)) {
@@ -749,8 +745,7 @@ Transaction.prototype = {
 				}
 
 				it = new NodeClusterIterator({project: d.project});
-				for (it.first(); it.notlast(); it.next()) {
-					let cl = it.getNodeCluster();
+				for (const cl of it) {
 					let ta = ThreatAssessment.get(cl.thrass);
 					let repaint = false;
 					if (d.old_t && isSameString(cl.title,d.old_t)) {

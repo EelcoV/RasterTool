@@ -637,29 +637,31 @@ function diagramTabEditStart(/*event*/) {
  *	 		:
  *		}
  */
-var ServiceIterator = function(pid) {
-	this.pid = pid;
-	this.index = 0;
-	this.item = [];
-	for (var i in Service._all) {
-		var s =  Service._all[i];
-		if (s.project == pid) {
-			this.item.push(i);
+class ServiceIterator {
+	constructor(pid) {
+		this.item = [];
+		for (var i in Service._all) {
+			var s =  Service._all[i];
+			if (s.project == pid) {
+				this.item.push(s);
+			}
 		}
 	}
-};
-ServiceIterator.prototype = {
-	first: function() {this.index=0;},
-	next: function() {this.index++;},
-	notlast: function() {return (this.index < this.item.length);},
-	getservice: function() {return Service.get( this.item[this.index] );},
-	getserviceid: function() {return this.item[this.index];},
-	sortByName: function() {
-		this.item.sort( function(a,b) {
-			var na = Service.get(a);
-			var nb = Service.get(b);
-			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
+
+	*[Symbol.iterator]() {
+		for (const id of this.item) {
+			yield id;
+		}
+	}
+
+	count() {
+		return this.item.length;
+	}
+	
+	sortByName() {
+		this.item.sort( function(sa,sb) {
+			return sa.title.toLocaleLowerCase().localeCompare(sb.title.toLocaleLowerCase());
 		});
 	}
-};
+}
 

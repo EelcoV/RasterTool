@@ -278,9 +278,9 @@ function initAllAndSetup() {
 			var it = new ServiceIterator(p.id);
 			var found = false;
 			var s;
-			for (it.first(); !found && it.notlast(); it.next()) {
-				s = it.getservice();
+			for (s of it) {
 				found = (s.title == Preferences.service);
+				if (found) break;
 			}
 			if (found) {
 				Service.cid = s.id;
@@ -1095,9 +1095,9 @@ function switchToProject(pid,dorefresh) {
 	var it = new ServiceIterator(pid);
 	var found = false;
 	var s;
-	for (it.first(); !found && it.notlast(); it.next()) {
-		s = it.getservice();
+	for (s of it) {
 		found = (s.title == Preferences.service);
+		if (found) break;
 	}
 	if (found) {
 		Service.cid = s.id;
@@ -1920,7 +1920,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		lth = lThreat[i];
 		let it = new NodeClusterIterator({project: lth.p, title: lth.l, type: lth.t, isroot: true});
 		// If the project has a rootcluster with that type and title, then OK.
-		if (it.notlast())  continue;
+		if (it.count()>0)  continue;
 		// else make sure that a stub rootcluster exists, and has a threat assessment.
 		nc = new NodeCluster(lth.t);
 		nc.setproject(lth.p);
@@ -1997,8 +1997,8 @@ function exportProject(pid) {
 	for (const th of p.threats) s += exportThreat(th);
 	for (const sid of p.services) s += exportService(sid);
 	var it = new NodeClusterIterator({project: pid});
-	for (it.first(); it.notlast(); it.next()) {
-		s += exportNodeCluster(it.getNodeClusterid());
+	for (const nc of it) {
+		s += exportNodeCluster(nc.id);
 	}
 	return s;
 }
@@ -2426,7 +2426,7 @@ function initLibraryPanel() {
 	});
 	$('#libraryactivator').on('click',  function() {
 		var it = new ProjectIterator({group: ToolGroup, stubsonly: false});
-		var nump = it.number();
+		var nump = it.count();
 		nump += 4; // Allow space for option group titles.
 		if (nump<8) nump=8;
 		if (nump>15) nump=15;
@@ -2458,8 +2458,7 @@ function checkForErrors(verbose) {
 	var errors = "";
 	var it = new ProjectIterator();
 	it.sortByTitle();
-	for (it.first(); it.notlast(); it.next()) {
-		var p = it.getproject();
+	for (const p of it) {
 		var err = p.internalCheck();
 		if (err!="") {
 			var e = err.split('\n');
@@ -2540,7 +2539,7 @@ function ShowDetails(p) {
 						// Before changing the sharing status from 'private' to 'shared', first
 						// check if there already is a project with this name. If so, refuse to rename.
 						var it = new ProjectIterator({title: p.title, group: ToolGroup, stubsonly: true});
-						if (it.notlast()) {
+						if (it.count()>0) {
 							rasterAlert(_("Cannot share this project yet"),
 								_("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
 							);
@@ -2606,13 +2605,11 @@ function ShowDetails(p) {
 function populateProjectList() {
 	var snippet = "";
 	var newoptions = "";
-	var p;
 	var it = new ProjectIterator({group: ToolGroup});
 	it.sortByTitle();
 
 	// First all private projects
-	for (it.first(); it.notlast(); it.next()) {
-		p = it.getproject();
+	for (const p of it) {
 		if (p.stub || p.shared) continue;
 		if (snippet=="") {
 			snippet = '<optgroup class="optgroup" label="'+_("Private projects")+'">\n';
@@ -2626,8 +2623,7 @@ function populateProjectList() {
 #ifdef SERVER
 	//	 Then all shared projects, if they belong to group ToolGroup
 	snippet = "";
-	for (it.first(); it.notlast(); it.next()) {
-		p = it.getproject();
+	for (const p of it) {
 		if (p.stub || !p.shared) continue;
 		if (snippet=="") {
 			snippet = '<optgroup class="optgroup" label="'+_("Shared projects")+'">\n';
@@ -2669,8 +2665,7 @@ function refreshProjectList() {
 	var snippet = "";
 	var it = new ProjectIterator({group: ToolGroup, stubsonly: true});
 	it.sortByTitle();
-	for (it.first(); it.notlast(); it.next()) {
-		var p = it.getproject();
+	for (const p of it) {
 		if (snippet=="") {
 			snippet = '<optgroup id="stubgroup" class="optgroup" label="'+_("Other projects on the server")+'">\n';
 		}
@@ -3281,10 +3276,10 @@ function initTabDiagrams() {
 			undo_data.push({project: Project.cid, threat: newid, cluster: newcluster});
 			// Apply the change to all components of matching type
 			var it = new ComponentIterator({project: Project.cid, match: typ});
-			for (it.first(); it.notlast(); it.next()) {
+			for (const cm of it) {
 				let newid = createUUID();
-				do_data.push({component: it.getcomponentid(), threat: newid, type: typ, title: newtitle, description: newtitle});
-				undo_data.push({component: it.getcomponentid(), threat: newid});
+				do_data.push({component: cm.id, threat: newid, type: typ, title: newtitle, description: newtitle});
+				undo_data.push({component: cm.id, threat: newid});
 			}
 			new Transaction('threatCreate', undo_data, do_data, _("Add vulnerability '%%'",newtitle));
 		};
@@ -3293,8 +3288,7 @@ function initTabDiagrams() {
 		return function() {
 			ThreatAssessment.Clipboard = [];
 			var it = new ThreatIterator(Project.cid,typ);
-			for (it.first(); it.notlast(); it.next()) {
-				var th = it.getthreat();
+			for (const th of it) {
 				ThreatAssessment.Clipboard.push({t: th.title, y: th.type, d: th.description, p: '-', i: '-', r: ''});
 			}
 		};
@@ -3305,12 +3299,16 @@ function initTabDiagrams() {
 			var newth = [];
 			for (const clip of ThreatAssessment.Clipboard) {
 				// Check whether a threat with same title already exists
-				for (it.first(); it.notlast(); it.next()) {
-					var th = it.getthreat();
-					if (clip.t==th.title) break;
+				let th;
+				let found = false;
+				for (th of it) {
+					if (clip.t==th.title) {
+						found = true;
+						break;
+					}
 				}
 
-				if (it.notlast()) {
+				if (found) {
 					// Paste into existing threat
 					th.setdescription(clip.d);
 					$('#threat'+th.id).remove();
@@ -3742,8 +3740,7 @@ function paintSingleFailures(s) {
 	$('#singlefs_workspace'+s.id).empty();
 
 	var it = new ComponentIterator({service: s.id});
-	it.first();
-	if (!it.notlast()) {
+	if (it.count()==0) {
 		$('#singlefs_workspace'+s.id).append(
 			'<p class="firstp sfaccordion">'
 			+ _("This space will show all vulnerability evaluations for the components in this service. ")
@@ -3840,8 +3837,7 @@ function paintSingleFailures(s) {
 	}
 	$('#somesf'+s.id+' fieldset').controlgroup('refresh');
 
-	for (it.first(); it.notlast(); it.next()) {
-		var cm = it.getcomponent();
+	for (const cm of it) {
 		//if (cm.type=='tACT') continue;
 		var snippet = '\n\
 		  <div id="sfaccordion_SV___ID_" class="sfaccordion">\n\
@@ -3915,8 +3911,7 @@ function paintSingleFailures(s) {
 	$('#sfacclist'+s.id).append(appendstring);
 
 	// Now loop again, add vulnerabilities and behaviour.
-	for (it.first(); it.notlast(); it.next()) {
-		cm = it.getcomponent();
+	for (const cm of it) {
 		cm.setmarkeroid("#sfamark"+s.id+'_'+cm.id);
 		for (const thid of cm.thrass) ThreatAssessment.get(thid).addtablerow_behavioronly('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
 		var addhandler = function(s,cm) {
@@ -4001,8 +3996,7 @@ function opencloseSFAccordion(cm,sid,event,ui) {
 
 function expandAllSingleF(sid) {
 	var it = new ComponentIterator({service: sid});
-	for (it.first(); it.notlast(); it.next()) {
-		var cm = it.getcomponent();
+	for (const cm of it) {
 		if (cm.type=='tACT') {
 			bugreport("Found a component of type actor. That should not exist.", "expandAllSingleF");
 			continue;
@@ -4022,8 +4016,7 @@ function expandAllSingleF(sid) {
 
 function collapseAllSingleF(sid) {
 	var it = new ComponentIterator({service: sid});
-	for (it.first(); it.notlast(); it.next()) {
-		var cm = it.getcomponent();
+	for (const cm of it) {
 		if (cm.type=='tACT') {
 			bugreport("Found a component of type actor. That should not exist.", "collapseAllSingleF");
 			continue;
@@ -4410,7 +4403,7 @@ function PaintAllClusters() {
 	// for each vulnerability, list the nested list / vulnerability-domain-tree
 	// allow manipulation of nested list
 	var it = new NodeClusterIterator({project:Project.cid, isroot:true});
-	if (!it.notlast()) {
+	if (it.count()==0) {
 		$('#noccf').css('display', 'block');
 		$('#someccf').css('display', 'none');
 		return;
@@ -4422,16 +4415,14 @@ function PaintAllClusters() {
 	$('#noccf').css('display', 'none');
 	$('#someccf').css('display', 'block');
 
-	for (it.first(); it.notlast(); it.next()) {
-		var nc = it.getNodeCluster();
+	for (const nc of it) {
 		addClusterElements(nc);
 		repaintCluster(nc.id);
 	}
 	$('#ccfs_body').append('<br><br>');
 
 	// Show the details of the first open accordion
-	for (it.first(); it.notlast(); it.next()) {
-		nc = it.getNodeCluster();
+	for (const nc of it) {
 		if (nc.accordionopened && CurrentCluster==null) {
 			// Delay painting until the accordions are done
 			window.setTimeout(function() {
@@ -4495,8 +4486,7 @@ function addClusterElements(nc) {
 				sortClustersToCurrentOrder(it);
 				$('#ccfs_details').empty();
 				CurrentCluster = null;
-				for (it.first(); it.notlast(); it.next()) {
-					var cl = it.getNodeCluster();
+				for (const cl of it) {
 					if (cl.id==nc.id)  continue;
 					if (cl.accordionopened) {
 						repaintClusterDetails(cl);
@@ -4530,8 +4520,7 @@ function addClusterElements(nc) {
 function expandAllCCF() {
 	var it = new NodeClusterIterator({project: Project.cid});
 
-	for (it.first(); it.notlast(); it.next()) {
-		var cl = it.getNodeCluster();
+	for (const cl of it) {
 		if (cl.isroot()) {
 			var el = $('#ccfaccordion'+cl.id);
 			el.accordion('option','animate',false);
@@ -4550,8 +4539,10 @@ function expandAllCCF() {
 	// Show the details of the first cluster
 	it = new NodeClusterIterator({project: Project.cid, isroot:true, isstub: false});
 	sortClustersToCurrentOrder(it);
-	it.first();
-	repaintClusterDetails(it.getNodeCluster());
+	for (const cl of it) {
+		repaintClusterDetails(cl);
+		break;
+	}
 }
 
 function collapseAllCCF() {
@@ -4559,8 +4550,7 @@ function collapseAllCCF() {
 	$('.ccfaccordion').removeClass('ccfhighlight');
 	CurrentCluster = null;
 	var it = new NodeClusterIterator({project: Project.cid});
-	for (it.first(); it.notlast(); it.next()) {
-		var cl = it.getNodeCluster();
+	for (const cl of it) {
 		if (cl.isroot()) {
 			var el = $('#ccfaccordion'+cl.id);
 			el.accordion('option','animate',false);
@@ -4610,9 +4600,8 @@ function repaintCluster(elem) {
 		$('#ccfaccordion'+nc.id).css('display', 'none');
 		// Check whether there are any cluster remaining visible
 		var it = new NodeClusterIterator({project:Project.cid, isroot:true});
-		for (it.first(); it.notlast(); it.next()) {
-			nc = it.getNodeCluster();
-			if (nc.childclusters.length + nc.childnodes.length >= 2) {
+		for (const cl of it) {
+			if (cl.childclusters.length + cl.childnodes.length >= 2) {
 				return;
 			}
 		}
@@ -5268,8 +5257,7 @@ function computeComponentQuickWins() {
 	var cit = new ComponentIterator({project: Project.cid});
 
 	// Cycle over all of the nodes (components, really)
-	for (cit.first(); cit.notlast(); cit.next()) {
-		var cm = cit.getcomponent();
+	for (const cm of cit) {
 		// Don't bother with incomplete or low-risk components
 		if (cm.magnitude=='-' || cm.magnitude=='L' || cm.magnitude=='U') continue;
 		// Cycle over all vulnerabilities, and count how many are equal to the overall magnitude.
@@ -5295,8 +5283,7 @@ function computeClusterQuickWins() {
 	var suggestions = [];
 	var ncit = new NodeClusterIterator({project: Project.cid, isroot: true, isstub: false});
 
-	for (ncit.first(); ncit.notlast(); ncit.next()) {
-		var cl = ncit.getNodeCluster();
+	for (const cl of ncit) {
 		// Don't bother with incomplete or low-risk clusters
 		if (cl.magnitude=='-' || cl.magnitude=='L' || cl.magnitude=='U') continue;
 
@@ -5345,7 +5332,7 @@ function paintSFTable() {
 	$('#ana_nodethreattable').empty();
 	var numthreats = 0;
 	var Nodesum = [];
-	for (tit.first(); tit.notlast(); tit.next()) numthreats++;
+	for (const cl of tit) numthreats++;		// eslint-disable-line no-unused-vars
 	// If the table would be empty, then don't paint row and column headers
 	// but show a message instead
 	if (numthreats==0) {
@@ -5358,7 +5345,7 @@ function paintSFTable() {
 	}
 
 	// Initialise to '-'
-	for (cit.first(); cit.notlast(); cit.next()) Nodesum[cit.getcomponentid()] = '-';
+	for (const cm of cit) Nodesum[cm.id] = '-';
 
 	// Do the header
 	var snippet = '\n\
@@ -5377,8 +5364,7 @@ function paintSFTable() {
 	snippet = snippet.replace(/_WC_/, 1.7);
 	snippet = snippet.replace(/_TW_/, 20+1.7*(numthreats+1));
 	snippet = snippet.replace(/_NT_/, numthreats+1);
-	for (tit.first(); tit.notlast(); tit.next()) {
-		var nc = tit.getNodeCluster();
+	for (const nc of tit) {
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}
 	snippet += '<td class="headercell"><b>_OV_</b></td>\n\
@@ -5388,13 +5374,11 @@ function paintSFTable() {
 	';
 	snippet = snippet.replace(/_OV_/, _("Overall"));
 	// Do each of the table rows
-	for (cit.first(); cit.notlast(); cit.next()) {
-		var cm = cit.getcomponent();
+	for (const cm of cit) {
 		snippet += '<tr><td class="nodetitlecell">';
 		snippet += H(cm.title);
 		snippet += '&nbsp;</td>';
-		for (tit.first(); tit.notlast(); tit.next()) {
-			nc = tit.getNodeCluster();
+		for (const nc of tit) {
 			// Find the threat assessment for this node
 			var ta = {};
 			for (const thid of cm.thrass) {
@@ -5478,10 +5462,9 @@ function paintCCFTable() {
 
 	$('#ana_ccftable').empty();
 	var numthreats = 0;
-	for (tit.first(); tit.notlast(); tit.next()) numthreats++;
+	for (const cl of tit) numthreats++;		// eslint-disable-line no-unused-vars
 	// Do not paint an empty table
-	ncit.first();
-	if (!ncit.notlast() || numthreats==0)  return;
+	if (ncit.count()==0 || numthreats==0)  return;
 
 	// Do the header
 	var snippet = '\n\
@@ -5500,8 +5483,7 @@ function paintCCFTable() {
 	snippet = snippet.replace(/_WC_/, 1.7);
 	snippet = snippet.replace(/_TW_/, 20+1.7*(numthreats+1));
 	snippet = snippet.replace(/_NT_/, numthreats+1);
-	for (tit.first(); tit.notlast(); tit.next()) {
-		var nc = tit.getNodeCluster();
+	for (const nc of tit) {
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}
 	snippet += '<td class="headercell"><b>_OV_</b></td>\n\
@@ -5512,13 +5494,13 @@ function paintCCFTable() {
 	snippet = snippet.replace(/_OV_/, _("Overall"));
 
 	// Do each of the table rows
-	for (ncit.first(); ncit.notlast(); ncit.next()) {
-		var cl = ncit.getNodeCluster();
+	for (const cl of ncit) {
 		var ta = ThreatAssessment.get(cl.thrass);
 
-		var col;
-		for (tit.first(),col=0; tit.notlast(); tit.next(),col++) {
-			if (tit.getNodeClusterid()==ncit.getNodeClusterid()) break;
+		var col=0;
+		for (const cl2 of tit) {
+			if (cl2.id==cl.id) break;
+			col++;
 		}
 
 		snippet += addCCFTableRow(col,numthreats,ta,cl,0);
@@ -5694,14 +5676,12 @@ function paintVulnsTableType(tabletype) {
 	// Precompute all numbers
 	// Iterate over all components
 	var cit = new ComponentIterator({project: Project.cid});
-	for (cit.first(); cit.notlast(); cit.next()) {
-		var cm = cit.getcomponent();
+	for (const cm of cit) {
 		for (const thid of cm.thrass) addUp(ThreatAssessment.get(thid));
 	}
 	// Tterate over all cluster assessments
 	var tit = new NodeClusterIterator({project: Project.cid, isempty: false});
-	for (tit.first(); tit.notlast(); tit.next()) {
-		var nc = tit.getNodeCluster();
+	for (const nc of tit) {
 		addUp(ThreatAssessment.get(nc.thrass));
 	}
 
@@ -5763,8 +5743,7 @@ function paintVulnsTableType(tabletype) {
 	tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	tit.sortByType();
 //	var col = 0;
-	for (tit.first(); tit.notlast(); tit.next()) {
-		var cl = tit.getNodeCluster();
+	for (const cl of tit) {
 		var ta = ThreatAssessment.get(cl.thrass);
 		var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
 
@@ -5864,8 +5843,7 @@ function paintNodeTypeStats() {
 	snippet +='\n\
 	<table><tr>\n\
 	';
-	for (sit.first(); sit.notlast(); sit.next()) {
-		var s = sit.getservice();
+	for (const s of sit) {
 		var sStats = {};
 		var sTot = 0;
 		var nit = new NodeIterator({service: s.id});
@@ -5978,11 +5956,9 @@ function showremovedvulns() {
 	// vulnerabilities that were removed at least once.
 	var cit = new ComponentIterator({project: Project.cid});
 	cit.sortByName();
-	for (cit.first(); cit.notlast(); cit.next()) {
-		cm = cit.getcomponent();
+	for (const cm of cit) {
 		var tit = new ThreatIterator(Project.cid,cm.type);
-		for (tit.first(); tit.notlast(); tit.next()) {
-			var th = tit.getthreat();
+		for (const th of tit) {
 			// Check whether this threat was used
 			for (i=0; i<cm.thrass.length; i++) {
 				var ta = ThreatAssessment.get(cm.thrass[i]);
@@ -6078,17 +6054,19 @@ function showcustomvulns() {
 	// vulnerabilities that were removed at least once.
 	var cit = new ComponentIterator({project: Project.cid});
 	cit.sortByName();
-	for (cit.first(); cit.notlast(); cit.next()) {
-		let cm = cit.getcomponent();
+	for (const cm of cit) {
 		for (const thid of cm.thrass) {
 			var ta = ThreatAssessment.get(thid);
 			// Check whether this threat occurs in its checklist
-			for (tit.first(); tit.notlast(); tit.next()) {
-				var th = tit.getthreat();
+			let found = false;
+			for (const th of tit) {
 				// we have a match
-				if (th.type==ta.type && th.title==ta.title) break;
+				if (th.type==ta.type && th.title==ta.title) {
+					found = true;
+					break;
+				}
 			}
-			if (tit.notlast()) continue;
+			if (found) continue;
 			// We found a threat assessment that does not occur in the checklists
 			if (VulnTitles.indexOf(ta.title)==-1) VulnTitles.push(ta.title);
 			if (CompIDs.indexOf(cm.id)==-1) CompIDs.push(cm.id);
@@ -6241,10 +6219,8 @@ function listSelectedRisks() {
 	var exclCl = computeClusterQuickWins();
 	cit.sortByName();
 
-	for (cit.first(); cit.notlast(); cit.next()) {
-		var cm = cit.getcomponent();
-		for (tit.first(); tit.notlast(); tit.next()) {
-			var nc = tit.getNodeCluster();
+	for (const cm of cit) {
+		for (const nc of tit) {
 			// Find the threat assessment for this node
 			var ta = null;
 			for (const thid of cm.thrass) {
@@ -6271,8 +6247,7 @@ function listSelectedRisks() {
 		}
 	}
 	tit = new NodeClusterIterator({project: Project.cid, isempty: false});
-	for (tit.first(); tit.notlast(); tit.next()) {
-		nc = tit.getNodeCluster();
+	for (const nc of tit) {
 		if (!nc.thrass) continue;
 
 		ta = ThreatAssessment.get(nc.thrass);

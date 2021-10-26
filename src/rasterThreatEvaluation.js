@@ -505,7 +505,8 @@ ThreatAssessment.prototype = {
 					// Locate the corresponding cluster in the project.
 					// There should be exactly one.
 					let it = new NodeClusterIterator({project: c.project, isroot: true, type: th.type, title: th.title});
-					let nc = it.getNodeCluster();
+					let nc;
+					for (nc of it) break;
 					new Transaction('threatAssessCreate',
 						[{component: c.id,
 						  threat: th.id,
@@ -664,15 +665,13 @@ Threat.prototype = {
 
 		// See if this title already exists. If so, silently ignore
 		var it = new ThreatIterator(this.project,this.type);
-		for (it.first(); it.notlast(); it.next()) {
-			var th = it.getthreat();
+		for (const th of it) {
 			if (th.id==this.id) continue;
 			if (isSameString(th.title,t))  return;
 		}
 		// There should be a root cluster with the old title. Change that as well
 		it = new NodeClusterIterator({project: this.project, isroot: true, type: this.type});
-		for (it.first(); it.notlast(); it.next()) {
-			let nc = it.getNodeCluster();
+		for (const nc of it) {
 			if (!isSameString(nc.title,this.title))  continue;
 			nc.settitle(t);
 		}
@@ -725,10 +724,11 @@ Threat.prototype = {
 				let undo_data = [];
 				let do_data = [];
 				let it = new NodeClusterIterator({project: Project.cid, isroot: true, type: th.type, title: th.title});
-				if (it.itemlength!=1) {
+				if (it.count()!=1) {
 					bugreport("No or too many node clusters","threat delete");
 				}
-				let cl = it.getNodeCluster();
+				let cl;
+				for (cl of it) break;
 				let ta = ThreatAssessment.get(cl.thrass);
 
 				do_data.push({project: p.id, threat: th.id, cluster: cl.id});
@@ -747,8 +747,7 @@ Threat.prototype = {
 				});
 
 				it = new ComponentIterator({project: th.project, match: th.type});
-				for (it.first(); it.notlast(); it.next()) {
-					let cm = it.getcomponent();
+				for (const cm of it) {
 					for (let i=0; i<cm.thrass.length; i++) {
 						let ta = ThreatAssessment.get(cm.thrass[i]);
 						if (!isSameString(th.title,ta.title))  continue;
@@ -806,33 +805,36 @@ Threat.prototype = {
  *	 		:
  *		}
  */
-var ThreatIterator = function(pid,t) {
-	this.index = 0;
-	this.item = [];
-	for (var i in Threat._all) {
-		if (Threat._all[i].project==pid
-			&& (t=='tUNK' || t==Threat._all[i].type)
-		) {		// eslint-disable-line brace-style
-			this.item.push(i);
+class ThreatIterator {
+	constructor(pid,t) {
+		this.item = [];
+		for (var i in Threat._all) {
+			let th = Threat.get(i);
+			if (th.project==pid
+				&& (t=='tUNK' || t==th.type)
+			) {		// eslint-disable-line brace-style
+				this.item.push(th);
+			}
 		}
 	}
-	this.itemlength=this.item.length;
-};
 
-ThreatIterator.prototype = {
-	first: function() {this.index=0;},
-	next: function() {this.index++;},
-	notlast: function() {return (this.index < this.itemlength);},
-	getthreat: function() {return Threat.get( this.item[this.index] );},
-	getthreatid: function() {return this.item[this.index];},
-	sortByType: function() {
-		this.item.sort( function(a,b) {
-			var ta = Threat.get(a);
-			var tb = Threat.get(b);
+	*[Symbol.iterator]() {
+		for (const id of this.item) {
+			yield id;
+		}
+	}
+
+	count() {
+		return this.item.length;
+	}
+	
+
+	sortByType() {
+		this.item.sort( function(ta,tb) {
 			if (ta.type<tb.type)  return -1;
 			if (ta.type>tb.type)  return 1;
 			return 0;
 		});
 	}
-};
+}
 

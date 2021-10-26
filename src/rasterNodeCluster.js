@@ -89,14 +89,15 @@ NodeCluster.addnode_threat = function(pid,nid,threattitle,threattype,duplicateok
 	// Locate the corresponding cluster in the project. 
 	// There should be exactly one.
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
-	if (it.itemlength>1) {
+	if (it.count()>1) {
 		bugreport("Multiple matches","NodeCluster.addnode_threat");
 		return;
-	} else if (it.itemlength==0) {
+	} else if (it.count()==0) {
 		bugreport("No rootcluster found","NodeCluster.addnode_threat");
 		return;
 	}
-	var nc = it.getNodeCluster();
+	var nc;
+	for (nc of it) break;
 //console.debug("Adding node "+nid+" to cluster "+nc.id+" ["+threattitle+"|"+threattype+":"+nc.project+"]");
 	if (nc.containsnode(nid)) {
 		if (duplicateok!=true) {
@@ -115,14 +116,15 @@ NodeCluster.addcomponent_threat = function(pid,cid,threattitle,threattype,duplic
 	// Locate the corresponding cluster in the project. 
 	// There should be exactly one.
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
-	if (it.itemlength>1) {
+	if (it.count()>1) {
 		bugreport("Multiple matching clusters","NodeCluster.addcomponent_threat");
 		return;
-	} else if (it.itemlength==0) {
+	} else if (it.count()==0) {
 		bugreport("No rootcluster found","NodeCluster.addnode_threat");
 		return;
 	}
-	var nc = it.getNodeCluster();
+	var nc;
+	for (nc of it) break;
 	for (var i=0; i<(cm.single?1:cm.nodes.length); i++) {
 		if (nc.containsnode(cm.nodes[i])) {
 			if (duplicateok) continue;
@@ -136,15 +138,16 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 	// Locate the corresponding cluster in the project. 
 	// There should be at most one.
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
-	if (it.itemlength>1) {
+	if (it.count()>1) {
 		bugreport("Multiple matching clusters","NodeCluster.removecomponent_threat");
-	} else if (it.itemlength==0) {
+	} else if (it.count()==0) {
 		if (!notexistok) {
 			bugreport("No matching cluster","NodeCluster.removecomponent_threat");
 		}
 		return null;
 	}
-	var nc = it.getNodeCluster();
+	var nc;
+	for (nc of it) break;
 	var cm = Component.get(cid);
 	if (!cm) {
 		bugreport("No such component","NodeCluster.removecomponent_threat");
@@ -161,8 +164,7 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 	// Test whether this node cluster has an associated Threat
 	let hasthreat = false;
 	it = new ThreatIterator(nc.project,nc.type);
-	for (it.first(); it.notlast(); it.next()) {
-		let th = it.getthreat();
+	for (const th of it) {
 		if (th.title!=nc.title)  continue;
 		hasthreat = true;
 		break;
@@ -178,8 +180,8 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 NodeCluster.structuredata = function(pid) {
 	let res = [];
 	let it = new NodeClusterIterator({project: pid, isroot: true});
-	for (it.first(); it.notlast(); it.next()) {
-		res.push(it.getNodeCluster().structure());
+	for (const nc of it) {
+		res.push(nc.structure());
 	}
 	return res;
 };
@@ -203,7 +205,7 @@ NodeCluster.prototype = {
 
 	settitle: function(str) {
 		var it = new NodeClusterIterator({project: this.project, isroot: true, type: this.type, title: str});
-		if (it.notlast()) {
+		if (it.count()>0) {
 			bugreport("Already exists","NodeCluster.settitle");
 		}
 		if (this.thrass!=null) {
@@ -541,60 +543,55 @@ NodeCluster.prototype = {
  *
  * usage:
  * 		var it = new NodeClusterIterator({project: pid, parentcluster: parid, type: 'tEQT', title: stringT});
- * 		for (it.first(); it.notlast(); it.next()) {
- *			var ncid = it.getNodeClusterid();
- *			var nc = it.getNodeCluster();
+ * 		for (const nc of it) {
+ *			console.log(nc.id);
  *	 		:
  *		}
  */
-var NodeClusterIterator = function(opt) {
-	this.index = 0;
-	this.item = [];
-	for (var i in NodeCluster._all) {
-		var nc = NodeCluster._all[i];
-		if (opt && opt.project!=undefined && nc.project!=opt.project) continue;
-		if (opt && opt.parentcluster!=undefined && nc.parentcluster!=opt.parentcluster) continue;
-		if (opt && opt.isroot!=undefined && nc.isroot()!=opt.isroot) continue;
-		if (opt && opt.isstub!=undefined && (nc.childnodes.length+nc.childclusters.length<2)!=opt.isstub) continue;
-		if (opt && opt.isempty!=undefined && (nc.childnodes.length+nc.childclusters.length==0)!=opt.isempty) continue;
-		if (opt && opt.type!=undefined && nc.type!=opt.type) continue;
-		if (opt && opt.match!=undefined && opt.match!='tUNK' && nc.type!=opt.match) continue;
-		if (opt && opt.title!=undefined && !isSameString(nc.title,opt.title)) continue;
-		this.item.push(i);
+class NodeClusterIterator {
+	constructor(opt) {
+		this.item = [];
+		for (var i in NodeCluster._all) {
+			var nc = NodeCluster._all[i];
+			if (opt && opt.project!=undefined && nc.project!=opt.project) continue;
+			if (opt && opt.parentcluster!=undefined && nc.parentcluster!=opt.parentcluster) continue;
+			if (opt && opt.isroot!=undefined && nc.isroot()!=opt.isroot) continue;
+			if (opt && opt.isstub!=undefined && (nc.childnodes.length+nc.childclusters.length<2)!=opt.isstub) continue;
+			if (opt && opt.isempty!=undefined && (nc.childnodes.length+nc.childclusters.length==0)!=opt.isempty) continue;
+			if (opt && opt.type!=undefined && nc.type!=opt.type) continue;
+			if (opt && opt.match!=undefined && opt.match!='tUNK' && nc.type!=opt.match) continue;
+			if (opt && opt.title!=undefined && !isSameString(nc.title,opt.title)) continue;
+			this.item.push(nc);
+		}
 	}
-	this.itemlength = this.item.length;
-};
-NodeClusterIterator.prototype = {
-	first: function() {this.index=0;},
-	next: function() {this.index++;},
-	notlast: function() {return (this.index < this.itemlength);},
-	getNodeCluster: function() {return NodeCluster.get( this.item[this.index] );},
-	getNodeClusterid: function() {return this.item[this.index];},
-	sortByName: function() {
-		this.item.sort( function(a,b) {
-			var na = NodeCluster.get(a);
-			var nb = NodeCluster.get(b);
+
+	*[Symbol.iterator]() {
+		for (const id of this.item) {
+			yield id;
+		}
+	}
+
+	count() {
+		return this.item.length;
+	}
+	
+	sortByName() {
+		this.item.sort( function(na,nb) {
 			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
 		});
-	},
-	sortByType: function() {
-		this.item.sort( function(a,b) {
-			var na = NodeCluster.get(a);
-			var nb = NodeCluster.get(b);
+	}
+	
+	sortByType() {
+		this.item.sort( function(na,nb) {
 			if (na.type<nb.type)  return -1;
 			if (na.type>nb.type)  return 1;
 			// When types are equal, sort alphabetically
 			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
 		});
-	},
-	sortByLevel: function() {
-		this.item.sort( function(a,b) {
-			var na = NodeCluster.get(a);
-			var nb = NodeCluster.get(b);
-//			var ta = ThreatAssessment.get(na.thrass);
-//			var tb = ThreatAssessment.get(nb.thrass);
-//			var va = ThreatAssessment.valueindex[ta.total];
-//			var vb = ThreatAssessment.valueindex[tb.total];
+	}
+	
+	sortByLevel() {
+		this.item.sort( function(na,nb) {
 			var va = ThreatAssessment.valueindex[na.magnitude];
 			var vb = ThreatAssessment.valueindex[nb.magnitude];
 			if (va==1) va=8; // Ambiguous
@@ -604,4 +601,4 @@ NodeClusterIterator.prototype = {
 			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
 		});
 	}	
-};
+}
