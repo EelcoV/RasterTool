@@ -1525,10 +1525,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			exists = (arr[j].id==id);
 		}
 		return exists;
-// Should we not write this as
-//		return (arr.indexOf(id)!=-1);
-// or
-//		return (arr.includes(id));
 	}
 	// Returns:
 	//  for all j, 0<=j<arr2.length, containsID(arr,arr2[j])
@@ -1540,8 +1536,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			}
 		}
 		return forall;
-// Should we not write this as
-//		return arr2.every(v => arr.includes(v));
 	}
 
 	var i,j,k,n;
@@ -3634,9 +3628,11 @@ function refreshComponentThreatAssessmentsDialog(force) {
 			if (newlist.length != c.thrass.length) {
 				bugreport("internal error in sorting","refreshComponentThreatAssessmentsDialog");
 			}
-			c.thrass = newlist;
-			c.store();
-			transactionCompleted("Reorder thrass of component "+c.id);
+			if (c.thrass.every( (v,i) => (newlist[i]==v) )) return;
+			new Transaction('compVulns',
+				[{id: c.id, thrass: c.thrass}],
+				[{id: c.id, thrass: newlist}],
+				_("Reorder vulnerabilities of "+H(c.title)));
 		}
 	});
 }

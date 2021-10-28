@@ -205,6 +205,20 @@ Transaction.prototype = {
 			break;
 		}
 
+		case 'compVulns': {
+			// Change the order of threatassessments
+			// data: array of objects; each object has these properties
+			//  id: id of the component
+			//  thrass: list of ids of the threatassessments of the component
+			for (const d of data) {
+				let c = Component.get(d.id);
+				c.thrass = d.thrass;
+				c.store();
+			}
+			refreshComponentThreatAssessmentsDialog();
+			break;
+		}
+
 		case 'labelEdit': {
 			// Edit the project color labels
 			// data: array of objects; each object has these properties
@@ -333,7 +347,7 @@ Transaction.prototype = {
 				if (d.connect!=null) {
 					for (const n of d.connect) {
 						// Skip if already connected, to avoid duplicate connections
-						if (rn.connect.includes(n)) continue;
+						if (rn.connect.indexOf(n)!=-1) continue;
 						let othernode = Node.get(n);
 						rn.attach_center(othernode);
 						othernode.setmarker();
