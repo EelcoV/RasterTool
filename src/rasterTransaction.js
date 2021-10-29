@@ -599,6 +599,16 @@ Transaction.prototype = {
 				if (d.impact!=null)  ta.setimpact(d.impact);
 				if (ta.cluster) {
 					repaintCluster(NodeCluster.get(ta.cluster).root());
+				} else {
+					// repaint this component for each service in which it occurs
+					let c = Component.get(ta.component);
+					let svcs = [];
+					for (const nid of c.nodes) {
+						const nd = Node.get(nid);
+						if (svcs.indexOf(nd.service)!=-1) continue;
+						svcs.push(nd.service);
+					}
+					for (const sid of svcs) sfRepaint(sid,c);
 				}
 			}
 			refreshComponentThreatAssessmentsDialog();
