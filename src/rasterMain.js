@@ -3970,9 +3970,11 @@ function paintSingleFailures(s) {
 				if (cm==null || newlist.length != cm.thrass.length) {
 					bugreport("internal error in sorting","paintSingleFailures");
 				}
-				cm.thrass = newlist;
-				cm.store();
-				transactionCompleted("Reorder thrass of component "+cm.id);
+				if (cm.thrass.every( (v,i) => (newlist[i]==v) )) return;
+				new Transaction('compVulns',
+					[{id: cm.id, thrass: cm.thrass}],
+					[{id: cm.id, thrass: newlist}],
+					_("Reorder vulnerabilities of "+H(cm.title)));
 			}
 		});
 	}
@@ -3981,6 +3983,16 @@ function paintSingleFailures(s) {
 	$('#singlefs_body input[class~="addthreatbutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#singlefs_body input[class~="copybutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#singlefs_body input[class~="pastebutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+}
+
+/* sfRepaint(component): (re-)paint the vulnerabilities of a service & component
+ */
+function sfRepaint(sid,cm) {
+	let snippet = "";
+	for (const thid of cm.thrass) snippet += ThreatAssessment.get(thid).addtablerow_textonly("sfa"+sid+'_'+cm.id) + '\n';
+	$('#sfaccordion'+sid+'_'+cm.id+' .sfa_sortable').html(snippet);
+	for (const thid of cm.thrass) ThreatAssessment.get(thid).addtablerow_behavioronly('#sfa'+sid+'_'+cm.id,"sfa"+sid+'_'+cm.id);
+
 }
 
 /* This function is called when the head of the accordion for Component is clicked, but before

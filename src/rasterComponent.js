@@ -501,7 +501,7 @@ Component.prototype = {
 		data.e=this.thrass;
 		data.n=this.nodes;
 		data.s=this.single;
-		data.o=this.accordionopened;
+		data.o=(this.accordionopened==true);
 		return JSON.stringify(data);
 	},
 	exportstring: function() {

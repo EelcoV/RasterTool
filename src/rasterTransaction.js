@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster
+/* globals sfRepaint, _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -214,6 +214,14 @@ Transaction.prototype = {
 				let c = Component.get(d.id);
 				c.thrass = d.thrass;
 				c.store();
+				// repaint this component for each service in which it occurs
+				let svcs = [];
+				for (const nid of c.nodes) {
+					const nd = Node.get(nid);
+					if (svcs.indexOf(nd.service)!=-1) continue;
+					svcs.push(nd.service);
+				}
+				for (const sid of svcs) sfRepaint(sid,c);
 			}
 			refreshComponentThreatAssessmentsDialog();
 			break;
