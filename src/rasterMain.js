@@ -2465,6 +2465,7 @@ function checkForErrors(verbose) {
 		rasterAlert(_("Checked all projects"), _("There were no errors; all projects are OK.\n"));
 	}
 	if (errors!="") {
+		console.log(errors);
 		rasterAlert(_("Your projects contain errors:"), errors);
 	}
 }
@@ -4270,48 +4271,15 @@ function populateClusterSubmenu(cluster,exceptions) {
 }
 
 function createClusterHandler(/*event*/) {
-	var cluster = NodeCluster.get(MenuCluster);
+	let cluster = NodeCluster.get(MenuCluster);
 
 	$('#ccfmenu').hide();
 	if (LastSelectedNode) {
-		// Called on a node: create a new cluster from selection
-		var nc = new NodeCluster(cluster.type);
-		nc.setproject(cluster.project);
-		nc.setparent(cluster.id);
-		cluster.addchildcluster( nc.id );
-		nc.addthrass();
-		moveSelectionToCluster(nc);
-		transactionCompleted("Create cluster from selection");
+		createClusterFromNodes(cluster,getSelectedNodes());
 	} else {
 		// Called on a cluster; absorbe that cluster into its parent.
 		removeCluster(cluster);
-		transactionCompleted("Remove cluster");
 	}
-}
-
-function removeCluster(cluster) {
-	var parent = NodeCluster.get(cluster.parentcluster);
-	var root = NodeCluster.get(cluster.root());
-
-	for (const nid of cluster.childnodes) parent.addchildnode(nid);
-	for (const cid of cluster.childclusters) parent.addchildcluster(cid);
-	parent.removechildcluster(cluster.id);
-	cluster.destroy();
-	root.normalize();
-	root.calculatemagnitude();
-	repaintCluster(root.id);
-}
-
-function moveCluster(from_cluster,to_cluster) {
-	var parent = NodeCluster.get(from_cluster.parentcluster);
-	var root = NodeCluster.get(from_cluster.root());
-
-	parent.removechildcluster(from_cluster.id);
-	to_cluster.addchildcluster(from_cluster.id);
-
-	root.normalize();
-	root.calculatemagnitude();
-	repaintCluster(root.id);
 }
 
 function moveToClusterHandler(/*event*/) {
@@ -4321,33 +4289,72 @@ function moveToClusterHandler(/*event*/) {
 	$('#ccfmenu').hide();
 	if (LastSelectedNode) {
 		// Called on a node: move selection to cluster
-		moveSelectionToCluster(to_cluster);
-		transactionCompleted("Move selection to cluster");
+		moveNodesToCluster(getSelectedNodes(),to_cluster);
 	} else {
 		var from_cluster = NodeCluster.get(MenuCluster);
 		moveCluster(from_cluster, to_cluster);
-		transactionCompleted("Move cluster");
 	}
 }
 
-/* Each selected node is moved into 'cluster', then the entire set of clusters
- * is normalized, recalculated, and scheduled for repainting.
+/* createClusterFromNodes: create a new nodecluster, initiated by drag&drop or by the menu.
+ * cluster: parent cluster of the new cluster
+ * fromnodes: array of Node ids. Must be member-nodes of the root of the cluster
+ * newtitle: title of the new cluster, or null for a default title.
  */
-function moveSelectionToCluster(cluster) {
-	var root = NodeCluster.get(cluster.root());
+function createClusterFromNodes(cluster,fromnodes,newtitle) {
+	let root = NodeCluster.get(cluster.root());
+	let ncid = createUUID();
+	new Transaction('clusterStructure',
+		[{root: root.id, structure: root.structure(), destroy: ncid}],
+		[{create: ncid, type: cluster.type, parent: cluster.id, title: newtitle,
+			project: cluster.project, nodes: fromnodes,
+			thrass: createUUID()
+		}],
+		_("create new cluster"));
+}
+
+/* moveNodesToCluster: make an existing cluster the container for some nodes
+ * fromnodes: array of Node ids. Must be member-nodes of the root of the cluster
+ * to_cluster: cluster to move the nodes to
+ */
+function moveNodesToCluster(nodes,to_cluster) {
+	let root = NodeCluster.get(to_cluster.root());
+	new Transaction('clusterStructure',
+		[{root: root.id, structure: root.structure()}],
+		[{move: nodes, to: to_cluster.id}],
+		_("move nodes to cluster"));
+}
+
+/* removeCluster: disband a cluster (from the menu, or by dragging it onto its parent)
+ */
+function removeCluster(cluster) {
+	let root = NodeCluster.get(cluster.root());
+	new Transaction('clusterStructure',
+		[{root: root.id, structure: root.structure()}],
+		[{remove: cluster.id}],
+		_("remove cluster %%", cluster.title));
+}
+
+/* moveCluster: change the parent of an existing cluster.
+ * from_cluster: the cluster to be moved
+ * to_cluster: its new parent
+ */
+function moveCluster(from_cluster,to_cluster) {
+	let root = NodeCluster.get(from_cluster.root());
+	new Transaction('clusterStructure',
+		[{root: root.id, structure: root.structure()}],
+		[{move_from: from_cluster.id, move_to: to_cluster.id}],
+		_("move cluster %%", from_cluster.title));
+}
+
+/* Obtain an array of nodes currently selected (highlighted)
+ */
+function getSelectedNodes() {
+	let arr = [];
 	$('.li_selected').each(function(){
-		var n = internalID(this.id);
-		root.removechildnode(n);
-		cluster.addchildnode(n);
+		arr.push(internalID(this.id));
 	});
-	root.normalize();
-	root.calculatemagnitude();
-	repaintCluster(root.id);
-	// Wait for the repaint to finish, the new cluster to be painted, then
-	// trigger a rename
-	setTimeout(function(){
-		$('#litext'+cluster.id).trigger('click');
-	},500);
+	return arr;
 }
 
 var CCFSortOpt = 'alph';
@@ -4667,8 +4674,8 @@ function repaintClusterDetails(nc,force) {
 		callback: function(domid, enteredText) {
 			var nc = NodeCluster.get( nid2id(domid) );
 			new Transaction('clusterTitle',
-				[{id: this.id, title: this.title}],
-				[{id: this.id, title: enteredText}],
+				[{id: nc.id, title: nc.title}],
+				[{id: nc.id, title: enteredText}],
 				_("Rename class")
 			);
 			return H(nc.title);
@@ -4954,7 +4961,7 @@ function nodeClusterReorder(event,ui) {
 	// Only valid drops are to be expected.
 	var drag_n, drag; // source node and cluster
 	var drop_n, drop; // destination node and cluster
-	var drag_cluster, drop_cluster, root_cluster;
+	var drag_cluster, drop_cluster;
 
 	drag = nid2id(dragid);
 	drag_n = internalID(dragid);
@@ -4964,53 +4971,29 @@ function nodeClusterReorder(event,ui) {
 
 	if (drag!=null) drag_cluster = NodeCluster.get(drag);
 	if (drop!=null) drop_cluster = NodeCluster.get(drop);
-	if (drop_cluster) root_cluster = NodeCluster.get(drop_cluster.root());
 
 	if (drag_n!=null) {
 		// A node is being dragged
 		if (drop_n!=null && drag==drop) {
 			// Dropped on a node of the same cluster
-			var nc = new NodeCluster(drag_cluster.type);
-			nc.setproject(drag_cluster.project);
-			var dragNode = Node.get(drag_n);
-			var dropNode = Node.get(drop_n);
-			if (!dragNode || !dropNode) {
-				bugreport('drag node or drop node does not exist', 'nodeClusterReorder');
-			}
+			let dragNode = Node.get(drag_n);
+			let dropNode = Node.get(drop_n);
+			let newtitle = null;
 			if (dragNode.color==dropNode.color && dragNode.color!='none') {
 				// Both have the same label. Name the new node cluster after this label.
 				var p = Project.get(Project.cid);
-				nc.settitle( p.strToLabel(dragNode.color) );
+				newtitle = p.strToLabel(dragNode.color);
 			}
-			$(this).addClass('li_selected');
-			$('.li_selected').each(function(){
-				var n = internalID(this.id);
-				root_cluster.removechildnode(n);
-				nc.addchildnode(n);
-			});
-			nc.setparent(drag);
-			nc.addthrass();
-			drag_cluster.addchildcluster( nc.id );
-			root_cluster.calculatemagnitude();
-			root_cluster.normalize();
-			repaintCluster(root_cluster.id);
-			transactionCompleted("Create cluster");
+			let nodes = getSelectedNodes();
+			nodes.push(drop_n);
+			createClusterFromNodes(drag_cluster,nodes,newtitle);
 		} else if (drop_n!=null && drag!=drop) {
 			bugreport("Node dropped on node of a different cluster","nodeClusterReorder");
 		} else if (drop_n==null && drag==drop) {
 			bugreport("Node dropped on its containing cluster","nodeClusterReorder");
 		} else if (drop_n==null && drag!=drop) {
 			// Dropped into a different cluster
-			$('.li_selected').each(function(){
-				var n = internalID(this.id);
-				root_cluster.removechildnode(n);
-				drop_cluster.addchildnode(n);
-			});
-			root_cluster.normalize();
-			root_cluster.calculatemagnitude();
-			repaintCluster(root_cluster.id);
-			repaintClusterDetails(root_cluster);
-			transactionCompleted("Move node from cluster");
+			moveNodesToCluster(getSelectedNodes(),drop_cluster);
 		}
 	} else {
 		// A cluster is being dragged
@@ -5021,11 +5004,9 @@ function nodeClusterReorder(event,ui) {
 		} else if (drop_n==null && drop==drag_cluster.parentcluster) {
 			// Cluster dropped on its parent cluster
 			removeCluster(drag_cluster);
-			transactionCompleted("Remove cluster");
 		} else {
 			// Cluster dropped on a different cluster
 			moveCluster(drag_cluster,drop_cluster);
-			transactionCompleted("Move cluster");
 		}
 	}
 }

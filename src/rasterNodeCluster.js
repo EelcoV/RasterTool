@@ -204,6 +204,7 @@ NodeCluster.prototype = {
 	},
 
 	settitle: function(str) {
+		if (this.title==str)  return;
 		var it = new NodeClusterIterator({project: this.project, isroot: true, type: this.type, title: str});
 		if (it.count()>0) {
 			bugreport("Already exists","NodeCluster.settitle");

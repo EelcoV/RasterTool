@@ -192,6 +192,82 @@ Transaction.prototype = {
 			break;
 		}
 
+		case 'clusterStructure': {
+			// Edit the structure of a root cluster and its structure
+			// data: array of objects; each object has these properties
+			//  structure: information on restoring the cluster (no nodes added or removed)
+			//  root: id of the root cluster
+			//	destroy: id of a cluster to be deleted.
+			// or
+			//  remove: id of a cluster to be removed. 
+			// or
+			//  move_from: cluster to be moved
+			//  move_to: new parent of that cluster (destination)
+			// or
+			//  create: id of a new cluster
+			//	title, type, project, parent, nodes, thrass: properties of the new cluster
+			// or
+			//	move: list of node ids
+			//	to: id of node cluster to move these nodes into
+			for (const d of data) {
+				if (d.structure) {
+					rebuildCluster(d.structure);
+					repaintCluster(d.root);
+					if (d.destroy) NodeCluster.get(d.destroy).destroy();
+				} else if (d.remove) {
+					let cluster = NodeCluster.get(d.remove);
+					let root = NodeCluster.get(cluster.root());
+					let parent = NodeCluster.get(cluster.parentcluster);
+					for (const nid of cluster.childnodes) parent.addchildnode(nid);
+					for (const cid of cluster.childclusters) parent.addchildcluster(cid);
+					parent.removechildcluster(cluster.id);
+					cluster.destroy();
+					root.normalize();
+					root.calculatemagnitude();
+					repaintCluster(root.id);
+				} else if (d.move_from) {
+					let from_cluster = NodeCluster.get(d.move_from);
+					let to_cluster = NodeCluster.get(d.move_to);
+					let parent = NodeCluster.get(from_cluster.parentcluster);
+					let root = NodeCluster.get(from_cluster.root());
+					parent.removechildcluster(from_cluster.id);
+					to_cluster.addchildcluster(from_cluster.id);
+					root.normalize();
+					root.calculatemagnitude();
+					repaintCluster(root.id);
+				} else if (d.create) {
+					let nc = new NodeCluster(d.type,d.create);
+					nc.setproject(d.project);
+					nc.setparent(d.parent);
+					if (d.title) nc.settitle(d.title);
+					nc.addthrass(d.thrass);
+					let parent = NodeCluster.get(d.parent);
+					parent.addchildcluster(nc.id);
+					let root = NodeCluster.get(nc.root());
+					for (const n of d.nodes) {
+						root.removechildnode(n);
+						nc.addchildnode(n);
+					}
+					root.normalize();
+					root.calculatemagnitude();
+					repaintCluster(root.id);
+				} else if (d.move!=null) {
+					let nc = NodeCluster.get(d.to);
+					let root = NodeCluster.get(nc.root());
+					for (const n of d.move) {
+						root.removechildnode(n);
+						nc.addchildnode(n);
+					}
+					root.normalize();
+					root.calculatemagnitude();
+					repaintCluster(root.id);
+				} else {
+					bugreport('unknown action', 'Transaction.clusterStructure');
+				}
+			}
+			break;
+		}
+		
 		case 'clusterTitle': {
 			// Edit the title of a cluster
 			// data: array of objects; each object has these properties
@@ -201,6 +277,7 @@ Transaction.prototype = {
 				let nc = NodeCluster.get(d.id);
 				nc.settitle(d.title);
 				$('#dthE_ccf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
+				$('#litext'+nc.id).html(H(nc.title));
 			}
 			break;
 		}
@@ -895,6 +972,7 @@ function rebuildCluster(c) {
 	ta.setremark(c.thrass.remark);
 	ta.setfreq(c.thrass.freq);
 	ta.setimpact(c.thrass.impact);
+	cl.childclusters = [];
 	for (const cc of c.childcluster) rebuildCluster(cc);
 	cl.store();
 }
