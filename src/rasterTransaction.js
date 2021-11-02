@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals sfRepaint, _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster
+/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -291,16 +291,8 @@ Transaction.prototype = {
 				let c = Component.get(d.id);
 				c.thrass = d.thrass;
 				c.store();
-				// repaint this component for each service in which it occurs
-				let svcs = [];
-				for (const nid of c.nodes) {
-					const nd = Node.get(nid);
-					if (svcs.indexOf(nd.service)!=-1) continue;
-					svcs.push(nd.service);
-				}
-				for (const sid of svcs) sfRepaint(sid,c);
+				c.repaint();
 			}
-			refreshComponentThreatAssessmentsDialog();
 			break;
 		}
 
@@ -665,10 +657,11 @@ Transaction.prototype = {
 		case 'threatAssessDetails': {
 			// Change the details of a ThreatAssessment
 			// data: array of objects; each object has these properties
-			//	threat: id of theThreatAssessment
+			//	threat: id of the ThreatAssessment
 			//	freq: frequency-value of the threatassessment
 			//	impact: impact-value of the threatassessment
 			//	remark: remark of the threatassessment
+			//  component, cluster: (either/or) the object to which this threatassessment belongs
 			for (const d of data) {
 				let ta = ThreatAssessment.get(d.threat);
 				if (d.remark!=null)  ta.setremark(d.remark);
@@ -677,18 +670,9 @@ Transaction.prototype = {
 				if (ta.cluster) {
 					repaintCluster(NodeCluster.get(ta.cluster).root());
 				} else {
-					// repaint this component for each service in which it occurs
-					let c = Component.get(ta.component);
-					let svcs = [];
-					for (const nid of c.nodes) {
-						const nd = Node.get(nid);
-						if (svcs.indexOf(nd.service)!=-1) continue;
-						svcs.push(nd.service);
-					}
-					for (const sid of svcs) sfRepaint(sid,c);
+					Component.get(ta.component).repaint();
 				}
 			}
-			refreshComponentThreatAssessmentsDialog();
 			break;
 		}
 
@@ -733,7 +717,8 @@ Transaction.prototype = {
 					let th = ThreatAssessment.get(d.threat);
 					cm.removethrass(d.threat);
 					NodeCluster.removecomponent_threat(cm.project,th.component,th.title,th.type);
-					$('#dth'+d.prefix+'_'+th.id).remove();
+					$('#dthdia'+'_'+th.id).remove();
+					$('#dthsfa'+'_'+th.id).remove();
 					cm.setmarker();
 				}
 				if (d.cluster) {
@@ -741,21 +726,23 @@ Transaction.prototype = {
 					let cl = NodeCluster.get(d.cluster.id);
 					repaintCluster(cl.id);
 				}
+				cm.repaint();
 			}
-			refreshComponentThreatAssessmentsDialog();
 			break;
 		}
 
 		case 'threatCreate': {
-			// Add (or remove) a threat to (or from) a checklist, and update all components
+			// Add (or remove) a default threat to (or from) a checklist, or a vulnerability to acomponent, and update all UI
 			// data: array of objects; each object has these properties
-			//	project: id of the project in which to edit
+			//  create: true when adding, false when removing threat(assessment)
+			//  component: id of the component to which a ThreatAssessment should be added (or removed, when type==null)
+			//	project: id of the project in which to edit; either .component or .project must be defined
 			//	threat: id of the checklist threat (new, or to be removed when type==null)
-			//		OR  id of the component's ThreatAssessment
+			//		or  id of the component's ThreatAssessment
 			//  component: id of the component to which a ThreatAssessment should be added (or removed, when type==null)
 			//		*either* threat&project *or* component should be specified
 			//	index: position of the threat(assessment) within the project (component)
-			//	type: type of the threat(assessment) (only wired, wireless, equipmemt allowed); empty for undo
+			//	type: type of the threat(assessment) (only wired, wireless, equipment allowed)
 			//	title: title of the threat(assessment)
 			//  cluster: id of the new cluster
 			//  clusterthrid: id of the ThreatAssessment of the cluster
@@ -765,10 +752,10 @@ Transaction.prototype = {
 			//	impact: impact-value of the threatassessment
 			//	remark: remark of the threatassessment
 			for (const d of data) {
-				if (d.type) {
-					// Add to the checklist, etc
-					if (d.component) {
-						let cm = Component.get(d.component);
+				if (d.component) {
+					// Add/remove a single vulnerability to/from a component
+					let cm = Component.get(d.component);
+					if (d.create) {
 						var ta = new ThreatAssessment(d.type,d.threat);
 						if (d.title!=null)  ta.settitle(d.title);
 						if (d.description!=null)  ta.setdescription(d.description);
@@ -777,38 +764,42 @@ Transaction.prototype = {
 						if (d.impact!=null)  ta.setimpact(d.impact);
 						cm.addthrass(ta,d.index);
 					} else {
-						let t = new Threat(d.project,d.type,d.threat);
-						if (d.title!=null)  t.title = d.title;
-						if (d.description!=null)  t.description = d.description;
-						t.store();
+						let ta = ThreatAssessment.get(d.threat);
+						cm.removethrass(ta.id);
+						ta.destroy();
+					}
+					// refresh UI
+					cm.repaint();
+				} else {
+					// Add/remove a default vulnerability to/from the checklist and all matching components
+					if (d.create) {
+						let th = new Threat(d.project,d.type,d.threat);
+						if (d.title!=null)  th.title = d.title;
+						if (d.description!=null)  th.description = d.description;
+						th.store();
 						let p = Project.get(d.project);
-						p.addthreat(t.id,d.cluster,d.clusterthrid,d.index);
+						p.addthreat(th.id,d.cluster,d.clusterthrid,d.index);
 						let ta = ThreatAssessment.get(d.clusterthrid);
 						if (d.tdescription!=null)  ta.setdescription(d.tdescription);
 						if (d.remark!=null)  ta.setremark(d.remark);
 						if (d.freq!=null)  ta.setfreq(d.freq);
 						if (d.impact!=null)  ta.setimpact(d.impact);
-						PaintAllClusters();
-						refreshChecklistsDialog(d.type,true);
-					}
-				} else {
-					// Remove from the checklist, etc
-					if (d.component) {
-						let cm = Component.get(d.component);
-						let ta = ThreatAssessment.get(d.threat);
-						cm.removethrass(ta.id);
-						ta.destroy();
 					} else {
 						let th = Threat.get(d.threat);
 						let p = Project.get(th.project);
 						p.removethreat(th.id);
 						let cl = NodeCluster.get(d.cluster);
 						cl.destroy();
-						PaintAllClusters();
 					}
+					// refresh UI
+					refreshChecklistsDialog(d.type,true);
+					let it = new ComponentIterator({project: d.project, match: d.type});
+					for (const cm of it) {
+						cm.repaint();
+					}
+					PaintAllClusters();
 				}
 			}
-			refreshComponentThreatAssessmentsDialog();
 			break;
 		}
 
@@ -851,6 +842,7 @@ Transaction.prototype = {
 							ta.setdescription(d.new_d);
 						}
 					}
+					cm.repaint();
 				}
 
 				it = new NodeClusterIterator({project: d.project});
@@ -870,7 +862,6 @@ Transaction.prototype = {
 					}
 				}
 			}
-			refreshComponentThreatAssessmentsDialog();
 			break;
 		}
 

@@ -3267,14 +3267,14 @@ function initTabDiagrams() {
 			let newclusterthrid = createUUID();
 			let newtitle = Threat.autotitle(Project.cid,typ,_("New vulnerability"));
 
-			do_data.push({project: Project.cid, threat: newid, type: typ, title: newtitle, description: newtitle, cluster: newcluster, clusterthrid: newclusterthrid});
-			undo_data.push({project: Project.cid, threat: newid, cluster: newcluster});
+			do_data.push({create: true, project: Project.cid, threat: newid, type: typ, title: newtitle, description: newtitle, cluster: newcluster, clusterthrid: newclusterthrid});
+			undo_data.push({create: false, project: Project.cid, threat: newid, type: typ, cluster: newcluster});
 			// Apply the change to all components of matching type
 			var it = new ComponentIterator({project: Project.cid, match: typ});
 			for (const cm of it) {
 				let newid = createUUID();
-				do_data.push({component: cm.id, threat: newid, type: typ, title: newtitle, description: newtitle});
-				undo_data.push({component: cm.id, threat: newid});
+				do_data.push({create: true, component: cm.id, threat: newid, type: typ, title: newtitle, description: newtitle});
+				undo_data.push({create: false, component: cm.id, type: typ, threat: newid});
 			}
 			new Transaction('threatCreate', undo_data, do_data, _("Add vulnerability '%%'",newtitle));
 		};
@@ -3322,18 +3322,11 @@ function initTabDiagrams() {
 		};
 	};
 
-	$('#tWLSaddthreat').on('click', addhandler('tWLS'));
-	$('#tWLScopythreat').on('click', copyhandler('tWLS'));
-	$('#tWLSpastethreat').on('click', pastehandler('tWLS'));
-
-	$('#tWRDaddthreat').on('click', addhandler('tWRD'));
-	$('#tWRDcopythreat').on('click', copyhandler('tWRD'));
-	$('#tWRDpastethreat').on('click', pastehandler('tWRD'));
-
-	$('#tEQTaddthreat').on('click', addhandler('tEQT'));
-	$('#tEQTcopythreat').on('click', copyhandler('tEQT'));
-	$('#tEQTpastethreat').on('click', pastehandler('tEQT'));
-
+	for (const t of ['tWLS','tWRD','tEQT']) {
+		$('#'+t+'addthreat').on('click', addhandler(t));
+		$('#'+t+'copythreat').on('click', copyhandler(t));
+		$('#'+t+'pastethreat').on('click', pastehandler(t));
+	}
 	if (DEBUG && !Rules.consistent()) {
 		bugreport('the rules are not internally consistent','initTabDiagrams');
 	}
@@ -3541,7 +3534,7 @@ function workspacedrophandler(event, ui) {		// eslint-disable-line no-unused-var
 function refreshComponentThreatAssessmentsDialog(force) {
 	if (!$('#componentthreats').dialog('isOpen') && force!==true)  return;
 
-	// Dialog is open, nog repaint its contents
+	// Dialog is open, now repaint its contents
 	var c = Component.get(Component.ThreatsComponent);
 	var snippet = '<div id="dialogthreatlist">\
 		<div class="threat">\
@@ -3582,7 +3575,7 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		let c = Component.get(nid2id(this.id));
 		let tid = createUUID();
 		new Transaction('threatAssessCreate',
-			[{component: c.id, threat: tid, prefix: 'dia'}],
+			[{component: c.id, threat: tid}],
 			[{component: c.id,
 				clid: createUUID(),
 				thrid: createUUID(),
@@ -3645,7 +3638,7 @@ function refreshChecklistsDialog(type,force) {		// eslint-disable-line no-unused
 	let p = Project.get(Project.cid);
 	for (const id of p.threats) {
 		let th = Threat.get(id);
-		if (th.type!=type)  return;
+		if (th.type!=type)  continue;
 		th.addtablerow('#'+type+'threats');
 	}
 }
@@ -3913,11 +3906,28 @@ function paintSingleFailures(s) {
 		for (const thid of cm.thrass) ThreatAssessment.get(thid).addtablerow_behavioronly('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
 		var addhandler = function(s,cm) {
 			return function() {
-				var th = new ThreatAssessment( (cm.type=='tUNK' ? 'tEQT' : cm.type) );
-				cm.addthrass(th);
-				th.addtablerow('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
-				cm.setmarker();
-				transactionCompleted("Vuln add");
+				let tid = createUUID();
+				new Transaction('threatAssessCreate',
+					[{component: cm.id, threat: tid}],
+					[{component: cm.id,
+						clid: createUUID(),
+						thrid: createUUID(),
+						threat: tid,
+						index: cm.thrass.length,
+						type: (cm.type=='tUNK' ? 'tEQT' : cm.type),
+						title: ThreatAssessment.autotitle(Project.cid,_("New vulnerability")),
+						description: "",
+						remark: "",
+						freq: '-',
+						impact: '-'
+					 }],
+					 _("New vulnerability")
+				);
+//				var th = new ThreatAssessment( (cm.type=='tUNK' ? 'tEQT' : cm.type) );
+//				cm.addthrass(th);
+//				th.addtablerow('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
+//				cm.setmarker();
+//				transactionCompleted("Vuln add");
 			};
 		};
 		var copyhandler = function(s,cm) {
@@ -3984,16 +3994,6 @@ function paintSingleFailures(s) {
 	$('#singlefs_body input[class~="addthreatbutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#singlefs_body input[class~="copybutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#singlefs_body input[class~="pastebutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-}
-
-/* sfRepaint(component): (re-)paint the vulnerabilities of a service & component
- */
-function sfRepaint(sid,cm) {
-	let snippet = "";
-	for (const thid of cm.thrass) snippet += ThreatAssessment.get(thid).addtablerow_textonly("sfa"+sid+'_'+cm.id) + '\n';
-	$('#sfaccordion'+sid+'_'+cm.id+' .sfa_sortable').html(snippet);
-	for (const thid of cm.thrass) ThreatAssessment.get(thid).addtablerow_behavioronly('#sfa'+sid+'_'+cm.id,"sfa"+sid+'_'+cm.id);
-	cm.setmarkeroid("#sfamark"+sid+'_'+cm.id);
 }
 
 /* This function is called when the head of the accordion for Component is clicked, but before

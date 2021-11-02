@@ -4,10 +4,8 @@ See LICENSE.md
 
 BUGS
 Option Hide/Show color does not have immediate effect.
-Replace #modaldialog by an anonymous <div></div>.
 Undoing a threat-create does not repaint list of node clusters in Common cause failure view
 The How to use help-panel is useless. Either improve or remove. A help-panel on keyboard shortcuts might be useful instead.
-With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
 On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
@@ -19,10 +17,15 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
-Change node shapes from image to SVG, helps for cleaner resizes.
+Strings: use native trim() instead of jQuery.trim() and trimwhitespace(). Change toUpper() to toLocaleUpperCase(). And use localeCompare() to do case-insensitive comparisons.
+Undo
+With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
+Replace #modaldialog by an anonymous <div></div>.
+Change node shapes from image to SVG, helps for cleaner resizes. Obsoleted by iconsets?
 Try IndexDB instead of localStorage. This will benefit concurrent use in multiple tabs, and may ease the implementation of Undo and concurrent use across computers.
 When renaming a node, split at the ^ sign and treat the latter part as the suffix?
 New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable.
+Add functionality for graph expansion? Expand a cloud into subcomponents? Perhaps using the new Area object?
 Create toolbar/buttons for actions in popup menu.
 Include CCFs in de calculation of overall threat level? And include the relevant CCFs in the popup vulnerability window for a node? CCFs are too much an add-on, and do not have equal status with SFs.
 Sort Single failures by Label.
@@ -38,12 +41,10 @@ Change from accordion widget to the Collapser plugin?
 Filter on Single Failures, including on overall threat score.
 Sort vulns for a component on name/freq/impact/total/remark
 Better handling of redundancy in telecom services.
-Undo
 Set description on added threats.
 Consistency report for the entire diagram, plus UI.
 Allow comments to be set on a project. Include versioning info?
 Allow for icons to be added to nodes (from a fixed library?)
-Add functionality for graph expansion? Expand a cloud into subcomponents?
 
 CANNOT REPRODUCE
 (no recent bugs)

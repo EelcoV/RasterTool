@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals bugreport, createUUID, Rules, _, isSameString, LS, ThreatAssessment, Transaction, NodeCluster, NodeClusterIterator, prependIfMissing, trimwhitespace, H */
+/* globals bugreport, createUUID, Rules, _, isSameString, LS, ThreatAssessment, Transaction, NodeCluster, NodeClusterIterator, prependIfMissing, refreshComponentThreatAssessmentsDialog, trimwhitespace, H */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -45,6 +45,7 @@
  *	setsingle(b): change singular/multiple flag (this.single) to 'b'.
  *	setmarkeroid(oid): change _markeroid and set status.
  *	setmarker: show/hide/set the status marker.
+ *  repaint: refresh the UI on the SF tab and the vulnerabilities dialogue
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
@@ -481,6 +482,26 @@ Component.prototype = {
 		$(this._markeroid).html(str);
 	},
 
+	repaint: function() {
+		// repaint this component for each service in which it occurs
+		let svcs = [];
+		for (const nid of this.nodes) {
+			const nd = Node.get(nid);
+			if (svcs.indexOf(nd.service)!=-1) continue;
+			svcs.push(nd.service);
+		}
+		for (const sid of svcs) {
+			let snippet = "";
+			for (const thid of this.thrass) snippet += ThreatAssessment.get(thid).addtablerow_textonly("sfa"+sid+'_'+this.id) + '\n';
+			$('#sfaccordion'+sid+'_'+this.id+' .sfa_sortable').html(snippet);
+			for (const thid of this.thrass) ThreatAssessment.get(thid).addtablerow_behavioronly('#sfa'+sid+'_'+this.id,"sfa"+sid+'_'+this.id);
+			this.setmarkeroid("#sfamark"+sid+'_'+this.id);
+		}
+		if (this.id==Component.ThreatsComponent) {
+			refreshComponentThreatAssessmentsDialog();
+		}
+	},
+
 	_stringify: function() {
 		var data = {};
 		// When comparing projects (e.g. for debugging) it is useful if the order of
@@ -594,8 +615,7 @@ Component.prototype = {
 				errors += offender+"has a vuln assessment "+ta.id+" that has more than one corresponding node cluster.\n";
 				continue;
 			}
-			var cc;
-			for (cc of it) break;
+			var cc = it.first();
 			cc = NodeCluster.get(cc.root());
 			for (j=0; j<(this.single? 1 : this.nodes.length); j++) {
 				if (!cc.containsnode(this.nodes[j])) {
@@ -642,7 +662,7 @@ Component.prototype = {
  *	 		:
  *		}
  */
-class ComponentIterator {
+class ComponentIterator {		// eslint-disable-line no-unused-vars
 	constructor(opt) {
 		this.item = [];
 		for (var i in Component._all) {

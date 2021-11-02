@@ -91,7 +91,7 @@
 		4999EB6D1F900C07009BBF18 /* main.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = main.js; sourceTree = "<group>"; };
 		499A6B9F1A72D97A0047E182 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
-		49ADD30023CA0B5C003BE3D4 /* rasterTransaction.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterTransaction.js; sourceTree = "<group>"; };
+		49ADD30023CA0B5C003BE3D4 /* rasterTransaction.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = rasterTransaction.js; sourceTree = "<group>"; };
 		49AE7CC62378595A00F12B9D /* winbuild.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = winbuild.bat; sourceTree = "<group>"; };
 		49BEE0DE23C1F90E00AC17F7 /* group.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = group.json; sourceTree = "<group>"; };
 		49BEE0DF23C1FA4800AC17F7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };

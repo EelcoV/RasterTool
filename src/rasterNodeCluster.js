@@ -96,8 +96,7 @@ NodeCluster.addnode_threat = function(pid,nid,threattitle,threattype,duplicateok
 		bugreport("No rootcluster found","NodeCluster.addnode_threat");
 		return;
 	}
-	var nc;
-	for (nc of it) break;
+	var nc = it.first();
 //console.debug("Adding node "+nid+" to cluster "+nc.id+" ["+threattitle+"|"+threattype+":"+nc.project+"]");
 	if (nc.containsnode(nid)) {
 		if (duplicateok!=true) {
@@ -123,8 +122,7 @@ NodeCluster.addcomponent_threat = function(pid,cid,threattitle,threattype,duplic
 		bugreport("No rootcluster found","NodeCluster.addnode_threat");
 		return;
 	}
-	var nc;
-	for (nc of it) break;
+	var nc = it.first();
 	for (var i=0; i<(cm.single?1:cm.nodes.length); i++) {
 		if (nc.containsnode(cm.nodes[i])) {
 			if (duplicateok) continue;
@@ -146,8 +144,7 @@ NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,not
 		}
 		return null;
 	}
-	var nc;
-	for (nc of it) break;
+	var nc = it.first();
 	var cm = Component.get(cid);
 	if (!cm) {
 		bugreport("No such component","NodeCluster.removecomponent_threat");
@@ -575,7 +572,11 @@ class NodeClusterIterator {
 	count() {
 		return this.item.length;
 	}
-	
+
+	first() {
+		return this.item[0];
+	}
+
 	sortByName() {
 		this.item.sort( function(na,nb) {
 			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());

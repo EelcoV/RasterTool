@@ -637,7 +637,7 @@ function diagramTabEditStart(/*event*/) {
  *	 		:
  *		}
  */
-class ServiceIterator {
+class ServiceIterator {		// eslint-disable-line no-unused-vars
 	constructor(pid) {
 		this.item = [];
 		for (var i in Service._all) {

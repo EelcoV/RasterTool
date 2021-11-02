@@ -505,8 +505,7 @@ ThreatAssessment.prototype = {
 					// Locate the corresponding cluster in the project.
 					// There should be exactly one.
 					let it = new NodeClusterIterator({project: c.project, isroot: true, type: th.type, title: th.title});
-					let nc;
-					for (nc of it) break;
+					let nc = it.first();
 					new Transaction('threatAssessCreate',
 						[{component: c.id,
 						  threat: th.id,
@@ -521,7 +520,7 @@ ThreatAssessment.prototype = {
 						  thrid: nc.thrass,
 						  cluster: nc.structure()
 						}],
-						[{component: c.id, threat: th.id, prefix: prefix}],
+						[{component: c.id, threat: th.id}],
 						_("Remove vulnerability '%%'",th.title)
 					);
 				};
@@ -727,12 +726,11 @@ Threat.prototype = {
 				if (it.count()!=1) {
 					bugreport("No or too many node clusters","threat delete");
 				}
-				let cl;
-				for (cl of it) break;
+				let cl = it.first();
 				let ta = ThreatAssessment.get(cl.thrass);
 
-				do_data.push({project: p.id, threat: th.id, cluster: cl.id});
-				undo_data.push({project: p.id,
+				do_data.push({create: false, project: p.id, threat: th.id, cluster: cl.id});
+				undo_data.push({create: true, project: p.id,
 					threat: th.id,
 					index: p.threats.indexOf(th.id),
 					type: th.type,
@@ -751,8 +749,9 @@ Threat.prototype = {
 					for (let i=0; i<cm.thrass.length; i++) {
 						let ta = ThreatAssessment.get(cm.thrass[i]);
 						if (!isSameString(th.title,ta.title))  continue;
-						do_data.push({component: cm.id, threat: ta.id});
-						undo_data.push({component: cm.id,
+						do_data.push({create: false, component: cm.id, threat: ta.id});
+						undo_data.push({create: true,
+							component: cm.id,
 							threat: ta.id,
 							index: i,
 							title: ta.title,
