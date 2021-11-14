@@ -3,7 +3,7 @@
  */
 
 /* global
- Component, ComponentIterator, DefaultThreats, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, trimwhitespace, urlEncode
+ Component, ComponentIterator, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, trimwhitespace, urlEncode
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -150,6 +150,21 @@ Project.cid = 0;
 Project._all =new Object();
 Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Pink"), _("Purple"), _("Grey")];
 Project.colors = ["none","red","orange","yellow","green","blue","pink","purple","grey"];
+Project.defaultThreats = [		// eslint-disable-line no-unused-vars
+	/* [ type , title , description ] */
+	["tWLS",_("Interference"),		_("Unintentional interference by a radio source using the same frequency band.")],
+	["tWLS",_("Jamming"),			_("Intentional interference by some third party.")],
+	["tWLS",_("Congestion"),		_("The amount of traffic offered exceeds the capacity of the link.")],
+	["tWLS",_("Signal weakening"),	_("Loss of signal strength through distance or blocking by buildings, trees, etc.")],
+	["tWRD",_("Break"),				_("Cable damaged by natural events, trenching, anchors, or other external influence.")],
+	["tWRD",_("Congestion"),		_("The amount of traffic offered exceeds the capacity of the link.")],
+	["tWRD",_("Cable aging"),		_("Insulation weakens with age.")],
+	["tEQT",_("Physical damage"),	_("Fire, flood, knocks and other physical damage inflicted.")],
+	["tEQT",_("Power"),				_("Failure of electrical power supply.")],
+	["tEQT",_("Configuration"),		_("Incorrect configuration or mistakes by operators or users.")],
+	["tEQT",_("Malfunction"),		_("Failure of an internal module without a clear external cause, possibly by aging.")]
+];
+
 
 // Check wether there is a project with name 'str' and group ToolGroup
 Project.withTitle = function(str) {
@@ -530,7 +545,7 @@ Project.prototype = {
 	},
 	
 	adddefaultthreats: function() {
-		for (const dt of DefaultThreats) {
+		for (const dt of Project.defaultThreats) {
 			var th = new Threat(this.id,dt[0],createUUID());
 			th.settitle(dt[1]);
 			th.setdescription(dt[2]);

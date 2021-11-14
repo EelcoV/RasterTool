@@ -579,21 +579,6 @@ function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
 	);
 }
 
-var DefaultThreats = [		// eslint-disable-line no-unused-vars
-/* [ type , title , description ] */
-["tWLS",_("Interference"),		_("Unintentional interference by a radio source using the same frequency band.")],
-["tWLS",_("Jamming"),			_("Intentional interference by some third party.")],
-["tWLS",_("Congestion"),		_("The amount of traffic offered exceeds the capacity of the link.")],
-["tWLS",_("Signal weakening"),	_("Loss of signal strength through distance or blocking by buildings, trees, etc.")],
-["tWRD",_("Break"),				_("Cable damaged by natural events, trenching, anchors, or other external influence.")],
-["tWRD",_("Congestion"),		_("The amount of traffic offered exceeds the capacity of the link.")],
-["tWRD",_("Cable aging"),		_("Insulation weakens with age.")],
-["tEQT",_("Physical damage"),	_("Fire, flood, knocks and other physical damage inflicted.")],
-["tEQT",_("Power"),				_("Failure of electrical power supply.")],
-["tEQT",_("Configuration"),		_("Incorrect configuration or mistakes by operators or users.")],
-["tEQT",_("Malfunction"),		_("Failure of an internal module without a clear external cause, possibly by aging.")]
-];
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  * Threat: sample threat in a checklist.
  *

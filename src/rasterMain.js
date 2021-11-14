@@ -3279,53 +3279,53 @@ function initTabDiagrams() {
 			new Transaction('threatCreate', undo_data, do_data, _("Add vulnerability '%%'",newtitle));
 		};
 	};
-	var copyhandler = function(typ) {
-		return function() {
-			ThreatAssessment.Clipboard = [];
-			var it = new ThreatIterator(Project.cid,typ);
-			for (const th of it) {
-				ThreatAssessment.Clipboard.push({t: th.title, y: th.type, d: th.description, p: '-', i: '-', r: ''});
-			}
-		};
-	};
-	var pastehandler = function(typ) {
-		return function() {
-			var it = new ThreatIterator(Project.cid,typ);
-			var newth = [];
-			for (const clip of ThreatAssessment.Clipboard) {
-				// Check whether a threat with same title already exists
-				let th;
-				let found = false;
-				for (th of it) {
-					if (clip.t==th.title) {
-						found = true;
-						break;
-					}
-				}
-
-				if (found) {
-					// Paste into existing threat
-					th.setdescription(clip.d);
-					$('#threat'+th.id).remove();
-					th.addtablerow('#'+typ+'threats');
-				} else {
-					// Create a new threat
-					th = new Threat(Project.cid,typ);  // Ignore the type in the Clipboard. Must always be typ.
-					th.settitle(clip.t);
-					th.setdescription(clip.d);
-					Project.get(Project.cid).addthreat(th.id);
-					newth.push(th.id);
-				}
-			}
-			for (const th of newth) Threat.get(th).addtablerow('#'+typ+'threats');
-			transactionCompleted("Checklist vuln paste");
-		};
-	};
+//	var copyhandler = function(typ) {
+//		return function() {
+//			ThreatAssessment.Clipboard = [];
+//			var it = new ThreatIterator(Project.cid,typ);
+//			for (const th of it) {
+//				ThreatAssessment.Clipboard.push({t: th.title, y: th.type, d: th.description, p: '-', i: '-', r: ''});
+//			}
+//		};
+//	};
+//	var pastehandler = function(typ) {
+//		return function() {
+//			var it = new ThreatIterator(Project.cid,typ);
+//			var newth = [];
+//			for (const clip of ThreatAssessment.Clipboard) {
+//				// Check whether a threat with same title already exists
+//				let th;
+//				let found = false;
+//				for (th of it) {
+//					if (clip.t==th.title) {
+//						found = true;
+//						break;
+//					}
+//				}
+//
+//				if (found) {
+//					// Paste into existing threat
+//					th.setdescription(clip.d);
+//					$('#threat'+th.id).remove();
+//					th.addtablerow('#'+typ+'threats');
+//				} else {
+//					// Create a new threat
+//					th = new Threat(Project.cid,typ);  // Ignore the type in the Clipboard. Must always be typ.
+//					th.settitle(clip.t);
+//					th.setdescription(clip.d);
+//					Project.get(Project.cid).addthreat(th.id);
+//					newth.push(th.id);
+//				}
+//			}
+//			for (const th of newth) Threat.get(th).addtablerow('#'+typ+'threats');
+//			transactionCompleted("Checklist vuln paste");
+//		};
+//	};
 
 	for (const t of ['tWLS','tWRD','tEQT']) {
 		$('#'+t+'addthreat').on('click', addhandler(t));
-		$('#'+t+'copythreat').on('click', copyhandler(t));
-		$('#'+t+'pastethreat').on('click', pastehandler(t));
+//		$('#'+t+'copythreat').on('click', copyhandler(t));
+//		$('#'+t+'pastethreat').on('click', pastehandler(t));
 	}
 	if (DEBUG && !Rules.consistent()) {
 		bugreport('the rules are not internally consistent','initTabDiagrams');
@@ -3923,11 +3923,6 @@ function paintSingleFailures(s) {
 					 }],
 					 _("New vulnerability")
 				);
-//				var th = new ThreatAssessment( (cm.type=='tUNK' ? 'tEQT' : cm.type) );
-//				cm.addthrass(th);
-//				th.addtablerow('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
-//				cm.setmarker();
-//				transactionCompleted("Vuln add");
 			};
 		};
 		var copyhandler = function(s,cm) {

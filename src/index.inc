@@ -267,24 +267,24 @@ See LICENSE.md
     <div id="tWLSthreats" class="threats">
     </div>
     <input id="tWLSaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
-    <input id="tWLScopythreat" class="copybutton" type="button" value="Copy">
-    <input id="tWLSpastethreat" class="pastebutton" type="button" value="Paste">
+    <!-- input id="tWLScopythreat" class="copybutton" type="button" value="Copy">
+    <input id="tWLSpastethreat" class="pastebutton" type="button" value="Paste" -->
 </div>
 <div id="checklist_tWRD" class="checklist">
     <div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
     <div id="tWRDthreats" class="threats">
     </div>
     <input id="tWRDaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
-    <input id="tWRDcopythreat" class="copybutton" type="button" value="Copy">
-    <input id="tWRDpastethreat" class="pastebutton" type="button" value="Paste">
+    <!-- input id="tWRDcopythreat" class="copybutton" type="button" value="Copy">
+    <input id="tWRDpastethreat" class="pastebutton" type="button" value="Paste" -->
 </div>
 <div id="checklist_tEQT" class="checklist">
     <div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
     <div id="tEQTthreats" class="threats">
     </div>
     <input id="tEQTaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
-    <input id="tEQTcopythreat" class="copybutton" type="button" value="Copy">
-    <input id="tEQTpastethreat" class="pastebutton" type="button" value="Paste">
+    <!-- input id="tEQTcopythreat" class="copybutton" type="button" value="Copy">
+    <input id="tEQTpastethreat" class="pastebutton" type="button" value="Paste" -->
 </div>
 
 <div id="tabs">

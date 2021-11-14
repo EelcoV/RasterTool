@@ -1380,7 +1380,7 @@ function RefreshNodeReportDialog() {
  * looks for either equality or a cloud-type.
  *
  * usage:
- * 		var it = new NNI({service: '1', type: 'tUNK'});
+ * 		var it = new NodeIterator({service: '1', type: 'tUNK'});
  *		it.sortByLevel();
  * 		for (const node of it) {
  *			console.log(node.title);
