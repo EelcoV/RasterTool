@@ -3,6 +3,10 @@ See LICENSE.md
 
 
 BUGS
+Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
+Clicking a square on the Analysis|Failures and Vulnerabilities tab does not mark that square (as Quick Wins does).
+Sometimes when moving a node localStorage is not up to date with the node's properties.
+Update to PHP8 (get_magic_quotes_gpc() has been removed).
 Option Hide/Show color does not have immediate effect.
 Undoing a threat-create does not repaint list of node clusters in Common cause failure view
 The How to use help-panel is useless. Either improve or remove. A help-panel on keyboard shortcuts might be useful instead.
@@ -10,16 +14,26 @@ On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
 When removing the last vulnerability on a component, the overall vulnerability level should be set to Extremely Low.
-Be consistent: cloud, unknown link, unexplored link. Decision: use "unknwon link" as the official term, with "cloud" as a possible informal nickname.
+Be consistent: cloud, unknown link, unexplored link. Decision: use "unknown link" as the official term, with "cloud" as a possible informal nickname.
 When printing CCF, the accordions are not always all expanded.
 SizeDOMElements is not called when browser goes fullscreen. The bottom tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?
 Change details of a project on the server but not active: function not implemented.
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
+Importing the same project twice will give an error message. This used to be fixed silently, but needs an implicit check now. Either duplicate the project or refuse to load it for now.
+Remove Threat, and rationalize the relation between ThreatAssessment and NodeCluster.
+Description on Assessment is obsolete?
 Strings: use native trim() instead of jQuery.trim() and trimwhitespace(). Change toUpper() to toLocaleUpperCase(). And use localeCompare() to do case-insensitive comparisons.
 Undo
 With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
+Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
+Rationalise the iterators: make a generic RasterIterator, and subclass for each of the Raster objects, including all(), some() and forEach().
+Make class definitions conform to ES6.
+Change variables from var to let/const.
+Make the Find panel search remarks as well? And custom vulnerabilities.
+Make the UI more in line with other apps that people are used to these days.
+Refresh the UI theming.
 Replace #modaldialog by an anonymous <div></div>.
 Change node shapes from image to SVG, helps for cleaner resizes. Obsoleted by iconsets?
 Try IndexDB instead of localStorage. This will benefit concurrent use in multiple tabs, and may ease the implementation of Undo and concurrent use across computers.

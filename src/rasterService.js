@@ -631,9 +631,10 @@ function diagramTabEditStart(/*event*/) {
  * ServiceIterator: iterate over all services of a project
  *
  * usage:
- * 		var it = new ServiceIterator(projectID);
- * 		for (it.first(); it.notlast(); it.next()) {
- *			var s = it.getservice();
+ * 		let it = new ServiceIterator(projectID);
+ *		it.sortByName();
+ * 		for (const s of it) {
+ *			console.log(s.title);
  *	 		:
  *		}
  */

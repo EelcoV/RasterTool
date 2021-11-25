@@ -4,10 +4,10 @@
 !define APPNAME "Raster"
 !define COMPANYNAME "The Raster Method"
 # These three must be integers
-!define VERSIONMAJOR 3
-!define VERSIONMINOR 1
+!define VERSIONMAJOR 4
+!define VERSIONMINOR 0
 !define VERSIONBUILD 0
-!define RASTERNUMVERSION "3.1.0beta"
+!define RASTERNUMVERSION "4.0.0beta"
 
 # This is the size (in kB) of all the files copied into "Program Files"
 !define INSTALLSIZE 134000

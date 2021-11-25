@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, _, repaintCluster, Component, createUUID, DEBUG, LS, ThreatAssessment, ThreatIterator, H, createUUID, isSameString */
+/* global bugreport, _, repaintCluster, Component, createUUID, DEBUG, LS, Assessment, Vulnerability, VulnerabilityIterator, H, createUUID, isSameString */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -15,7 +15,7 @@
  *		of type 'ty'. Raise an error if dupl==false and the combination was already added.
  *	addcomponent_threat(p,cid,ti,ty,dupl): update clusters when component with id 'cid' has a threat
  *		named 'ti' of type 'ty'.
- *	removecomponent_threat: reverse of addcomponent_threat().
+ *	removecomponent_assessment: reverse of addcomponent_threat().
  *  structuredata(pid): object describing the structure of all clusters in a project, for undoing node deletion
  * Instance properties:
  *	id: UUID
@@ -34,7 +34,7 @@
  *	setproject(pid): set the project to which this NodeCluster belongs to pid.
  *	setparent(nc): set the parent of this cluster to nc.
  *	settitle(str): sets the title (and the title of the thrass) to 't'.
- *	addthrass(id): adds a new, blank threat assessment to this cluster; the id of the new threat assessment is optional.
+ *	addassessment(id): adds a new, blank threat assessment to this cluster; the id of the new threat assessment is optional.
  *	addchildcluster(id): add a child cluster 'id' to this cluster.
  *	removechildcluster(id): remove child cluster 'id' from this cluster.
  *	addchildnode(nid): add a child node 'nid' to this cluster.
@@ -74,7 +74,7 @@ var NodeCluster = function(type, id) {
 	this.parentcluster = null;
 	this.childclusters = [];
 	this.childnodes = [];
-	this.thrass = null;
+	this.assmnt = null;
 	this.magnitude = '-';
 	this._markeroid = null;
 	this.accordionopened = true;
@@ -132,35 +132,35 @@ NodeCluster.addcomponent_threat = function(pid,cid,threattitle,threattype,duplic
 	}
 	repaintCluster(nc.id);
 };
-NodeCluster.removecomponent_threat = function(pid,cid,threattitle,threattype,notexistok) {
+NodeCluster.removecomponent_assessment = function(pid,cid,threattitle,threattype,notexistok) {
 	// Locate the corresponding cluster in the project. 
 	// There should be at most one.
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
 	if (it.count()>1) {
-		bugreport("Multiple matching clusters","NodeCluster.removecomponent_threat");
+		bugreport("Multiple matching clusters","NodeCluster.removecomponent_assessment");
 	} else if (it.count()==0) {
 		if (!notexistok) {
-			bugreport("No matching cluster","NodeCluster.removecomponent_threat");
+			bugreport("No matching cluster","NodeCluster.removecomponent_assessment");
 		}
 		return null;
 	}
 	var nc = it.first();
 	var cm = Component.get(cid);
 	if (!cm) {
-		bugreport("No such component","NodeCluster.removecomponent_threat");
+		bugreport("No such component","NodeCluster.removecomponent_assessment");
 	}
 	// If the node cluster is 'singular' then remove only the first node.
 	for (var i=0; i< (cm.single?1:cm.nodes.length); i++) {
 		if (!nc.containsnode(cm.nodes[i])) {
 			if (notexistok) continue;
-			bugreport("No such node in cluster","NodeCluster.removecomponent_threat");
+			bugreport("No such node in cluster","NodeCluster.removecomponent_assessment");
 		}
 		nc.removechildnode(cm.nodes[i]);
 	}
 	nc.normalize();
-	// Test whether this node cluster has an associated Threat
+	// Test whether this node cluster has an associated Vulnerability
 	let hasthreat = false;
-	it = new ThreatIterator(nc.project,nc.type);
+	it = new VulnerabilityIterator({project: nc.project, type: nc.type});
 	for (const th of it) {
 		if (th.title!=nc.title)  continue;
 		hasthreat = true;
@@ -186,7 +186,7 @@ NodeCluster.structuredata = function(pid) {
 NodeCluster.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS+'L:'+this.id);
-		ThreatAssessment.get(this.thrass).destroy();
+		Assessment.get(this.assmnt).destroy();
 		delete NodeCluster._all[this.id];
 	},
 
@@ -206,8 +206,8 @@ NodeCluster.prototype = {
 		if (it.count()>0) {
 			bugreport("Already exists","NodeCluster.settitle");
 		}
-		if (this.thrass!=null) {
-			var ta = ThreatAssessment.get(this.thrass);
+		if (!this.isroot() && this.assmnt!=null) {
+			var ta = Assessment.get(this.assmnt);
 			ta.settitle(str);
 			this.title=ta.title;
 		} else {
@@ -284,13 +284,14 @@ NodeCluster.prototype = {
 		return arr;
 	},
 	
-	addthrass: function(newid) {
+	addassessment: function(newid) {
 		if (!newid) newid = createUUID();
-		var ta = ThreatAssessment.get(newid);
-		if (ta==null)  ta = new ThreatAssessment(this.type, newid);
-		this.thrass = ta.id;
+		var ta = Assessment.get(newid);
+		if (ta==null)  ta = new Assessment(this.type, newid);
+		this.assmnt = ta.id;
 		ta.setcluster(this.id);
-		ta.settitle(this.title);
+		// For root clusters, the Assessment gets its title from the common Vulnerability
+		if (!this.isroot())  ta.settitle(this.title);
 		this.store();
 	},
 	
@@ -346,21 +347,21 @@ NodeCluster.prototype = {
 	},
 	
 	calculatemagnitude: function() {
-		if (this.thrass==null) {
+		if (this.assmnt==null) {
 			this.magnitude='-';
 			return;
 		}
-		this.magnitude = ThreatAssessment.get(this.thrass).total;
+		this.magnitude = Assessment.get(this.assmnt).total;
 		for (const clid of this.childclusters) {
 			var cc = NodeCluster.get(clid);
 			cc.calculatemagnitude();
-			this.magnitude = ThreatAssessment.sum(this.magnitude,cc.magnitude);
+			this.magnitude = Assessment.sum(this.magnitude,cc.magnitude);
 		}
 		this.setmarker();
 	},
 	
 	isincomplete: function() {
-		var ta = ThreatAssessment.get(this.thrass);
+		var ta = Assessment.get(this.assmnt);
 //		if ((ta.freq=="-" || ta.impact=="-") && this.childnodes.length>1)
 		if (ta.freq=="-" || ta.impact=="-") {
 			return true;
@@ -380,8 +381,8 @@ NodeCluster.prototype = {
 	setmarker: function() {
 		if (this._markeroid==null)  return;
 		var str = '<span class="Magnitude M'
-				+ThreatAssessment.valueindex[this.magnitude]
-				+'" title="'+ThreatAssessment.descr[ThreatAssessment.valueindex[this.magnitude]]+'">'+this.magnitude+'</span>';
+				+Assessment.valueindex[this.magnitude]
+				+'" title="'+Assessment.descr[Assessment.valueindex[this.magnitude]]+'">'+this.magnitude+'</span>';
 		if (this.isroot() && this.isincomplete()) {
 			str = '<span class="incomplete">' + _("Incomplete") + '</span>' + str;
 		}
@@ -399,7 +400,7 @@ NodeCluster.prototype = {
 	},
 	
 	structure: function() {
-		let ta = ThreatAssessment.get(this.thrass);
+		let ta = Assessment.get(this.assmnt);
 		let c = {};
 		// id: ID of the cluster object
 		// type: type of the cluster
@@ -417,7 +418,7 @@ NodeCluster.prototype = {
 		c.parent = this.parentcluster;
 		c.title = this.title;
 		c.accordionopened = this.accordionopened;
-		c.thrass = {
+		c.assmnt = {
 			id: ta.id,
 			type: ta.type,
 			title: ta.title,
@@ -445,7 +446,7 @@ NodeCluster.prototype = {
 		data.u=this.parentcluster;
 		data.c=this.childclusters;
 		data.n=this.childnodes;
-		data.e=this.thrass;
+		data.e=this.assmnt;
 		data.o=this.accordionopened;
 		return JSON.stringify(data);
 	},
@@ -476,59 +477,70 @@ NodeCluster.prototype = {
 		for (i=0; i<this.childclusters.length; i++) {
 			var cc = NodeCluster.get(this.childclusters[i]);
 			if (!cc) {
-				errors += offender+"contains a non-existing child cluster "+this.childclusters[i]+".\n";
+				errors += offender+" contains a non-existing child cluster "+this.childclusters[i]+".\n";
 				continue;
 			}
 			if (cc.parentcluster != this.id) {
-				errors += offender+"contains a child cluster "+this.childclusters[i]+" that does not refer back to it.\n";
+				errors += offender+" contains a child cluster "+this.childclusters[i]+" that does not refer back to it.\n";
 			}
 			errors += cc.internalCheck();
 			for (j=0; j<i; j++) {
 				if (this.childclusters[i]==this.childclusters[j]) {
-					errors += offender+"contains duplicate child cluster "+this.childclusters[i]+".\n";
+					errors += offender+" contains duplicate child cluster "+this.childclusters[i]+".\n";
 				}
 			}
 		}
 
 		var rc = NodeCluster.get(this.root());
 		if (!rc) {
-			errors += offender+"does not have proper root.\n";
+			errors += offender+" does not have proper root.\n";
 		}
-		var ta = ThreatAssessment.get(this.thrass);
+		var ta = Assessment.get(this.assmnt);
 		if (!ta) {
-			errors += offender+"contains an nonexisting vuln assessment "+this.thrass+".\n";
+			errors += offender+" contains an nonexisting assessment "+this.assmnt+".\n";
 		} else {
-			if (ta.cluster!=this.id)	errors += offender+"has a member vuln assessment "+ta.id+" that doesn't refer back.\n";
-			if (ta.component)			errors += offender+"has a member vuln assessment "+ta.id+" that also refers to a component.\n";
-			if (ta.type!=this.type)		errors += offender+"has a member vuln assessment "+ta.id+" with a non-matching type.\n";
-			if (!isSameString(ta.title,this.title))	errors += offender+"has a member vuln assessment "+ta.id+" with a different title.\n";
+			if (ta.cluster!=this.id)	errors += offender+" has a member assessment "+ta.id+" that doesn't refer back.\n";
+			if (ta.component)			errors += offender+" has a member assessment "+ta.id+" that also refers to a component.\n";
+			if (ta.type!=this.type)		errors += offender+" has a member assessment "+ta.id+" with a non-matching type.\n";
+			if (!isSameString(ta.title,this.title))	errors += offender+"has a member assessment "+ta.id+" with a different title.\n";
+		}
+		let vid = ta.vulnerability;
+		if (vid==null && !this.isroot()) {
+			errors += offender+" has an assessment that lacks a corresponding vulnerability.\n";
+		} else {
+			let v = Vulnerability.get(vid);
+			if (v==null) {
+				errors += offender+" has an assessment with a non-existing vulnerability.\n";
+			} else {
+				if (!isSameString(v.title,this.title)) errors += offender+" has an assessment with a vulnerability that has a different title.\n";
+			}
 		}
 
 		for (i=0; i<this.childnodes.length; i++) {
 			var rn = Node.get(this.childnodes[i]);
 			if (!rn) {
-				errors += offender+"contains a non-existing child node "+this.childnodes[i]+".\n";
+				errors += offender+" contains a non-existing child node "+this.childnodes[i]+".\n";
 				continue;
 			}
 			for (j=0; j<i; j++) {
 				if (this.childnodes[i]==this.childnodes[j]) {
-					errors += offender+"contains duplicate child node "+this.childnodes[i]+".\n";
+					errors += offender+" contains duplicate child node "+this.childnodes[i]+".\n";
 				}
 			}
 			var cm = Component.get(rn.component);
 			if (!cm) {
-				errors += offender+"has a child node "+rn.id+" that does not have a valid component.\n";
+				errors += offender+" has a child node "+rn.id+" that does not have a valid component.\n";
 				continue;
 			}
 			// The component of each child node must have a threat assessment that matches this cluster
-			for (j=0; j<cm.thrass.length; j++) {
-				ta = ThreatAssessment.get(cm.thrass[j]);
+			for (j=0; j<cm.assmnt.length; j++) {
+				ta = Assessment.get(cm.assmnt[j]);
 				if (ta && isSameString(ta.title,rc.title) && ta.type==rc.type) {
 					break;
 				}
 			}
-			if (j==cm.thrass.length) {
-				errors += offender+"has a child node "+rn.id+" that does not have vulnerability of this kind.\n";
+			if (j==cm.assmnt.length) {
+				errors += offender+" has a child node "+rn.id+" that does not have vulnerability of this kind.\n";
 				continue;
 			}
 		}
@@ -594,8 +606,8 @@ class NodeClusterIterator {
 	
 	sortByLevel() {
 		this.item.sort( function(na,nb) {
-			var va = ThreatAssessment.valueindex[na.magnitude];
-			var vb = ThreatAssessment.valueindex[nb.magnitude];
+			var va = Assessment.valueindex[na.magnitude];
+			var vb = Assessment.valueindex[nb.magnitude];
 			if (va==1) va=8; // Ambiguous
 			if (vb==1) vb=8;
 			if (va!=vb)  return vb - va;

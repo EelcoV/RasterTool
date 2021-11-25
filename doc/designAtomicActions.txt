@@ -60,11 +60,11 @@ x- rename					[initLibraryPanel: $('#libprops').click "Change properties" button
 x- share/make private		[initLibraryPanel: $('#libprops').click "Change properties" button callback]
 x- edit labels				[showLabelEditForm]
 
-ChecklistItems (Threat)
+ChecklistItems (Vulnerability)
 x- add						[initTabDiagrams: function addhandler]
-x- remove					[Threat.addtablerow: $('#thdel'+this.id).click callback]
-x- rename					[Threat.addtablerow: $('#thname'+this.id).editInPlace callback]
-x- change description 		[Threat.addtablerow: $('#thdesc'+this.id).editInPlace callback]
+x- remove					[Vulnerability.addtablerow: $('#thdel'+this.id).click callback]
+x- rename					[Vulnerability.addtablerow: $('#thname'+this.id).editInPlace callback]
+x- change description 		[Vulnerability.addtablerow: $('#thdesc'+this.id).editInPlace callback]
 x- paste					[initTabDiagrams: function pastehandler]
 
 Service:

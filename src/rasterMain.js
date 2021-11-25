@@ -3,7 +3,7 @@
  */
 
 /* globals
-Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Threat, ThreatAssessment, ThreatIterator, Transaction, _t, transactionCompleted, unescapeNewlines, urlDecode, urlEncode
+Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, unescapeNewlines, urlDecode, urlEncode
 */
 
 "use strict";
@@ -14,9 +14,9 @@ var DEBUG = true;  // set to false for production version
  * is versioned. In future, the app can check for presence of keys from
  * previous versions and perform an upgrade.
  */
-var LS_prefix = 'raster';
-var LS_version = 3;
-var LS = LS_prefix+':'+LS_version+':';
+const LS_prefix = 'raster';
+const LS_version = 4;
+const LS = LS_prefix+':'+LS_version+':';
 
 /* Global preferences */
 var Preferences;
@@ -602,8 +602,8 @@ var updateFind = function() {
 					var cm = Component.get(rn.component);
 					if (cm.magnitude!='-') {
 						res += '<div class="tinysquare M'
-						+ ThreatAssessment.valueindex[cm.magnitude]
-						+ '" title="' + H(ThreatAssessment.descr[ThreatAssessment.valueindex[cm.magnitude]])
+						+ Assessment.valueindex[cm.magnitude]
+						+ '" title="' + H(Assessment.descr[Assessment.valueindex[cm.magnitude]])
 						+ '"></div>';
 					} else {
 						res += '<div class="tinysquare" style="border: 1px solid white;"></div>';
@@ -943,7 +943,7 @@ function testLocalStorage() {
 function loadDefaultProject() {
 	var p = new Project();
 	var s = new Service(p.id);
-	p.adddefaultthreats();
+	p.adddefaultvulns();
 	p.addservice(s.id);
 	s.autosettitle();
 	p.autosettitle();
@@ -1415,12 +1415,16 @@ function autoSaveFunction() {		// eslint-disable-line no-unused-vars
  *  - Names/titles of nodes, services and clusters are now case-insensitive. When upgrading from
  *    version 1, it may be necessary to add a sequence number to titles (or increase the one that
  *    is already there).
- *  - There is one additional label.
- *  - Plus all the upgrades necessary for version 2.
+ *  - There is one additional label (Pink).
+ *  - Plus all the upgrades necessary for version 2 and 3.
  * To upgrade from version 2:
  *  - ID's are no longer simple numbers but UUIDs. This simplifies the loading of projects, because
  *    it is not necessary to check whether an id is already in use. The use of UUID virtually guarantees
  *    that no collisions occur.
+ *  - Plus all the upgrades from version 3
+ * To upgrade from version 3:
+ *  - Change Threat to Vulnerability; change ThreatAssessment to Assessment
+ *  - Create extra Vulnerability for custom ThreatAssessments.
  */
 var Flag_Upgrade_Done = false;
 var Upgrade_Description = "";
@@ -1433,10 +1437,13 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	var lNode = [];
 	var lNodeCluster = [];
 	var lThrEval = [];
+	var lAssmnt = [];
+	var lVuln = [];
 
 	var res, key, val;
 	var upgrade_1_2 = false;
 	var upgrade_2_3 = false;
+	var upgrade_3_4 = false;
 
 	Flag_Upgrade_Done = false;
 	Upgrade_Description = "";
@@ -1452,15 +1459,20 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 					// Can upgrade from version 1 to version 3
 					upgrade_1_2 = true;
 					upgrade_2_3 = true;
+					upgrade_3_4 = true;
 				} else if (key[1]==2) {
-						// Can upgrade from version 2 to version 3
-						upgrade_2_3 = true;
+					// Can upgrade from version 2 to version 3
+					upgrade_2_3 = true;
+					upgrade_3_4 = true;
+				} else if (key[1]==3) {
+					// Can upgrade from version 3 to version 4
+					upgrade_3_4 = true;
 				} else {
 					throw new Error("The file has version ("+key[1]+"); expected version ("+LS_version+"). You must use a more recent version of the Raster tool.");
 				}
 			}
 			val = JSON.parse(urlDecode(res[2]));
-			// Integer in version 1 and 2, string in version 3
+			// Integer in version 1 and 2, string in version 3 and up
 			val.id = ( key[1]<3 ? parseInt(key[3],10) : key[3]);
 			switch (key[2]) {
 			case 'P':
@@ -1484,6 +1496,12 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			case 'E':
 				lThrEval.push(val);
 				break;
+			case 'A':
+				lAssmnt.push(val);
+				break;
+			case 'V':
+				lVuln.push(val);
+				break;
 			case 'R':
 				// Ignore all preferences for purposes of loading projects
 				break;
@@ -1493,7 +1511,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			str = str.substr(res[0].length);
 			res=patt.exec(str);
 		}
-		str = jQuery.trim(str);
+		str = str.trim();
 		if (str.length!=0) throw new Error("Invalid text");
 		if (lProject.length==0 && allowempty)  return null;
 	}		// eslint-disable-line brace-style
@@ -1538,7 +1556,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		return forall;
 	}
 
-	var i,j,k,n;
+	var i,j,k;
 	var lProjectlen=lProject.length;
 	var lThreatlen=lThreat.length;
 	var lServicelen=lService.length;
@@ -1546,23 +1564,34 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	var lNodeClusterlen=lNodeCluster.length;
 	var lComponentlen=lComponent.length;
 	var lThrEvallen=lThrEval.length;
+	var lAssmntlen=lAssmnt.length;
+	var lVulnlen=lVuln.length;
 
 	try {
 		if (lProjectlen==0) throw new Error('There are no projects; there must be at least one');
 		if (lServicelen==0) throw new Error('There are no services; there must be at least one');
+		if (lThreatlen>0 && lVulnlen>0) throw new Error('Cannot contain old-style and new-style Vulnerabilities.');
+		if (lThrEvallen>0 && lAssmntlen>0) throw new Error('Cannot contain old-style and new-style Assessments.');
 		for (i=0; i<lProjectlen; i++) {
 			/* lProject[i].s[] must contain IDs of services */
 			if (!containsAllIDs(lService,lProject[i].s)) throw new Error('Project '+lProject[i].id+' has an invalid service.');
 			/* lProject[i].s must not be empty */
 			if (lProject[i].s.length==0) throw new Error('Project '+lProject[i].id+' does not contain any services.');
-			/* lProject[i].t[] must contain IDs of threats */
-			if (!containsAllIDs(lThreat,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid checklist vulnerability.');
+			/* lProject[i].t[] must contain IDs of threats/vulnerabilities */
+			if (lThreatlen>0 && !containsAllIDs(lThreat,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid checklist.');
+			if (lVulnlen>0 && !containsAllIDs(lVuln,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid common vulnerability.');
 		}
 		for (i=0; i<lThreatlen; i++) {
 			/* lThreat[i].p must be the ID of a project */
 			if (!containsID(lProject,lThreat[i].p)) throw new Error('Vulnerability '+lThreat[i].id+' does not belong to a valid project.');
 			/* lThreat[i].t must be a valid type */
 			if (Rules.nodetypes[lThreat[i].t]==null) throw new Error('Vulnerability '+lThreat[i].id+' has an invalid type.');
+		}
+		for (i=0; i<lVulnlen; i++) {
+			/* lVuln[i].p must be the ID of a project */
+			if (!containsID(lProject,lVuln[i].p)) throw new Error('Vulnerability '+lVuln[i].id+' does not belong to a valid project.');
+			/* lVuln[i].t must be a valid type */
+			if (Rules.nodetypes[lVuln[i].t]==null) throw new Error('Vulnerability '+lVuln[i].id+' has an invalid type.');
 		}
 		for (i=0; i<lServicelen; i++) {
 			/* lService[i].p must be the ID of a project */
@@ -1583,8 +1612,9 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			if (Rules.nodetypes[lComponent[i].t]==null) throw new Error('Component '+lComponent[i].id+' has an invalid type.');
 			/* lComponent[i].p must be the ID of a project */
 			if (!containsID(lProject,lComponent[i].p)) throw new Error('Component '+lComponent[i].id+' does not belong to a valid project.');
-			/* lComponent[i].e[] must contain IDs of threat evaluations */
-			if (!containsAllIDs(lThrEval,lComponent[i].e)) throw new Error('Component '+lComponent[i].id+' has an invalid vulnerability evaluation.');
+			/* lComponent[i].e[] must contain IDs of threat evaluations / assessments*/
+			if (lThrEvallen>0 && !containsAllIDs(lThrEval,lComponent[i].e)) throw new Error('Component '+lComponent[i].id+' has an invalid vulnerability evaluation.');
+			if (lAssmntlen>0 && !containsAllIDs(lAssmnt,lComponent[i].e)) throw new Error('Component '+lComponent[i].id+' has an invalid assessment.');
 			/* lComponent[i].n[] must contain IDs of Nodes */
 			if (!containsAllIDs(lNode,lComponent[i].n)) throw new Error('Component '+lComponent[i].id+' contains an invalid node.');
 			/* lComponent[i].n must not be empty */
@@ -1598,9 +1628,22 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			/* lThrEval[i].u, if non-null, must be the ID of a NodeCluster */
 			if (lThrEval[i].u!=null && !containsID(lNodeCluster,lThrEval[i].u)) throw new Error('Vulnerability assessment '+lThrEval[i].id+' does not belong to a valid cluster.');
 			/* lThrEval[i].p must be a valid frequency/impact string */
-			if (ThreatAssessment.values.indexOf(lThrEval[i].p)==-1) throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid frequency.');
+			if (Assessment.values.indexOf(lThrEval[i].p)==-1) throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid frequency.');
 			/* lThrEval[i].i must be a valid frequency/impact string */
-			if (ThreatAssessment.values.indexOf(lThrEval[i].i)==-1) throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid impact.');
+			if (Assessment.values.indexOf(lThrEval[i].i)==-1) throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid impact.');
+		}
+		for (i=0; i<lAssmntlen; i++) {
+			/* lAssmnt[i].t must be a valid type */
+			if (Rules.nodetypes[lAssmnt[i].t]==null) throw new Error('Assessment '+lAssmnt[i].id+' has an invalid type.');
+			/* lAssmnt[i].m, if non-null, must be the ID of a Component */
+			if (lAssmnt[i].m!=null && !containsID(lComponent,lAssmnt[i].m)) throw new Error('Assessment '+lAssmnt[i].id+' does not belong to a valid component.');
+			/* lAssmnt[i].u, if non-null, must be the ID of a NodeCluster */
+			if (lAssmnt[i].u!=null && !containsID(lNodeCluster,lAssmnt[i].u)) throw new Error('Assessment '+lAssmnt[i].id+' does not belong to a valid cluster.');
+			/* lAssmnt[i].v, if non-null, must be the ID of a Vulnerability */
+			if (lAssmnt[i].v!=null && !containsID(lVuln,lAssmnt[i].v)) throw new Error('Assessment '+lAssmnt[i].id+' does not belong to a valid Vulnerability.');
+			/* lAssmnt[i].p must be a valid frequency/impact string */
+			if (Assessment.values.indexOf(lAssmnt[i].p)==-1) throw new Error('Assessment '+lAssmnt[i].id+' has an invalid frequency.');
+			if (Assessment.values.indexOf(lAssmnt[i].i)==-1) throw new Error('Assessment '+lAssmnt[i].id+' has an invalid impact.');
 		}
 		for (i=0; i<lNodeClusterlen; i++) {
 			/* lNodeCluster[i].t must be a valid type */
@@ -1613,8 +1656,9 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			if (!containsAllIDs(lNodeCluster,lNodeCluster[i].c)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid child cluster.');
 			/* lNodeCluster[i].n[] must contain IDs of Nodes */
 			if (!containsAllIDs(lNode,lNodeCluster[i].n)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid node.');
-			/* lNodeCluster[i].e must be the ID of a threat assessment */
-			if (!containsID(lThrEval,lNodeCluster[i].e)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid vulnerability evaluation.');
+			/* lNodeCluster[i].e must be the ID of a threat evaluation / assessment */
+			if (lThrEvallen>0 && !containsID(lThrEval,lNodeCluster[i].e)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid vulnerability evaluation.');
+			if (lAssmntlen>0 && !containsID(lAssmnt,lNodeCluster[i].e)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid assessment.');
 		}
 	}		// eslint-disable-line brace-style
 	catch (e) {
@@ -1715,6 +1759,95 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		}
 	}
 
+	function isroot(id) {
+		for (let i=0; i<lNodeClusterlen; i++) {
+			let nc = lNodeCluster[i];
+			if (nc.id==id && nc.u==null) return true;
+		}
+		return false;
+	}
+	function componentproject(id) {
+		for (let i=0; i<lComponentlen; i++) {
+			if (lComponent[i].id==id) return lComponent[i].p;
+		}
+		return null;
+	}
+	function clusterproject(id) {
+		for (let i=0; i<lNodeClusterlen; i++) {
+			if (lNodeCluster[i].id==id) return lNodeCluster[i].p;
+		}
+		return null;
+	}
+
+	if (upgrade_3_4) {
+		// Promote Threats to Vulnerabilities
+		for (i=0; i<lThreatlen; i++) {
+			let th = lThreat[i];
+			lVuln.push({
+				id: th.id,
+				p: th.p,
+				t: th.t,
+				l: th.l,
+				d: th.d,
+				c: true
+			});
+			lVulnlen = lVuln.length;
+		}
+		// Promote ThreatAssessments to Assessments
+		for (i=0; i<lThrEvallen; i++) {
+			let te = lThrEval[i];
+			let vln = null;
+			if (te.m!=null || isroot(te.u)) {
+				// Find an existing Vulnerability
+				for (let j=0; j<lVulnlen; j++) {
+					let v = lVuln[j];
+					if (v.l==te.l && v.t==te.t) {
+						vln = v;
+						break;
+					}
+				}
+				if (!vln) {
+					// Vulnerability did not exist; must be a custom vulnerability. Add it.
+					vln = {
+						id: createUUID(),
+						p: (te.m ? componentproject(te.m) : clusterproject(te.u)),
+						t: te.t,
+						l: te.l,
+						d: te.d,
+						c: false
+					};
+					lVuln.push(vln);
+					lVulnlen++;
+				}
+			}
+			lAssmnt.push({
+				id: te.id,
+				t: te.t,
+				v: (vln ? vln.id : null),
+				m: te.m,
+				u: te.u,
+				l: (vln ? null : te.l),
+				d: (vln ? null : te.d),
+				p: te.p,
+				i: te.i,
+				r: te.r
+			});
+		}
+		lAssmntlen = lAssmnt.length;
+	}
+	
+	// Append a sequence number to the title of str,
+	// or increase the number it it already had one.
+	function titleincrement(str){
+		let seq = str.match(/^(.+) \((\d+)\)$/);
+		if (seq==null) {
+			return str + ' (1)';
+		} else {
+			seq[2]++;
+			return seq[1] + ' (' + seq[2] + ')';
+		}
+	}
+	
 	/* It is safe to create new objects now.
 	 */
 	for (i=0; i<lServicelen; i++) {
@@ -1724,15 +1857,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			// Check if there is another service in this project with the same case-insensitive name
 			for (j=i+1; j<lServicelen; j++) {
 				if (ls.p==lService[j].p && isSameString(ls.l,lService[j].l)) {
-					// Append a sequence number to the title of lService[j],
-					// or increase the number it it already had one.
-					var seq = lService[j].l.match(/^(.+) \((\d+)\)$/);
-					if (seq==null) {
-						lService[j].l = lService[j].l + ' (1)';
-					} else {
-						seq[2]++;
-						lService[j].l = seq[1] + ' (' + seq[2] + ')';
-					}
+					lService[j].l = titleincrement(lService[j].l);
 					Flag_Upgrade_Done = true;
 					Upgrade_Description += '<LI>' + _("Services '%%' and '%%'.", ls.l, lService[j].l);
 				}
@@ -1740,47 +1865,22 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		}
 		s.settitle(ls.l);
 	}
-	for (i=0; i<lThreatlen; i++) {
-		var lth = lThreat[i];
-		var th = new Threat(lth.p,lth.t,lth.id);
-		th.setdescription(lth.d);
+	for (i=0; i<lVulnlen; i++) {
+		var lv = lVuln[i];
+		var vln = new Vulnerability(lv.p,lv.t,lv.id);
+		vln.setdescription(lv.d);
 		if (upgrade_1_2) {
-			// Check if there is another threat in this project with the same type and case-insensitive name
-			for (j=i+1; j<lThreatlen; j++) {
-				if (lth.p==lThreat[j].p && lth.t==lThreat[j].t && isSameString(lth.l,lThreat[j].l)) {
+			// Check if there is another Vulnerability in this project with the same type and case-insensitive name
+			for (j=i+1; j<lVulnlen; j++) {
+				if (lv.p==lVuln[j].p && lv.t==lVuln[j].t && isSameString(lv.l,lVuln[j].l)) {
 					var oldtitle, newtitle;
 					oldtitle = lThreat[j].l;
-					// Append a sequence number to the title of lThreat[j],
-					// or increase the number it it already had one.
-					seq = oldtitle.match(/^(.+) \((\d+)\)$/);
-					if (seq==null) {
-						newtitle = oldtitle + ' (1)';
-					} else {
-						seq[2]++;
-						newtitle = seq[1] + ' (' + seq[2] + ')';
-					}
-					lThreat[j].l = newtitle;
-
-					// Now change this title too in the ThreatAssessments of all Components in this project,
-					// and in all top-level NodeClusters of this project.
-					for (k=0; k<lComponentlen; k++) {
-						if (lComponent[k].p!=lth.p) continue;
-						for (n=0; n<lThrEvallen; n++) {
-							if (lComponent[k].e.indexOf(lThrEval[n].id)==-1) continue;
-							if (lThrEval[n].l==oldtitle) {
-								lThrEval[n].l = newtitle;
-							}
-						}
-					}
+					newtitle = titleincrement(oldtitle);
+					lVuln[j].l = newtitle;
+					// Now change this title too in the Assessments of all top-level NodeClusters of this project.
 					for (k=0; k<lNodeClusterlen; k++) {
-						if (lNodeCluster[k].p==lth.p && lNodeCluster[k].u==null && lNodeCluster[k].l==oldtitle) {
+						if (lNodeCluster[k].p==lv.p && lNodeCluster[k].u==null && lNodeCluster[k].l==oldtitle) {
 							lNodeCluster[k].l = newtitle;
-							// The evaluation of this cluster must have the same name as this cluster
-							for (n=0; n<lThrEvallen; n++) {
-								if (lThrEval[n].id==lNodeCluster[k].e) {
-									lThrEval[n].l = newtitle;
-								}
-							}
 						}
 					}
 
@@ -1789,7 +1889,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 				}
 			}
 		}
-		th.settitle(lth.l);
+		vln.settitle(lv.l);
+		vln.setcommon(lv.c);
 	}
 	for (i=0; i<lProjectlen; i++) {
 		var lp = lProject[i];
@@ -1802,7 +1903,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		for (k=0; k<lp.s.length; k++) {
 			p.addservice(lp.s[k]);
 		}
-		p.threats = lp.t.slice(0); // Omit the "-1" property, if it exists
+		p.vulns = lp.t.slice(0); // Omit the "-1" property, if it exists
 		// Upgrade from version 1 to version 2: an additional color was added
 		if (upgrade_1_2 && lp.c && lp.c.length==7) {
 			lp.c[7] = lp.c[6];
@@ -1833,7 +1934,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	for (i=0; i<lComponentlen; i++) {
 		var lc = lComponent[i];
 		var cm = new Component(lc.t,lc.p,lc.id);
-		cm.thrass = lc.e.slice(0);
+		cm.assmnt = lc.e.slice(0);
 		cm.nodes = lc.n.slice(0); // Omit the "-1" property, if it exists;
 		cm.single = (lc.s===true);
 		cm.accordionopened = (lc.o===true);
@@ -1844,13 +1945,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 					// Append a sequence number to the title of lComponent[j],
 					// or increase the number if it already had one.
 					oldtitle = lComponent[j].l;
-					seq = oldtitle.match(/^(.+) \((\d+)\)$/);
-					if (seq==null) {
-						newtitle = oldtitle + ' (1)';
-					} else {
-						seq[2]++;
-						newtitle = seq[1] + ' (' + seq[2] + ')';
-					}
+					newtitle = titleincrement(oldtitle);
 					lComponent[j].l = newtitle;
 					Flag_Upgrade_Done = true;
 					Upgrade_Description += '<LI>' + _("Components '%%' and '%%'.", lc.l, lComponent[j].l);
@@ -1867,59 +1962,51 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			}
 		}
 		cm.store();
-		// Delay calculation until ThrEvals have been loaded
+		// Delay calculation until Assessments have been loaded
 		//cm.calculatemagnitude();
 	}
-	for (i=0; i<lThrEvallen; i++) {
-		var lte = lThrEval[i];
-		var te = new ThreatAssessment(lte.t,lte.id);
-		te.settitle(lte.l);
-		te.setdescription(lte.d);
-		te.freq=lte.p;
-		te.impact=lte.i;
-		te.remark=lte.r;
-		te.computetotal();
-		te.component=lte.m;
-		te.cluster=lte.u;
-		te.store();
+	for (i=0; i<lAssmntlen; i++) {
+		let lv = lAssmnt[i];
+		let assmnt = new Assessment(lv.t,lv.id);
+		if (lv.v) {
+			assmnt.vulnerability=lv.v;
+		} else {
+			assmnt.settitle(lv.l);
+			assmnt.setdescription(lv.d);
+		}
+		assmnt.freq=lv.p;
+		assmnt.impact=lv.i;
+		assmnt.remark=lv.r;
+		assmnt.computetotal();
+		assmnt.component=lv.m;
+		assmnt.cluster=lv.u;
+		assmnt.store();
 	}
 	for (i=0; i<lNodeClusterlen; i++) {
 		var lnc = lNodeCluster[i];
-//		/* For some reason, some project contain empty cluster (root, no nodes and no subclusters).
-//		 * Do not create such a useless cluster, and if its ThreatEvaluation has been created
-//		 * already then delete that.
-//		 */
-//		if (lnc.u==null && lnc.c.length==0 && lnc.n.length==0) {
-//			te = ThreatAssessment.get(lnc.e);
-//			if (te && te.cluster==lnc.id) {
-//				te.destroy();
-//			}
-//			continue;
-//		}
-
 		var nc = new NodeCluster(lnc.t,lnc.id);
 		nc.title = lnc.l;
 		nc.project = lnc.p;
 		nc.parentcluster = lnc.u;
 		nc.childclusters = lnc.c.slice(0); // Omit the "-1" property, if it exists;
 		nc.childnodes = lnc.n.slice(0); // Omit the "-1" property, if it exists
-		nc.thrass = lnc.e;
+		nc.assmnt = lnc.e;
 		nc.accordionopened = (lnc.o===true);
 		//nc.calculatemagnitude(); // Not all childclusters may have been loaded
 		nc.store();
 	}
 
-	// As from version 3, there should be rootclusters for each threat
-	for (i=0; upgrade_2_3 && i<lThreatlen; i++) {
-		lth = lThreat[i];
-		let it = new NodeClusterIterator({project: lth.p, title: lth.l, type: lth.t, isroot: true});
+	// As from version 3, there should be rootclusters for each Vulnerability
+	for (i=0; upgrade_2_3 && i<lVulnlen; i++) {
+		lv = lVuln[i];
+		let it = new NodeClusterIterator({project: lv.p, title: lv.l, type: lv.t, isroot: true});
 		// If the project has a rootcluster with that type and title, then OK.
 		if (it.count()>0)  continue;
 		// else make sure that a stub rootcluster exists, and has a threat assessment.
-		nc = new NodeCluster(lth.t);
-		nc.setproject(lth.p);
-		nc.settitle(lth.l);
-		nc.addthrass();
+		nc = new NodeCluster(lv.t);
+		nc.setproject(lv.p);
+		nc.settitle(lv.l);
+		nc.addassessment();
 	}
 
 	for (i=0; i<lComponentlen; i++) {
@@ -1988,7 +2075,7 @@ function exportProject(pid) {
 	p.date = olddate;
 	NodeExported = [];
 	ComponentExported = [];
-	for (const th of p.threats) s += exportThreat(th);
+	for (const vid of p.vulns) s += exportVulnerability(vid);
 	for (const sid of p.services) s += exportService(sid);
 	var it = new NodeClusterIterator({project: pid});
 	for (const nc of it) {
@@ -1997,8 +2084,8 @@ function exportProject(pid) {
 	return s;
 }
 
-function exportThreat(th) {
-	var s = Threat.get(th).exportstring();
+function exportVulnerability(vid) {
+	var s = Vulnerability.get(vid).exportstring();
 	return s;
 }
 
@@ -2033,19 +2120,19 @@ function exportComponent(c) {
 	var s = cm.exportstring();
 	ComponentExported.push(c);
 	for (const n of cm.nodes) s += exportNode(n);
-	for (const th of cm.thrass) s += exportThreatAssessment(th);
+	for (const aid of cm.assmnt) s += exportAssessment(aid);
 	return s;
 }
 
-function exportThreatAssessment(te) {
-	var s = ThreatAssessment.get(te).exportstring();
+function exportAssessment(aid) {
+	var s = Assessment.get(aid).exportstring();
 	return s;
 }
 
 function exportNodeCluster(ncid) {
 	var nc = NodeCluster.get(ncid);
 	var s = nc.exportstring();
-	s += exportThreatAssessment(nc.thrass);
+	s += exportAssessment(nc.assmnt);
 	return s;
 }
 
@@ -2292,7 +2379,7 @@ function initLibraryPanel() {
 	function addEmptyProject() {
 		var p = new Project();
 		var s = new Service(p.id);
-		p.adddefaultthreats();
+		p.adddefaultvulns();
 		p.addservice(s.id);
 		s.autosettitle();
 		p.autosettitle();
@@ -2751,7 +2838,7 @@ function bottomTabsCloseHandler(event) {
 			for (const rn of it) {
 				nodes.push(rn.id);
 			}
-			nodesDelete(nodes,_("Remove service %%", s.title),true);
+			if (nodes.length!=0) nodesDelete(nodes,_("Remove service %%", s.title),true);
 			new Transaction('serviceCreate',
 				[{id: s.id, project: s.project, title: s.title, index: p.services.indexOf(s.id)}],
 				[{id: s.id, project: s.project}],
@@ -2898,7 +2985,7 @@ function initTabDiagrams() {
 				y: rn.position.y,
 				connect: rn.connect.slice(),
 				component: newcmid,
-				thrass: Project.get(rn.project).defaultthreatdata(t),
+				assmnt: Project.get(rn.project).defaultassessmentdata(t),
 				accordionopened: false
 			});
 			undo_data.nodes.push({id: newid});
@@ -2921,7 +3008,7 @@ function initTabDiagrams() {
 				let cm = Component.get(rn.component);
 				ud.component = cm.id;
 				ud.accordionopened = cm.accordionopened;
-				ud.thrass = cm.threatdata();
+				ud.assmnt = cm.assessmentdata();
 			}
 			undo_data.nodes.push(ud);
 			undo_data.clusters = NodeCluster.structuredata(rn.project);
@@ -3182,7 +3269,7 @@ function initTabDiagrams() {
 							x: rn.position.x,
 							y: rn.position.y,
 							component: rn.component,
-							thrass: cm.threatdata(),
+							assmnt: cm.assessmentdata(),
 							accordionopened: cm.accordionopened,
 							single: (cm.single ? cm.nodes[0] : false),
 							width: rn.position.width,
@@ -3261,28 +3348,47 @@ function initTabDiagrams() {
 
 	var addhandler = function(typ) {
 		return function() {
-			let do_data=[], undo_data=[];
-			let newid = createUUID();
-			let newcluster = createUUID();
-			let newclusterthrid = createUUID();
-			let newtitle = Threat.autotitle(Project.cid,typ,_("New vulnerability"));
-
-			do_data.push({create: true, project: Project.cid, threat: newid, type: typ, title: newtitle, description: newtitle, cluster: newcluster, clusterthrid: newclusterthrid});
-			undo_data.push({create: false, project: Project.cid, threat: newid, type: typ, cluster: newcluster});
-			// Apply the change to all components of matching type
-			var it = new ComponentIterator({project: Project.cid, match: typ});
-			for (const cm of it) {
-				let newid = createUUID();
-				do_data.push({create: true, component: cm.id, threat: newid, type: typ, title: newtitle, description: newtitle});
-				undo_data.push({create: false, component: cm.id, type: typ, threat: newid});
+			// To create a new common vulnerability:
+			// - create the vulnerability
+			// - add a corresponding assessment to all matching components for the vulnerability type
+			let vid = createUUID();
+			let clid = createUUID();
+			let claid = createUUID();
+			let p = Project.get(Project.cid);
+			let newtitle = Vulnerability.autotitle(p.id);
+			let it = new ComponentIterator({project: p.id, match: typ});
+			let chain = (it.count()>0);
+			new Transaction('vulnCreateDelete',{
+					create: false,
+					id: vid
+				},{
+					create: true,
+					id: vid,
+					project: p.id,
+					type: typ,
+					title: newtitle,
+					description: "",
+					common: true,
+					cluster: clid,
+					cla: claid
+				},_("Add vulnerability '%%'",newtitle),chain);
+			
+			if (chain) {
+				let do_data = {create: true, vuln: vid, assmnt: [], clid: clid};
+				let undo_data = {create: false, vuln: vid, assmnt: [], clid: clid};
+				for (const cm of it) {
+					let aid = createUUID();
+					do_data.assmnt.push({id: aid, component: cm.id});
+					undo_data.assmnt.push({id: aid});
+				}
+				new Transaction('assessmentCreateDelete', undo_data, do_data, _("Add vulnerability '%%'",newtitle));
 			}
-			new Transaction('threatCreate', undo_data, do_data, _("Add vulnerability '%%'",newtitle));
 		};
 	};
 //	var copyhandler = function(typ) {
 //		return function() {
 //			ThreatAssessment.Clipboard = [];
-//			var it = new ThreatIterator(Project.cid,typ);
+//			var it = new VulnerabilityIterator(Project.cid,typ);
 //			for (const th of it) {
 //				ThreatAssessment.Clipboard.push({t: th.title, y: th.type, d: th.description, p: '-', i: '-', r: ''});
 //			}
@@ -3290,7 +3396,7 @@ function initTabDiagrams() {
 //	};
 //	var pastehandler = function(typ) {
 //		return function() {
-//			var it = new ThreatIterator(Project.cid,typ);
+//			var it = new VulnerabilityIterator(Project.cid,typ);
 //			var newth = [];
 //			for (const clip of ThreatAssessment.Clipboard) {
 //				// Check whether a threat with same title already exists
@@ -3356,7 +3462,7 @@ function nodesDelete(nodes,descr,chain) {
 				connect: rn.connect.slice()
 			});
 			do_data.nodes.push({id: rn.id});
-			return;
+			continue;
 		}
 
 		let cm = Component.get(rn.component);
@@ -3369,7 +3475,7 @@ function nodesDelete(nodes,descr,chain) {
 			x: rn.position.x,
 			y: rn.position.y,
 			component: rn.component,
-			thrass: cm.threatdata(),
+			assmnt: cm.assessmentdata(),
 			accordionopened: cm.accordionopened,
 			single: (cm.single ? cm.nodes[0] : false),
 			width: rn.position.width,
@@ -3524,7 +3630,7 @@ function workspacedrophandler(event, ui) {		// eslint-disable-line no-unused-var
 				x: newx,
 				y: newy,
 				component: createUUID(),
-				thrass: project.defaultthreatdata(typ)
+				assmnt: project.defaultassessmentdata(typ)
 				}], clusters: []},
 			_("New node")
 		);
@@ -3561,9 +3667,9 @@ function refreshComponentThreatAssessmentsDialog(force) {
 	$('#componentthreats').html(snippet);
 	c.setmarkeroid(null);
 
-	for (const th of c.thrass) {
+	for (const th of c.assmnt) {
 		if (th==null) continue;
-		ThreatAssessment.get(th).addtablerow('#threats'+c.id,'dia');
+		Assessment.get(th).addtablerow('#threats'+c.id,'dia');
 	}
 	$('#dthadddia'+c.id).button();
 	$('#dthcopydia'+c.id).button();
@@ -3571,39 +3677,20 @@ function refreshComponentThreatAssessmentsDialog(force) {
 	$('#dthadddia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#dthcopydia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('#dthpastedia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthadddia'+c.id).on('click',  function() {
-		let c = Component.get(nid2id(this.id));
-		let tid = createUUID();
-		new Transaction('threatAssessCreate',
-			[{component: c.id, threat: tid}],
-			[{component: c.id,
-				clid: createUUID(),
-				thrid: createUUID(),
-				threat: tid,
-				index: c.thrass.length,
-				type: (c.type=='tUNK' ? 'tEQT' : c.type),
-				title: ThreatAssessment.autotitle(Project.cid,_("New vulnerability")),
-				description: "",
-				remark: "",
-				freq: '-',
-				impact: '-'
-			 }],
-			 _("New vulnerability")
-		);
-	});
+	$('#dthadddia'+c.id).on('click', function() {return addvulnhandler(c.id);} );
 	$('#dthcopydia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
-		ThreatAssessment.Clipboard = [];
-		for (const tid of cm.thrass) {
-			var te = ThreatAssessment.get(tid);
-			ThreatAssessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
+		Assessment.Clipboard = [];
+		for (const tid of cm.assmnt) {
+			var te = Assessment.get(tid);
+			Assessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
 		}
 	});
 	$('#dthpastedia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
 		var newte = cm.mergeclipboard();
-		for (const thid of cm.thrass) {
-			let th = ThreatAssessment.get(thid);
+		for (const thid of cm.assmnt) {
+			let th = Assessment.get(thid);
 			if (newte.indexOf(thid)==-1) {
 				$('#dthdia_'+thid).remove();
 			}
@@ -3619,25 +3706,62 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		deactivate: function(/*event,ui*/) {
 			var newlist = [];
 			for (const ch of this.children) newlist.push(nid2id(ch.id));
-			if (newlist.length != c.thrass.length) {
+			if (newlist.length != c.assmnt.length) {
 				bugreport("internal error in sorting","refreshComponentThreatAssessmentsDialog");
 			}
-			if (c.thrass.every( (v,i) => (newlist[i]==v) )) return;
-			new Transaction('compVulns',
-				[{id: c.id, thrass: c.thrass}],
-				[{id: c.id, thrass: newlist}],
+			if (c.assmnt.every( (v,i) => (newlist[i]==v) )) return; // Return if no change
+			new Transaction('compAssessments',
+				[{id: c.id, assmnt: c.assmnt}],
+				[{id: c.id, assmnt: newlist}],
 				_("Reorder vulnerabilities of "+H(c.title)));
 		}
 	});
 }
 
-function refreshChecklistsDialog(type,force) {		// eslint-disable-line no-unused-vars
-	if (!$('#componentthreats').dialog('isOpen') && force!==true)  return;
-	// Remove DOM for all checklist threats, and re-add them in the right order
+function addvulnhandler(cid) {
+	let c = Component.get(cid);
+	let vid = createUUID();
+	let aid = createUUID();
+	let clid = createUUID();
+	let claid = createUUID();
+	let ntitle = Vulnerability.autotitle(c.project);
+	new Transaction('vulnCreateDelete',{
+			create: false,
+			id: vid
+		},{
+			create: true,
+			id: vid,
+			project: c.project,
+			type: c.type,
+			title: ntitle,
+			description: "",
+			common: false,
+			cluster: clid,
+			cla: claid,
+			index: 0
+		},_("New vulnerability"),true);
+	new Transaction('assessmentCreateDelete',
+		{
+			create: false,
+			assmnt: [{id: aid}],
+			clid: clid
+		},
+		{
+			create: true,
+			vuln: vid,
+			assmnt: [{id: aid, component: c.id}],
+			clid: clid
+		},
+		 _("New vulnerability")
+	);
+}
+	
+function refreshChecklistsDialog(type) {
+	// Remove DOM for all common Vulnerabilities, and re-add them in the right order
 	$('#'+type+'threats').empty();
 	let p = Project.get(Project.cid);
-	for (const id of p.threats) {
-		let th = Threat.get(id);
+	for (const id of p.vulns) {
+		let th = Vulnerability.get(id);
 		if (th.type!=type)  continue;
 		th.addtablerow('#'+type+'threats');
 	}
@@ -3876,7 +4000,7 @@ function paintSingleFailures(s) {
 		}
 
 		snippet += "<div class='sfa_sortable'>\n";
-		for (const thid of cm.thrass) snippet += ThreatAssessment.get(thid).addtablerow_textonly("sfa"+s.id+'_'+cm.id);
+		for (const thid of cm.assmnt) snippet += Assessment.get(thid).addtablerow_textonly("sfa"+s.id+'_'+cm.id);
 		snippet += "</div>\n";
 		snippet += '\n\
 			 <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="_BA_">\n\
@@ -3903,42 +4027,21 @@ function paintSingleFailures(s) {
 	// Now loop again, add vulnerabilities and behaviour.
 	for (const cm of it) {
 		cm.setmarkeroid("#sfamark"+s.id+'_'+cm.id);
-		for (const thid of cm.thrass) ThreatAssessment.get(thid).addtablerow_behavioronly('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
-		var addhandler = function(s,cm) {
-			return function() {
-				let tid = createUUID();
-				new Transaction('threatAssessCreate',
-					[{component: cm.id, threat: tid}],
-					[{component: cm.id,
-						clid: createUUID(),
-						thrid: createUUID(),
-						threat: tid,
-						index: cm.thrass.length,
-						type: (cm.type=='tUNK' ? 'tEQT' : cm.type),
-						title: ThreatAssessment.autotitle(Project.cid,_("New vulnerability")),
-						description: "",
-						remark: "",
-						freq: '-',
-						impact: '-'
-					 }],
-					 _("New vulnerability")
-				);
-			};
-		};
+		for (const thid of cm.assmnt) Assessment.get(thid).addtablerow_behavioronly('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
 		var copyhandler = function(s,cm) {
 			return function() {
-				ThreatAssessment.Clipboard = [];
-				for (const thid of cm.thrass) {
-					var te = ThreatAssessment.get(thid);
-					ThreatAssessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
+				Assessment.Clipboard = [];
+				for (const thid of cm.assmnt) {
+					var te = Assessment.get(thid);
+					Assessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
 				}
 			};
 		};
 		var pastehandler = function(s,cm) {
 			return function() {
 				var newte = cm.mergeclipboard();
-				for (const thid of cm.thrass) {
-					var th = ThreatAssessment.get(thid);
+				for (const thid of cm.assmnt) {
+					var th = Assessment.get(thid);
 					if (newte.indexOf(thid)==-1) {
 						$('#dthsfa'+s.id+'_'+cm.id+'_'+th.id).remove();
 					}
@@ -3948,7 +4051,7 @@ function paintSingleFailures(s) {
 				transactionCompleted("Vuln paste");
 			};
 		};
-		$('#sfaadd'+s.id+'_'+cm.id).on('click',  addhandler(s,cm) );
+		$('#sfaadd'+s.id+'_'+cm.id).on('click',  function() {return addvulnhandler(cm.id);} );
 		$('#sfacopy'+s.id+'_'+cm.id).on('click',  copyhandler(s,cm) );
 		$('#sfapaste'+s.id+'_'+cm.id).on('click',  pastehandler(s,cm) );
 		var openclose = function(cm){
@@ -3973,13 +4076,13 @@ function paintSingleFailures(s) {
 				var newlist = [];
 				var cm = Component.get( nid2id(this.previousElementSibling.id) );
 				for (const ch of this.children) newlist.push( nid2id(ch.id) );
-				if (cm==null || newlist.length != cm.thrass.length) {
+				if (cm==null || newlist.length != cm.assmnt.length) {
 					bugreport("internal error in sorting","paintSingleFailures");
 				}
-				if (cm.thrass.every( (v,i) => (newlist[i]==v) )) return;
-				new Transaction('compVulns',
-					[{id: cm.id, thrass: cm.thrass}],
-					[{id: cm.id, thrass: newlist}],
+				if (cm.assmnt.every( (v,i) => (newlist[i]==v) )) return;  // Return if no change
+				new Transaction('compAssessments',
+					[{id: cm.id, assmnt: cm.assmnt}],
+					[{id: cm.id, assmnt: newlist}],
 					_("Reorder vulnerabilities of "+H(cm.title)));
 			}
 		});
@@ -4303,7 +4406,7 @@ function createClusterFromNodes(cluster,fromnodes,newtitle) {
 		[{root: root.id, structure: root.structure(), destroy: ncid}],
 		[{create: ncid, type: cluster.type, parent: cluster.id, title: newtitle,
 			project: cluster.project, nodes: fromnodes,
-			thrass: createUUID()
+			assmnt: createUUID()
 		}],
 		_("create new cluster"));
 }
@@ -4880,7 +4983,7 @@ function appendAllThreats(nc,domid,prefix) {
 		bugreport("nc is null","appendAllThreats");
 	}
 	Spaces_row++;
-	var th = ThreatAssessment.get(nc.thrass);
+	var th = Assessment.get(nc.assmnt);
 	// Only paint threat assessment if at least two child nodes (clusters don't count)
 //	if (nc.childnodes.length>1) {
 		var spaces = "";
@@ -5219,7 +5322,7 @@ function paintNodeThreatTables() {
 var ComponentExclusions = {};
 var ClusterExclusions = {};
 
-// Returns true iff Node id nid and ThreatAssessment id tid are in the exclusions list
+// Returns true iff Node id nid and Assessment id tid are in the exclusions list
 function exclusionsContains(list,nid,tid) {
 	return list[nid+"_"+tid];
 }
@@ -5247,8 +5350,8 @@ function computeComponentQuickWins() {
 		// Cycle over all vulnerabilities, and count how many are equal to the overall magnitude.
 		// There must be at least one such vuln!
 		var cnt = 0;
-		for (const thid of cm.thrass) {
-			var ta = ThreatAssessment.get(thid);
+		for (const thid of cm.assmnt) {
+			var ta = Assessment.get(thid);
 			if (ta.total==cm.magnitude) {
 				var keepid = ta.id;
 				cnt++;
@@ -5365,27 +5468,27 @@ function paintSFTable() {
 		for (const nc of tit) {
 			// Find the threat assessment for this node
 			var ta = {};
-			for (const thid of cm.thrass) {
-				ta = ThreatAssessment.get(thid);
+			for (const thid of cm.assmnt) {
+				ta = Assessment.get(thid);
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
 			if (ta.title==nc.title && ta.type==nc.type) {
 				snippet += '<td class="nodecell _EX_ M_CL_" component="_NO_" threat="_TH_" title="_TI_">_TO_</td>';
-				snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[ta.total]);
+				snippet = snippet.replace(/_CL_/g, Assessment.valueindex[ta.total]);
 				snippet = snippet.replace(/_TO_/g, ta.total);
 				snippet = snippet.replace(/_TI_/g, H(cm.title)+" / "+H(ta.title)+" ("+Rules.nodetypes[ta.type]+")");
 				snippet = snippet.replace(/_NO_/g, cm.id);
 				snippet = snippet.replace(/_TH_/g, ta.id);
 				snippet = snippet.replace(/_EX_/g, exclusionsContains(ComponentExclusions,cm.id,ta.id)?"excluded":"" );
 				if (!exclusionsContains(ComponentExclusions,cm.id,ta.id)) {
-					Nodesum[cm.id] = ThreatAssessment.sum(Nodesum[cm.id], ta.total);
+					Nodesum[cm.id] = Assessment.sum(Nodesum[cm.id], ta.total);
 				}
 			} else {
 				snippet += '<td class="blankcell">&thinsp;</td>';
 			}
 		}
 		snippet += '<td class="M_CL_" title="_TI_">_TO_</td><td>_ZZ_</td></tr>\n';
-		snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[Nodesum[cm.id]]);
+		snippet = snippet.replace(/_CL_/g, Assessment.valueindex[Nodesum[cm.id]]);
 		snippet = snippet.replace(/_TO_/g, Nodesum[cm.id]);
 		snippet = snippet.replace(/_TI_/g, H(cm.title)+" / overall vulnerability level");
 		if (cm.magnitude==Nodesum[cm.id]) {
@@ -5479,7 +5582,7 @@ function paintCCFTable() {
 
 	// Do each of the table rows
 	for (const cl of ncit) {
-		var ta = ThreatAssessment.get(cl.thrass);
+		var ta = Assessment.get(cl.assmnt);
 
 		var col=0;
 		for (const cl2 of tit) {
@@ -5520,7 +5623,7 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
 	for (var i=0; i<numthreats; i++) {
 		if (i==col &&cl.childnodes.length>1) {
 			snippet += '<td class="clustercell _EX_ M_CL_" cluster="_CI_" title="_TI_">_TO_</td>';
-			snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[ta.total]);
+			snippet = snippet.replace(/_CL_/g, Assessment.valueindex[ta.total]);
 			snippet = snippet.replace(/_TO_/g, ta.total);
 			snippet = snippet.replace(/_TI_/g, "CCF for "+H(cl.title)+" ("+Rules.nodetypes[cl.type]+")");
 			snippet = snippet.replace(/_CI_/g, cl.id);
@@ -5534,7 +5637,7 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
 	} else {
 		snippet += '<td class="clustercell M_CL_" title="_TI_">_TO_</td><td>_ZZ_</td></tr>\n';
 		var clustertotal = ClusterMagnitudeWithExclusions(cl,ClusterExclusions);
-		snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[clustertotal]);
+		snippet = snippet.replace(/_CL_/g, Assessment.valueindex[clustertotal]);
 		snippet = snippet.replace(/_TO_/g, clustertotal);
 		snippet = snippet.replace(/_TI_/g, "Total for "+H(cl.title)+" ("+Rules.nodetypes[cl.type]+")");
 		if (cl.magnitude==clustertotal) {
@@ -5545,7 +5648,7 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
 	}
 	for (const clid of cl.childclusters) {
 		var ccl = NodeCluster.get(clid);
-		ta = ThreatAssessment.get(ccl.thrass);
+		ta = Assessment.get(ccl.assmnt);
 		snippet += addCCFTableRow(col,numthreats,ta,ccl,indent+1);
 	}
 
@@ -5553,12 +5656,12 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
 }
 
 function ClusterMagnitudeWithExclusions(cl,list) {
-	if (cl.thrass==null)  return '-';
-	var ta = ThreatAssessment.get(cl.thrass);
+	if (cl.assmnt==null)  return '-';
+	var ta = Assessment.get(cl.assmnt);
 	var mag = exclusionsContains(list,cl.id,0) ? "U" : ta.total;
 	for (const clid of cl.childclusters) {
 		var cc = NodeCluster.get(clid);
-		mag = ThreatAssessment.sum(mag,ClusterMagnitudeWithExclusions(cc,list));
+		mag = Assessment.sum(mag,ClusterMagnitudeWithExclusions(cc,list));
 	}
 	return mag;
 }
@@ -5661,12 +5764,12 @@ function paintVulnsTableType(tabletype) {
 	// Iterate over all components
 	var cit = new ComponentIterator({project: Project.cid});
 	for (const cm of cit) {
-		for (const thid of cm.thrass) addUp(ThreatAssessment.get(thid));
+		for (const thid of cm.assmnt) addUp(Assessment.get(thid));
 	}
 	// Tterate over all cluster assessments
 	var tit = new NodeClusterIterator({project: Project.cid, isempty: false});
 	for (const nc of tit) {
-		addUp(ThreatAssessment.get(nc.thrass));
+		addUp(Assessment.get(nc.assmnt));
 	}
 
 	var grandtotal = v_U['__TOTAL__']+v_L['__TOTAL__']+v_M['__TOTAL__']+v_H['__TOTAL__']+
@@ -5713,14 +5816,14 @@ function paintVulnsTableType(tabletype) {
 	snippet = snippet.replace(/_LI_/g, _("Impacts"));
 	snippet = snippet.replace(/_LO_/g, _("Overall levels"));
 	snippet = snippet.replace(/_SV_/g, _("Assessments for"));
-	snippet = snippet.replace(/_LVU_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['U']] );
-	snippet = snippet.replace(/_LVL_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['L']] );
-	snippet = snippet.replace(/_LVM_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['M']] );
-	snippet = snippet.replace(/_LVH_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['H']] );
-	snippet = snippet.replace(/_LVV_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['V']] );
-	snippet = snippet.replace(/_LVX_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['X']] );
-	snippet = snippet.replace(/_LVA_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['A']] );
-	snippet = snippet.replace(/_LVN_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['-']] );
+	snippet = snippet.replace(/_LVU_/g, Assessment.descr[Assessment.valueindex['U']] );
+	snippet = snippet.replace(/_LVL_/g, Assessment.descr[Assessment.valueindex['L']] );
+	snippet = snippet.replace(/_LVM_/g, Assessment.descr[Assessment.valueindex['M']] );
+	snippet = snippet.replace(/_LVH_/g, Assessment.descr[Assessment.valueindex['H']] );
+	snippet = snippet.replace(/_LVV_/g, Assessment.descr[Assessment.valueindex['V']] );
+	snippet = snippet.replace(/_LVX_/g, Assessment.descr[Assessment.valueindex['X']] );
+	snippet = snippet.replace(/_LVA_/g, Assessment.descr[Assessment.valueindex['A']] );
+	snippet = snippet.replace(/_LVN_/g, Assessment.descr[Assessment.valueindex['-']] );
 	snippet = snippet.replace(/_LT_/g, _("Total") );
 	snippet = snippet.replace(/_TT_/g, (tabletype==0 ? _("levels") : (tabletype==1 ? _("frequencies") : _("impacts")) ));
 	// Do each of the table rows
@@ -5728,7 +5831,7 @@ function paintVulnsTableType(tabletype) {
 	tit.sortByType();
 //	var col = 0;
 	for (const cl of tit) {
-		var ta = ThreatAssessment.get(cl.thrass);
+		var ta = Assessment.get(cl.assmnt);
 		var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
 
 		snippet += '<tr><td class="nodetitlecell">'+H(t)+'&nbsp;</td>\n';
@@ -5941,15 +6044,15 @@ function showremovedvulns() {
 	var cit = new ComponentIterator({project: Project.cid});
 	cit.sortByName();
 	for (const cm of cit) {
-		var tit = new ThreatIterator(Project.cid,cm.type);
+		var tit = new VulnerabilityIterator({project: Project.cid, type: cm.type});
 		for (const th of tit) {
 			// Check whether this threat was used
-			for (i=0; i<cm.thrass.length; i++) {
-				var ta = ThreatAssessment.get(cm.thrass[i]);
+			for (i=0; i<cm.assmnt.length; i++) {
+				var ta = Assessment.get(cm.assmnt[i]);
 				// we have a match
 				if (th.type==ta.type && th.title==ta.title) break;
 			}
-			if (i<cm.thrass.length) continue;
+			if (i<cm.assmnt.length) continue;
 			// We found a checklist threat that was not used on this component
 			if (VulnIDs.indexOf(th.id)==-1) VulnIDs.push(th.id);
 			if (CompIDs.indexOf(cm.id)==-1) CompIDs.push(cm.id);
@@ -5977,7 +6080,7 @@ function showremovedvulns() {
 	snippet = snippet.replace(/_TW_/, 20+1.7*VulnIDs.length);
 	snippet = snippet.replace(/_NT_/, VulnIDs.length);
 	for (j=0; j<VulnIDs.length; j++) {
-		snippet += '<td class="headercell">'+H(Threat.get(VulnIDs[j]).title)+'</td>\n';
+		snippet += '<td class="headercell">'+H(Vulnerability.get(VulnIDs[j]).title)+'</td>\n';
 	}
 	snippet += '\
 	  </tr>\n\
@@ -6030,8 +6133,8 @@ function showcustomvulns() {
 	var CompIDs = [];	// list of all component IDs that had at least one threat removed
 	var CompVulns = [];	// CompVulns[x] = list of threat titles removed for component with ID 'x'.
 
-	// All checklist threats
-	var tit = new ThreatIterator(Project.cid,'tUNK');
+	// All Vulnerabilities
+	var tit = new VulnerabilityIterator({project: Project.cid, common: true});
 
 	// Iterate over all vulnerabilities to all components
 	// First find all components with at least one vulnerability removed, and find all
@@ -6039,8 +6142,8 @@ function showcustomvulns() {
 	var cit = new ComponentIterator({project: Project.cid});
 	cit.sortByName();
 	for (const cm of cit) {
-		for (const thid of cm.thrass) {
-			var ta = ThreatAssessment.get(thid);
+		for (const thid of cm.assmnt) {
+			var ta = Assessment.get(thid);
 			// Check whether this threat occurs in its checklist
 			let found = false;
 			for (const th of tit) {
@@ -6161,10 +6264,10 @@ function paintLonglist() {
 	snippet = snippet.replace(/_L2_/g, _("Minimum value:") );
 
 	var selectoptions = "";
-	for (var i=ThreatAssessment.valueindex['U']; i<=ThreatAssessment.valueindex['V']; i++) {
+	for (var i=Assessment.valueindex['U']; i<=Assessment.valueindex['V']; i++) {
 		selectoptions += '<option value="_V_">_D_</option>\n';
-		selectoptions = selectoptions.replace(/_V_/g, ThreatAssessment.values[i]);
-		selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
+		selectoptions = selectoptions.replace(/_V_/g, Assessment.values[i]);
+		selectoptions = selectoptions.replace(/_D_/g, Assessment.descr[i]);
 	}
 	$('#at5').html(snippet);
 	$('#lloptions').headroom({
@@ -6207,17 +6310,17 @@ function listSelectedRisks() {
 		for (const nc of tit) {
 			// Find the threat assessment for this node
 			var ta = null;
-			for (const thid of cm.thrass) {
-				ta = ThreatAssessment.get(thid);
+			for (const thid of cm.assmnt) {
+				ta = Assessment.get(thid);
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
 			if (ta && ta.title==nc.title && ta.type==nc.type
 			&& (
-				(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
+				(Assessment.valueindex[ta.total]>=Assessment.valueindex[MinValue] && Assessment.valueindex[ta.total]<Assessment.valueindex['X'])
 				||
-				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').prop('checked'))
+				(Assessment.valueindex[ta.total]==Assessment.valueindex['X'] && $('#incX').prop('checked'))
 				||
-				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').prop('checked'))
+				(Assessment.valueindex[ta.total]==Assessment.valueindex['A'] && $('#incA').prop('checked'))
 				)
 			) {
 				matches.push({
@@ -6225,22 +6328,22 @@ function listSelectedRisks() {
 					cm: cm.title,
 					ccf: false,
 					qw: (exclCm.indexOf(cm.id+'_'+ta.id)>=0),
-					v: ThreatAssessment.valueindex[ta.total]
+					v: Assessment.valueindex[ta.total]
 				});
 			}
 		}
 	}
 	tit = new NodeClusterIterator({project: Project.cid, isempty: false});
 	for (const nc of tit) {
-		if (!nc.thrass) continue;
+		if (!nc.assmnt) continue;
 
-		ta = ThreatAssessment.get(nc.thrass);
+		ta = Assessment.get(nc.assmnt);
 		if (
-			(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
+			(Assessment.valueindex[ta.total]>=Assessment.valueindex[MinValue] && Assessment.valueindex[ta.total]<Assessment.valueindex['X'])
 			||
-			(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
+			(Assessment.valueindex[ta.total]==Assessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
 			||
-			(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
+			(Assessment.valueindex[ta.total]==Assessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
 		) {
 			var r = NodeCluster.get(nc.root());
 			matches.push({
@@ -6248,17 +6351,17 @@ function listSelectedRisks() {
 				cm: (nc.isroot() ? _("All nodes") : nc.title),
 				ccf: true,
 				qw: (exclCl.indexOf(nc.id+'_0')>=0),
-				v: ThreatAssessment.valueindex[ta.total]
+				v: Assessment.valueindex[ta.total]
 			});
 		}
 	}
 	matches.sort( function(a,b) {
 		// A(mbiguous) is the highest
-		if (a.v==ThreatAssessment.valueindex['A']) {
-			if (b.v==ThreatAssessment.valueindex['A'])  return 0;
+		if (a.v==Assessment.valueindex['A']) {
+			if (b.v==Assessment.valueindex['A'])  return 0;
 			else return 1;
 		}
-		if (b.v==ThreatAssessment.valueindex['A']) {
+		if (b.v==Assessment.valueindex['A']) {
 			return -1;
 		}
 		// Neither A nor B is A(mbiguous). We can compare by valueindex
@@ -6278,7 +6381,7 @@ function listSelectedRisks() {
 	for (const m of matches) {
 		if (m.v!=lastV || m.qw!=lastQW) {
 			if (snippet!='') snippet+='<br>\n';
-			snippet += '<b>' + H(ThreatAssessment.descr[m.v]) +
+			snippet += '<b>' + H(Assessment.descr[m.v]) +
 				(m.qw ? ' ' + _("(quick wins)") : '')+
 				'</b><br>\n';
 			lastV = m.v;
@@ -6296,14 +6399,14 @@ function listSelectedRisks() {
 	}
 	// Add a line with subtotals and totals to the front of the snippet.
 	var head = '';
-	for (let i=ThreatAssessment.valueindex['A']; i<=ThreatAssessment.valueindex['X']; i++) {
+	for (let i=Assessment.valueindex['A']; i<=Assessment.valueindex['X']; i++) {
 		if (!count[i]) continue;
 		if (head=='') {
 			head += '(';
 		} else {
 			head += ', ';
 		}
-		head += count[i] + ' ' + H(ThreatAssessment.descr[i]);
+		head += count[i] + ' ' + H(Assessment.descr[i]);
 	}
 	if (head!='') {
 		head += ')';

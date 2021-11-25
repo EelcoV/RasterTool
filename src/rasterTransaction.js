@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Threat, ThreatAssessment, ThreatIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentThreatAssessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster
+/* globals _, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentassessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -205,16 +205,16 @@ Transaction.prototype = {
 			//  move_to: new parent of that cluster (destination)
 			// or
 			//  create: id of a new cluster
-			//	title, type, project, parent, nodes, thrass: properties of the new cluster
+			//	title, type, project, parent, nodes, assmnt: properties of the new cluster
 			// or
 			//	move: list of node ids
 			//	to: id of node cluster to move these nodes into
 			for (const d of data) {
-				if (d.structure) {
+				if (d.structure!=null) {
 					rebuildCluster(d.structure);
 					repaintCluster(d.root);
 					if (d.destroy) NodeCluster.get(d.destroy).destroy();
-				} else if (d.remove) {
+				} else if (d.remove!=null) {
 					let cluster = NodeCluster.get(d.remove);
 					let root = NodeCluster.get(cluster.root());
 					let parent = NodeCluster.get(cluster.parentcluster);
@@ -225,7 +225,7 @@ Transaction.prototype = {
 					root.normalize();
 					root.calculatemagnitude();
 					repaintCluster(root.id);
-				} else if (d.move_from) {
+				} else if (d.move_from!=null) {
 					let from_cluster = NodeCluster.get(d.move_from);
 					let to_cluster = NodeCluster.get(d.move_to);
 					let parent = NodeCluster.get(from_cluster.parentcluster);
@@ -240,7 +240,7 @@ Transaction.prototype = {
 					nc.setproject(d.project);
 					nc.setparent(d.parent);
 					if (d.title) nc.settitle(d.title);
-					nc.addthrass(d.thrass);
+					nc.addassessment(d.assmnt);
 					let parent = NodeCluster.get(d.parent);
 					parent.addchildcluster(nc.id);
 					let root = NodeCluster.get(nc.root());
@@ -276,20 +276,20 @@ Transaction.prototype = {
 			for (const d of data) {
 				let nc = NodeCluster.get(d.id);
 				nc.settitle(d.title);
-				$('#dthE_ccf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
+				$('#dthE_ccf'+nc.root()+'name'+nc.assmnt).html(H(nc.title));
 				$('#litext'+nc.id).html(H(nc.title));
 			}
 			break;
 		}
 
-		case 'compVulns': {
-			// Change the order of threatassessments
+		case 'compAssessments': {
+			// Change the order of assessments
 			// data: array of objects; each object has these properties
 			//  id: id of the component
-			//  thrass: list of ids of the threatassessments of the component
+			//  assmnt: list of ids of the assessments of the component
 			for (const d of data) {
 				let c = Component.get(d.id);
-				c.thrass = d.thrass;
+				c.assmnt = d.assmnt;
 				c.store();
 				c.repaint();
 			}
@@ -364,8 +364,8 @@ Transaction.prototype = {
 			//   width, height: size of the node (optional)
 			//   connect: array of node IDs to connect to
 			//   component: id of the component object
-			//   thrass: array of objects containing info on the vulnerabilities:
-			//     id, type, title, description, freq, impact, remark: as of the threat assessment
+			//   assmnt: array of objects containing info on the vulnerabilities:
+			//     id, type, vulnerability, title, description, freq, impact, remark: as of the assessment
 			//   accordionopened: state of the component in Single Failures view
 			//   single: id of the representing node iff single, or false iff not single
 			//  cluster: an array of objects with the following properties (may be absent only if creating tACT or tNOT)
@@ -373,7 +373,7 @@ Transaction.prototype = {
 			//    title: title of the cluster
 			//    project: project to which this cluster belongs
 			//    parent: ID of the parent cluster (null, if root cluster)
-			//    thrass: object containing info on the threat assessment for the cluster (as see above)
+			//    assmnt: object containing info on the assessment for the cluster (as see above)
 			//    accordionopened: cluster is folded open in CCF view
 			//    childnode: array of IDs of all child nodes of this cluster
 			//    childcluster: object containing the same properties (except childnode/childcluster)
@@ -401,14 +401,25 @@ Transaction.prototype = {
 				let cm = Component.get(d.component);
 				if (!cm) {
 					cm = new Component(d.type, rn.project, d.component);
-					for (const t of d.thrass) {
-						let ta = new ThreatAssessment(t.type, t.id);
-						ta.settitle(t.title);
-						ta.setdescription(t.description);
+					for (const t of d.assmnt) {
+						let ta = new Assessment(t.type, t.id);
+						let vln = Vulnerability.get(t.vulnerability);
+						if (vln==null) {
+							vln = new Vulnerability(t.project,t.type,t.vulnerability);
+							vln.settitle(t.title);
+							vln.setdescription(t.description);
+							vln.setcommon(t.common);
+							let nc = new NodeCluster(t.type,t.clid);
+							nc.setproject(t.project);
+							nc.settitle(t.title);
+							nc.addassessment(t.cla);
+							Assessment.get(t.cla).setvulnerability(t.vulnerability);
+						}
+						ta.setvulnerability(t.vulnerability);
 						ta.setremark(t.remark);
 						ta.setfreq(t.freq);
 						ta.setimpact(t.impact);
-						cm.addthrass(ta);
+						cm.addassessment(ta);
 					}
 					cm.accordionopened = d.accordionopened;
 					cm.title = d.title;
@@ -416,6 +427,22 @@ Transaction.prototype = {
 				cm.single = (d.single ? d.single!=false : false);
 				cm.addnode(d.id, (d.id==d.single));
 				cm.repaintmembertitles();
+			}
+			// Delete any custom vulnerabilities (and their root clusters) that do not have any assessments anymore
+			// We don't know the project, but it is safe to iterate over all projects.
+			let vit = new VulnerabilityIterator({common: false});
+			for (const vln of vit) {
+				let ait = new AssessmentIterator({vuln: vln.id, ofcomponent: true});
+				if (ait.count()==0) {
+					let it = new NodeClusterIterator({project: vln.project, isroot: true, type: vln.type, title: vln.title});
+					if (it.count()!=1) {
+						bugreport(_("weird number of node clusters"),"Transaction.nodeCreateDelete");
+						break;
+					}
+					let nc = it.first();
+					nc.destroy();
+					vln.destroy();
+				}
 			}
 			// Loop again, adding connections
 			for (const d of data.nodes) {
@@ -505,8 +532,8 @@ Transaction.prototype = {
 			//  id: id of the node
 			//  title: title of the node
 			//  suffix: suffix of the node
-			//  thrass: array of threat assessments when the component needs to be created
-			//		id, title, description, freq, impact, remark: as of the threat assessment
+			//  assmnt: array of assessments when the component needs to be created
+			//		id, vulnerability, title, description, freq, impact, remark of the assessment
 			//  component: id of the component
 			//	accordionopened: folding state of the component
 			//	single: class-type of the component
@@ -529,14 +556,25 @@ Transaction.prototype = {
 						// create a new component
 						cm = new Component(rn.type,rn.project,d.component);
 						cm.title = d.title;
-						for (const t of d.thrass) {
-							let ta = new ThreatAssessment(t.type, t.id);
-							ta.settitle(t.title);
-							ta.setdescription(t.description);
+						for (const t of d.assmnt) {
+							let ta = new Assessment(t.type, t.id);
+							let vln = Vulnerability.get(t.vulnerability);
+							if (vln==null) {
+								vln = new Vulnerability(t.project,t.type,t.vulnerability);
+								vln.settitle(t.title);
+								vln.setdescription(t.description);
+								vln.setcommon(t.common);
+								let nc = new NodeCluster(t.type,t.clid);
+								nc.setproject(t.project);
+								nc.settitle(t.title);
+								nc.addassessment(t.cla);
+								Assessment.get(t.cla).setvulnerability(t.vulnerability);
+							}
+							ta.setvulnerability(t.vulnerability);
 							ta.setremark(t.remark);
 							ta.setfreq(t.freq);
 							ta.setimpact(t.impact);
-							cm.addthrass(ta);
+							cm.addassessment(ta);
 						}
 					}
 					if (d.component!=rn.component) {
@@ -559,8 +597,8 @@ Transaction.prototype = {
 					rebuildCluster(cl);
 				}
 				// Also repaint clusters in which this node appears
-				for (const thid of cm.thrass) {
-					let ta = ThreatAssessment.get(thid);
+				for (const thid of cm.assmnt) {
+					let ta = Assessment.get(thid);
 					let it = new NodeClusterIterator({project: cm.project, title: ta.title, type: ta.type});
 					for (const nc of it) {
 						repaintCluster(nc.id);
@@ -654,267 +692,234 @@ Transaction.prototype = {
 			break;
 		}
 
-		case 'threatAssessDetails': {
-			// Change the details of a ThreatAssessment
-			// data: array of objects; each object has these properties
-			//	threat: id of the ThreatAssessment
-			//	freq: frequency-value of the threatassessment
-			//	impact: impact-value of the threatassessment
-			//	remark: remark of the threatassessment
-			//  component, cluster: (either/or) the object to which this threatassessment belongs
-			for (const d of data) {
-				let ta = ThreatAssessment.get(d.threat);
-				if (d.remark!=null)  ta.setremark(d.remark);
-				if (d.freq!=null)  ta.setfreq(d.freq);
-				if (d.impact!=null)  ta.setimpact(d.impact);
-				if (ta.cluster) {
-					repaintCluster(NodeCluster.get(ta.cluster).root());
-				} else {
-					Component.get(ta.component).repaint();
-				}
-			}
-			break;
-		}
-
-		case 'threatAssessCreate': {
-			// Create or remove a ThreatAssessment
-			// data: array of objects; each object has these properties
-			//	component: component on which to create (or delete) the threatassessment
-			//  threat: ID of the ThreatAssessment to create (or delete)
-			//	type: type of the ThreatAssessment
-			//		Delete when type is null, create when type is not null
-			//	freq: frequency-value of the threatassessment
-			//	impact: impact-value of the threatassessment
-			//	remark: remark of the threatassessment
-			//  description: description of the threatassessment
-			//  title: name of the threatassessment
-			//  index: position of the threatassessment within the component
-			//  clid: id of the new root cluster (when adding a new threat and assessment)
-			//  thrid: id of the threat assessment of the new root cluster
-			//  cluster: object describing the cluster, its subclusters, childnodes etc. Used on undo, see nodeCreateDelete.
-			for (const d of data) {
-				let cm = Component.get(d.component);
-				if (d.type) {
-					// Create/add
-					// ThreatAssessment
-					let ta = new ThreatAssessment(d.type,d.threat);
-					if (d.title!=null)  ta.settitle(d.title);
-					if (d.description!=null)  ta.setdescription(d.description);
-					if (d.remark!=null)  ta.setremark(d.remark);
-					if (d.freq!=null)  ta.setfreq(d.freq);
-					if (d.impact!=null)  ta.setimpact(d.impact);
-					// Root cluster
-					if (d.clid && !NodeCluster.get(d.clid)) {
-						let nc = new NodeCluster(d.type,d.clid);
-						nc.setproject(cm.project);
-						nc.settitle(ta.title);
-						nc.addthrass(d.thrid);
-					}
-					// Update component
-					cm.addthrass(ta,d.index);
-				} else {
-					// Delete/remove
-					let th = ThreatAssessment.get(d.threat);
-					cm.removethrass(d.threat);
-					NodeCluster.removecomponent_threat(cm.project,th.component,th.title,th.type);
-					$('#dthdia'+'_'+th.id).remove();
-					$('#dthsfa'+'_'+th.id).remove();
+		case 'assessmentCreateDelete': {
+			// Create or remove a assessment from a component
+			// data: an object with these properties
+			//  create: true when adding, false when removing an assessment
+			//	vuln: ID of vulnerability for this assessment (iff create)
+			//	assmnt[]: array of objects containing these properties:
+			//    id: ID of the Assessment to create or delete
+			//	  component: component for the assessment (iff create)
+			//	  freq: frequency-value of the assessment (iff create)
+			//	  impact: impact-value of the assessment (iff create)
+			//	  remark: remark of the assessment (iff create)
+			//    index: position of the assessment within the component (iff create)
+			//  clid: id of the root cluster for this vulnerability
+			//  cluster: object describing the cluster, its subclusters, childnodes etc. Used on undo, see nodeCreateDelete. (iff create)
+			let vln = Vulnerability.get(data.vuln);
+			let nc = NodeCluster.get(data.clid);
+			if (data.create) {
+				// Create/add
+				for (const aa of data.assmnt) {
+					let assmnt = new Assessment(vln.type,aa.id);
+					let cm = Component.get(aa.component);
+					if (aa.freq!=null)  assmnt.setfreq(aa.freq);
+					if (aa.impact!=null)  assmnt.setimpact(aa.impact);
+					if (aa.remark!=null)  assmnt.setremark(aa.remark);
+					assmnt.setvulnerability(vln.id);
+					cm.addassessment(assmnt,aa.index);
 					cm.setmarker();
-				}
-				if (d.cluster) {
-					rebuildCluster(d.cluster);
-					let cl = NodeCluster.get(d.cluster.id);
-					repaintCluster(cl.id);
-				}
-				cm.repaint();
-			}
-			break;
-		}
-
-		case 'threatCreate': {
-			// Add (or remove) a default threat to (or from) a checklist, or a vulnerability to acomponent, and update all UI
-			// data: array of objects; each object has these properties
-			//  create: true when adding, false when removing threat(assessment)
-			//  component: id of the component to which a ThreatAssessment should be added (or removed, when type==null)
-			//	project: id of the project in which to edit; either .component or .project must be defined
-			//	threat: id of the checklist threat (new, or to be removed when type==null)
-			//		or  id of the component's ThreatAssessment
-			//  component: id of the component to which a ThreatAssessment should be added (or removed, when type==null)
-			//		*either* threat&project *or* component should be specified
-			//	index: position of the threat(assessment) within the project (component)
-			//	type: type of the threat(assessment) (only wired, wireless, equipment allowed)
-			//	title: title of the threat(assessment)
-			//  cluster: id of the new cluster
-			//  clusterthrid: id of the ThreatAssessment of the cluster
-			//	description: description of the threat(assessment)
-			//	tdescription: descriptopm of the cluster threat
-			//	freq: frequency-value of the threatassessment
-			//	impact: impact-value of the threatassessment
-			//	remark: remark of the threatassessment
-			for (const d of data) {
-				if (d.component) {
-					// Add/remove a single vulnerability to/from a component
-					let cm = Component.get(d.component);
-					if (d.create) {
-						var ta = new ThreatAssessment(d.type,d.threat);
-						if (d.title!=null)  ta.settitle(d.title);
-						if (d.description!=null)  ta.setdescription(d.description);
-						if (d.remark!=null)  ta.setremark(d.remark);
-						if (d.freq!=null)  ta.setfreq(d.freq);
-						if (d.impact!=null)  ta.setimpact(d.impact);
-						cm.addthrass(ta,d.index);
-					} else {
-						let ta = ThreatAssessment.get(d.threat);
-						cm.removethrass(ta.id);
-						ta.destroy();
-					}
-					// refresh UI
 					cm.repaint();
+				}
+				if (data.cluster) rebuildCluster(data.cluster);
+			} else {
+				// Delete/remove
+				for (const aa of data.assmnt) {
+					let assmnt = Assessment.get(aa.id);
+					if (!assmnt) {
+						bugreport('No such assessment','Transaction.assessmentCreateDelete');
+					}
+					let cm = Component.get(assmnt.component);
+					cm.removeassessment(assmnt.id); // will destroy assmnt
+					for (let i=0; i< (cm.single?1:cm.nodes.length); i++) {
+						nc.removechildnode(cm.nodes[i]);
+					}
+					nc.normalize();
+					$('#dthdia'+'_'+assmnt.id).remove();
+					$('#dthsfa'+'_'+assmnt.id).remove();
+					cm.setmarker();
+					cm.repaint();
+				}
+				repaintCluster(nc.id);
+			}
+			break;
+		}
+
+		case 'assessmentDetails': {
+			// Change the details of a Assessment
+			// data: array of objects; each object has these properties
+			//	assmnt: id of the Assessment
+			//	vuln: vulnerability of the assessment
+			//	freq: frequency-value of the assessment
+			//	impact: impact-value of the assessment
+			//	remark: remark of the assessment
+			//  component, cluster: (either/or) the object to which this assessment belongs
+			for (const d of data) {
+				let a = Assessment.get(d.assmnt);
+				let prevvuln = a.vulnerability;
+				if (d.vuln!=null)  a.setvulnerability(d.vuln);
+				if (d.remark!=null)  a.setremark(d.remark);
+				if (d.freq!=null)  a.setfreq(d.freq);
+				if (d.impact!=null)  a.setimpact(d.impact);
+				if (a.cluster) {
+					repaintCluster(NodeCluster.get(a.cluster).root());
 				} else {
-					// Add/remove a default vulnerability to/from the checklist and all matching components
-					if (d.create) {
-						let th = new Threat(d.project,d.type,d.threat);
-						if (d.title!=null)  th.title = d.title;
-						if (d.description!=null)  th.description = d.description;
-						th.store();
-						let p = Project.get(d.project);
-						p.addthreat(th.id,d.cluster,d.clusterthrid,d.index);
-						let ta = ThreatAssessment.get(d.clusterthrid);
-						if (d.tdescription!=null)  ta.setdescription(d.tdescription);
-						if (d.remark!=null)  ta.setremark(d.remark);
-						if (d.freq!=null)  ta.setfreq(d.freq);
-						if (d.impact!=null)  ta.setimpact(d.impact);
-					} else {
-						let th = Threat.get(d.threat);
-						let p = Project.get(th.project);
-						p.removethreat(th.id);
-						let cl = NodeCluster.get(d.cluster);
-						cl.destroy();
+					let cm = Component.get(a.component);
+					cm.repaint();
+					if (a.vulnerability!=prevvuln) {
+						let oldvuln = Vulnerability.get(prevvuln);
+						let newvuln = Vulnerability.get(a.vulnerability);
+						let oit = new NodeClusterIterator({project: oldvuln.project, type: oldvuln.type, title: oldvuln.title, isroot: true});
+						let nit = new NodeClusterIterator({project: newvuln.project, type: newvuln.type, title: newvuln.title, isroot: true});
+						if (oit.count()!=1 || nit.count()!=1)  bugreport('No unique root clusters','Transaction.assessmentDetails');
+						let onc = oit.first();
+						let nnc = nit.first();
+						for (const nid of cm.nodes) onc.removechildnode(nid);
+						for (const nid of cm.nodes) nnc.addchildnode(nid);
+						repaintCluster(onc.id);
+						repaintCluster(nnc.id);
 					}
-					// refresh UI
-					refreshChecklistsDialog(d.type,true);
-					let it = new ComponentIterator({project: d.project, match: d.type});
-					for (const cm of it) {
-						cm.repaint();
-					}
-					PaintAllClusters();
 				}
 			}
 			break;
 		}
 
-		case 'threatRename': {
+		case 'vulnCreateDelete': {
+			// Add or remove a Vulnerability (but not any assessments of that Vulnerability)
+			// When deleting, there should not be any Assessments for this Vulnerability! The node clusters
+			// will should be empty, and will be deleted as well
+			// data: a sigle object with these properties
+			//  create: true when adding, false when removing threat(assessment)
+			//	id: ID of the Vulnerability
+			//	project: project ID of the Vulnerability (iff create)
+			//	type: type of the Vulnerability (iff create)
+			//	title: title of the Vulnerability (iff create)
+			//	description: description of the Vulnerability (iff create)
+			//	common: whether or not this Vulnerability is default for the project (iff create)
+			//  cluster: ID of the root cluster for this Vulnerability (iff create)
+			//  cla: ID of the Assessment of the cluster (iff create)
+			//	index: position of the Vulnerability within the project (iff create and common==true)
+			if (data.create) {
+				// Add a vulnerability
+				let vln = new Vulnerability(data.project,data.type,data.id);
+				if (data.title!=null) vln.settitle(data.title);
+				if (data.description!=null) vln.setdescription(data.description);
+				if (data.common!=null) vln.setcommon(data.common);
+				if (data.common) {
+					let p = Project.get(data.project);
+					p.addvulnerability(data.id,data.cluster,data.cla,data.index);
+				} else {
+					let nc = new NodeCluster(data.type,data.cluster);
+					nc.setproject(data.project);
+					nc.settitle(data.title);
+					nc.addassessment(data.cla);
+					Assessment.get(data.cla).setvulnerability(data.id);
+				}
+			} else {
+				// Remove a vulnerability and its (emtpy) root cluster
+				let it = new AssessmentIterator({vuln: data.id, ofcomponent: true});
+				if (it.count()>0) {
+					bugreport(_("vulnerability still has assessments"),"Transaction.vulnCreateDelete");
+					break;
+				}
+				let vln = Vulnerability.get(data.id);
+				let p = Project.get(vln.project);
+				it = new NodeClusterIterator({project: vln.project, isroot: true, type: vln.type, title: vln.title});
+				if (it.count()!=1) {
+					bugreport(_("weird number of node clusters"),"Transaction.vulnCreateDelete");
+					break;
+				}
+				let nc = it.first();
+				nc.destroy();
+				if (vln.common) {
+					p.removevulnerability(vln.id);
+				}
+				vln.destroy();
+			}
+			refreshChecklistsDialog(data.type);
+			break;
+		}
+
+		case 'vulnDetails': {
 			// Global edit of title and description of vulnerabilities and node templates
 			// data: array of objects; each object has these properties
-			//	project: id of the project in which to edit
-			//	type: type of the vulnerability (only wired, wireless, equipmemt allowed)
-			//	old_t: previous title (may be null, indicating no change)
-			//	old_d: previous description (may be null, indicating no change)
-			//	new_t: changed title
-			//	new_d: changed description
+			//	vuln: ID of the Vulnerability to chage
+			//	title: new title (may be null, indicating no change)
+			//	description: new description (may be null, indicating no change)
 			for (const d of data) {
-				let it;
-				if (d.type!='tWLS' && d.type!='tWRD' && d.type!='tEQT') {
-					bugreport("invalid type","Transaction.threatRename");
-					return;
+				let vln = Vulnerability.get(d.vuln);
+				if (d.description!=null)  vln.setdescription(d.description);
+				if (d.title!=null) {
+					let it = new NodeClusterIterator({project: vln.project, type: vln.type, title: vln.title});
+					if (it.count()!=1) {
+						bugreport(_("weird number of node clusters"),"Transaction.vulnCreateDelete");
+					}
+					let nc = it.first();
+					vln.settitle(d.title);
+					nc.settitle(d.title);
 				}
-
-				it = new ThreatIterator(d.project,d.type);
-				for (const th of it) {
-					if (d.old_t && isSameString(th.title,d.old_t)) {
-						th.settitle(d.new_t);
-						$('#thname'+th.id).html(H(d.new_t));
-					}
-					if (d.old_d && isSameString(th.description,d.old_d)) {
-						th.setdescription(d.new_d);
-						$('#thdesc'+th.id).html(H(d.new_d));
-					}
-				}
-
-				it = new ComponentIterator({project: d.project, match: d.type});
-				for (const cm of it) {
-					for (const t of cm.thrass) {
-						let ta = ThreatAssessment.get(t);
-						if (d.old_t && isSameString(ta.title,d.old_t)) {
-							ta.settitle(d.new_t);
-						}
-						if (d.old_d && isSameString(ta.description,d.old_d)) {
-							ta.setdescription(d.new_d);
-						}
-					}
-					cm.repaint();
-				}
-
-				it = new NodeClusterIterator({project: d.project});
-				for (const cl of it) {
-					let ta = ThreatAssessment.get(cl.thrass);
-					let repaint = false;
-					if (d.old_t && isSameString(cl.title,d.old_t)) {
-						cl.settitle(d.new_t);
-						repaint = true;
-					}
-					if (d.old_d && isSameString(ta.description,d.old_d)) {
-						ta.setdescription(d.new_d);
-						repaint = true;
-					}
-					if (repaint) {
-						repaintCluster(cl.root());
-					}
+				refreshChecklistsDialog(vln.type);
+				refreshComponentThreatAssessmentsDialog();
+				// Repaint each component in which this vulnerability appears
+				let it = new AssessmentIterator({vuln: d.vuln});
+				for (const a of it) {
+					if (!a.component) continue;
+					Component.get(a.component).repaint();
 				}
 			}
 			break;
 		}
 
-		case 'threatReorder': {
-			// Global change in the order of checklist vulnerabilities
+		case 'vulnsReorder': {
+			// Global change in the order of common vulnerabilities
 			// data: a single object containing these fields:
 			//	project: the id of the project
-			//	list: the re-ordered list of threats
-			// No threats will or should be added or removed in this transaction.
+			//	list: the re-ordered list of vulnerabilities
+			// No vulnerabilities will or should be added or removed in this transaction.
 			let p = Project.get(data.project);
 			// Compile arrays before and after move. With this information we can repaint
 			// only the threat panel that was modified, and we avoid repainting the ones that
-			// dit not change.
+			// did not change.
 			let old_tWLS=[], old_tWRD=[], old_tEQT=[];
-			let new_tWLS=[], new_tWRD=[], new_tEQT=[];
-			for (const thid of p.threats) {
-				let th = Threat.get(thid);
-				switch (th.type) {
-					case 'tWLS': old_tWLS.push(thid); break;
-					case 'tWRD': old_tWRD.push(thid); break;
-					case 'tEQT': old_tEQT.push(thid); break;
+			for (const vid of p.vulns) {
+				let vln = Vulnerability.get(vid);
+				switch (vln.type) {
+					case 'tWLS': old_tWLS.push(vid); break;
+					case 'tWRD': old_tWRD.push(vid); break;
+					case 'tEQT': old_tEQT.push(vid); break;
 				}
 			}
-			for (const thid of data.list) {
-				let th = Threat.get(thid);
-				if (!th) {
-					bugreport('unknown threat assessment', 'Transaction.threatReorder');
+			let new_tWLS=[], new_tWRD=[], new_tEQT=[];
+			for (const vid of data.list) {
+				let vln = Vulnerability.get(vid);
+				if (!vln) {
+					bugreport('unknown vulnerability', 'Transaction.vulnsReorder');
 					return;
 				}
-				switch (th.type) {
-					case 'tWLS': new_tWLS.push(thid); break;
-					case 'tWRD': new_tWRD.push(thid); break;
-					case 'tEQT': new_tEQT.push(thid); break;
+				switch (vln.type) {
+					case 'tWLS': new_tWLS.push(vid); break;
+					case 'tWRD': new_tWRD.push(vid); break;
+					case 'tEQT': new_tEQT.push(vid); break;
 				}
 			}
 			// if arrays old_tWLS and new_tWLS are not equal
-			if (!old_tWLS.every( function(v,i) { new_tWLS[i]==v; } )) {
+			if (!old_tWLS.every( (v,i) => new_tWLS[i]==v )) {
 				// repaint the tWLS panel
 				$('#tWLSthreats').empty();
-				for (const thid of new_tWLS) Threat.get(thid).addtablerow('#tWLSthreats');
+				for (const vid of new_tWLS) Vulnerability.get(vid).addtablerow('#tWLSthreats');
 			}
-			if (!old_tWRD.every( function(v,i) { new_tWRD[i]==v; } )) {
+			if (!old_tWRD.every( (v,i) => new_tWRD[i]==v )) {
 				// repaint the tWRD panel
 				$('#tWRDthreats').empty();
-				for (const thid of new_tWRD) Threat.get(thid).addtablerow('#tWRDthreats');
+				for (const vid of new_tWRD) Vulnerability.get(vid).addtablerow('#tWRDthreats');
 			}
-			if (!old_tEQT.every( function(v,i) { new_tEQT[i]==v; } )) {
+			if (!old_tEQT.every( (v,i) => new_tEQT[i]==v )) {
 				// repaint the tEQT panel
 				$('#tEQTthreats').empty();
-				for (const thid of new_tEQT) Threat.get(thid).addtablerow('#tEQTthreats');
+				for (const vid of new_tEQT) Vulnerability.get(vid).addtablerow('#tEQTthreats');
 			}
 
-			p.threats = data.list;
+			p.vulns = data.list;
 			p.store();
 			break;
 		}
@@ -937,8 +942,8 @@ Transaction.prototype = {
 // parent: ID of the parent cluster (null, if root cluster)
 // title: title of the cluster
 // accordionopened: cluster is folded open in CCF view
-// thrass: object containing info on the cluster's vulnerability assessment
-//   id, type, title, description, freq, impact, remark: as of the threat assessment
+// assmnt: object containing info on the cluster's vulnerability assessment
+//   id, type, vulnerability, title, description, freq, impact, remark: as of the assessment
 // childnode: array of IDs of all child nodes of this cluster
 // childcluster: object containing the same properties (except childnode/childcluster)
 function rebuildCluster(c) {
@@ -957,12 +962,18 @@ function rebuildCluster(c) {
 		cl.setparent(c.parent);
 	}
 	cl.childnodes = c.childnode.slice();
-	cl.addthrass(c.thrass.id);
-	let ta = ThreatAssessment.get(c.thrass.id);
-	ta.setdescription(c.thrass.description);
-	ta.setremark(c.thrass.remark);
-	ta.setfreq(c.thrass.freq);
-	ta.setimpact(c.thrass.impact);
+	cl.addassessment(c.assmnt.id);
+	let ta = Assessment.get(c.assmnt.id);
+	if (c.assmnt.vulnerability) {
+		ta.setvulnerability(c.assmnt.vulnerability);
+	} else if (!cl.isroot()) {
+		// Set only for non-root clusters (root clusters inherit from the common Vulnerability
+		ta.settitle(c.assmnt.title);
+		ta.setdescription(c.assmnt.description);
+	}
+	ta.setremark(c.assmnt.remark);
+	ta.setfreq(c.assmnt.freq);
+	ta.setimpact(c.assmnt.impact);
 	cl.childclusters = [];
 	for (const cc of c.childcluster) rebuildCluster(cc);
 	cl.store();

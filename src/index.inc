@@ -42,8 +42,9 @@ See LICENSE.md
 <script type="text/javascript" src="../js/rasterTransaction.js"></script>
 <script type="text/javascript" src="../js/rasterProject.js"></script>
 <script type="text/javascript" src="../js/rasterService.js"></script>  
-<script type="text/javascript" src="../js/rasterThreatEvaluation.js"></script>  
-<script type="text/javascript" src="../js/rasterComponent.js"></script>  
+<script type="text/javascript" src="../js/rasterVulnerability.js"></script>
+<script type="text/javascript" src="../js/rasterAssessment.js"></script>
+<script type="text/javascript" src="../js/rasterComponent.js"></script>
 <script type="text/javascript" src="../js/rasterNode.js"></script>  
 <script type="text/javascript" src="../js/rasterNodeCluster.js"></script>  
 <script type="text/javascript" src="../js/rasterPreferencesObject.js"></script>  

@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, ThreatAssessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, trimwhitespace, displayComponentThreatAssessmentsDialog
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, trimwhitespace, displayComponentThreatAssessmentsDialog
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -55,7 +55,7 @@
  *	attach_center(dst): create and draw the connector.
  *	detach_center(dst): called when the connection from this node to Node dst
  *		is removed.
- *	addtonodeclusters(): for each of the threats to this component, insert the 
+ *	addtonodeclusters(): for each of the Assessments to this component, insert the 
  *		node into the corresponding node cluster.
  *	removefromnodeclusters(): remove this node from all node clusters.
  *  editinprogress(): true iff the title is being edited in place.
@@ -343,7 +343,7 @@ Node.prototype = {
 						asproxy: (prevcomponent.single && prevcomponent.nodes[0]==this.id),
 						clusters: NodeCluster.structuredata(p.id)
 					}],
-					[{id: this.id, title: str, component: createUUID(), thrass: p.defaultthreatdata(prevcomponent.type)}],
+					[{id: this.id, title: str, component: createUUID(), assmnt: p.defaultassessmentdata(prevcomponent.type)}],
 					_("Rename node")
 				);
 			} else {
@@ -366,7 +366,7 @@ Node.prototype = {
 				new Transaction('nodeTitle',
 					[{
 						id: this.id, title: this.title, suffix: this.suffix,
-						component: prevcomponent.id, thrass: prevcomponent.threatdata(), accordionopened: prevcomponent.accordionopened
+						component: prevcomponent.id, assmnt: prevcomponent.assessmentdata(), accordionopened: prevcomponent.accordionopened
 					}],
 					[{id: this.id, title: str, suffix: cm.newsuffix(), component: cm.id}],
 					_("Rename node")
@@ -523,10 +523,10 @@ Node.prototype = {
 			// Actors have a marker but no component
 			if (this.component!=null) {
 				var m = Component.get(this.component).magnitude;
-				var mi = ThreatAssessment.valueindex[m];
+				var mi = Assessment.valueindex[m];
 				$('#nodeMagnitude'+this.id).text(m);
 				$('#nodeMagnitude'+this.id).removeClass('M0 M1 M2 M3 M4 M5 M6 M7').addClass('M'+mi);
-				$('#nodeMagnitude'+this.id).attr('title',ThreatAssessment.descr[mi]);
+				$('#nodeMagnitude'+this.id).attr('title',Assessment.descr[mi]);
 				$('#nodeMagnitude'+this.id).show();
 			}
 			this.hidemarker();
@@ -662,8 +662,8 @@ Node.prototype = {
 		if (this.component==null) {
 			bugreport("Node's component has not been set","Node.addtonodeclusters");
 		}
-		for (const thid of Component.get(this.component).thrass) {
-			var ta = ThreatAssessment.get(thid);
+		for (const thid of Component.get(this.component).assmnt) {
+			var ta = Assessment.get(thid);
 			NodeCluster.addnode_threat(Project.cid,this.id,ta.title,ta.type);
 		}
 	},
@@ -1294,92 +1294,6 @@ function RefreshNodeReportDialog() {
  * looks for either equality or a cloud-type.
  *
  * usage:
- * 		var it = new NodeIterator({service: 1, type: 'tUNK'});
- * 		for (it.first(); it.notlast(); it.next()) {
- 			var rn_id = it.getnodeid();
- *			var rn = it.getnode();
- *	 		:
- *		}
- */
-//var NodeIterator = function(opt) {
-//	if (opt==null) opt = {};
-//	/* On initialisation, walk through the Node._all array and store all
-//	 * matching Nodes in this.item[].
-//	 */
-//	this.index = 0;
-//	this.item = [];
-//	for (var i in Node._all) {
-//		var rn = Node._all[i];
-//		if (opt.project!=undefined && rn.project!=opt.project) continue;
-//		if (opt.service!=undefined && rn.service!=opt.service) continue;
-//		if (opt.type!=undefined && rn.type!=opt.type) continue;
-//		if (opt.match!=undefined &&
-//			!(rn.type==opt.match
-//				|| rn.type=='tUNK'
-//				|| (rn.type!='tACT' && rn.type!='tNOT' && 'tUNK'==opt.match)
-//			)
-//		) continue;
-//		this.item.push(i);
-//	}
-//	if (opt.type=='tACT') bugreport('type-option Actor specified','NodeIterator');
-//	if (opt.match=='tACT') bugreport('match-option Actor specified','NodeIterator');
-//};
-//
-//NodeIterator.prototype = {
-//	first: function() {this.index=0;},
-//	next: function() {this.index++;},
-//	notlast: function() {return (this.index < this.item.length);},
-//	getnode: function() {return Node._all[ this.item[this.index] ];},
-//	getnodeid: function() {return this.item[this.index] ;},
-//	sortByName: function() {
-//		this.item.sort( function(a,b) {
-//			var na = Node.get(a);
-//			var nb = Node.get(b);
-//			var ta = na.title+na.suffix;
-//			var tb = nb.title+nb.suffix;
-//			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
-//		});
-//	},
-//	sortByType: function() {
-//		this.item.sort( function(a,b) {
-//			var na = Node.get(a);
-//			var nb = Node.get(b);
-//			if (na.type<nb.type)  return -1;
-//			if (na.type>nb.type)  return 1;
-//			// When types are equal, sort alphabetically
-//			var ta = na.title+na.suffix;
-//			var tb = nb.title+nb.suffix;
-//			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
-//		});
-//	},
-//	sortByLevel: function() {
-//		this.item.sort( function(a,b) {
-//			var na = Node.get(a);
-//			var nb = Node.get(b);
-//			var ca = Component.get(na.component);
-//			var cb = Component.get(nb.component);
-//			var va = ThreatAssessment.valueindex[ca.magnitude];
-//			var vb = ThreatAssessment.valueindex[cb.magnitude];
-//			if (va==1)  va=8; // Ambiguous
-//			if (vb==1)  vb=8;
-//			if (va!=vb)  return vb - va;
-//			// When levels are equal, sort alphabetically
-//			var ta = na.title+na.suffix;
-//			var tb = nb.title+nb.suffix;
-//			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
-//		});
-//	}
-//};
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * NodeIterator: iterate over all Node objects
- *
- * opt: object with options to restrict the iteration to specified items only.
- *		Specify project (ID), service (ID), type (string), and/or match (string).
- * Option 'match' is similar to 'type'; 'type' looks for equality, but 'match'
- * looks for either equality or a cloud-type.
- *
- * usage:
  * 		var it = new NodeIterator({service: '1', type: 'tUNK'});
  *		it.sortByLevel();
  * 		for (const node of it) {
@@ -1443,8 +1357,8 @@ class NodeIterator {
 		this.item.sort( function(na,nb) {
 			var ca = Component.get(na.component);
 			var cb = Component.get(nb.component);
-			var va = ThreatAssessment.valueindex[ca.magnitude];
-			var vb = ThreatAssessment.valueindex[cb.magnitude];
+			var va = Assessment.valueindex[ca.magnitude];
+			var vb = Assessment.valueindex[cb.magnitude];
 			if (va==1)  va=8; // Ambiguous
 			if (vb==1)  vb=8;
 			if (va!=vb)  return vb - va;

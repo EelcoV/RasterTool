@@ -3,15 +3,15 @@
  */
 
 /* globals
-bugreport, _, LS, Component, ComponentIterator, NodeClusterIterator, Transaction, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id
+bugreport, _, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- * ThreatAssessment: evaluation of a threat for some component or NodeCluster
+ * Assessment: evaluation of a vulnerability for some component or NodeCluster
  *
  * Class variables (those prefixed with underscore should not be accessed from outside)
- *	_all[]: all ThreatAssessment objects, indexed by id
+ *	_all[]: all Assessment objects, indexed by id
  *	values[]: array of possible values (single characters) for frequency and impact
  *	valueindex[]: reverse of values[].
  *	descr[]: textual description of each value-index.
@@ -23,13 +23,15 @@ bugreport, _, LS, Component, ComponentIterator, NodeClusterIterator, Transaction
  *	sum(a,b): returns the sum of two vulnerability levels (single characters)
  *	worst(a,b): synonym for sum().
  * Instance properties:
- *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK'
  *	id: UUID
+ *	vulnerability: Vulnerability-object associated with this assessment
  *	component: Component object to which this evaluation belongs (may be null).
  *	cluster: NodeCluster object to which this evaluation belongs (may be null).
  *	type: type of threat (type of Node to which this evaluation belongs)
- *	title: short name of the threat (50 chars max)
- *	description: description of the threat (100 chars max)
+ *	_title:
+ *	title (getter): short name of the threat (50 chars max)
+ *	_description:
+ *	description (getter): description of the threat (100 chars max)
  *	freq: frequency
  *	impact: magnitude of effects
  *  minimpact: minimum value for impact; if less than this, highlight the field.
@@ -58,22 +60,23 @@ bugreport, _, LS, Component, ComponentIterator, NodeClusterIterator, Transaction
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
  */
-var ThreatAssessment = function(type,id) {
+var Assessment = function(type,id) {
 	if (!id) {
-		console.warn("*** No id specified for new ThreatAssessment");
+		console.warn("*** No id specified for new Assessment");
 	}
-	if (id!=null && ThreatAssessment._all[id]!=null) {
-		bugreport("ThreatAssessment with id "+id+" already exists","ThreatAssessment.constructor");
+	if (id!=null && Assessment._all[id]!=null) {
+		bugreport("Assessment with id "+id+" already exists","Assessment.constructor");
 	}
 	if (type=='tACT' || type=='tUNK' || type=='tNOT') {
-		bugreport("ThreatAssessment with id "+id+" has illegal type "+type,"ThreatAssessment.constructor");
+		bugreport("Assessment with id "+id+" has illegal type "+type,"Assessment.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);
 	this.type = type;
+	this.vulnerability = null;
 	this.component = null;
 	this.cluster = null;
-	this.title = _("Vulnerability ")+this.id;
-	this.description = "";
+	this._title = null;
+	this._description = "";
 	this.freq='-';
 	this.impact='-';
 	this.minimpact='-';
@@ -82,12 +85,12 @@ var ThreatAssessment = function(type,id) {
 	this.remark="";
 	
 	this.store();
-	ThreatAssessment._all[this.id]=this;
+	Assessment._all[this.id]=this;
 };
-ThreatAssessment.get = function(id) { return ThreatAssessment._all[id]; };
-ThreatAssessment._all = new Object();
-ThreatAssessment.Clipboard = [];
-ThreatAssessment.values =[
+Assessment.get = function(id) { return Assessment._all[id]; };
+Assessment._all = new Object();
+Assessment.Clipboard = [];
+Assessment.values =[
 '-', // unspecified
 'A', // ambiguous
 'U', // extreme (ultra low)
@@ -97,16 +100,16 @@ ThreatAssessment.values =[
 'V', // extreme (very high)
 'X'  // unknown
 ];
-ThreatAssessment.valueindex = [];
-ThreatAssessment.valueindex['-']=0;
-ThreatAssessment.valueindex['A']=1;
-ThreatAssessment.valueindex['U']=2;
-ThreatAssessment.valueindex['L']=3;
-ThreatAssessment.valueindex['M']=4;
-ThreatAssessment.valueindex['H']=5;
-ThreatAssessment.valueindex['V']=6;
-ThreatAssessment.valueindex['X']=7;
-ThreatAssessment.descr = [
+Assessment.valueindex = [];
+Assessment.valueindex['-']=0;
+Assessment.valueindex['A']=1;
+Assessment.valueindex['U']=2;
+Assessment.valueindex['L']=3;
+Assessment.valueindex['M']=4;
+Assessment.valueindex['H']=5;
+Assessment.valueindex['V']=6;
+Assessment.valueindex['X']=7;
+Assessment.descr = [
 	_("Undetermined"),
 	_("Ambiguous"),
 	_("Extremely low"),
@@ -117,10 +120,10 @@ ThreatAssessment.descr = [
 	_("Unknown")
 ];
 /* Combine all risk factors into a combined total score for a single threat
- * ThreatAssessment.combine[freq][impact], where
- * freq and impact = ThreatAssessment.valueindex[...]
+ * Assessment.combine[freq][impact], where
+ * freq and impact = Assessment.valueindex[...]
  */
-ThreatAssessment.combinearr = [
+Assessment.combinearr = [
 /* 			 -	 A	 U	 L	 M	 H	 V	 X */
 /* '-' */ [	'-','A','-','-','-','-','-','-'],
 /* 'A' */ [	'A','A','A','A','A','A','A','A'],
@@ -131,17 +134,17 @@ ThreatAssessment.combinearr = [
 /* 'V' */ [	'-','A','A','V','V','V','V','X'],
 /* 'X' */ [	'-','A','X','X','X','X','X','X']
 ];
-ThreatAssessment.combine = function(a,b) {
-	return ThreatAssessment.combinearr[ThreatAssessment.valueindex[a]][ThreatAssessment.valueindex[b]];
+Assessment.combine = function(a,b) {
+	return Assessment.combinearr[Assessment.valueindex[a]][Assessment.valueindex[b]];
 };
 /* Combine two totals into an overall vulnerability score
- * For threats totals t0, t1, ..., tn the overall score is
- * ThreatAssessment.sum(tn, ThreatAssessment.sum(tn-1, ... (t1, t0)) ...)
+ * For assessment totals t0, t1, ..., tn the overall score is
+ * Assessment.sum(tn, Assessment.sum(tn-1, ... (t1, t0)) ...)
  * Score = t0 (+) t1 (+) ... (+) tn
  * a (+) b == b (+) a
  * 'U' (+) x == x
  */
-ThreatAssessment.sumarr = [
+Assessment.sumarr = [
 /* 			 -	 A	 U	 L	 M	 H	 V	 X*/
 /* '-' */ [	'-','A','U','L','M','H','V','X'],
 /* 'A' */ [	'A','A','A','A','A','A','V','A'],
@@ -152,12 +155,12 @@ ThreatAssessment.sumarr = [
 /* 'V' */ [	'V','V','V','V','V','V','V','V'],
 /* 'X' */ [	'X','A','X','X','X','X','V','X']
 ];
-ThreatAssessment.sum = function(a,b) {
-	return ThreatAssessment.sumarr[ThreatAssessment.valueindex[a]][ThreatAssessment.valueindex[b]];
+Assessment.sum = function(a,b) {
+	return Assessment.sumarr[Assessment.valueindex[a]][Assessment.valueindex[b]];
 };
-ThreatAssessment.worst = ThreatAssessment.sum;
+Assessment.worst = Assessment.sum;
 
-ThreatAssessment.autotitle = function(pid,newtitle) {
+Assessment.autotitle = function(pid,newtitle) {
 	// Non-greedy match for anything, optionally followed by space and digits between parentheses
 	let targettitle, n;
 	let res = newtitle.match(/^(.+?)( \((\d+)\))?$/);
@@ -171,38 +174,67 @@ ThreatAssessment.autotitle = function(pid,newtitle) {
 	targettitle = newtitle;
 	if (n>0)  targettitle = targettitle + ' (' + n + ')';
 	// Vulnerabilitiess must be unique within the project
-	while (ThreatAssessment.projecthastitle(pid,targettitle)!=-1) {
+	while (Assessment.projecthastitle(pid,targettitle)!=-1) {
 		n++;
 		targettitle = newtitle + ' (' + n + ')';
 	}
 	return targettitle;
 };
 
-ThreatAssessment.projecthastitle= function(pid,str) {
+Assessment.projecthastitle= function(pid,str) {
 	for (const ci in Component._all) {
 		let cm = Component.get(ci);
 		if (cm.project!=pid)  continue;
-		for (const ti of cm.thrass) {
-			let ta = ThreatAssessment.get(ti);
+		for (const ti of cm.assmnt) {
+			let ta = Assessment.get(ti);
 			if (isSameString(ta.title,str))  return ti;
 		}
 	}
 	return -1;
 };
 
-ThreatAssessment.prototype = {
+Assessment.prototype = {
 	destroy: function() {
-		localStorage.removeItem(LS + 'E:' + this.id);
+		localStorage.removeItem(LS + 'A:' + this.id);
 		if (Component.ThreatsComponent==this.component) {
 			$('#dth'+this.id).remove();
 		}
-		delete ThreatAssessment._all[this.id];
+		delete Assessment._all[this.id];
 	},
-	
+
+	get title() {
+		if (this.vulnerability) {
+			return Vulnerability.get(this.vulnerability).title;
+		} else {
+			return this._title;
+		}
+	},
+
+	get description() {
+		if (this.vulnerability) {
+			return Vulnerability.get(this.vulnerability).description;
+		} else {
+			return this._description;
+		}
+	},
+
+	get project() {
+		if (this.vulnerability) {
+			return Vulnerability.get(this.vulnerability).project;
+		} else {
+			return NodeCluster.get(this.cluster).project;
+		}
+	},
+
+	setvulnerability: function(vid) {
+		this.vulnerability = vid;
+		this.store();
+	},
+
 	setcomponent: function(id) {
 		this.component = id;
 		if (this.cluster!=null) {
-			bugreport("threat evaluation belongs to both a component and a NodeCluster", "ThreatAssessment.setcomponent");
+			bugreport("threat evaluation belongs to both a component and a NodeCluster", "Assessment.setcomponent");
 		}
 		this.store();
 	},
@@ -210,7 +242,7 @@ ThreatAssessment.prototype = {
 	setcluster: function(id) {
 		this.cluster = id;
 		if (this.component!=null) {
-			bugreport("threat evaluation belongs to both a component and a NodeCluster", "ThreatAssessment.setcluster");
+			bugreport("threat evaluation belongs to both a component and a NodeCluster", "Assessment.setcluster");
 		}
 		this.store();
 	},
@@ -224,17 +256,17 @@ ThreatAssessment.prototype = {
 			// If the component already contains a threat with title "t" and the same type,
 			// then silently revert to the old title.
 			var cm = Component.get(this.component);
-			for (const thid of cm.thrass) {
+			for (const thid of cm.assmnt) {
 				if (thid==this.id) continue;
-				var ta = ThreatAssessment.get(thid);
+				var ta = Assessment.get(thid);
 				// silently ignore
 				if (isSameString(ta.title,t) && ta.type==this.type)  return;
 			}
-//			NodeCluster.removecomponent_threat(Project.cid,this.component,this.title,this.type,true);
-			this.title = t;
+//			NodeCluster.removecomponent_assessment(Project.cid,this.component,this.title,this.type,true);
+			this._title = t;
 //			NodeCluster.addcomponent_threat(Project.cid,this.component,this.title,this.type,false);
 		} else {
-			this.title = t;
+			this._title = t;
 		}
 		this.store();
 	},
@@ -248,27 +280,31 @@ ThreatAssessment.prototype = {
 		}
 	},
 
-	setdescription: function(t) {
-		this.description = trimwhitespace(String(t)).substr(0,100);
+	setdescription: function(str) {
+		str = trimwhitespace(String(str)).substr(0,100);
+		// Silently ignore an attempt to set a blank title
+		if (str=="")  return;
+
+		this._description = str;
 		this.store();
 	},
 
 	setfreq: function(v) {
-		this.freq = (ThreatAssessment.values.indexOf(v)>-1 ? v : 'X');
+		this.freq = (Assessment.values.indexOf(v)>-1 ? v : 'X');
 		this.computetotal();
 		this.store();
 	},
 
 	setimpact: function(v) {
-		this.impact = (ThreatAssessment.values.indexOf(v)>-1 ? v : 'X');
+		this.impact = (Assessment.values.indexOf(v)>-1 ? v : 'X');
 		this.computetotal();
 		this.store();
 	},
 
 	setminimpact: function(v) {
-		this.minimpact = (ThreatAssessment.values.indexOf(v)>-1 ? v : 'X');
+		this.minimpact = (Assessment.values.indexOf(v)>-1 ? v : 'X');
 		if (this._impactoid!=null) {
-			if (this.impact!='-' && ThreatAssessment.sum(this.minimpact,this.impact) != this.impact) {
+			if (this.impact!='-' && Assessment.sum(this.minimpact,this.impact) != this.impact) {
 				$(this._impactoid).addClass('errImpact errImpact'+this.minimpact);
 			} else {
 				$(this._impactoid).removeClass();
@@ -288,18 +324,18 @@ ThreatAssessment.prototype = {
 			// Find the impact for this cluster's vulnerability in the component of the node
 			var cm = Component.get( Node.get(cid).component );
 			var t;
-			for (var j=0; j<cm.thrass.length; j++) {
-				t = ThreatAssessment.get(cm.thrass[j]);
+			for (var j=0; j<cm.assmnt.length; j++) {
+				t = Assessment.get(cm.assmnt[j]);
 				if (isSameString(t.title,rc.title) && t.type==rc.type) break;
 			}
-			if (j==cm.thrass.length) {
+			if (j==cm.assmnt.length) {
 				bugreport("Vulnerability not found", "computeminimpact");
 			}
 			if (t.impact == highscore) {
 				// Add to the list
 				highnodes.push(cid);
 			// only for 'real' impact values
-			} else if ("ULMHV".indexOf(t.impact)!=-1 && ThreatAssessment.sum(highscore,t.impact) != highscore) {
+			} else if ("ULMHV".indexOf(t.impact)!=-1 && Assessment.sum(highscore,t.impact) != highscore) {
 				highscore = t.impact;
 				highnodes = [ cid ];
 			}
@@ -309,7 +345,7 @@ ThreatAssessment.prototype = {
 	},
 
 	computetotal: function() {
-		this.total = ThreatAssessment.combine(this.freq,this.impact);
+		this.total = Assessment.combine(this.freq,this.impact);
 		if (this.component!=null) {
 			Component.get(this.component).calculatemagnitude();
 		}
@@ -369,13 +405,13 @@ ThreatAssessment.prototype = {
 		}
 		
 		var selectoptions = '';
-		for (var i=0; i<ThreatAssessment.values.length; i++) {
+		for (var i=0; i<Assessment.values.length; i++) {
 			if (selectoptions!='')  selectoptions += ',';
 			selectoptions += '_L_ _D_:_L_';
-			selectoptions = selectoptions.replace(/_L_/g, ThreatAssessment.values[i]);
-			selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
+			selectoptions = selectoptions.replace(/_L_/g, Assessment.values[i]);
+			selectoptions = selectoptions.replace(/_D_/g, Assessment.descr[i]);
 		}
-		var te = this;
+		var assmnt = this;
 		var c;
 
 		if (this.component==null && this.cluster==null) {
@@ -394,10 +430,49 @@ ThreatAssessment.prototype = {
 			$('#dthE_'+prefix+'name'+this.id).editInPlace({
 				bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 				callback: function(oid, enteredText) {
-					var old_t = te.title;
-//					te.settitle(enteredText);
-					globalChangeThreatOrDescription(Project.cid, te.type, old_t, enteredText, null, null);
-					return H(te.title);
+					let vln = Vulnerability.get(assmnt.vulnerability);
+					let it = new VulnerabilityIterator({project: vln.project, type: vln.type, title: enteredText});
+					if (it.count()==0) {
+						new Transaction('vulnDetails',
+							[{vuln: vln.id, title: vln.title}],
+							[{vuln: vln.id, title: enteredText}],
+							_("Rename vulnerability")
+						);
+					} else {
+						let other = it.first();
+						let cm = Component.get(assmnt.component);
+						let cmas_other = null;
+						for (const aid of cm.assmnt) {
+							let a = Assessment.get(aid);
+							if (a.vulnerability==other.id) cmas_other = a;
+						}
+						// Skip renaming if the new vulnerability already exists on an assessment for this component
+						if (cmas_other==null) {
+							// Chain iff the old vulnerability is unused after the swap *and* is custom.
+							// That happens when it is only used once (namely on this component).
+							let vlnit = new AssessmentIterator({vuln: vln.id, ofcomponent: true});
+							let chain = (vlnit.count()==1 && !vln.common);
+							let actiondescr = _("Remove vulnerability '%%'",vln.title);
+							new Transaction('assessmentDetails',
+								[{assmnt: assmnt.id, vuln: vln.id}],
+								[{assmnt: assmnt.id, vuln: other.id}],
+								actiondescr,chain);
+							if (chain) {
+								let p = Project.get(vln.project);
+								let it = new NodeClusterIterator({project: p.id, isroot: true, type: vln.type, title: vln.title});
+								if (it.count()!=1) {
+									bugreport("No or too many node clusters","Assessment rename callback");
+								}
+								let cl = it.first();
+								let do_data = {create: false, id: vln.id};
+								let undo_data = {create: true, id: vln.id, project: p.id, type: vln.type, title: vln.title, description: vln.description,
+									common: false, cluster: cl.id, cla: cl.assmnt
+								};
+								new Transaction('vulnCreateDelete', undo_data, do_data, actiondescr);
+							}
+						}
+					}
+					return H(vln.title);
 				}
 			});
 		}
@@ -407,9 +482,9 @@ ThreatAssessment.prototype = {
 			select_options: selectoptions,
 			select_text: "",
 			callback: function(oid, enteredText) {
-				new Transaction('threatAssessDetails',
-					[{threat: te.id, freq: te.freq}],
-					[{threat: te.id, freq: enteredText}],
+				new Transaction('assessmentDetails',
+					[{assmnt: assmnt.id, freq: assmnt.freq}],
+					[{assmnt: assmnt.id, freq: enteredText}],
 					_("Edit frequency")
 				);
 				return '<span>'+enteredText+'</span>';
@@ -425,16 +500,16 @@ ThreatAssessment.prototype = {
 			save_if_nothing_changed: true, // make sure callback is called even if no change
 			preinit: function() {
 				// Add a hint: the impact probably should be at least that of the highest impact of its member nodes.
-				var highnodes = te.computeminimpact();
+				var highnodes = assmnt.computeminimpact();
 
 				$(this).removeClass();
 				$(this).addClass('th_impact th_col');
 				// Only warn of the impact should be at least Medium
-				if ("MHV".indexOf(te.minimpact)==-1)  return;
+				if ("MHV".indexOf(assmnt.minimpact)==-1)  return;
 
 				var str;
 				str  = _("The impact should be at least %%, because the following nodes have that impact for single failures.",
-					ThreatAssessment.descr[ThreatAssessment.valueindex[te.minimpact]] );
+					Assessment.descr[Assessment.valueindex[assmnt.minimpact]] );
 				str += '<br><ul>\n';
 
 				for (var j=0; j<highnodes.length; j++) {
@@ -469,9 +544,9 @@ ThreatAssessment.prototype = {
 				$('#outerimpacthint').hide();	// When editing impact of CCFs
 			},
 			callback: function(oid, enteredText) {
-				new Transaction('threatAssessDetails',
-					[{threat: te.id, impact: te.impact}],
-					[{threat: te.id, impact: enteredText}],
+				new Transaction('assessmentDetails',
+					[{assmnt: assmnt.id, impact: assmnt.impact}],
+					[{assmnt: assmnt.id, impact: enteredText}],
 					_("Edit impact")
 				);
 				return '<span>'+enteredText+'</span>';
@@ -482,52 +557,74 @@ ThreatAssessment.prototype = {
 			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
 			default_text: '-',
 			callback: function(oid, enteredText) {
-				new Transaction('threatAssessDetails',
-					[{threat: te.id, remark: te.remark}],
-					[{threat: te.id, remark: enteredText}],
+				new Transaction('assessmentDetails',
+					[{assmnt: assmnt.id, remark: assmnt.remark}],
+					[{assmnt: assmnt.id, remark: enteredText}],
 					_("Edit remark")
 				);
-				return H(te.remark);
+				return H(assmnt.remark);
 			}
 		});
 	
 		if (interact) {
 			$('#dth_'+prefix+"del"+this.id).on('click',  function() {
-				let th = ThreatAssessment.get(nid2id(this.id));
-				let c;
-				if (th.component!=null) {
-					c = Component.get(th.component);
+				let assmnt = Assessment.get(nid2id(this.id));
+				let cm;
+				if (assmnt.component!=null) {
+					cm = Component.get(assmnt.component);
 				} else {
-					bugreport("Was expecting a Component","ThreatAssessment.addtablerow");
+					bugreport("Was expecting a Component","Assessment.addtablerow");
 				}
-				var idx = c.thrass.indexOf(th.id);
+				var idx = cm.assmnt.indexOf(assmnt.id);
 				var dokill = function() {
 					// Locate the corresponding cluster in the project.
 					// There should be exactly one.
-					let it = new NodeClusterIterator({project: c.project, isroot: true, type: th.type, title: th.title});
+					let it = new NodeClusterIterator({project: c.project, isroot: true, type: assmnt.type, title: assmnt.title});
 					let nc = it.first();
-					new Transaction('threatAssessCreate',
-						[{component: c.id,
-						  threat: th.id,
-						  index: idx,
-						  type: th.type,
-						  title: th.title,
-						  description: th.description,
-						  remark: th.remark,
-						  freq: th.freq,
-						  impact: th.impact,
+					let vln = Vulnerability.get(assmnt.vulnerability);
+					it = new AssessmentIterator({vuln: vln.id, ofcomponent: true});
+					let chain = false;
+					if (!vln.common && it.count()==1) chain = true;  // Deleting the last assessment for a custom vulnerability
+					let actiondescr = _("Remove vulnerability '%%'",assmnt.title);
+					new Transaction('assessmentCreateDelete',{
+						  create: true,
+						  vuln: assmnt.vulnerability,
+						  assmnt: [{
+							  id: assmnt.id,
+							  component: cm.id,
+							  index: idx,
+							  remark: assmnt.remark,
+							  freq: assmnt.freq,
+							  impact: assmnt.impact
+						    }],
 						  clid: nc.id,
-						  thrid: nc.thrass,
 						  cluster: nc.structure()
-						}],
-						[{component: c.id, threat: th.id}],
-						_("Remove vulnerability '%%'",th.title)
+						},{
+						  create: false,
+						  vuln: assmnt.vulnerability,
+						  assmnt: [{
+							  id: assmnt.id
+						    }],
+						  clid: nc.id
+						},
+						actiondescr,
+						chain
 					);
+					if (chain) {
+						// Also delete the custom vulnerability
+						new Transaction('vulnCreateDelete',{
+							create: true, id: vln.id,
+							project: vln.project, type: vln.type, title: vln.title, description: vln.description,
+							common: false, cluster: nc.id, cla: nc.assmnt
+						},{
+							create: false, id: vln.id
+						},actiondescr);
+					}
 				};
 				newRasterConfirm(_("Delete vulnerability?"),
 					_("Vulnerabilities should only be deleted when physically impossible.")+
 					'<br>\n'+
-					_("Are you sure that '%%' for '%%' is nonsensical?", H(th.title),H(c.title)),
+					_("Are you sure that '%%' for '%%' is nonsensical?", H(assmnt.title),H(cm.title)),
 					_("It's impossible"),_("Cancel")
 				).done(dokill);
 			});
@@ -535,10 +632,17 @@ ThreatAssessment.prototype = {
 	},
 
 	get toobject() {
+		let it = new NodeClusterIterator({project: this.project, isroot: true, type: this.type, title: this.title});
+		let nc = it.first();
 		return {
 			id: this.id,
-			title: this.title,
 			type: this.type,
+			vulnerability: this.vulnerability,
+			common: (this.vulnerability!=null && Vulnerability.get(this.vulnerability).common),
+			clid: nc.id,
+			cla: nc.assmnt,
+			project: this.project,
+			title: this.title,
 			description: this.description,
 			freq: this.freq,
 			impact: this.impact,
@@ -549,10 +653,11 @@ ThreatAssessment.prototype = {
 	_stringify: function() {
 		var data = {};
 		data.t=this.type;
+		data.v=this.vulnerability;
 		data.m=this.component;
 		data.u=this.cluster;
-		data.l=this.title;
-		data.d=this.description;
+		data.l=this._title;
+		data.d=this._description;
 		data.p=this.freq;
 		data.i=this.impact;
 		// this.minimpact does not need to be stored, but is recomputed.
@@ -561,244 +666,54 @@ ThreatAssessment.prototype = {
 	},
 	
 	exportstring: function() {
-		var key = LS+'E:'+this.id;
+		var key = LS+'A:'+this.id;
 		return key + '\t' + this._stringify() + '\n';
 	},
 	
 	store: function() {
-		var key = LS+'E:'+this.id;
+		var key = LS+'A:'+this.id;
 		localStorage[key] = this._stringify();
 	}
 };
 
-function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
-	new Transaction('threatRename',
-		[{project: pid, type: typ, new_t: old_t, old_t: new_t, new_d: old_d, old_d: new_d}],
-		[{project: pid, type: typ, old_t: old_t, new_t: new_t, old_d: old_d, new_d: new_d}],
-		_("Edit threat")
-	);
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * Threat: sample threat in a checklist.
- *
- * Class variables (those prefixed with underscore should not be accessed from outside)
- *	_all[]: all Threat objects, indexed by id
- *	get(i): returns the object with id 'i'.
- * Instance properties:
- *	type: one of 'tWLS','tWRD','tEQT'. Actors and unknown links don't have threats.
- *	id: UUID.
- *	project: ID of the project to which this threat belongs.
- *	title: short name of the threat.
- *	description: description of the threat.
- * Methods:
- *	destroy: destructor.
- *	setproject(p): sets the project to 'p'.
- *	settitle(str): sets the short name text to 'str'.
- *	addtablerow(oid): append a table row to HTML element 'oid', including interactions.
- *	setdescription(str): sets the full description text to 'str'.
- *	_stringify: create a JSON text string representing this object's data.
- *	exportstring: return a line of text for insertion when saving this file.
- *	store(): store the object into localStorage.
- */
-var Threat = function(pid,type,id) {
-	if (!id) {
-		console.warn("*** No id specified for new Threat");
-	}
-	if (id!=null && Threat._all[id]!=null) {
-		bugreport("Vulnerability with id "+id+" already exists","Threat.constructor");
-	}
-	this.id = (id==null ? createUUID() : id);
-	this.type = type;
-	this.project = pid;
-	this.title = _("Vulnerability ")+this.id;
-	this.description = _("Description vulnerability ")+this.id;
-	
-	this.store();
-	Threat._all[this.id]=this;
-};
-Threat.get = function(id) { return Threat._all[id]; };
-Threat._all = new Object();
-Threat.autotitle = function(pid,type,newtitle) {
-	if (!newtitle)  newtitle = Rules.nodetypes[type];
-	let p = Project.get(pid);
-	let targettitle = newtitle;
-	let n = 0;
-	while (p.threats.some(t => (Threat.get(t).title==targettitle))) {
-		targettitle = newtitle + ' (' + (++n) + ')';
-	}
-	return targettitle;
-};
-
-Threat.prototype = {
-	destroy: function() {
-		localStorage.removeItem(LS + 'T:' + this.id);
-		$('#threat'+this.id).remove();
-		delete Threat._all[this.id];
-	},
-	
-	setproject: function(p) {
-		this.project = p;
-		this.store();
-	},
-
-	settitle: function(t) {
-		t = trimwhitespace(String(t)).substr(0,50);
-		// Silently ignore a blank title
-		if (t=="")  return;
-
-		// See if this title already exists. If so, silently ignore
-		var it = new ThreatIterator(this.project,this.type);
-		for (const th of it) {
-			if (th.id==this.id) continue;
-			if (isSameString(th.title,t))  return;
-		}
-		// There should be a root cluster with the old title. Change that as well
-		it = new NodeClusterIterator({project: this.project, isroot: true, type: this.type});
-		for (const nc of it) {
-			if (!isSameString(nc.title,this.title))  continue;
-			nc.settitle(t);
-		}
-		this.title = t;
-		this.store();
-	},
-
-	addtablerow: function(oid) {
-		var snippet = '<div id="threat_TI_" class="threat">\
-			<div id="thname_TI_" class="th_col th_name"><span>_TN_</span></div>\
-			<div id="thdesc_TI_" class="th_col th_descr"><span>_TD_</span></div>\
-			<div class="th_col th_del"><input id="thdel_TI_" type="button" value="&minus;"></div>\
-			</div>\n';
-		snippet = snippet.replace(/_TI_/g, this.id);
-		snippet = snippet.replace(/_TT_/g, Rules.nodetypes[this.type]);
-		snippet = snippet.replace(/_TN_/g, H(this.title));
-		snippet = snippet.replace(/_TD_/g, H(this.description));
-		$(oid).append(snippet);
-		$('#thdel'+this.id).button();
-		$('#thdel'+this.id).removeClass('ui-corner-all').addClass('ui-corner-right');
-	
-		$('#thname'+this.id).editInPlace({
-			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
-			callback: function(domid, enteredText) { 
-				var th = Threat.get( nid2id(domid) );
-				var old_t = th.title;
-//				th.settitle(enteredText);
-				globalChangeThreatOrDescription(th.project, th.type, old_t, enteredText, null, null);
-				return H(th.title);
-			}
-		});
-		$('#thdesc'+this.id).editInPlace({
-			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
-			callback: function(domid, enteredText) { 
-				var th = Threat.get( nid2id(domid) );
-				var old_d = th.description;
-//				th.setdescription(enteredText);
-				globalChangeThreatOrDescription(th.project, th.type, null, null, old_d, enteredText);
-				return H(th.description);
-			}
-		});
-		$('#thdel'+this.id).on('click',  function() {
-			let th = Threat.get(nid2id(this.id));
-			newRasterConfirm(_("Delete vulnerability?"),
-				_("Do you want to delete the vulnerability '%%' for <i>all current</i> and future %% nodes?", H(th.title), Rules.nodetypes[th.type]),
-				_("Remove"),_("Cancel")
-			)
-			.done(function() {
-				let p = Project.get(Project.cid);
-				let undo_data = [];
-				let do_data = [];
-				let it = new NodeClusterIterator({project: Project.cid, isroot: true, type: th.type, title: th.title});
-				if (it.count()!=1) {
-					bugreport("No or too many node clusters","threat delete");
-				}
-				let cl = it.first();
-				let ta = ThreatAssessment.get(cl.thrass);
-
-				do_data.push({create: false, project: p.id, threat: th.id, cluster: cl.id});
-				undo_data.push({create: true, project: p.id,
-					threat: th.id,
-					index: p.threats.indexOf(th.id),
-					type: th.type,
-					title: th.title,
-					description: th.description,
-					cluster: cl.id,
-					clusterthrid: cl.thrass,
-					tdescription: ta.description,
-					remark: ta.remark,
-					freq: ta.freq,
-					impact: ta.impact
-				});
-
-				it = new ComponentIterator({project: th.project, match: th.type});
-				for (const cm of it) {
-					for (let i=0; i<cm.thrass.length; i++) {
-						let ta = ThreatAssessment.get(cm.thrass[i]);
-						if (!isSameString(th.title,ta.title))  continue;
-						do_data.push({create: false, component: cm.id, threat: ta.id});
-						undo_data.push({create: true,
-							component: cm.id,
-							threat: ta.id,
-							index: i,
-							title: ta.title,
-							type: ta.type,
-							description: ta.description,
-							freq: ta.freq,
-							impact: ta.impact,
-							remark: ta.remark
-						});
-					}
-				}
-
-				new Transaction('threatCreate', undo_data, do_data, _("Remove vulnerability '%%'",cl.title));
-			});
-		});
-	},
-
-	setdescription: function(t) {
-		this.description = trimwhitespace(String(t)).substr(0,100);
-		this.store();
-	},
-
-	_stringify: function() {
-		var data = {};
-		data.t=this.type;
-		data.l=this.title;
-		data.d=this.description;
-		data.p=this.project;
-		return JSON.stringify(data);
-	},
-	
-	exportstring: function() {
-		var key = LS+'T:'+this.id;
-		return key + '\t' + this._stringify() + '\n';
-	},
-	
-	store: function() {
-		var key = LS+'T:'+this.id;
-		localStorage[key] = this._stringify();
-	}
-};
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * ThreatIterator: iterate over all threats for a project of a certain type
+//function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
+//	new Transaction('threatRename',
+//		[{project: pid, type: typ, new_t: old_t, old_t: new_t, new_d: old_d, old_d: new_d}],
+//		[{project: pid, type: typ, old_t: old_t, new_t: new_t, old_d: old_d, new_d: new_d}],
+//		_("Rename vulnerability")
+//	);
+//}
+//
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * AssessmentIterator: iterate over certain assessments
  *
  * usage:
- * 		var it = new ThreatIterator(project,type);
- * 		for (it.first(); it.notlast(); it.next()) {
- *			var th = it.getthreat();
+ * 		var it = new AssessmentIterator({project: pid});
+ *		it.sortByType();
+ * 		for (const ass of it) {
+ *			console.log(as.id);
  *	 		:
  *		}
+ * Options:
+ *	project: project id equals value
+ *	type: type equals value
+ *	match: type matches value (equal to value OR value equals 'tUNK')
+ *	title: title equals value (case insensitive)
+ *	vuln: vulnerability equals value
+ *	ofcomponent: (boolean) whether or not this assessment belongs to a component
  */
-class ThreatIterator {
-	constructor(pid,t) {
+class AssessmentIterator {
+	constructor(opt) {
 		this.item = [];
-		for (var i in Threat._all) {
-			let th = Threat.get(i);
-			if (th.project==pid
-				&& (t=='tUNK' || t==th.type)
-			) {		// eslint-disable-line brace-style
-				this.item.push(th);
-			}
+		for (var i in Assessment._all) {
+			let ass = Assessment.get(i);
+			if (opt && opt.project!=undefined && ass.project!=opt.project)  continue;
+			if (opt && opt.type!=undefined && ass.type!=opt.type)  continue;
+			if (opt && opt.match!=undefined && ass.type!=opt.match && opt.match!='tUNK')  continue;
+			if (opt && opt.vuln!=undefined && ass.vulnerability!=opt.vuln)  continue;
+			if (opt && opt.title!=undefined && !isSameString(ass.title,opt.title))  continue;
+			if (opt && opt.ofcomponent!=undefined && opt.ofcomponent!=(ass.component!=null))  continue;
+			this.item.push(ass);
 		}
 	}
 
@@ -811,7 +726,10 @@ class ThreatIterator {
 	count() {
 		return this.item.length;
 	}
-	
+
+	first() {
+		return this.item[0];
+	}
 
 	sortByType() {
 		this.item.sort( function(ta,tb) {

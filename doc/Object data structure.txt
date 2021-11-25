@@ -12,11 +12,19 @@ Project
 .threats[i]		(internal)				.t   (careful: also used for 'type')
 
 Threat
-.id				creator(type,th.id)		key raster:<version>:T:<th.id>
+.id				creator(p.id,type,th.id)		key raster:<version>:T:<th.id>
 .project		setproject(p.id)		.p
 .type			creator(type,th.id)		.t
 .title			settitle(str)			.l
 .description	setdescription(str)		.d
+
+Vulnerability
+.id				creator(pid,type,vid)	key raster:<version>:V:<vid>
+.project		creator(pid,type,vid)	.p
+.type			creator(pid,type,vid)	.t
+.title			settitle(str)			.l
+.description	setdescription(str)		.d
+.common			setcommon(b)			.c
 
 Service
 .id				creator(s.id)			key raster:<version>:S:<s.id>
@@ -43,7 +51,7 @@ Component
 .id				creator(type,ct.id)		key raster:<version>:C:<ct.id>
 .type			creator(type,n.id)		.t
 .project		setproject(p.id)		.p
-.thrass[]		(internal)				.e
+.assmnt[]		(internal)				.e
 .title			settitle(str)			.l
 .nodes[]		addnode(n.id)			.n
 .single			setsingle				.s
@@ -57,12 +65,24 @@ NodeCluster		creator(type,cl.id)		key raster:<version>:L:<ct.id>
 .parentcluster							.u	// u = up
 .childclusters[]						.c	// c = child
 .childnodes[]							.n	// n = nodes
-.thrass									.e
+.assmnt									.e
 .accordionopened setaccordionopened(b)	.o
 
-ThreatAssessment
+ThreatAssessment (used to be ThreatEvaluation)
 .id				creator(type,te.id)		key raster:<version>:E:<te.id>
 .type			creator(type,te.id)		.t
+.component		setcomponent(n.id)		.m
+.cluster		setcluster(f.id)		.u
+.title			settitle(str)			.l
+.description	setdescription(str)		.d
+.freq			setfreq(str)			.p
+.impact			setimpact(str)			.i
+.remark			setremark(str)			.r
+
+Assessment
+.id				creator(type,as.id)		key raster:<version>:A:<as.id>
+.type			creator(type,as.id)		.t
+.vulnerability	setvulnerability(vid)	.v
 .component		setcomponent(n.id)		.m
 .cluster		setcluster(f.id)		.u
 .title			settitle(str)			.l

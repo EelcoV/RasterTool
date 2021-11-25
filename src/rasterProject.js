@@ -3,7 +3,7 @@
  */
 
 /* global
- Component, ComponentIterator, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Threat, Threat, ThreatAssessment, ThreatIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, trimwhitespace, urlEncode
+ Component, ComponentIterator, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, trimwhitespace, urlEncode
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -29,7 +29,7 @@
  *  shared: (boolean) true iff the project is shared, and stored on the server.
  *	description: free-form description (max 100 chars).
  *	services[]: list of service IDs of all services belonging to this project. Empty for stubs.
- *	threats[]: list of all checklist threats belonging to this project. Empty for stubs.
+ *	vulns[]: list of all common Vulnerabilities belonging to this project, in UI order. Empty for stubs.
  *	labels[]: list of all label strings.
  *	creator: (string) creator, as returned by the server. Only used for stubs.
  *	date: (string) date, as returned by the server. Only used for stubs.
@@ -48,13 +48,13 @@
  *		Either settitle() or autosettitle() must be called.
  *	addservice(id,idx): add an existing Service object to this project, at position idx.
  *	removeservice(id): remove and destroy a Service object from this project.
- *  addthreat(id,clid,clthrid,idx): add a checklist threat to the project, including id of new root cluster,
- *		id of the threatassessment of that cluster, and the index of the threat within threats[].
- *	removethreat(id): remove a checklist threat from the project.
- *  defaultthreatdata(t): returns do/undo data for default threats of type t.
+ *  addvulnerability(id,clid,clthrid,idx): add a common vulnerability to the project, including id of new root cluster,
+ *		id of the assessment of that cluster, and the index of the vulnerability within vulns[].
+ *	removevulnerability(id): remove acommon vulnerability from the project.
+ *  defaultassessmentdata(t): returns do/undo data for common vulnerabilities of type t.
  *	unload(): remove all DOM elements for this project.
  *	load(): create and set all DOM elements for this project.
- *	adddefaultthreats: add the predefined checklist threats to this project.
+ *	adddefaultvulns: add the predefined checklist vulnerabilities to this project.
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
@@ -74,7 +74,7 @@ var Project = function(id,asstub) {
 	this.group = ToolGroup;
 	this.description = "";
 	this.services = [];
-	this.threats = [];
+	this.vulns = [];
 	this.labels = Project.defaultlabels;
 	this.creator = "";
 	this.date = "";
@@ -150,7 +150,7 @@ Project.cid = 0;
 Project._all =new Object();
 Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Pink"), _("Purple"), _("Grey")];
 Project.colors = ["none","red","orange","yellow","green","blue","pink","purple","grey"];
-Project.defaultThreats = [		// eslint-disable-line no-unused-vars
+Project.defaultVulnerabilities = [		// eslint-disable-line no-unused-vars
 	/* [ type , title , description ] */
 	["tWLS",_("Interference"),		_("Unintentional interference by a radio source using the same frequency band.")],
 	["tWLS",_("Jamming"),			_("Intentional interference by some third party.")],
@@ -235,8 +235,8 @@ Project.merge = function(intoproject,otherproject) {
 			// unless it is the first node in the singular class.
 			if (cm.single && cm.nodes[0]!=rn.id) continue;
 
-			for (var j=0; j<cm.thrass.length; j++) {
-				var ta = ThreatAssessment.get(cm.thrass[j]);
+			for (var j=0; j<cm.assmnt.length; j++) {
+				var ta = Assessment.get(cm.assmnt[j]);
 				// During absorbe() in the loop above rn may already have been added to the
 				// node clusters. Therefore, duplicateok==true in this call.
 				NodeCluster.addnode_threat(intoproject.id,rn.id,ta.title,ta.type,true);
@@ -423,7 +423,7 @@ Project.getProps = function(pname,doWhenReady) {
 
 Project.prototype = {
 	destroy: function() {
-		for (const thid of this.threats) Threat.get(thid).destroy();
+		for (const vid of this.vulns) Vulnerability.get(vid).destroy();
 		for (const sid of this.services) Service.get(sid).destroy();
 		var it = new NodeClusterIterator({project: this.id});
 		for (const nc of it) {
@@ -434,10 +434,11 @@ Project.prototype = {
 	},
 	
 	totalnodes: function() {
-		var total=0;
-		var it = new NodeIterator({project: this.id});
-		for (const rn of it) total++;		// eslint-disable-line no-unused-vars
-		return total;
+//		var total=0;
+		let it = new NodeIterator({project: this.id});
+//		for (const rn of it) total++;		// eslint-disable-line no-unused-vars
+//		return total;
+		return it.count();
 	},
 	
 	settitle: function(newtitle) {
@@ -511,64 +512,64 @@ Project.prototype = {
 		this.store();
 	},
 
-	addthreat: function(id,clid,thrid,idx) {
+	addvulnerability: function(vid,clid,thrid,idx) {
 		if (!clid)  clid = createUUID();
 		if (!thrid)  thrid = createUUID();
-		if (idx==null)  idx = this.threats.length;
-		var th = Threat.get(id);
-		if (this.threats.indexOf(th.id)!=-1) {
-			bugreport("threat already added","Project.addthreat");
+		if (idx==null)  idx = this.vulns.length;
+		if (this.vulns.indexOf(vid)!=-1) {
+			bugreport("vulnerability already added","Project.addvulnerability");
 		}
-		th.setproject(this.id);
-//		this.threats.push(th.id);
-		this.threats.splice(idx,0,th.id);
+		let vln = Vulnerability.get(vid);
+		vln.project = this.id;
+		vln.setcommon(true);
+		this.vulns.splice(idx,0,vln.id);
 		this.store();
 
-		// Make sure that the project has a rootcluster for this threat
-		let it = new NodeClusterIterator({project: this.id, title: th.title, type: th.type, isroot: true});
+		// Make sure that the project has a rootcluster for this vulnerability
+		let it = new NodeClusterIterator({project: this.id, title: vln.title, type: vln.type, isroot: true});
 		if (it.count()==0) {
-			let nc = new NodeCluster(th.type,clid);
+			let nc = new NodeCluster(vln.type,clid);
 			nc.setproject(this.id);
-			nc.settitle(th.title);
-			nc.addthrass(thrid);
+			nc.settitle(vln.title);
+			nc.addassessment(thrid);
+			Assessment.get(thrid).setvulnerability(vid);
 		}
 	},
 	
-	removethreat: function(id) {
-		var th = Threat.get(id);
-		if (this.threats.indexOf(th.id)==-1) {
-			bugreport("no such threat","Project.removethreat");
+	removevulnerability: function(id) {
+		let loc = this.vulns.indexOf(id);
+		if (loc==-1) {
+			bugreport("no such vulnerability","Project.removevulnerability");
 		}
-		this.threats.splice( this.threats.indexOf(th.id),1 );
-		th.destroy();
+		this.vulns.splice(loc,1);
+		let vln = Vulnerability.get(id);
+		vln.setcommon(false);
 		this.store();
 	},
 	
-	adddefaultthreats: function() {
-		for (const dt of Project.defaultThreats) {
-			var th = new Threat(this.id,dt[0],createUUID());
-			th.settitle(dt[1]);
-			th.setdescription(dt[2]);
-			this.addthreat(th.id,createUUID(),createUUID());
+	adddefaultvulns: function() {
+		for (const dv of Project.defaultVulnerabilities) {
+			let vln = new Vulnerability(this.id,dv[0],createUUID());
+			vln.settitle(dv[1]);
+			vln.setdescription(dv[2]);
+			this.addvulnerability(vln.id,createUUID(),createUUID());
 		}
 	},
 
-	defaultthreatdata: function(typ) {
-		let thr = [];
-		for (const thid of this.threats) {
-			var th = Threat.get(thid);
-			if (th.type!=typ && typ!='tUNK') continue;
-			thr.push({
+	defaultassessmentdata: function(typ) {
+		let arr = [];
+		let it = new VulnerabilityIterator({project: this.id, match: typ, common: true});
+		for (const vln of it) {
+			arr.push({
 				id: createUUID(),
-				title: th.title,
-				type: th.type,
-				description: th.description,
+				type: vln.type,
+				vulnerability: vln.id,
 				freq: '-',
 				impact: '-',
 				remark: ''
 			});
 		}
-		return thr;
+		return arr;
 	},
 
 	seticonset: function(iconset) {
@@ -586,17 +587,17 @@ Project.prototype = {
 
 	load: function() {
 		for (const sid of this.services) Service.get(sid).load();
-		for (const thid of this.threats) {
-			var th = Threat.get(thid);
-			switch (th.type) {
+		for (const vid of this.vulns) {
+			let vln = Vulnerability.get(vid);
+			switch (vln.type) {
 			case 'tWLS':
-				th.addtablerow('#tWLSthreats');
+				vln.addtablerow('#tWLSthreats');
 				break;
 			case 'tWRD':
-				th.addtablerow('#tWRDthreats');
+				vln.addtablerow('#tWRDthreats');
 				break;
 			case 'tEQT':
-				th.addtablerow('#tEQTthreats');
+				vln.addtablerow('#tEQTthreats');
 				break;
 			default:
 				bugreport('unknown type encountered','Project.load'); 
@@ -616,11 +617,11 @@ Project.prototype = {
 			$('#tEQTthreats .threat').each( function(index,elem) {
 				newlist.push( nid2id(elem.id) );
 			});
-			if (newlist.length != p.threats.length) {
+			if (newlist.length != p.vulns.length) {
 				bugreport("internal error in sorting default vulnerabilities","Project.load");
 			}
-			new Transaction('threatReorder',
-				{project: pid, list: p.threats},
+			new Transaction('vulnsReorder',
+				{project: pid, list: p.vulns},
 				{project: pid, list: newlist},
 				_("Reorder vulnerabilities")
 			);
@@ -719,7 +720,7 @@ Project.prototype = {
 		data.s=this.services;
 		data.d=this.description;
 		data.w=this.date;
-		data.t=this.threats;
+		data.t=this.vulns;
 		data.c=this.labels;
 		return JSON.stringify(data);
 	},
@@ -1031,7 +1032,7 @@ Project.prototype = {
 			}
 		}
 		// Check all services that claim to belong to this project
-		it = new ServiceIterator({project: this.id});
+		it = new ServiceIterator(this.id);
 		for (const s of it) {
 			if (this.services.indexOf(s.id)==-1) {
 				errors += "Service "+s.id+" claims to belong to project "+this.id+" but is not known as a member.\n";
@@ -1051,7 +1052,7 @@ Project.prototype = {
 //		}
 		// Check all components
 		it = new ComponentIterator({project: this.id});
-		if (this.stub && it.notlast()) {
+		if (this.stub && it.count()>0) {
 			errors += "Project "+this.id+" is marked as a stub, but does have components.\n";
 		}
 		for (const cm of it) {
@@ -1061,36 +1062,32 @@ Project.prototype = {
 			}
 			errors += cm.internalCheck();
 		}
-		// Check all threats on this project
-		if (this.stub && this.threats.length>0) {
-			errors += "Project "+this.id+" is marked as a stub, but does have a threats array.\n";
+		// Check all common vulnerabilities on this project
+		if (this.stub && this.vulns.length>0) {
+			errors += "Project "+this.id+" is marked as a stub, but does have a vulns array.\n";
 		}
-		for (i=0; i<this.threats.length; i++) {
-			var t = Threat.get(this.threats[i]);
-			if (!t) {
-				errors += "Threat "+this.threats[i]+" does not exist.\n";
+		for (i=0; i<this.vulns.length; i++) {
+			let v = Vulnerability.get(this.vulns[i]);
+			if (!v) {
+				errors += "Vulnerability "+this.vulns[i]+" does not exist.\n";
 				continue;
 			}
-			if (t.project != this.id) {
-				errors += "Threat "+t.id+" belongs to a different project.\n";
+			if (v.project != this.id) {
+				errors += "Vulnerability "+v.id+" belongs to a different project.\n";
 			}
-			let it = new NodeClusterIterator({project: this.id, title: t.title, type: t.type, isroot: true});
+			let it = new NodeClusterIterator({project: this.id, title: v.title, type: v.type, isroot: true});
 			if (it.count()==0) {
-				errors += "Threat "+t.id+" does not have a corresponding node cluster.\n";
+				errors += "Vulnerability "+v.id+" does not have a corresponding node cluster.\n";
 			}
 
 		}
-		// Check all threats
-		it = new ThreatIterator(this.id,'tUNK');
+		// Check all vulnerabilities
+		it = new VulnerabilityIterator({project: this.id});
 		if (this.stub && it.count()>0) {
-			errors += "Project "+this.id+" is marked as a stub, but does have threats.\n";
+			errors += "Project "+this.id+" is marked as a stub, but does have common vulnerabilities.\n";
 		}
-//		for (const t of it) {
-//			if (!t) {
-//				errors += "Component "+t.id+" does not exist.\n";
-//				continue;
-//			}
-//		}
+		for (const v of it) v.internalCheck();
+
 		return errors;
 	}
 };

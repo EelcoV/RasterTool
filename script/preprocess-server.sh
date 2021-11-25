@@ -6,7 +6,7 @@ PREPROCESS="filepp -pb"
 #PREPROCESS="cpp -E -P -C -w"
 
 # Set $ESLINT to blank to skip the verification.
-ESLINT="/usr/local/bin/eslint"
+ESLINT="/Users/eelco/node_modules/.bin/eslint"
 #ESLINT=""
 
 FLAGS=-DSERVER
