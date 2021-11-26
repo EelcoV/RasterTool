@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, trimwhitespace, displayComponentThreatAssessmentsDialog
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -275,7 +275,7 @@ Node.prototype = {
 	},
 	
 	changetitle: function(str) {
-		str = trimwhitespace(str);
+		str = str.trim();
 		// Blank title is not allowed. Retain current title.
 		if (str==this.title || str=='')  return;
 
@@ -398,7 +398,7 @@ Node.prototype = {
 	},
 
 	changesuffix: function(str) {
-		str = trimwhitespace(str);
+		str = str.trim();
 		if (str==this.suffix || str=="")  return;
 
 		new Transaction('nodeSuffix',

@@ -21,9 +21,7 @@ Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selec
 
 TODO
 Importing the same project twice will give an error message. This used to be fixed silently, but needs an implicit check now. Either duplicate the project or refuse to load it for now.
-Remove Threat, and rationalize the relation between ThreatAssessment and NodeCluster.
 Description on Assessment is obsolete?
-Strings: use native trim() instead of jQuery.trim() and trimwhitespace(). Change toUpper() to toLocaleUpperCase(). And use localeCompare() to do case-insensitive comparisons.
 Undo
 With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.

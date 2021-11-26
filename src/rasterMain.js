@@ -580,8 +580,8 @@ var updateFind = function() {
 		it.sortByType();
 		for (const rn of it) {
 			var s = Service.get(rn.service);
-			if (rn.title.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1
-				|| (rn.suffix!='' && rn.suffix.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1)
+			if (rn.title.toLocaleUpperCase().indexOf(nodeFindString.toLocaleUpperCase())!=-1
+				|| (rn.suffix!='' && rn.suffix.toLocaleUpperCase().indexOf(nodeFindString.toLocaleUpperCase())!=-1)
 			) {
 				if (rn.type!=currtype) {
 					if (res!='') res += '<br>\n';
@@ -898,7 +898,7 @@ function _(s) {
  */
 function mylang(obj) {		// eslint-disable-line no-unused-vars
 #ifdef SERVER
-	var lang = $.localise.defaultLanguage.toUpperCase();
+	var lang = $.localise.defaultLanguage.toLocaleUpperCase();
 #else
 	var lang = 'EN'; // default
 #ifdef LANG_NL
@@ -1127,14 +1127,6 @@ function nid2id(nid) {
 	return nid.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/)[1];
 }
 
-/* trimwhitespace: remove leading & trailing white space
- */
-function trimwhitespace(str) {
-	str = str.replace(/^\s+/,'');
-	str = str.replace(/\s+$/,'');
-	return str;
-}
-
 /* Use singular or plural phrase, depending on an integer number.
  * This used to append a suffix (defaulting to "s"), which works fine for
  * English but is difficult to localise.
@@ -1146,8 +1138,8 @@ function plural(singular,plural,num) {
 /* Prepend string 'a' to 'b' and join with a space, unless 'a' already occurs within 'b'.
 */
 function prependIfMissing(a,b) {		// eslint-disable-line no-unused-vars
-	a = trimwhitespace(a);
-	b = trimwhitespace(b);
+	a = a.trim();
+	b = b.trim();
 	if (b=="") {
 		return a;
 	} else {
@@ -1155,10 +1147,10 @@ function prependIfMissing(a,b) {		// eslint-disable-line no-unused-vars
 	}
 }
 
-/* Test whether two strings are identical in a case-insensitive way.
+/* Test whether two strings are identical in a locale and case-insensitive way.
 */
 function isSameString(a,b) {
-	return a.toUpperCase()===b.toUpperCase();
+	return a.toLocaleUpperCase().localeCompare(b.toLocaleUpperCase())==0;
 }
 
 ///* nextUnusedIndex: return first index that doesn't exist or is null
@@ -1918,8 +1910,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	for (i=0; i<lNodelen; i++) {
 		var lrn = lNode[i];
 		var rn = new Node(lrn.t,lrn.s,lrn.id);
-		rn.title = trimwhitespace(lrn.l);
-		if (lrn.f) rn.suffix = trimwhitespace(lrn.f);
+		rn.title = lrn.l.trim();
+		if (lrn.f) rn.suffix = lrn.f.trim();
 		rn.position = {x: lrn.x, y: lrn.y, width: lrn.w, height: lrn.h};
 		rn.iconinit();
 //		rn._normw = lrn.v;
@@ -3560,14 +3552,14 @@ function showLabelEditForm() {
 		text: _("Done"),
 		click: function() {
 			let newlabels = [];
-			newlabels[0] = trimwhitespace(String($('#field_red').val())).substr(0,50);
-			newlabels[1] = trimwhitespace(String($('#field_orange').val())).substr(0,50);
-			newlabels[2] = trimwhitespace(String($('#field_yellow').val())).substr(0,50);
-			newlabels[3] = trimwhitespace(String($('#field_green').val())).substr(0,50);
-			newlabels[4] = trimwhitespace(String($('#field_blue').val())).substr(0,50);
-			newlabels[5] = trimwhitespace(String($('#field_pink').val())).substr(0,50);
-			newlabels[6] = trimwhitespace(String($('#field_purple').val())).substr(0,50);
-			newlabels[7] = trimwhitespace(String($('#field_grey').val())).substr(0,50);
+			newlabels[0] = String($('#field_red').val()).trim().substr(0,50);
+			newlabels[1] = String($('#field_orange').val()).trim().substr(0,50);
+			newlabels[2] = String($('#field_yellow').val()).trim().substr(0,50);
+			newlabels[3] = String($('#field_green').val()).trim().substr(0,50);
+			newlabels[4] = String($('#field_blue').val()).trim().substr(0,50);
+			newlabels[5] = String($('#field_pink').val()).trim().substr(0,50);
+			newlabels[6] = String($('#field_purple').val()).trim().substr(0,50);
+			newlabels[7] = String($('#field_grey').val()).trim().substr(0,50);
 				for (var i=0; i<=7; i++) {
 					if (newlabels[i]=="") {
 						newlabels[i] = Project.defaultlabels[i];

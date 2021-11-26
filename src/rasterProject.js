@@ -3,7 +3,7 @@
  */
 
 /* global
- Component, ComponentIterator, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, trimwhitespace, urlEncode
+ Component, ComponentIterator, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, urlEncode
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -442,7 +442,7 @@ Project.prototype = {
 	},
 	
 	settitle: function(newtitle) {
-		newtitle = trimwhitespace(String(newtitle)).substr(0,50);
+		newtitle = String(newtitle).trim().substr(0,50);
 		if (newtitle==this.title)  return;
 		if (newtitle=='')  return;
 		var targettitle = newtitle;
@@ -482,12 +482,12 @@ Project.prototype = {
 #endif
 
 	setdescription: function(s) {
-		this.description = trimwhitespace(String(s)).substr(0,100);
+		this.description = String(s).trim().substr(0,100);
 		this.store();
 	},
 	
 	setdate: function(d) {
-		this.date = trimwhitespace(String(d)).substr(0,20);
+		this.date = String(d).trim().substr(0,20);
 		this.store();
 	},
 	

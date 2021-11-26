@@ -3,7 +3,7 @@
  */
 
 /* globals
- H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, trimwhitespace, workspacedrophandler
+ H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, workspacedrophandler
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -109,7 +109,7 @@ Service.prototype = {
 	},
 	
 	settitle: function(newtitle) {
-		newtitle = trimwhitespace(String(newtitle)).substr(0,50);
+		newtitle = String(newtitle).trim().substr(0,50);
 		if (newtitle=='')  return;
 		var targettitle = newtitle;
 		if (Service.titleisused(this.project,targettitle,this.id)) {

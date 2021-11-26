@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals bugreport, createUUID, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, prependIfMissing, refreshComponentThreatAssessmentsDialog, trimwhitespace, H */
+/* globals bugreport, createUUID, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, prependIfMissing, refreshComponentThreatAssessmentsDialog, H */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -232,7 +232,7 @@ console.log("Check Component.absorbe()");
 	},
 
 	changeclasstitle: function(str) {
-		str = trimwhitespace(str);
+		str = str.trim();
 		// Blank title is not allowed. Retain current title.
 		if (str==this.title || str=='')  return;
 
@@ -268,7 +268,7 @@ console.log("Check Component.absorbe()");
 	},
 
 	_settitle: function(str) {
-		this.title = trimwhitespace(str);
+		this.title = str.trim();
 		this.store();
 	},
 

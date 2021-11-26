@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global nid2id, PaintAllClusters, bugreport, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global nid2id, PaintAllClusters, bugreport, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
 
 /*
  *
@@ -89,7 +89,7 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 	};
 
 	this.setcreator = function(cr) {
-		this.creator = trimwhitespace(String(cr)).substr(0,100);
+		this.creator = String(cr).trim().substr(0,100);
 		if (this.creator=='') {
 			this.creator=_("Anonymous");
 		}

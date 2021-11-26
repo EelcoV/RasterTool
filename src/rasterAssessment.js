@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, _, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, trimwhitespace, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id
+bugreport, _, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -248,7 +248,7 @@ Assessment.prototype = {
 	},
 	
 	settitle: function(t) {
-		t = trimwhitespace(String(t)).substr(0,50);
+		t = String(t).trim().substr(0,50);
 		// Silently ignore an attempt to set a blank title
 		if (t=="")  return;
 
@@ -281,7 +281,7 @@ Assessment.prototype = {
 	},
 
 	setdescription: function(str) {
-		str = trimwhitespace(String(str)).substr(0,100);
+		str = String(str).trim().substr(0,100);
 		// Silently ignore an attempt to set a blank title
 		if (str=="")  return;
 
@@ -355,7 +355,7 @@ Assessment.prototype = {
 	},
 	
 	setremark: function(t) {
-		this.remark = trimwhitespace(String(t)).substr(0,200);
+		this.remark = String(t).trim().substr(0,200);
 		this.store();
 	},
 
