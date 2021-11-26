@@ -6,7 +6,6 @@ BUGS
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
 Clicking a square on the Analysis|Failures and Vulnerabilities tab does not mark that square (as Quick Wins does).
 Sometimes when moving a node localStorage is not up to date with the node's properties.
-Update to PHP8 (get_magic_quotes_gpc() has been removed).
 Option Hide/Show color does not have immediate effect.
 Undoing a threat-create does not repaint list of node clusters in Common cause failure view
 The How to use help-panel is useless. Either improve or remove. A help-panel on keyboard shortcuts might be useful instead.

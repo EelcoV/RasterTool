@@ -367,7 +367,7 @@ function sendError($errorMessage) {
 function doReflect() {
 	$name=slashadd($_REQUEST['name']);
 	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
-	if (get_magic_quotes_gpc()) {
+	if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {
 		$content=stripslashes($_REQUEST['contents']);
 	} else {
 		$content=$_REQUEST['contents'];

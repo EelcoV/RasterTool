@@ -1,14 +1,18 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
-XXXX 2019
+XXXX 2022
 =========
-* Release as x.x.x - XXX
+* Release as 4.0.0 - XXX
+* Undo and Redo are now implemented on all actions.
+* A refresh of the entire user interface.
+* A new file format is used. Raster files created with version 3 or earlier will
+  automatically be upgraded.
 * Build scripts now always create the classroom variant and the normal intranet variant.
-* Does not work with Internet Explorer anymore.
+* Support for Internet Explorer has been dropped.
+* Intranet version is now compatible with PHP 7.4 and up.
 * Groundwork for different iconsets.
 * Use native jQueryUI menus (to simplify the code).
-* Make the toolbar at the top more consistent.
 
 October 2019
 ============
