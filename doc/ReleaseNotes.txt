@@ -8,6 +8,7 @@ XXXX 2022
 * A refresh of the entire user interface.
 * A new file format is used. Raster files created with version 3 or earlier will
   automatically be upgraded.
+* The Find panel now searches remarks, vulnerabilities and labels as well.
 * Build scripts now always create the classroom variant and the normal intranet variant.
 * Support for Internet Explorer has been dropped.
 * Intranet version is now compatible with PHP 7.4 and up.

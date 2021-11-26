@@ -561,28 +561,50 @@ var nodeFindString = "";
 var FindScrollPos = 0;
 
 var updateFind = function() {
-	var str = $('#field_find').val();
+	let str = $('#field_find').val();
 	if (str==nodeFindString) {
 		findTimer = window.setTimeout(updateFind,500);
 		return;
 	}
 	nodeFindString = str;
+	
 	// A negative scroll position means that we need to save it, otherwise reset the position
 	if (FindScrollPos<0) {
 		FindScrollPos = -FindScrollPos;
 	} else {
 		FindScrollPos = 0;
 	}
-	var res = "";
-	var currtype='';
+	
+	let res = "";
+	let currtype='';
+	let p = Project.get(Project.cid);
 	if (nodeFindString!='') {
-		var it = new NodeIterator({project: Project.cid});
+		let it = new NodeIterator({project: Project.cid});
 		it.sortByType();
 		for (const rn of it) {
-			var s = Service.get(rn.service);
-			if (rn.title.toLocaleUpperCase().indexOf(nodeFindString.toLocaleUpperCase())!=-1
-				|| (rn.suffix!='' && rn.suffix.toLocaleUpperCase().indexOf(nodeFindString.toLocaleUpperCase())!=-1)
-			) {
+			let s = Service.get(rn.service);
+			let cm = null;
+			if (rn.component) cm=Component.get(rn.component);
+			// Several text fields can give a match with the search string:
+			// - node title or suffix
+			// - node label
+			// - custom vulnerabilities on the node
+			// - remarks on the node's assessments
+			// We concatenate all these text fields into one single searchstring. Elements are separated
+			// by the string _%_%_ (which is unlikely to appear in the elements), to prevent the case whereby
+			// the nodeFindStrings happens across two elements.
+			let sep = '_%_%_';
+			let searchstring = rn.title+sep+rn.suffix+sep;
+			if (Preferences.label && rn.color && rn.color!='none') searchstring += rn.color+sep;
+			if (cm) {
+				for (const aid of cm.assmnt) {
+					let a = Assessment.get(aid);
+					let vln = Vulnerability.get(a.vulnerability);
+					if (!vln.common)  searchstring += vln.title+sep;
+					searchstring += a.remark+sep;
+				}
+			}
+			if (searchstring.toLocaleUpperCase().indexOf(nodeFindString.toLocaleUpperCase())!=-1) {
 				if (rn.type!=currtype) {
 					if (res!='') res += '<br>\n';
 					res += '<b>'+H(Rules.nodetypes[rn.type])+'</b><br>\n';
@@ -590,7 +612,6 @@ var updateFind = function() {
 				}
 				// Show a small circle in the label color, if any.
 				if (Preferences.label) {
-					var p = Project.get(Project.cid);
 					if (rn.color && rn.color!='none') {
 						res += '<div class="tinyblock B' + rn.color + '" title="' + H(p.strToLabel(rn.color)) + '"></div>';
 					} else {
@@ -598,8 +619,7 @@ var updateFind = function() {
 					}
 				}
 				// Show a small square in the overall vulnerability level, if any
-				if (rn.component) {
-					var cm = Component.get(rn.component);
+				if (cm) {
 					if (cm.magnitude!='-') {
 						res += '<div class="tinysquare M'
 						+ Assessment.valueindex[cm.magnitude]
