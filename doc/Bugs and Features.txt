@@ -25,7 +25,6 @@ Description on Assessment is obsolete?
 Undo
 With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
-Rationalise the iterators: make a generic RasterIterator, and subclass for each of the Raster objects, including all(), some() and forEach().
 Make class definitions conform to ES6.
 Change variables from var to let/const.
 Make the UI more in line with other apps that people are used to these days.

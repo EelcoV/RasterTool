@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, _, repaintCluster, Component, createUUID, DEBUG, LS, Assessment, Vulnerability, VulnerabilityIterator, H, createUUID, isSameString */
+/* global bugreport, _, repaintCluster, Component, createUUID, DEBUG, LS, Assessment, NodeClusterIterator, Vulnerability, VulnerabilityIterator, H, createUUID, isSameString */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -92,7 +92,7 @@ NodeCluster.addnode_threat = function(pid,nid,threattitle,threattype,duplicateok
 	if (it.count()>1) {
 		bugreport("Multiple matches","NodeCluster.addnode_threat");
 		return;
-	} else if (it.count()==0) {
+	} else if (it.isEmpty()) {
 		bugreport("No rootcluster found","NodeCluster.addnode_threat");
 		return;
 	}
@@ -118,7 +118,7 @@ NodeCluster.addcomponent_threat = function(pid,cid,threattitle,threattype,duplic
 	if (it.count()>1) {
 		bugreport("Multiple matching clusters","NodeCluster.addcomponent_threat");
 		return;
-	} else if (it.count()==0) {
+	} else if (it.isEmpty()) {
 		bugreport("No rootcluster found","NodeCluster.addnode_threat");
 		return;
 	}
@@ -138,7 +138,7 @@ NodeCluster.removecomponent_assessment = function(pid,cid,threattitle,threattype
 	var it = new NodeClusterIterator({project: pid, isroot: true, type: threattype, title: threattitle});
 	if (it.count()>1) {
 		bugreport("Multiple matching clusters","NodeCluster.removecomponent_assessment");
-	} else if (it.count()==0) {
+	} else if (it.isEmpty()) {
 		if (!notexistok) {
 			bugreport("No matching cluster","NodeCluster.removecomponent_assessment");
 		}
@@ -177,9 +177,7 @@ NodeCluster.removecomponent_assessment = function(pid,cid,threattitle,threattype
 NodeCluster.structuredata = function(pid) {
 	let res = [];
 	let it = new NodeClusterIterator({project: pid, isroot: true});
-	for (const nc of it) {
-		res.push(nc.structure());
-	}
+	it.forEach(nc => res.push(nc.structure()));
 	return res;
 };
 
@@ -548,71 +546,3 @@ NodeCluster.prototype = {
 	}
 };
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * NodeClusterIterator: iterate over all NodeClusters of a project, optionally limited by status
- *
- * usage:
- * 		var it = new NodeClusterIterator({project: pid, parentcluster: parid, type: 'tEQT', title: stringT});
- * 		for (const nc of it) {
- *			console.log(nc.id);
- *	 		:
- *		}
- */
-class NodeClusterIterator {
-	constructor(opt) {
-		this.item = [];
-		for (var i in NodeCluster._all) {
-			var nc = NodeCluster._all[i];
-			if (opt && opt.project!=undefined && nc.project!=opt.project) continue;
-			if (opt && opt.parentcluster!=undefined && nc.parentcluster!=opt.parentcluster) continue;
-			if (opt && opt.isroot!=undefined && nc.isroot()!=opt.isroot) continue;
-			if (opt && opt.isstub!=undefined && (nc.childnodes.length+nc.childclusters.length<2)!=opt.isstub) continue;
-			if (opt && opt.isempty!=undefined && (nc.childnodes.length+nc.childclusters.length==0)!=opt.isempty) continue;
-			if (opt && opt.type!=undefined && nc.type!=opt.type) continue;
-			if (opt && opt.match!=undefined && opt.match!='tUNK' && nc.type!=opt.match) continue;
-			if (opt && opt.title!=undefined && !isSameString(nc.title,opt.title)) continue;
-			this.item.push(nc);
-		}
-	}
-
-	*[Symbol.iterator]() {
-		for (const id of this.item) {
-			yield id;
-		}
-	}
-
-	count() {
-		return this.item.length;
-	}
-
-	first() {
-		return this.item[0];
-	}
-
-	sortByName() {
-		this.item.sort( function(na,nb) {
-			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
-		});
-	}
-	
-	sortByType() {
-		this.item.sort( function(na,nb) {
-			if (na.type<nb.type)  return -1;
-			if (na.type>nb.type)  return 1;
-			// When types are equal, sort alphabetically
-			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
-		});
-	}
-	
-	sortByLevel() {
-		this.item.sort( function(na,nb) {
-			var va = Assessment.valueindex[na.magnitude];
-			var vb = Assessment.valueindex[nb.magnitude];
-			if (va==1) va=8; // Ambiguous
-			if (vb==1) vb=8;
-			if (va!=vb)  return vb - va;
-			// When levels are equal, sort alphabetically
-			return na.title.toLocaleLowerCase().localeCompare(nb.title.toLocaleLowerCase());
-		});
-	}	
-}

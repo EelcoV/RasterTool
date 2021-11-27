@@ -101,9 +101,7 @@ Service.prototype = {
 			this.unload();
 		}
 		var it = new NodeIterator({service: this.id});
-		for (const rn of it) {
-			rn.destroy(false);
-		}
+		it.forEach(rn => rn.destroy(false));
 		localStorage.removeItem(LS+'S:'+this.id);
 		delete Service._all[this.id];
 	},
@@ -415,9 +413,7 @@ Service.prototype = {
 		}
 		// Be sure to only remove nodes from this service.
 		var it = new NodeIterator({service: this.id});
-		for (const rn of it) {
-			rn.unpaint();
-		}
+		it.forEach(rn => rn.unpaint());
 		this._jsPlumb.reset();
 		this._painted=false;
 	},
@@ -499,9 +495,7 @@ Service.prototype = {
 		this._jsPlumb.setSuspendDrawing(true);
 		/* First paint all the nodes, before drawing the connectors */
 		var it = new NodeIterator({service: this.id});
-		for (const rn of it) {
-			rn.paint(false);
-		}
+		it.forEach(rn => rn.paint(false));
 		
 		/* All nodes exist, now draw connectors. When node X is connected to
 		 * node Y, then also node Y is connected to node X. However, we must
@@ -625,44 +619,5 @@ function diagramTabEditStart(/*event*/) {
 			dialog.remove();
 		}
 	});
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * ServiceIterator: iterate over all services of a project
- *
- * usage:
- * 		let it = new ServiceIterator(projectID);
- *		it.sortByName();
- * 		for (const s of it) {
- *			console.log(s.title);
- *	 		:
- *		}
- */
-class ServiceIterator {		// eslint-disable-line no-unused-vars
-	constructor(pid) {
-		this.item = [];
-		for (var i in Service._all) {
-			var s =  Service._all[i];
-			if (s.project == pid) {
-				this.item.push(s);
-			}
-		}
-	}
-
-	*[Symbol.iterator]() {
-		for (const id of this.item) {
-			yield id;
-		}
-	}
-
-	count() {
-		return this.item.length;
-	}
-	
-	sortByName() {
-		this.item.sort( function(sa,sb) {
-			return sa.title.toLocaleLowerCase().localeCompare(sb.title.toLocaleLowerCase());
-		});
-	}
 }
 

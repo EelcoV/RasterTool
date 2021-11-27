@@ -275,7 +275,7 @@ function initAllAndSetup() {
 		} else {
 			p.load();
 			p.dorefresh(false); // Check for update on the server
-			var it = new ServiceIterator(p.id);
+			var it = new ServiceIterator({project: p.id});
 			var found = false;
 			var s;
 			for (s of it) {
@@ -1112,7 +1112,7 @@ function switchToProject(pid,dorefresh) {
 	}
 	var p = Project.get(pid);
 	p.load();
-	var it = new ServiceIterator(pid);
+	var it = new ServiceIterator({project: pid});
 	var found = false;
 	var s;
 	for (s of it) {
@@ -2090,9 +2090,7 @@ function exportProject(pid) {
 	for (const vid of p.vulns) s += exportVulnerability(vid);
 	for (const sid of p.services) s += exportService(sid);
 	var it = new NodeClusterIterator({project: pid});
-	for (const nc of it) {
-		s += exportNodeCluster(nc.id);
-	}
+	it.forEach(nc => s += exportNodeCluster(nc.id));
 	return s;
 }
 
@@ -2104,9 +2102,7 @@ function exportVulnerability(vid) {
 function exportService(sid) {
 	var s = Service.get(sid).exportstring();
 	var it = new NodeIterator({service: sid});
-	for (const rn of it) {
-		s += exportNode(rn.id);
-	}
+	it.forEach(rn => s += exportNode(rn.id));
 	return s;
 }
 
@@ -2117,7 +2113,7 @@ function exportNode(n) {
 	var rn = Node.get(n);
 	var s = rn.exportstring();
 	NodeExported.push(n);
-	for (const c of rn.connect) s += exportNode(c);
+	rn.connect.forEach(c => s += exportNode(c));
 	if (rn.component!=null) {
 		s += exportComponent(rn.component);
 	}
@@ -2131,8 +2127,8 @@ function exportComponent(c) {
 	var cm = Component.get(c);
 	var s = cm.exportstring();
 	ComponentExported.push(c);
-	for (const n of cm.nodes) s += exportNode(n);
-	for (const aid of cm.assmnt) s += exportAssessment(aid);
+	cm.nodes.forEach(n => s += exportNode(n));
+	cm.assmnt.forEach(aid => s += exportAssessment(aid));
 	return s;
 }
 
@@ -2518,7 +2514,7 @@ function initLibraryPanel() {
 		$('#libraryactivator').removeClass('ui-state-hover');
 	});
 	$('#libraryactivator').on('click',  function() {
-		var it = new ProjectIterator({group: ToolGroup, stubsonly: false});
+		var it = new ProjectIterator({group: ToolGroup, stub: false});
 		var nump = it.count();
 		nump += 4; // Allow space for option group titles.
 		if (nump<8) nump=8;
@@ -2632,7 +2628,7 @@ function ShowDetails(p) {
 					if (!p.shared && becomesShared) {
 						// Before changing the sharing status from 'private' to 'shared', first
 						// check if there already is a project with this name. If so, refuse to rename.
-						var it = new ProjectIterator({title: p.title, group: ToolGroup, stubsonly: true});
+						var it = new ProjectIterator({title: p.title, group: ToolGroup, stub: true});
 						if (it.count()>0) {
 							rasterAlert(_("Cannot share this project yet"),
 								_("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
@@ -2757,7 +2753,7 @@ function startPeriodicProjectListRefresh() {
 function refreshProjectList() {
 	var prevselected = $('#libselect option:selected').val();
 	var snippet = "";
-	var it = new ProjectIterator({group: ToolGroup, stubsonly: true});
+	var it = new ProjectIterator({group: ToolGroup, stub: true});
 	it.sortByTitle();
 	for (const p of it) {
 		if (snippet=="") {
@@ -2847,9 +2843,7 @@ function bottomTabsCloseHandler(event) {
 		function() {
 			let nodes = [];
 			var it = new NodeIterator({service: s.id});
-			for (const rn of it) {
-				nodes.push(rn.id);
-			}
+			it.forEach(rn => nodes.push(rn.id));
 			if (nodes.length!=0) nodesDelete(nodes,_("Remove service %%", s.title),true);
 			new Transaction('serviceCreate',
 				[{id: s.id, project: s.project, title: s.title, index: p.services.indexOf(s.id)}],
@@ -3768,7 +3762,7 @@ function addvulnhandler(cid) {
 	);
 }
 	
-function refreshChecklistsDialog(type) {
+function refreshChecklistsDialog(type) {		// eslint-disable-line no-unused-vars
 	// Remove DOM for all common Vulnerabilities, and re-add them in the right order
 	$('#'+type+'threats').empty();
 	let p = Project.get(Project.cid);
@@ -3866,7 +3860,7 @@ function paintSingleFailures(s) {
 	$('#singlefs_workspace'+s.id).empty();
 
 	var it = new ComponentIterator({service: s.id});
-	if (it.count()==0) {
+	if (it.isEmpty()) {
 		$('#singlefs_workspace'+s.id).append(
 			'<p class="firstp sfaccordion">'
 			+ _("This space will show all vulnerability evaluations for the components in this service. ")
@@ -3948,7 +3942,7 @@ function paintSingleFailures(s) {
 	switch (SFSortOpt) {
 	case 'alph':
 		$('#sfsort_alph'+s.id).prop('checked',true);
-		it.sortByName();
+		it.sortByTitle();
 		break;
 	case 'type':
 		$('#sfsort_type'+s.id).prop('checked',true);
@@ -4528,7 +4522,7 @@ function PaintAllClusters() {
 	// for each vulnerability, list the nested list / vulnerability-domain-tree
 	// allow manipulation of nested list
 	var it = new NodeClusterIterator({project:Project.cid, isroot:true});
-	if (it.count()==0) {
+	if (it.isEmpty()) {
 		$('#noccf').css('display', 'block');
 		$('#someccf').css('display', 'none');
 		return;
@@ -4562,7 +4556,7 @@ function sortClustersToCurrentOrder(it) {
 	switch (CCFSortOpt) {
 	case 'alph':
 		$('#ccfsort_alph').prop('checked',true);
-		it.sortByName();
+		it.sortByTitle();
 		break;
 	case 'type':
 		$('#ccfsort_type').prop('checked',true);
@@ -4664,10 +4658,7 @@ function expandAllCCF() {
 	// Show the details of the first cluster
 	it = new NodeClusterIterator({project: Project.cid, isroot:true, isstub: false});
 	sortClustersToCurrentOrder(it);
-	for (const cl of it) {
-		repaintClusterDetails(cl);
-		break;
-	}
+	repaintClusterDetails(it.first());
 }
 
 function collapseAllCCF() {
@@ -4724,12 +4715,8 @@ function repaintCluster(elem) {
 		// Just an empty/invisible placeholder for a node cluster that is too small
 		$('#ccfaccordion'+nc.id).css('display', 'none');
 		// Check whether there are any cluster remaining visible
-		var it = new NodeClusterIterator({project:Project.cid, isroot:true});
-		for (const cl of it) {
-			if (cl.childclusters.length + cl.childnodes.length >= 2) {
-				return;
-			}
-		}
+		var it = new NodeClusterIterator({project:Project.cid, isroot:true, isstub: false});
+		if (!it.isEmpty()) return;
 		// None were visible
 		$('#noccf').css('display', 'block');
 		$('#someccf').css('display', 'none');
@@ -5405,7 +5392,7 @@ function paintSFTable() {
 
 	switch (FailureThreatSortOpt.node) {
 	case 'alph':
-		cit.sortByName();
+		cit.sortByTitle();
 		break;
 	case 'type':
 		cit.sortByType();
@@ -5419,7 +5406,7 @@ function paintSFTable() {
 
 	switch (FailureThreatSortOpt.threat) {
 	case 'alph':
-		tit.sortByName();
+		tit.sortByTitle();
 		break;
 	case 'type':
 		tit.sortByType();
@@ -5444,7 +5431,7 @@ function paintSFTable() {
 	}
 
 	// Initialise to '-'
-	for (const cm of cit) Nodesum[cm.id] = '-';
+	cit.forEach(cm => Nodesum[cm.id] = '-');
 
 	// Do the header
 	var snippet = '\n\
@@ -5536,7 +5523,7 @@ function paintCCFTable() {
 
 	switch (FailureThreatSortOpt.node) {
 	case 'alph':
-		ncit.sortByName();
+		ncit.sortByTitle();
 		break;
 	case 'type':
 		ncit.sortByType();
@@ -5550,7 +5537,7 @@ function paintCCFTable() {
 
 	switch (FailureThreatSortOpt.threat) {
 		case 'alph':
-			tit.sortByName();
+			tit.sortByTitle();
 			break;
 		case 'type':
 			tit.sortByType();
@@ -5563,7 +5550,7 @@ function paintCCFTable() {
 	var numthreats = 0;
 	for (const cl of tit) numthreats++;		// eslint-disable-line no-unused-vars
 	// Do not paint an empty table
-	if (ncit.count()==0 || numthreats==0)  return;
+	if (ncit.isEmpty() || numthreats==0)  return;
 
 	// Do the header
 	var snippet = '\n\
@@ -5775,14 +5762,11 @@ function paintVulnsTableType(tabletype) {
 	// Precompute all numbers
 	// Iterate over all components
 	var cit = new ComponentIterator({project: Project.cid});
-	for (const cm of cit) {
-		for (const thid of cm.assmnt) addUp(Assessment.get(thid));
-	}
+	cit.forEach(cm => cm.assmnt.forEach(thid => addUp(Assessment.get(thid))));
+
 	// Tterate over all cluster assessments
 	var tit = new NodeClusterIterator({project: Project.cid, isempty: false});
-	for (const nc of tit) {
-		addUp(Assessment.get(nc.assmnt));
-	}
+	tit.forEach(nc => addUp(Assessment.get(nc.assmnt)));
 
 	var grandtotal = v_U['__TOTAL__']+v_L['__TOTAL__']+v_M['__TOTAL__']+v_H['__TOTAL__']+
 		v_V['__TOTAL__']+v_X['__TOTAL__']+v_A['__TOTAL__']+v_N['__TOTAL__'];
@@ -5923,8 +5907,8 @@ function paintNodeTypeStats() {
 	var tStats = {};
 	var tTot = 0;
 	var numservice = 0;
-	var sit = new ServiceIterator(Project.cid);
-	sit.sortByName();
+	var sit = new ServiceIterator({project: Project.cid});
+	sit.sortByTitle();
 
 	$('#at3').empty();
 
@@ -6054,7 +6038,7 @@ function showremovedvulns() {
 	// First find all components with at least one vulnerability removed, and find all
 	// vulnerabilities that were removed at least once.
 	var cit = new ComponentIterator({project: Project.cid});
-	cit.sortByName();
+	cit.sortByTitle();
 	for (const cm of cit) {
 		var tit = new VulnerabilityIterator({project: Project.cid, type: cm.type});
 		for (const th of tit) {
@@ -6152,7 +6136,7 @@ function showcustomvulns() {
 	// First find all components with at least one vulnerability removed, and find all
 	// vulnerabilities that were removed at least once.
 	var cit = new ComponentIterator({project: Project.cid});
-	cit.sortByName();
+	cit.sortByTitle();
 	for (const cm of cit) {
 		for (const thid of cm.assmnt) {
 			var ta = Assessment.get(thid);
@@ -6316,7 +6300,7 @@ function listSelectedRisks() {
 	// exclCl is a list (array) of "clusterID_0"
 	var exclCm = computeComponentQuickWins();
 	var exclCl = computeClusterQuickWins();
-	cit.sortByName();
+	cit.sortByTitle();
 
 	for (const cm of cit) {
 		for (const nc of tit) {

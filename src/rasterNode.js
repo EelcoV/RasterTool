@@ -122,15 +122,11 @@ Node.nodesinselection = function() {
 	var sw = $('#selectrect').width(); 	
 	var sh = $('#selectrect').height(); 
 	var ni = new NodeIterator({service: Service.cid});
-	for (const rn of ni) {
-		if (rn.iscontainedin(sl,st,sw,sh)) {
-			a.push(rn.id);
-		}
-	}
+	ni.forEach(rn => {if (rn.iscontainedin(sl,st,sw,sh)) a.push(rn.id);});
 	return a;
 };
 Node.destroyselection = function () {
-	for (const n of Node.nodesinselection()) Node.get(n).destroy();
+	Node.nodesinselection().forEach(n => Node.get(n).destroy());
 };
 Node.autotitle = function(typ,newtitle) {
 	if (!newtitle)  newtitle = Rules.nodetypes[typ];
@@ -822,9 +818,7 @@ Node.prototype = {
 				if (event.e.shiftKey) {
 					rn.undo_data = [];
 					var ni = new NodeIterator({service: rn.service});
-					for (const n of ni) {
-						rn.undo_data.push({id: n.id, x: n.position.x, y: n.position.y});
-					}
+					ni.forEach(n => rn.undo_data.push({id: n.id, x: n.position.x, y: n.position.y}));
 				} else {
 					rn.undo_data = [{id: rn.id, x: rn.position.x, y: rn.position.y}];
 				}
@@ -835,9 +829,7 @@ Node.prototype = {
 				if (event.e.shiftKey) {
 					do_data = [];
 					var ni = new NodeIterator({service: rn.service});
-					for (const n of ni) {
-						do_data.push({id: n.id, x: n.position.x, y: n.position.y});
-					}
+					ni.forEach(n => do_data.push({id: n.id, x: n.position.x, y: n.position.y}));
 				} else {
 					do_data = [{id: rn.id, x: rn.position.x, y: rn.position.y}];
 				}
@@ -867,9 +859,7 @@ Node.prototype = {
 				if (event.e.shiftKey) {
 					// Drag the whole service diagram
 					var ni = new NodeIterator({service: rn.service});
-					for (const n of ni) {
-						n.setposition(n.position.x+dx,n.position.y+dy);
-					}
+					ni.forEach(n => n.setposition(n.position.x+dx,n.position.y+dy));
 				} else {
 					rn.setposition(rn.position.x+dx,rn.position.y+dy);
 				}
@@ -1283,91 +1273,6 @@ function RefreshNodeReportDialog() {
 		title: _("Warning report on %%", rn.title+' '+rn.suffix)
 	});
 	$('#nodereport').dialog('open');
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * NodeIterator: iterate over all Node objects
- *
- * opt: object with options to restrict the iteration to specified items only.
- *		Specify project (ID), service (ID), type (string), and/or match (string).
- * Option 'match' is similar to 'type'; 'type' looks for equality, but 'match'
- * looks for either equality or a cloud-type.
- *
- * usage:
- * 		var it = new NodeIterator({service: '1', type: 'tUNK'});
- *		it.sortByLevel();
- * 		for (const node of it) {
- *			console.log(node.title);
- *			console.log(node.id);
- *	 		:
- *		}
- */
-class NodeIterator {
-	constructor(opt) {
-		if (opt==null) opt = {};
-		/* On initialisation, walk through the Node._all array and store all
-		 * matching Nodes in this.item[].
-		 */
-		this.item = [];
-		for (var i in Node._all) {
-			var rn = Node._all[i];
-			if (opt.project!=undefined && rn.project!=opt.project) continue;
-			if (opt.service!=undefined && rn.service!=opt.service) continue;
-			if (opt.type!=undefined && rn.type!=opt.type) continue;
-			if (opt.match!=undefined &&
-				!(rn.type==opt.match
-					|| rn.type=='tUNK'
-					|| (rn.type!='tACT' && rn.type!='tNOT' && 'tUNK'==opt.match)
-				)
-			) continue;
-			this.item.push(rn);
-		}
-		if (opt.type=='tACT') bugreport('type-option Actor specified','NodeIterator');
-		if (opt.match=='tACT') bugreport('match-option Actor specified','NodeIterator');
-	}
-
-	*[Symbol.iterator]() {
-		for (const id of this.item) {
-			yield id;
-		}
-	}
-
-	count() {
-		return this.item.length;
-	}
-	
-	sortByName() {
-		this.item.sort( function(na,nb) {
-			var ta = na.title+na.suffix;
-			var tb = nb.title+nb.suffix;
-			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
-		});
-	}
-	sortByType() {
-		this.item.sort( function(na,nb) {
-			if (na.type<nb.type)  return -1;
-			if (na.type>nb.type)  return 1;
-			// When types are equal, sort alphabetically
-			var ta = na.title+na.suffix;
-			var tb = nb.title+nb.suffix;
-			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
-		});
-	}
-	sortByLevel() {
-		this.item.sort( function(na,nb) {
-			var ca = Component.get(na.component);
-			var cb = Component.get(nb.component);
-			var va = Assessment.valueindex[ca.magnitude];
-			var vb = Assessment.valueindex[cb.magnitude];
-			if (va==1)  va=8; // Ambiguous
-			if (vb==1)  vb=8;
-			if (va!=vb)  return vb - va;
-			// When levels are equal, sort alphabetically
-			var ta = na.title+na.suffix;
-			var tb = nb.title+nb.suffix;
-			return ta.toLocaleLowerCase().localeCompare(tb.toLocaleLowerCase());
-		});
-	}
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 

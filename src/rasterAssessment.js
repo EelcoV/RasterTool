@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, _, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id
+bugreport, _, AssessmentIterator, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -432,7 +432,7 @@ Assessment.prototype = {
 				callback: function(oid, enteredText) {
 					let vln = Vulnerability.get(assmnt.vulnerability);
 					let it = new VulnerabilityIterator({project: vln.project, type: vln.type, title: enteredText});
-					if (it.count()==0) {
+					if (it.isEmpty()) {
 						new Transaction('vulnDetails',
 							[{vuln: vln.id, title: vln.title}],
 							[{vuln: vln.id, title: enteredText}],
@@ -675,68 +675,4 @@ Assessment.prototype = {
 		localStorage[key] = this._stringify();
 	}
 };
-
-//function globalChangeThreatOrDescription(pid, typ, old_t, new_t, old_d, new_d) {
-//	new Transaction('threatRename',
-//		[{project: pid, type: typ, new_t: old_t, old_t: new_t, new_d: old_d, old_d: new_d}],
-//		[{project: pid, type: typ, old_t: old_t, new_t: new_t, old_d: old_d, new_d: new_d}],
-//		_("Rename vulnerability")
-//	);
-//}
-//
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * AssessmentIterator: iterate over certain assessments
- *
- * usage:
- * 		var it = new AssessmentIterator({project: pid});
- *		it.sortByType();
- * 		for (const ass of it) {
- *			console.log(as.id);
- *	 		:
- *		}
- * Options:
- *	project: project id equals value
- *	type: type equals value
- *	match: type matches value (equal to value OR value equals 'tUNK')
- *	title: title equals value (case insensitive)
- *	vuln: vulnerability equals value
- *	ofcomponent: (boolean) whether or not this assessment belongs to a component
- */
-class AssessmentIterator {
-	constructor(opt) {
-		this.item = [];
-		for (var i in Assessment._all) {
-			let ass = Assessment.get(i);
-			if (opt && opt.project!=undefined && ass.project!=opt.project)  continue;
-			if (opt && opt.type!=undefined && ass.type!=opt.type)  continue;
-			if (opt && opt.match!=undefined && ass.type!=opt.match && opt.match!='tUNK')  continue;
-			if (opt && opt.vuln!=undefined && ass.vulnerability!=opt.vuln)  continue;
-			if (opt && opt.title!=undefined && !isSameString(ass.title,opt.title))  continue;
-			if (opt && opt.ofcomponent!=undefined && opt.ofcomponent!=(ass.component!=null))  continue;
-			this.item.push(ass);
-		}
-	}
-
-	*[Symbol.iterator]() {
-		for (const id of this.item) {
-			yield id;
-		}
-	}
-
-	count() {
-		return this.item.length;
-	}
-
-	first() {
-		return this.item[0];
-	}
-
-	sortByType() {
-		this.item.sort( function(ta,tb) {
-			if (ta.type<tb.type)  return -1;
-			if (ta.type>tb.type)  return 1;
-			return 0;
-		});
-	}
-}
 

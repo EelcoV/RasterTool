@@ -3,7 +3,7 @@
  */
 
 /* global
- Component, ComponentIterator, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, urlEncode
+ Component, ComponentIterator, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, urlEncode
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -281,10 +281,8 @@ Project.updateStubs = function(doWhenReady) {
 		dataType: 'json',
 		success: function(data) {
 			// Remove all current stub projects
-			var it = new ProjectIterator({stubsonly: true});
-			for (const p of it) {
-				p.destroy();
-			}
+			var it = new ProjectIterator({stub: true});
+			it.forEach(p => p.destroy());
 			for (const rp of data) {
 				// Skip the server version if we are already sharing this project (avoid duplicate)
 				var p = Project.withTitle(rp.name);
@@ -426,9 +424,7 @@ Project.prototype = {
 		for (const vid of this.vulns) Vulnerability.get(vid).destroy();
 		for (const sid of this.services) Service.get(sid).destroy();
 		var it = new NodeClusterIterator({project: this.id});
-		for (const nc of it) {
-			nc.destroy();
-		}
+		it.forEach(nc => nc.destroy());
 		localStorage.removeItem(LS+'P:'+this.id);
 		delete Project._all[this.id];
 	},
@@ -527,7 +523,7 @@ Project.prototype = {
 
 		// Make sure that the project has a rootcluster for this vulnerability
 		let it = new NodeClusterIterator({project: this.id, title: vln.title, type: vln.type, isroot: true});
-		if (it.count()==0) {
+		if (it.isEmpty()) {
 			let nc = new NodeCluster(vln.type,clid);
 			nc.setproject(this.id);
 			nc.settitle(vln.title);
@@ -1032,7 +1028,7 @@ Project.prototype = {
 			}
 		}
 		// Check all services that claim to belong to this project
-		it = new ServiceIterator(this.id);
+		it = new ServiceIterator({project: this.id});
 		for (const s of it) {
 			if (this.services.indexOf(s.id)==-1) {
 				errors += "Service "+s.id+" claims to belong to project "+this.id+" but is not known as a member.\n";
@@ -1076,7 +1072,7 @@ Project.prototype = {
 				errors += "Vulnerability "+v.id+" belongs to a different project.\n";
 			}
 			let it = new NodeClusterIterator({project: this.id, title: v.title, type: v.type, isroot: true});
-			if (it.count()==0) {
+			if (it.isEmpty()) {
 				errors += "Vulnerability "+v.id+" does not have a corresponding node cluster.\n";
 			}
 
@@ -1086,7 +1082,7 @@ Project.prototype = {
 		if (this.stub && it.count()>0) {
 			errors += "Project "+this.id+" is marked as a stub, but does have common vulnerabilities.\n";
 		}
-		for (const v of it) v.internalCheck();
+		for (const v of it) errors += v.internalCheck();
 
 		return errors;
 	}
@@ -1147,61 +1143,3 @@ function askForConflictResolution(proj,details) {
 }
 #endif
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * ProjectIterator: iterate over all projects
- *
- * usage:
- * 		var it = new ProjectIterator({shared: true});
- *		it.sortByTitle();
- * 		for (const prj of it) {
- *			console.log(prj.id);
- *	 		:
- *		}
- * Options:
- *	title: title matches string
- *	group: group matches string
- *	shared: only projects with this sharing status. Default: both shared and non-shared.
- *	stubsonly: true: only stubs, false: all projects. Undefined: only non-stubs.
- */
-class ProjectIterator {
-	constructor(opt) {
-		this.item = [];
-		for (var i in Project._all) {
-			var p =  Project._all[i];
-			var ok = true;
-			if (opt && opt.title!=null) {
-				ok = ok && (isSameString(p.title,opt.title));
-			}
-			if (opt && opt.group!=null) {
-				ok = ok && (!p.shared || p.group===opt.group);
-			}
-			if (opt && opt.shared!=null) {
-				ok = ok && (p.shared===opt.shared);
-			}
-			if (opt && opt.stubsonly==null) {
-				ok = ok && (p.stub==false);
-			} else {
-				ok = ok && (p.stub || !(opt && opt.stubsonly));
-			}
-			if (ok) {
-				this.item.push(p);
-			}
-		}
-	}
-
-	*[Symbol.iterator]() {
-		for (const id of this.item) {
-			yield id;
-		}
-	}
-
-	count() {
-		return this.item.length;
-	}
-	
-	sortByTitle() {
-		this.item.sort( function(pa,pb) {
-			return pa.title.toLocaleLowerCase().localeCompare(pb.title.toLocaleLowerCase());
-		});
-	}
-}

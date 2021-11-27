@@ -21,6 +21,7 @@
 		491CD6D3187DA7600028B84D /* dropedit.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dropedit.png; sourceTree = "<group>"; };
 		492431532742F79C00FA02BE /* rasterVulnerability.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterVulnerability.js; sourceTree = "<group>"; };
 		49248D7D204985DD00958983 /* headroom.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = headroom.min.js; sourceTree = "<group>"; };
+		4931606627511F1400F41FBC /* rasterIterators.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterIterators.js; sourceTree = "<group>"; };
 		4938942D239C0FA300C3E2A5 /* _lang.bat */ = {isa = PBXFileReference; lastKnownFileType = text; path = _lang.bat; sourceTree = "<group>"; };
 		493AA22F1A7419A9005DDFFB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4943444A203A026600043E80 /* jquery-ui.min.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "jquery-ui.min.css"; sourceTree = "<group>"; };
@@ -315,6 +316,7 @@
 				492431532742F79C00FA02BE /* rasterVulnerability.js */,
 				49D256061A1E88A200102918 /* translation-nl.js */,
 				49ADD30023CA0B5C003BE3D4 /* rasterTransaction.js */,
+				4931606627511F1400F41FBC /* rasterIterators.js */,
 			);
 			path = src;
 			sourceTree = "<group>";

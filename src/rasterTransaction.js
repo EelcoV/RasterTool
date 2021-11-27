@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, ComponentIterator, DEBUG, H, NodeCluster, NodeClusterIterator, PaintAllClusters, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, isSameString, exportProject, nid2id, refreshComponentassessmentsDialog, setModified, refreshChecklistsDialog, repaintCluster
+/* globals _, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, refreshChecklistsDialog, repaintCluster
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -433,7 +433,7 @@ Transaction.prototype = {
 			let vit = new VulnerabilityIterator({common: false});
 			for (const vln of vit) {
 				let ait = new AssessmentIterator({vuln: vln.id, ofcomponent: true});
-				if (ait.count()==0) {
+				if (ait.isEmpty()) {
 					let it = new NodeClusterIterator({project: vln.project, isroot: true, type: vln.type, title: vln.title});
 					if (it.count()!=1) {
 						bugreport(_("weird number of node clusters"),"Transaction.nodeCreateDelete");
@@ -460,13 +460,9 @@ Transaction.prototype = {
 				rn.setmarker();
 			}
 
-			for (const d of data.clusters) {
-				rebuildCluster(d);
-			}
+			data.clusters.forEach(d => rebuildCluster(d));
 			let it = new NodeClusterIterator({project: Project.cid, isroot: true});
-			for (const cl of it) {
-				repaintCluster(cl.id);
-			}
+			it.forEach(cl => repaintCluster(cl.id));
 			break;
 		}
 
@@ -600,9 +596,7 @@ Transaction.prototype = {
 				for (const thid of cm.assmnt) {
 					let ta = Assessment.get(thid);
 					let it = new NodeClusterIterator({project: cm.project, title: ta.title, type: ta.type});
-					for (const nc of it) {
-						repaintCluster(nc.id);
-					}
+					it.forEach(nc => repaintCluster(nc.id));
 				}
 			}
 			break;

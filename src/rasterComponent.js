@@ -608,7 +608,7 @@ console.log("Check Component.absorbe()");
 			// Each node in this component should belong to a cluster whose rootcluster has the same 
 			// type and title as this Assessment
 			var it = new NodeClusterIterator({project: this.project, type: ta.type, title: ta.title});
-			if (it.count()==0) {
+			if (it.isEmpty()) {
 				errors += offender+"has a vuln assessment "+ta.id+" that does not have a corresponding node cluster.\n";
 				continue;
 			}
@@ -647,89 +647,3 @@ console.log("Check Component.absorbe()");
 	}
 };
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- * ComponentIterator: iterate over all components of a project
- *
- * opt: object with options to restrict the iteration to specified items only.
- *		Specify project (ID), service (ID), type (string), and/or match (string).
- * Option 'match' is similar to 'type'; 'type' looks for equality, but 'match'
- * looks for either equality or a cloud-type.
- *
- * usage:
- * 		var it = new ComponentIterator({project: ppppp, service: sssss, type: ttttt});
- * 		for (const cm of it) {
- *			console.log(cm.title);
- *			console.log(cm.id);
- *	 		:
- *		}
- */
-class ComponentIterator {		// eslint-disable-line no-unused-vars
-	constructor(opt) {
-		this.item = [];
-		for (var i in Component._all) {
-			var cm =  Component._all[i];
-			// The component is part of a project if one of its nodes belongs to a
-			// service that belongs to that project.
-			var ok = true, j, occurs;
-			if (opt.project!=null) {
-				ok = ok && (cm.project==opt.project);
-			}
-			if (ok && opt.type!=null) {
-				ok = ok && (cm.type==opt.type);
-			}
-			if (ok && opt.match!=null) {
-				ok = ok && (cm.type==opt.match
-					|| cm.type=='tUNK'
-					|| opt.match=='tUNK'
-				);
-			}
-			if (ok && opt.service!=null) {
-				occurs=false;
-				for (j=0; !occurs && j<cm.nodes.length; j++) {
-					occurs = (Node.get(cm.nodes[j]).service==opt.service);
-				}
-				ok = ok && occurs;
-			}
-			if (ok) this.item.push(cm);
-		}
-	}
-
-	*[Symbol.iterator]() {
-		for (const id of this.item) {
-			yield id;
-		}
-	}
-
-	count() {
-		return this.item.length;
-	}
-	
-	sortByName() {
-		this.item.sort( function(ca,cb) {
-			return ca.title.toLocaleLowerCase().localeCompare(cb.title.toLocaleLowerCase());
-		});
-	}
-	
-	sortByType() {
-		this.item.sort( function(ca,cb) {
-			if (ca.type<cb.type)  return -1;
-			if (ca.type>cb.type)  return 1;
-			// When types are equal, sort alphabetically
-			return ca.title.toLocaleLowerCase().localeCompare(cb.title.toLocaleLowerCase());
-		});
-	}
-	
-	sortByLevel() {
-		this.item.sort( function(ca,cb) {
-			var va = Assessment.valueindex[ca.magnitude];
-			var vb = Assessment.valueindex[cb.magnitude];
-			if (va==1) va=8; // Ambiguous
-			if (vb==1) vb=8;
-			if (va!=vb) {
-				return vb - va;
-			}
-			// When levels are equal, sort alphabetically
-			return ca.title.toLocaleLowerCase().localeCompare(cb.title.toLocaleLowerCase());
-		});
-	}	
-}

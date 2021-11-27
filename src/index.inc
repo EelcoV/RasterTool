@@ -46,8 +46,9 @@ See LICENSE.md
 <script type="text/javascript" src="../js/rasterAssessment.js"></script>
 <script type="text/javascript" src="../js/rasterComponent.js"></script>
 <script type="text/javascript" src="../js/rasterNode.js"></script>  
-<script type="text/javascript" src="../js/rasterNodeCluster.js"></script>  
-<script type="text/javascript" src="../js/rasterPreferencesObject.js"></script>  
+<script type="text/javascript" src="../js/rasterNodeCluster.js"></script>
+<script type="text/javascript" src="../js/rasterIterators.js"></script>
+<script type="text/javascript" src="../js/rasterPreferencesObject.js"></script>
 #ifdef STANDALONE
   <script type="text/javascript">if (window.module) module = window.module;</script>
 #endif
