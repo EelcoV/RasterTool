@@ -661,7 +661,7 @@ var updateFind = function() {
 		$('#tabs').tabs('option','active',0);
 		// Activate the right service
 		if (svc_id != Service.cid) {
-			$('#diaservicetab'+svc_id+' a').click();
+			$('#diagramsservicetab'+svc_id+' a').click();
 			FindScrollPos = -FindScrollPos;
 			StartFind(nodeFindString);
 		}
@@ -968,7 +968,7 @@ function loadDefaultProject() {
 	s.autosettitle();
 	p.autosettitle();
 	p.load();
-	s.paintall();
+	s.load();
 }
 
 //function modifyCSS(selector,property,newvalue) {
@@ -1056,7 +1056,7 @@ function SizeDOMElements() {
 
 function sizeworkspace() {
 	// Adjust the workspace height
-	// #bottomtabsdia or #bottomtabssf height is 27px per row. Double rows possible with many services
+	// #bottomtabsdiagrams or #bottomtabssinglefs height is 27px per row. Double rows possible with many services
 	// and/or a narrow window.
 	var wh = $(window).height();
 	var bh;
@@ -1066,13 +1066,13 @@ function sizeworkspace() {
 	var adj = 35;
 #endif
 
-	bh = $('#bottomtabsdia').height();
+	bh = $('#bottomtabsdiagrams').height();
 	if (bh>0) {
 		$('#diagrams_body .workspace').height(wh-adj+27-bh);
 		$('#diagrams_body .servplusbutton').height(bh-4);
 	}
 
-	bh = $('#bottomtabssf').height();
+	bh = $('#bottomtabssinglefs').height();
 	if (bh>0) {
 		$('#singlefs_body .workspace').height(wh-adj+27-bh);
 		$('#singlefs_body .servplusbutton').height(bh-4);
@@ -2181,8 +2181,7 @@ function vertTabSelected(/*event, ui*/) {
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
 		$('#diagramstabtitle'+Service.cid).trigger('click');
-		// Paint, if the diagram has not been painted already
-		Service.get(Service.cid).paintall();
+		Service.get(Service.cid)._jsPlumb.repaintEverything();
 		Preferences.settab(0);
 		break;
 	case 1:		// tab Single Failures
@@ -2861,8 +2860,8 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 	var id = nid2id(ui.newPanel[0].id);
 	$('#selectrect').hide();
 	removetransientwindowsanddialogs();
-	Service.get(id).paintall();
 	Service.cid = id;
+	Service.get(id)._jsPlumb.repaintEverything();
 }
 
 function bottomTabsShowHandlerSFaults(event,ui) {
@@ -2892,10 +2891,10 @@ function initTabDiagrams() {
 		}
 	});
 	$('#diagrams_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
-	$('#bottomtabsdia').on('mouseenter', 'li', function(){
+	$('#bottomtabsdiagrams').on('mouseenter', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
 	});
-	$('#bottomtabsdia').on('mouseleave', 'li', function(){
+	$('#bottomtabsdiagrams').on('mouseleave', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 
@@ -3835,10 +3834,10 @@ function initTabSingleFs() {
 		}
 	});
 	$('#singlefs_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
-	$('#bottomtabssf').on('mouseenter', 'li', function(){
+	$('#bottomtabssinglefs').on('mouseenter', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
 	});
-	$('#bottomtabssf').on('mouseleave', 'li', function(){
+	$('#bottomtabssinglefs').on('mouseleave', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 

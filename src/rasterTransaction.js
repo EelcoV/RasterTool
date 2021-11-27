@@ -613,7 +613,7 @@ Transaction.prototype = {
 				let p = Project.get(d.project);
 				if (!d.title) {
 					// this is undo data
-					p.removeservice(d.id);
+					p.removeservice(d.id); // will unload and destroy the service
 					continue;
 				}
 				let s = new Service(d.project,d.id);
@@ -650,13 +650,13 @@ Transaction.prototype = {
 			p.services = data.list;
 
 			// Remove all service tabs on Diagrams and Single Failures, and re-create.
-			$('#bottomtabssf').empty();
-			$('#bottomtabsdia').empty();
-			for (const sid of data.list) {
-				var s = Service.get(sid);
-				s._addtabsinglefs_tabonly();
-				s._addtabdiagrams_tabonly();
-			}
+			$('#bottomtabsdiagrams').empty();
+			$('#bottomtabssinglefs').empty();
+			data.list.forEach( sid => {
+				let s = Service.get(sid);
+				s.inserttab('diagrams');
+				s.inserttab('singlefs');
+			});
 			p.store();
 			$('#diagrams_body').tabs('refresh');
 			$('#singlefs_body').tabs('refresh');

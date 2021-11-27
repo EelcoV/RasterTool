@@ -582,7 +582,7 @@ Project.prototype = {
 	},
 
 	load: function() {
-		for (const sid of this.services) Service.get(sid).load();
+		this.services.forEach(sid => Service.get(sid).load());
 		for (const vid of this.vulns) {
 			let vln = Vulnerability.get(vid);
 			switch (vln.type) {

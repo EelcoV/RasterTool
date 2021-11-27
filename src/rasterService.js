@@ -20,8 +20,6 @@
  *	id: (string) UUID
  *	project: (object-id) project to which this service belongs
  *	title: (string) short name of the service (max 50 chars).
- *	_painted: boolean, indicates whether all Nodes have been painted already;
- *		necessary to avoid painting them twice.
  *	_loaded: boolean, indicates whether all DOM elements have been created;
  *		necessary to avoid painting on non-existing DIVs.
  *	_jsPlumb: instance of jsPlumb for this service and workspace.
@@ -32,13 +30,12 @@
  *	autosettitle: choose a unique standard name. The project must be set first!
  *		Either settitle() or autosettitle() must be called.
  *	setproject(p): change the project to which this service belongs to the one with id p.
- *	unload(): remove all DOM elements for this service, except nodes.
- *  removetab(prefix): remove DOM elements for diagrams or single failures
- *	load(): create and set all DOM elements for this service, except nodes.
- *  addtabdiagrams(idx): create and set DOM elements for this service's diagram, at position idx
- *  addtabsinglefs(dx): create and set DOM elements for this service's single failures, at position idx
- *	unpaintall(): remove all Nodes for this service.
- *	paintall(): create and set all Nodes for this service.
+ *	unload(): remove all DOM elements for this service and its nodes.
+ *  removetab(prefix): remove non-content DOM elements for diagrams or single failures
+ *	insertab(prefix,idx): insert the non-content DOM elements for diagrams or single failures (the prefix) at position idx.
+ *	load(): create and set all DOM elements for this service and its nodes.
+ *  _addtabdiagrams(idx): insert the content DOM elements for this service's diagram, at position idx
+ *  _addtabsinglefs(idx): insert the content DOM elements for this service's single failures, at position idx
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
@@ -50,7 +47,6 @@ var Service = function(pid, id) {
 	this.id = (id==null ? createUUID() : id);
 	this.project = pid;
 	this.title = "";
-	this._painted=false;
 	this._loaded=false;
 	this._jsPlumb = jsPlumb.getInstance({
 		PaintStyle: {
@@ -134,12 +130,127 @@ Service.prototype = {
 	},
 
 	unload: function() {
-		this.unpaintall();
+		$('#scroller_overview'+this.id).hide();
+		if (this.id==Service.cid) {
+			$('#nodereport').hide();
+		}
+		// Be sure to only remove nodes from this service.
+		var it = new NodeIterator({service: this.id});
+		it.forEach(rn => rn.unpaint());
+		this._jsPlumb.reset();
 		this.removetab('diagrams');
 		this.removetab('singlefs');
 		this._loaded=false;
 	},
 
+	load: function() {
+		let p = Project.get(this.project);
+		let idx = p.services.indexOf(this.id);
+		let jsp = this._jsPlumb;
+		this.inserttab('diagrams',idx);
+		this.inserttab('singlefs',idx);
+		this._addtabdiagrams();
+		this._addtabsinglefs();
+		
+		SizeDOMElements();
+		// For some reason, the mouseup event on #selectrect is only fired consistently when
+		// the #selectrect div is inside the workspace. If the div is inside diagrams_body or
+		// inside the main <body>, the mouseup is almost always 'lost'. We therefore have to
+		// delete #selectrect, resurrect it, and re-bind the menu event handler.
+		$('.scroller_overview').hide();
+		$('#scroller_overview'+this.id).show();
+		$('#selectrect').remove();
+		$('#diagrams_workspace'+this.id).append('<div id="selectrect"></div>');
+		$('#selectrect').on('contextmenu', function(e) {
+			e.preventDefault();
+			$('#selectmenu').menu('collapseAll');
+			$('#selectmenu').show();
+			$('#selectmenu').position({
+				my: "left top",
+				at: "left+" + e.pageX + "px top+" + e.pageY + "px",
+				of: "body",
+				collision: "fit"
+			});
+			return false;
+		});
+		$('#selectrect').on('click', function(evt) {
+			if (evt.button==0)  $('#selectmenu').hide(); // left mousebutton
+		});
+		var origpos;
+		$('#selectrect').draggable({
+			start: function(event,ui) {
+				origpos = ui.position;
+				NodesBeingDragged = Node.nodesinselection();
+				// Remember the original positions in the (scratchpad) undo_data data-property of #selectrect
+				let undo_data = [];
+				for (const nid of NodesBeingDragged) {
+					let n = Node.get(nid);
+					undo_data.push({id: n.id, x: n.position.x, y: n.position.y});
+				}
+				$('#selectrect').data('undo_data',undo_data);
+			},
+			drag: function(event,ui) {
+				// Drag all nodes in the selection
+				var dx = (ui.position.left-origpos.left);
+				var dy = (ui.position.top-origpos.top);
+				origpos = ui.position;
+				for (const nid of NodesBeingDragged) {
+					var n = Node.get(nid);
+					n.setposition(n.position.x+dx,n.position.y+dy,false);
+				}
+			},
+			stop: function(/*event,ui*/) {
+				NodesBeingDragged = Node.nodesinselection();
+				let do_data = [];
+				for (const nid of NodesBeingDragged) {
+					let n = Node.get(nid);
+					do_data.push({id: n.id, x: n.position.x, y: n.position.y});
+				}
+				let undo_data = $('#selectrect').data('undo_data');
+				// Restore previous geometry, necessary for testing only
+				for (const d of undo_data) {
+					let n = Node.get(d.id);
+					n.position.x = d.x;
+					n.position.y = d.y;
+					n.store();
+				}
+				new Transaction('nodeGeometry', undo_data, do_data, _("Move nodes"));
+				$('#selectrect').removeData('undo_data');
+			},
+			cursor: 'move'
+		});
+		
+		jsp.setContainer('diagrams_workspace'+this.id);
+		jsp.bind('beforeDrop', dropfunction );
+		// Delay all jsPlumb paint operations
+		jsp.setSuspendDrawing(true);
+		/* First paint all the nodes, before drawing the connectors */
+		var it = new NodeIterator({service: this.id});
+		it.forEach(rn => rn.paint(false));
+		
+		/* All nodes exist, now draw connectors. When node X is connected to
+		 * node Y, then also node Y is connected to node X. However, we must
+		 * only draw their connector once. We therefore only draw a connector
+		 * when X.id < Y.id
+		 */
+		it.forEach(rn => {
+			rn.connect.forEach(on =>  {
+				var dst = Node.get(on);
+				if (dst.service!=this.id) {
+					bugreport('inconsistency in connections between nodes','Service.paintall');
+				}
+				if (rn.id<dst.id) {
+					rn.attach_center(dst,true);
+				}
+			});
+		});
+		jsp.setSuspendDrawing(false, true);
+		it.forEach(rn => rn.setmarker());
+		RefreshNodeReportDialog();
+		Service.cid = this.id;
+		this._loaded=true;
+	},
+	
 	removetab: function(tabprefix) {
 		// Remove the tab contents
 		$('#'+tabprefix+this.id).remove();
@@ -151,48 +262,9 @@ Service.prototype = {
 		}
 	},
 
-	load: function() {
+	inserttab: function(tabprefix,idx) {
 		let p = Project.get(this.project);
-		this._jsPlumb.bind('beforeDrop', dropfunction );
-		this.addtabdiagrams(p.services.indexOf(this.id));
-		this.addtabsinglefs(p.services.indexOf(this.id));
-		$('#bottomtabsdia').sortable({
-			containment: 'parent',
-			scroll: false,
-			stop: function(/*evt,ui*/) {
-				// Set the new order of services
-				var arr = $('#bottomtabsdia').sortable('toArray');
-				arr.forEach(function(v,i) {arr[i] = nid2id(v);});
-
-				new Transaction('serviceReorder',
-					{project: p.id, list: p.services},
-					{project: p.id, list: arr},
-					_("Reorder services")
-				);
-			}
-		});
-		$('#bottomtabssf').sortable({
-			containment: 'parent',
-			scroll: false,
-			stop: function(/*evt,ui*/) {
-				// Set the new order of services
-				var arr = $('#bottomtabssf').sortable('toArray');
-				arr.forEach(function(v,i) {arr[i] = nid2id(v);});
-
-				new Transaction('serviceReorder',
-					{project: p.id, list: p.services},
-					{project: p.id, list: arr},
-					_("Reorder services")
-				);
-			}
-		});
-		SizeDOMElements();
-		this._loaded=true;
-	},
-	
-	_addtabdiagrams_tabonly: function(idx) {
-		/* Create a new tab */
-		var snippet = '<li id="diaservicetab_I_">\
+		var snippet = '<li id="_PF_servicetab_I_">\
 			<a href="#_PF__I_">\
 			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
 			</a>\
@@ -201,27 +273,47 @@ Service.prototype = {
 			';
 		snippet = snippet.replace(/_T_/g, H(this.title));
 		snippet = snippet.replace(/_I_/g, this.id);
-		snippet = snippet.replace(/_PF_/g, 'diagrams');
+		snippet = snippet.replace(/_PF_/g, tabprefix);
 		if (idx==null) {
-			$('#diagrams_body .ui-tabs-nav').append(snippet);
+			$('#'+tabprefix+'_body .ui-tabs-nav').append(snippet);
 		} else if (idx==0) {
-			$('#diagrams_body .ui-tabs-nav').prepend(snippet);
+			$('#'+tabprefix+'_body .ui-tabs-nav').prepend(snippet);
 		} else {
-			$('#diagrams_body .ui-tabs-nav li').eq(idx-1).after(snippet);
+			$('#'+tabprefix+'_body .ui-tabs-nav li').eq(idx-1).after(snippet);
 		}
 //		$(snippet).appendTo( '#diagrams_body .ui-tabs-nav' );
 		
 		/* We have bottom tabs, so have to correct the tab corners */
-		$('a[href^="#diagrams'+this.id+'"]').on('dblclick',  diagramTabEditStart );
-		$('a[href^="#diagrams'+this.id+'"]').on('click',  function(/*evt,ui*/) {
+		$('a[href^="#'+tabprefix+this.id+'"]').on('dblclick',  diagramTabEditStart );
+		$('a[href^="#'+tabprefix+this.id+'"]').on('click',  function(/*evt,ui*/) {
 			var s = Service.get(nid2id(this.hash));
 			Preferences.setservice(s.title);
 		} );
+		
+		function bottomdabshandler(domelem) {
+			return function() {
+				// Set the new order of services
+				let arr = $(domelem).sortable('toArray');
+				arr.forEach((v,i) => arr[i] = nid2id(v));
+				// Check if the new order is really different
+				if (arr.every((v,i) => v==p.services[i]))  return;
+				// Really different, so enter a transaction
+				new Transaction('serviceReorder',
+					{project: p.id, list: p.services},
+					{project: p.id, list: arr},
+					_("Reorder services")
+				);
+			};
+		}
+		$('#bottomtabs'+tabprefix).sortable({
+			containment: 'parent',
+			scroll: false,
+			stop: bottomdabshandler('#bottomtabs'+tabprefix)
+		});
 	},
 	
-	addtabdiagrams: function(idx) {
+	_addtabdiagrams: function() {
 		var serviceid = this.id; // For use in event handler functions
-		this._addtabdiagrams_tabonly(idx);
 		
 		/* Add content to the new tab */
 		var snippet = '\n\
@@ -351,38 +443,7 @@ Service.prototype = {
 		});
 	},
 
-	_addtabsinglefs_tabonly: function(idx) {
-		/* Create a new tab */
-		var snippet = '<li id="sfservicetab_I_">\
-			<a href="#_PF__I_">\
-			  <span id="_PF_tabtitle_I_" title="_T_" class="tabtitle tabtitle_I_">_T_</span>\
-			</a>\
-				<span id="_PF_tabclose_I_" class="ui-icon ui-icon-close tabcloseicon" role="presentation">Remove Tab</span>\
-			</li>\
-			';
-		snippet = snippet.replace(/_T_/g, H(this.title));
-		snippet = snippet.replace(/_I_/g, this.id);
-		snippet = snippet.replace(/_PF_/g, 'singlefs');
-		if (idx==null) {
-			$('#singlefs_body .ui-tabs-nav').append(snippet);
-		} else if (idx==0) {
-			$('#singlefs_body .ui-tabs-nav').prepend(snippet);
-		} else {
-			$('#singlefs_body .ui-tabs-nav li').eq(idx-1).after(snippet);
-		}
-//		$(snippet).appendTo( '#singlefs_body .ui-tabs-nav' );
-		
-		/* We have bottom tabs, so have to correct the tab corners */
-		$('a[href^="#singlefs'+this.id+'"]').on('dblclick',  diagramTabEditStart );
-		$('a[href^="#singlefs'+this.id+'"]').on('click',  function(/*evt,ui*/) {
-			var s = Service.get(nid2id(this.hash));
-			Preferences.setservice(s.title);
-		} );
-	},
-	
-	addtabsinglefs: function(idx) {
-		this._addtabsinglefs_tabonly(idx);
-
+	_addtabsinglefs: function() {
 		/* Add content to the new tab */
 		var snippet = '\n\
 			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-tl workspace"></div>\n\
@@ -403,123 +464,6 @@ Service.prototype = {
 		$('#singlefs'+this.id).append(snippet);
 		$('#singlefs_body').tabs('refresh');
 		$('#singlefs_body ul li').removeClass('ui-corner-top');
-	},
-
-	unpaintall: function() {
-		$('#scroller_overview'+this.id).hide();
-		if (!this._painted)  return;
-		if (this.id==Service.cid) {
-			$('#nodereport').hide();
-		}
-		// Be sure to only remove nodes from this service.
-		var it = new NodeIterator({service: this.id});
-		it.forEach(rn => rn.unpaint());
-		this._jsPlumb.reset();
-		this._painted=false;
-	},
-	
-	paintall: function() {
-		if (!this._loaded)  return;
-		// For some reason, the mouseup event on #selectrect is only fired consistently when
-		// the #selectrect div is inside the workspace. If the div is inside diagrams_body or
-		// inside the main <body>, the mouseup is almost always 'lost'. We therefore have to
-		// delete #selectrect, resurrect it, and re-bind the menu event handler.
-		$('#diagrams'+this.id).show();
-		$('.scroller_overview').hide();
-		$('#scroller_overview'+this.id).show();
-		$('#selectrect').remove();
-		$('#diagrams_workspace'+this.id).append('<div id="selectrect"></div>');
-		$('#selectrect').on('contextmenu', function(e) {
-			e.preventDefault();
-			$('#selectmenu').menu('collapseAll');
-			$('#selectmenu').show();
-			$('#selectmenu').position({
-				my: "left top",
-				at: "left+" + e.pageX + "px top+" + e.pageY + "px",
-				of: "body",
-				collision: "fit"
-			});
-			return false;
-		});
-		$('#selectrect').on('click', function(evt) {
-			if (evt.button==0)  $('#selectmenu').hide(); // left mousebutton
-		});
-		var origpos;
-		$('#selectrect').draggable({
-			start: function(event,ui) {
-				origpos = ui.position;
-				NodesBeingDragged = Node.nodesinselection();
-				// Remember the original positions in the (scratchpad) undo_data data-property of #selectrect
-				let undo_data = [];
-				for (const nid of NodesBeingDragged) {
-					let n = Node.get(nid);
-					undo_data.push({id: n.id, x: n.position.x, y: n.position.y});
-				}
-				$('#selectrect').data('undo_data',undo_data);
-			},
-			drag: function(event,ui) {
-				// Drag all nodes in the selection
-				var dx = (ui.position.left-origpos.left);
-				var dy = (ui.position.top-origpos.top);
-				origpos = ui.position;
-				for (const nid of NodesBeingDragged) {
-					var n = Node.get(nid);
-					n.setposition(n.position.x+dx,n.position.y+dy,false);
-				}
-			},
-			stop: function(/*event,ui*/) {
-				NodesBeingDragged = Node.nodesinselection();
-				let do_data = [];
-				for (const nid of NodesBeingDragged) {
-					let n = Node.get(nid);
-					do_data.push({id: n.id, x: n.position.x, y: n.position.y});
-				}
-				let undo_data = $('#selectrect').data('undo_data');
-				// Restore previous geometry, necessary for testing only
-				for (const d of undo_data) {
-					let n = Node.get(d.id);
-					n.position.x = d.x;
-					n.position.y = d.y;
-					n.store();
-				}
-				new Transaction('nodeGeometry', undo_data, do_data, _("Move nodes"));
-				$('#selectrect').removeData('undo_data');
-			},
-			cursor: 'move'
-		});
-		
-		if (this._painted)  return;
-
-		this._jsPlumb.setContainer('diagrams_workspace'+this.id);
-		// Delay all jsPlumb paint operations
-		this._jsPlumb.setSuspendDrawing(true);
-		/* First paint all the nodes, before drawing the connectors */
-		var it = new NodeIterator({service: this.id});
-		it.forEach(rn => rn.paint(false));
-		
-		/* All nodes exist, now draw connectors. When node X is connected to
-		 * node Y, then also node Y is connected to node X. However, we must
-		 * only draw their connector once. We therefore only draw a connector
-		 * when X.id < Y.id
-		 */
-		for (const rn of it) {
-			for (var j=0; j<rn.connect.length; j++) {
-				var dst = Node.get(rn.connect[j]);
-				if (dst.service!=this.id) {
-					bugreport('inconsistency in connections between nodes','Service.paintall');
-				}
-				if (rn.id<dst.id) {
-					rn.attach_center(dst);
-				}
-			}
-		}
-		for (const rn of it) {
-			rn.setmarker();
-		}
-		RefreshNodeReportDialog();
-		this._jsPlumb.setSuspendDrawing(false, true);
-		Service.cid = this.id;
-		this._painted=true;
 	},
 
 	_stringify: function() {

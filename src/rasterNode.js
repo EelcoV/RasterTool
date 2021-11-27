@@ -52,9 +52,8 @@
  *	showmarker(): shows the rule violation marker.
  *	setlabel(): sets the color and updats the DOM.
  *	try_attach_center(dst): called when this node gets connected to Node dst.
- *	attach_center(dst): create and draw the connector.
- *	detach_center(dst): called when the connection from this node to Node dst
- *		is removed.
+ *	attach_center(dst): create and draw the connection between this and dst.
+ *	detach_center(dst): undo (but do not undraw) the connection between this and dst.
  *	addtonodeclusters(): for each of the Assessments to this component, insert the 
  *		node into the corresponding node cluster.
  *	removefromnodeclusters(): remove this node from all node clusters.
@@ -594,8 +593,8 @@ Node.prototype = {
 	},
 	
 	attach_center: function(dst) {
-		var jsP = Service.get(this.service)._jsPlumb;
-		var edge = jsP.connect({		// eslint-disable-line no-unused-vars
+		let jsP = Service.get(this.service)._jsPlumb;
+		jsP.connect({
 			sourceEndpoint: this.centerpoint,
 			targetEndpoint: dst.centerpoint,
 			connector: 'Straight',
@@ -616,7 +615,7 @@ Node.prototype = {
 							);
 						}
 					}
-				}	
+				}
 			]]
 		});
 		// attach_center is also used to repaint connectors (e.g. on page load), so it is
@@ -632,8 +631,6 @@ Node.prototype = {
 	},
 	
 	/* NOTE: attach_center also handles jsplumb, but detach_center does not.
-	 * detach_center does noet
-	 * Is it possible to make this more consistent?
 	 */
 	detach_center: function(dst) {
 		var i;

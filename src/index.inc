@@ -302,7 +302,7 @@ See LICENSE.md
   <div id="diagrams_body" class="tabs-bottom">
   	<div id="mask-collection" class="donotprint"><!-- mask images to be inserted here --></div>
     <input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
-    <ul id="bottomtabsdia">
+    <ul id="bottomtabsdiagrams">
     </ul>
   </div>    
 </div>
@@ -311,7 +311,7 @@ See LICENSE.md
 <div id="tab_singlefs" class="workbody workouter">
   <div id="singlefs_body" class="tabs-bottom">
     <input id="servaddbuttonsf" class="servplusbutton" type="button" value=" + ">
-    <ul id="bottomtabssf">
+    <ul id="bottomtabssinglefs">
     </ul>
   </div>    
 </div>
