@@ -5418,12 +5418,11 @@ function paintSFTable() {
 	}
 
 	$('#ana_nodethreattable').empty();
-	var numthreats = 0;
+	var numvulns = tit.count();
 	var Nodesum = [];
-	for (const cl of tit) numthreats++;		// eslint-disable-line no-unused-vars
 	// If the table would be empty, then don't paint row and column headers
 	// but show a message instead
-	if (numthreats==0) {
+	if (numvulns==0) {
 		$('#ana_nodethreattable').html("<p style=\"margin-left:3em; width:50em;\">"
 			+ _("This space will show an overview of all diagram nodes and their vulnerabilities. ")
 			+ _("Since all service diagrams are empty, there is nothing to see here yet. ")
@@ -5445,13 +5444,13 @@ function paintSFTable() {
 		  <td class="nodetitlecell largetitlecell">_SF_</td>\n\
 	';
 	// 20em = width of first column
-	// 1.7em = width of threat columns
-	// numthreats = number of threat columns
+	// 1.7em = width of vulnerability columns
+	// numvulns = number of vulnerability columns
 	snippet = snippet.replace(/_SF_/, _("Single failures"));
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
-	snippet = snippet.replace(/_TW_/, 20+1.7*(numthreats+1));
-	snippet = snippet.replace(/_NT_/, numthreats+1);
+	snippet = snippet.replace(/_TW_/, 20+1.7*(numvulns+1));
+	snippet = snippet.replace(/_NT_/, numvulns+1);
 	for (const nc of tit) {
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}
@@ -5506,8 +5505,8 @@ function paintSFTable() {
 	$('#ana_nodethreattable').html(snippet);
 
 	$('.nodecell').on('click',  function(evt){
-		var cmid = parseInt($(evt.currentTarget).attr('component'),10);
-		var tid = parseInt($(evt.currentTarget).attr('threat'),10);
+		var cmid = $(evt.currentTarget).attr('component');
+		var tid = $(evt.currentTarget).attr('threat');
 		if (exclusionsContains(ComponentExclusions,cmid,tid)) {
 			exclusionsRemove(ComponentExclusions,cmid,tid);
 			$('#clearexclusions').button('option','disabled',exclusionsIsEmpty(ComponentExclusions));
@@ -5549,10 +5548,10 @@ function paintCCFTable() {
 	}
 
 	$('#ana_ccftable').empty();
-	var numthreats = 0;
-	for (const cl of tit) numthreats++;		// eslint-disable-line no-unused-vars
+	var numvulns = 0;
+	for (const cl of tit) numvulns++;		// eslint-disable-line no-unused-vars
 	// Do not paint an empty table
-	if (ncit.isEmpty() || numthreats==0)  return;
+	if (ncit.isEmpty() || numvulns==0)  return;
 
 	// Do the header
 	var snippet = '\n\
@@ -5565,12 +5564,12 @@ function paintCCFTable() {
 	';
 	snippet = snippet.replace(/_CCF_/, _("Common cause failures"));
 	// 20em = width of first column
-	// 1.7em = width of threat columns
-	// numthreats = number of threat columns
+	// 1.7em = width of vulnerability columns
+	// numvulns = number of vulnerability columns
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
-	snippet = snippet.replace(/_TW_/, 20+1.7*(numthreats+1));
-	snippet = snippet.replace(/_NT_/, numthreats+1);
+	snippet = snippet.replace(/_TW_/, 20+1.7*(numvulns+1));
+	snippet = snippet.replace(/_NT_/, numvulns+1);
 	for (const nc of tit) {
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}
@@ -5591,7 +5590,7 @@ function paintCCFTable() {
 			col++;
 		}
 
-		snippet += addCCFTableRow(col,numthreats,ta,cl,0);
+		snippet += addCCFTableRow(col,numvulns,ta,cl,0);
 
 		col++;
 	}
@@ -5615,13 +5614,13 @@ function paintCCFTable() {
 	});
 }
 
-function addCCFTableRow(col,numthreats,ta,cl,indent) {
+function addCCFTableRow(col,numvulns,ta,cl,indent) {
 	var suffix = "";
 	if (indent>0) {
 		suffix = " :" + new Array(indent+1).join("&nbsp;&nbsp;");
 	}
 	var snippet = '<tr><td class="nodetitlecell">'+H(cl.title)+suffix+'&nbsp;</td>\n';
-	for (var i=0; i<numthreats; i++) {
+	for (var i=0; i<numvulns; i++) {
 		if (i==col &&cl.childnodes.length>1) {
 			snippet += '<td class="clustercell _EX_ M_CL_" cluster="_CI_" title="_TI_">_TO_</td>';
 			snippet = snippet.replace(/_CL_/g, Assessment.valueindex[ta.total]);
@@ -5650,7 +5649,7 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
 	for (const clid of cl.childclusters) {
 		var ccl = NodeCluster.get(clid);
 		ta = Assessment.get(ccl.assmnt);
-		snippet += addCCFTableRow(col,numthreats,ta,ccl,indent+1);
+		snippet += addCCFTableRow(col,numvulns,ta,ccl,indent+1);
 	}
 
 	return snippet;
@@ -6071,8 +6070,8 @@ function showremovedvulns() {
 	  <td class="nodetitlecell largetitlecell"></td>\n\
 	';
 	// 20em = width of first column
-	// 1.7em = width of threat columns
-	// numthreats = number of threat columns
+	// 1.7em = width of vulnerability columns
+	// numvulns = number of vulnerability columns
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
 	snippet = snippet.replace(/_TW_/, 20+1.7*VulnIDs.length);
@@ -6172,8 +6171,8 @@ function showcustomvulns() {
 	  <td class="nodetitlecell largetitlecell"></td>\n\
 	';
 	// 20em = width of first column
-	// 1.7em = width of threat columns
-	// numthreats = number of threat columns
+	// 1.7em = width of vulnerability columns
+	// numvulns = number of vulnerability columns
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
 	snippet = snippet.replace(/_TW_/, 20+1.7*VulnTitles.length);
