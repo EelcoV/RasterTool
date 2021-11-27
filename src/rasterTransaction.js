@@ -963,7 +963,6 @@ function rebuildCluster(c) {
 	} else if (!cl.isroot()) {
 		// Set only for non-root clusters (root clusters inherit from the common Vulnerability
 		ta.settitle(c.assmnt.title);
-		ta.setdescription(c.assmnt.description);
 	}
 	ta.setremark(c.assmnt.remark);
 	ta.setfreq(c.assmnt.freq);

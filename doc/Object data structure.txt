@@ -74,7 +74,6 @@ ThreatAssessment (used to be ThreatEvaluation)
 .component		setcomponent(n.id)		.m
 .cluster		setcluster(f.id)		.u
 .title			settitle(str)			.l
-.description	setdescription(str)		.d
 .freq			setfreq(str)			.p
 .impact			setimpact(str)			.i
 .remark			setremark(str)			.r

@@ -1841,7 +1841,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 				m: te.m,
 				u: te.u,
 				l: (vln ? null : te.l),
-				d: (vln ? null : te.d),
 				p: te.p,
 				i: te.i,
 				r: te.r
@@ -1986,7 +1985,6 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			assmnt.vulnerability=lv.v;
 		} else {
 			assmnt.settitle(lv.l);
-			assmnt.setdescription(lv.d);
 		}
 		assmnt.freq=lv.p;
 		assmnt.impact=lv.i;

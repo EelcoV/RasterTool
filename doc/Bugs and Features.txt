@@ -4,7 +4,6 @@ See LICENSE.md
 
 BUGS
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
-Clicking a square on the Analysis|Failures and Vulnerabilities tab does not mark that square (as Quick Wins does).
 Sometimes when moving a node localStorage is not up to date with the node's properties.
 Option Hide/Show color does not have immediate effect.
 Undoing a threat-create does not repaint list of node clusters in Common cause failure view
@@ -21,7 +20,6 @@ Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selec
 
 TODO
 Add option to duplicate a project.
-Description on Assessment is obsolete?
 Undo
 With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.

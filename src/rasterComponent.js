@@ -163,7 +163,6 @@ console.log("Check Component.absorbe()");
 				th.setcomponent(this.id);
 				this.assmnt.push(th.id);
 				th.settitle(clip.t);
-				th.setdescription(clip.d);
 				th.setfreq(clip.p);
 				th.setimpact(clip.i);
 				th.setremark(clip.r);

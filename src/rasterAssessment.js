@@ -30,7 +30,6 @@ bugreport, _, AssessmentIterator, LS, Component, NodeClusterIterator, Transactio
  *	type: type of threat (type of Node to which this evaluation belongs)
  *	_title:
  *	title (getter): short name of the threat (50 chars max)
- *	_description:
  *	description (getter): description of the threat (100 chars max)
  *	freq: frequency
  *	impact: magnitude of effects
@@ -45,7 +44,6 @@ bugreport, _, AssessmentIterator, LS, Component, NodeClusterIterator, Transactio
  *	setcluster(id): set the owning NodeCluster object to id.
  *	settitle(str): sets the short name text to 'str'.
  *	_setparentmarker(): show/hide/set the status of the Component or NodeCluster (parent).
- *	setdescription(str): sets the full description text to 'str'.
  *	setfreq(v): sets the frequency to 'v'
  *	setimpact(v): sets the impact to 'v'
  *	setminimpact(v): (re-)format the UI element showing the impact; lowest permissible impact value is 'v'
@@ -76,7 +74,6 @@ var Assessment = function(type,id) {
 	this.component = null;
 	this.cluster = null;
 	this._title = null;
-	this._description = "";
 	this.freq='-';
 	this.impact='-';
 	this.minimpact='-';
@@ -211,11 +208,7 @@ Assessment.prototype = {
 	},
 
 	get description() {
-		if (this.vulnerability) {
-			return Vulnerability.get(this.vulnerability).description;
-		} else {
-			return this._description;
-		}
+		return (this.vulnerability ? Vulnerability.get(this.vulnerability).description : '');
 	},
 
 	get project() {
@@ -278,15 +271,6 @@ Assessment.prototype = {
 		if (this.cluster!=null) {
 			NodeCluster.get(NodeCluster.get(this.cluster).root()).setmarker();
 		}
-	},
-
-	setdescription: function(str) {
-		str = String(str).trim().substr(0,100);
-		// Silently ignore an attempt to set a blank title
-		if (str=="")  return;
-
-		this._description = str;
-		this.store();
 	},
 
 	setfreq: function(v) {
@@ -657,7 +641,6 @@ Assessment.prototype = {
 		data.m=this.component;
 		data.u=this.cluster;
 		data.l=this._title;
-		data.d=this._description;
 		data.p=this.freq;
 		data.i=this.impact;
 		// this.minimpact does not need to be stored, but is recomputed.
