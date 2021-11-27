@@ -1592,6 +1592,8 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			/* lProject[i].t[] must contain IDs of threats/vulnerabilities */
 			if (lThreatlen>0 && !containsAllIDs(lThreat,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid checklist.');
 			if (lVulnlen>0 && !containsAllIDs(lVuln,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid common vulnerability.');
+			// Check at least for the projects (not for other objects) whether their id's are unique
+			if (Project.get(lProject[i].id)!=null) throw new Error('Projects cannot be imported twice.');
 		}
 		for (i=0; i<lThreatlen; i++) {
 			/* lThreat[i].p must be the ID of a project */

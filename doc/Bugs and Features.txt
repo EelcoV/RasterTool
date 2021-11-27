@@ -20,12 +20,12 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
-Importing the same project twice will give an error message. This used to be fixed silently, but needs an implicit check now. Either duplicate the project or refuse to load it for now.
+Add option to duplicate a project.
 Description on Assessment is obsolete?
 Undo
 With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
-Make class definitions conform to ES6.
+Make class definitions conform to ES6. Use Map instead of _all. Create modules with import/export.
 Change variables from var to let/const.
 Make the UI more in line with other apps that people are used to these days.
 Refresh the UI theming.
