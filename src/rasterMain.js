@@ -3738,7 +3738,7 @@ function addvulnhandler(cid) {
 			create: true,
 			id: vid,
 			project: c.project,
-			type: c.type,
+			type: (c.type=='tUNK' ? 'tEQT' : c.type),
 			title: ntitle,
 			description: "",
 			common: false,

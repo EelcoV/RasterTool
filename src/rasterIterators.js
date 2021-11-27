@@ -135,7 +135,8 @@ class ComponentIterator extends rasterIterator {		// eslint-disable-line no-unus
 			var obj =  Component._all[i];
 			if (opt.project!=undefined && opt.project!=obj.project)  continue;
 			if (opt.type!=undefined && opt.type!=obj.type)  continue;
-			if (opt.match!=undefined && opt.match!=obj.type && opt.match!='tUNK')  continue;
+			// Note that this line is different, as Components can have type 'tUNK' themselves.
+			if (opt.match!=undefined && opt.match!=obj.type && opt.match!='tUNK' && obj.type!='tUNK')  continue;
 			if (opt.service!=undefined) {
 				let occurs=false;
 				for (let j=0; !occurs && j<obj.nodes.length; j++) {
