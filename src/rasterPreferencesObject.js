@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global nid2id, PaintAllClusters, bugreport, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global PaintAllClusters, bugreport, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
 
 /*
  *
@@ -15,20 +15,13 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 	this.setlabel = function(labelonoff) {
 		this.label = (labelonoff===true);
 		if (this.label) {
-			$('.nodeheader').removeClass('Chide');
-			$('.contentimg').each(function(){
-				var rn = Node.get(nid2id(this.parentElement.id));
-				var src=$(this).attr('src');
-				src = src.replace(/\/img\/iconset\/(\w+)\/.+\//, '/img/iconset/$1/'+rn.color+'/');
-				$(this).attr('src', src);
-			});
+			$('.nodeheader').removeClass('Hhide');
+			$('.nodecolorbackground').removeClass('Bhide');
+			$('.ncontentimg').removeClass('Ihide');
 		} else {
-			$('.nodeheader').addClass('Chide');
-			$('.contentimg').each(function(){
-				var src=$(this).attr('src');
-				src = src.replace(/\/img\/iconset\/(\w+)\/.+\//, '/img/iconset/$1/none/');
-				$(this).attr('src', src);
-			});
+			$('.nodeheader').addClass('Hhide');
+			$('.nodecolorbackground').addClass('Bhide');
+			$('.ncontentimg').addClass('Ihide');
 		}
 		if (this.tab==2) {
 			PaintAllClusters();

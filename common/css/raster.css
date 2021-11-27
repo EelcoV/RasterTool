@@ -820,15 +820,15 @@ div.node {
 	width: 1px;
 	height: 1px;
 }
-.none {color: black !important;}
-.red {color: darkred !important;}
-.orange {color: brown !important;}
-.yellow {color: black !important;}
-.green {color: darkgreen !important;}
-.blue {color: darkblue !important;}
-.pink {color: black !important;}
-.purple {color: white !important;}
-.grey {color: #aaa !important;}
+.Hnone {color: black !important;}
+.Hred {color: darkred !important;}
+.Horange {color: brown !important;}
+.Hyellow {color: black !important;}
+.Hgreen {color: darkgreen !important;}
+.Hblue {color: darkblue !important;}
+.Hpink {color: black !important;}
+.Hpurple {color: white !important;}
+.Hgrey {color: #aaa !important;}
 .Bnone {background: #ffffff;}
 .Bred {background: #ffb1b3;}
 .Borange {background: #ffd88c;}
@@ -840,7 +840,10 @@ div.node {
 .Bgrey {background: #f0f0f0;}
 /* Grey is special: the black of the icon image is reduced to grey. */
 .Igrey {filter: invert(50%);}
-.Chide {color: black !important;}
+
+.Hhide {color: black !important;}
+.Bhide {background: #ffffff !important;}
+.Ihide {filter: none !important;}
 
 img.contentimg {
     width: 100%;

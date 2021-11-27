@@ -537,16 +537,18 @@ Node.prototype = {
 	},
 	
 	setlabel: function(str) {
-		$('#nodeheader'+this.id).removeClass(this.color);
+		$('#nodeheader'+this.id).removeClass('H'+this.color);
 		$('#nodecolorbackground'+this.id).removeClass('B'+this.color);
 		$('#nodeimg'+this.id).removeClass('I'+this.color);
 		this.color = str;
 		this.store();
-		$('#nodeheader'+this.id).addClass(this.color);
+		$('#nodeheader'+this.id).addClass('H'+this.color);
 		$('#nodecolorbackground'+this.id).addClass('B'+this.color);
 		$('#nodeimg'+this.id).addClass('I'+this.color);
 		if (!Preferences.label) {
-			$('#nodeheader'+this.id).addClass('Chide');
+			$('#nodeheader'+this.id).addClass('Hhide');
+			$('#nodecolorbackground'+this.id).addClass('Bhide');
+			$('#ncontentimg'+this.id).addClass('Ihide');
 		}
 	},
 	
@@ -758,7 +760,7 @@ Node.prototype = {
 			<div id="node_ID_" class="node node_TY_" tabindex="2">\n\
 				<div id="nodecolorbackground_ID_" class="nodecolorbackground B_CO_"></div>\n\
 				<img id="nodeimg_ID_" src="../img/iconset/_IS_/_IM_" class="contentimg I_CO_">\n\
-				<div id="nodeheader_ID_" class="nodeheader _HB_ _CO_">\n\
+				<div id="nodeheader_ID_" class="nodeheader _HB_ H_CO_">\n\
 				  <div id="nodetitle_ID_" class="_TB_"><span id="titlemain_ID_"></span><span id="titlesuffix_ID_"></span></div>\n\
 				</div>\n\
 				<img id="nodeC_ID_" class="nodeC" src="../img/dropdown.png">\n\
