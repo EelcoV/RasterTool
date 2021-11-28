@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals bugreport, createUUID, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, prependIfMissing, refreshComponentThreatAssessmentsDialog, H */
+/* globals bugreport, createUUID, prependIfMissing, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, VulnerabilityIterator, refreshComponentThreatAssessmentsDialog, H */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -28,7 +28,7 @@
  * Methods:
  *	destroy(): destructor.
  *	absorbe(c): merge data from another component into this, then destroy() that other component
- *	mergeclipboard: paste Assessment.Clipboard into this. Returns the list of new TA's.
+ *	mergeclipboard: create Transactions to paste Assessment.Clipboard into this.
  *  repaintmembertitles: ensure all members have unique suffixes, then repaint all members
  *	setclasstitle(str): set title of component and all members to 'str', and update DOM.
  *	changeclasstitle(str): if permitted, sets the header text to 'str'.
@@ -139,9 +139,24 @@ console.log("Check Component.absorbe()");
 		cm.destroy();
 	},
 
+/* First, create structure necessary for the Paste transaction on the Component 'cm'.
+ *	changea_do: the 'do' data for changes to existing Assessments on cm.
+ *	changea_undo: the 'undo' data for changes to existing Assessments on cm.
+ *	newassm_do: the 'do' data for adding new Assessments to cm.
+ *	newassm_undo: the 'undo' data for adding new Assessments to cm.
+ *	newvuln_do: the 'do' data for new Vulnerabilities.
+ *	newvuln_undo: the 'undo' data for new Vulnerabilities.
+ * The can be supplied to transactions 'assessmentDetails', 'assmCreateDelete', and 'vulnCreateDelete' respectively.
+ *
+ * Note that a Vulnerability may have to be created. Consider this scenario:
+ *  (1) copy to clipboard
+ *  (2) delete the last remaining Assessment of a custom Vulnerability
+ *  (3) paste from clipboard.
+ */
 	mergeclipboard: function() {
-		var newte = [];
+		let changea_do=[], changea_undo=[], newvuln_do=[], newvuln_undo=[], newassm_do=[], newassm_undo=[];
 		for (const clip of Assessment.Clipboard) {
+			// clip object {t: assm.title, y: assm.type, d: assm.description, p: assm.freq, i: assm.impact, r: assm.remark}
 			if (clip.y=='tUNK') {
 				bugreport("Wrong type in clipboard data","Component.mergeclipboard");
 			}
@@ -149,51 +164,63 @@ console.log("Check Component.absorbe()");
 			// unknown link, then also the type must match. For types wireless/wired/eqt the
 			// type will be converted to this.type anyway, so don't require the types to match.
 			// Break as soon as we find a match.
-			for (var i=0; i<this.assmnt.length; i++) {
-				var te = Assessment.get(this.assmnt[i]);
-				if (isSameString(clip.t,te.title)
-					&& (this.type!='tUNK' || clip.y==te.type)
-				) break;
+			let i, assmnt;
+			for (i=0; i<this.assmnt.length; i++) {
+				assmnt = Assessment.get(this.assmnt[i]);
+				if (isSameString(assmnt.title,clip.t) && (assmnt.type==clip.y || this.type!='tUNK')) break;
 			}
 			if (i==this.assmnt.length) {
-				// Create a new threat evaluation
-				// If we are an unknown link, then the type of our Vulnerabilities can (and should) be different from
-				// our own type. For wireless/wired/eqt, the threat type must be converted to our type.
-				var th = new Assessment( (this.type=='tUNK' ? clip.y : this.type) );
-				th.setcomponent(this.id);
-				this.assmnt.push(th.id);
-				th.settitle(clip.t);
-				th.setfreq(clip.p);
-				th.setimpact(clip.i);
-				th.setremark(clip.r);
-				newte.push(th.id);
+				// Create a new Assessment
+				// If this is an unknown link, then the type of our Vulnerabilities can (and should) be different from
+				// this.type. For wireless/wired/eqt, the vulnerability type must be converted to this.type.
+				let aid, vid, clid; // assesssment, vulnerability, root cluster respectively
+				let newtype = (this.type=='tUNK' ? clip.y : this.type);
+				// Check if the corresponding Vulnerability already exists
+				let it = new VulnerabilityIterator({project: this.project, title: clip.t, type: newtype});
+				if (it.isEmpty()) {
+					vid = createUUID();
+					clid = createUUID();
+					newvuln_do.push({create: true, id: vid, project: this.project, type: newtype, title: clip.t, description: clip.d, common: false, cluster: clid, cla: createUUID()});
+					newvuln_undo.push({create: false, id: vid});
+				} else {
+					let v = it.first();
+					vid = v.id;
+					// Find the corresponding root cluster
+					it = new NodeClusterIterator({project: this.project, title: v.title, type:v.type, isroot: true});
+					clid = it.first().id;
+				}
+				// Create the new assessment
+				aid = createUUID();
+				newassm_do.push({create: true, clid: clid, vuln: vid, assmnt: [{id: aid, component: this.id, freq: clip.p,impact: clip.i, remark: clip.r}]});
+				newassm_undo.push({create: false, clid: clid, assmnt: [{id: aid}]});
 			} else {
-				// Paste into existing threat evaluation
-				te.description = prependIfMissing(clip.d, te.description);
-				// If neither one is set, the result will be '-'.
-				// If one is '-' but the other isn't, the result will be that non '-' value.
-				// If both are set, the result will be the worst of both.
-				if (te.freq=='-') {
-					te.setfreq(clip.p);
-				} else if (clip.p=='-') {
-					/* Do nothing */
-				} else {
-					te.setfreq( Assessment.worst(clip.p,te.freq) );
+				// Modify an existing assessment
+				let new_f = Assessment.worst(clip.p,assmnt.freq);
+				let new_i = Assessment.worst(clip.i,assmnt.impact);
+				let new_r = prependIfMissing(clip.r, assmnt.remark);
+				if (new_f==assmnt.freq) new_f=null;
+				if (new_i==assmnt.impact) new_i=null;
+				if (new_r==assmnt.remark) new_r=null;
+				if (new_f!=null || new_i!=null || new_r!=null) {
+					changea_do.push({assmnt: assmnt.id, component: this.id, freq: new_f, impact: new_i, remark: new_r});
+					changea_undo.push({assmnt: assmnt.id, component: this.id, freq: assmnt.freq, impact: assmnt.impact, remark: assmnt.remark});
 				}
-
-				if (te.impact=='-') {
-					te.setimpact(clip.i);
-				} else if (clip.i=='-') {
-					/* Do nothing */
-				} else {
-					te.setimpact( Assessment.worst(clip.i,te.impact) );
-				}
-				
-				te.remark = prependIfMissing(clip.r, te.remark);
 			}
 		}
-		this.store();
-		return newte;
+		// Now create the Transactions
+		// If changea_do and changea_undo are both empty, no 'assessmentDetails' transaction is necessary.
+		// Similar for newassm_do/newassm_undo and  newvuln_do/newvuln_undo.
+		// If newvuln_do is non-empty, then obviously newassm_do will be non-empty too.
+		let descr = _("Paste clipboard into %%.", this.title);
+		if (changea_do.length>0) {
+			new Transaction('assessmentDetails', changea_undo, changea_do, descr, (newvuln_do.length>0 || newassm_do.length>0) );
+		}
+		if (newvuln_do.length>0) {
+			new Transaction('vulnCreateDelete',  newvuln_undo, newvuln_do, descr, true);
+		}
+		if (newassm_do.length>0) {
+			new Transaction('assmCreateDelete',  newassm_undo, newassm_do, descr, false);
+		}
 	},
 
 	// Called with no argument, or with argument '1': returns a string of an unused suffix
@@ -388,42 +415,6 @@ console.log("Check Component.absorbe()");
 		}
 		return mustdoevals;
 	},
-
-//	adddefaultassessments: function(id) {
-//		if (id!=null) {
-//			// Copy threat evaluations from Component id
-//			var te;
-//			var cm = Component.get(id);
-//			for (var i=0; i<cm.assmnt.length; i++) {
-//				var oldte = ThreatAssessment.get(cm.assmnt[i]);
-//				te = new ThreatAssessment(oldte.type);
-//				te.setcomponent(this.id);
-//				te.settitle(oldte.title);
-//				te.setdescription(oldte.description);
-//				te.setfreq(oldte.freq);
-//				te.setimpact(oldte.impact);
-//				te.setremark(oldte.remark);
-//				te.computetotal();
-//				this.assmnt.push(te.id);
-//			}
-//		} else {
-//			// Copy default threats, preserving the order in which they appear in the project.
-//			var p = Project.get(Project.cid);
-//			for (i=0; i<p.threats.length; i++) {
-//				var th = Threat.get(p.threats[i]);
-//				if (th.type!=this.type && this.type!='tUNK') continue;
-//				// ThreatAssessments on a node/component of type tUNK will have the type of
-//				// the Threat, not tUNK. So a tUNK component will have TAs with a type that
-//				// differs from the node/component itself.
-//				te = new ThreatAssessment(th.type);
-//				te.setcomponent(this.id);
-//				te.settitle(th.title);
-//				te.setdescription(th.description);
-//				this.assmnt.push(te.id);
-//			}
-//		}
-//		this.store();
-//	},
 
 	calculatemagnitude: function() {
 		if (this.assmnt.length==0) {

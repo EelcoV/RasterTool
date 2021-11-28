@@ -3390,10 +3390,10 @@ function initTabDiagrams() {
 			let newtitle = Vulnerability.autotitle(p.id);
 			let it = new ComponentIterator({project: p.id, match: typ});
 			let chain = (it.count()>0);
-			new Transaction('vulnCreateDelete',{
+			new Transaction('vulnCreateDelete',[{
 					create: false,
 					id: vid
-				},{
+				}],[{
 					create: true,
 					id: vid,
 					project: p.id,
@@ -3403,7 +3403,7 @@ function initTabDiagrams() {
 					common: true,
 					cluster: clid,
 					cla: claid
-				},_("Add vulnerability '%%'",newtitle),chain);
+				}],_("Add vulnerability '%%'",newtitle),chain);
 			
 			if (chain) {
 				let do_data = {create: true, vuln: vid, assmnt: [], clid: clid};
@@ -3413,7 +3413,7 @@ function initTabDiagrams() {
 					do_data.assmnt.push({id: aid, component: cm.id});
 					undo_data.assmnt.push({id: aid});
 				}
-				new Transaction('assessmentCreateDelete', undo_data, do_data, _("Add vulnerability '%%'",newtitle));
+				new Transaction('assmCreateDelete', [undo_data], [do_data], _("Add vulnerability '%%'",newtitle));
 			}
 		};
 	};
@@ -3720,16 +3720,7 @@ function refreshComponentThreatAssessmentsDialog(force) {
 	});
 	$('#dthpastedia'+c.id).on('click',  function() {
 		var cm = Component.get(nid2id(this.id));
-		var newte = cm.mergeclipboard();
-		for (const thid of cm.assmnt) {
-			let th = Assessment.get(thid);
-			if (newte.indexOf(thid)==-1) {
-				$('#dthdia_'+thid).remove();
-			}
-			th.addtablerow('#threats'+cm.id,'dia');
-		}
-		cm.setmarker();
-		transactionCompleted("Vuln paste");
+		cm.mergeclipboard();
 	});
 	$('#threats'+c.id).sortable({
 		containment: 'parent',
@@ -3742,7 +3733,7 @@ function refreshComponentThreatAssessmentsDialog(force) {
 				bugreport("internal error in sorting","refreshComponentThreatAssessmentsDialog");
 			}
 			if (c.assmnt.every( (v,i) => (newlist[i]==v) )) return; // Return if no change
-			new Transaction('compAssessments',
+			new Transaction('compAssmntsReorder',
 				[{id: c.id, assmnt: c.assmnt}],
 				[{id: c.id, assmnt: newlist}],
 				_("Reorder vulnerabilities of "+H(c.title)));
@@ -3757,10 +3748,10 @@ function addvulnhandler(cid) {
 	let clid = createUUID();
 	let claid = createUUID();
 	let ntitle = Vulnerability.autotitle(c.project);
-	new Transaction('vulnCreateDelete',{
+	new Transaction('vulnCreateDelete',[{
 			create: false,
 			id: vid
-		},{
+		}],[{
 			create: true,
 			id: vid,
 			project: c.project,
@@ -3771,19 +3762,19 @@ function addvulnhandler(cid) {
 			cluster: clid,
 			cla: claid,
 			index: 0
-		},_("New vulnerability"),true);
-	new Transaction('assessmentCreateDelete',
-		{
+		}],_("New vulnerability"),true);
+	new Transaction('assmCreateDelete',
+		[{
 			create: false,
 			assmnt: [{id: aid}],
 			clid: clid
-		},
-		{
+		}],
+		[{
 			create: true,
 			vuln: vid,
 			assmnt: [{id: aid, component: c.id}],
 			clid: clid
-		},
+		}],
 		 _("New vulnerability")
 	);
 }
@@ -4071,16 +4062,7 @@ function paintSingleFailures(s) {
 		};
 		var pastehandler = function(s,cm) {
 			return function() {
-				var newte = cm.mergeclipboard();
-				for (const thid of cm.assmnt) {
-					var th = Assessment.get(thid);
-					if (newte.indexOf(thid)==-1) {
-						$('#dthsfa'+s.id+'_'+cm.id+'_'+th.id).remove();
-					}
-					th.addtablerow('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
-				}
-				cm.setmarker();
-				transactionCompleted("Vuln paste");
+				cm.mergeclipboard();
 			};
 		};
 		$('#sfaadd'+s.id+'_'+cm.id).on('click',  function() {return addvulnhandler(cm.id);} );
@@ -4112,7 +4094,7 @@ function paintSingleFailures(s) {
 					bugreport("internal error in sorting","paintSingleFailures");
 				}
 				if (cm.assmnt.every( (v,i) => (newlist[i]==v) )) return;  // Return if no change
-				new Transaction('compAssessments',
+				new Transaction('compAssmntsReorder',
 					[{id: cm.id, assmnt: cm.assmnt}],
 					[{id: cm.id, assmnt: newlist}],
 					_("Reorder vulnerabilities of "+H(cm.title)));

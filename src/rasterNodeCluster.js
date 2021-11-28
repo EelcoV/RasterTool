@@ -22,7 +22,7 @@
  *  type:
  *	project: project to which this NodeCluster belongs.
  *	title:
- *	thrass: a ThrEvalation id, holding the cluster's threat estimate
+ *	assmnt: a Assessment id, holding the cluster's estimate
  *	parentcluster: NodeCluster to which this cluseter belongs, or null for the root
  *	childclusters[]: Child clusters of this cluster.
  *	childnodes[]: Nodes that share this threat.

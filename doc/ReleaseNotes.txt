@@ -13,7 +13,6 @@ XXXX 2022
 * Support for Internet Explorer has been dropped.
 * Intranet version is now compatible with PHP 7.4 and up.
 * Groundwork for different iconsets.
-* Use native jQueryUI menus (to simplify the code).
 
 October 2019
 ============

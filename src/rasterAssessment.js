@@ -452,7 +452,7 @@ Assessment.prototype = {
 								let undo_data = {create: true, id: vln.id, project: p.id, type: vln.type, title: vln.title, description: vln.description,
 									common: false, cluster: cl.id, cla: cl.assmnt
 								};
-								new Transaction('vulnCreateDelete', undo_data, do_data, actiondescr);
+								new Transaction('vulnCreateDelete', [undo_data], [do_data], actiondescr);
 							}
 						}
 					}
@@ -570,7 +570,7 @@ Assessment.prototype = {
 					let chain = false;
 					if (!vln.common && it.count()==1) chain = true;  // Deleting the last assessment for a custom vulnerability
 					let actiondescr = _("Remove vulnerability '%%'",assmnt.title);
-					new Transaction('assessmentCreateDelete',{
+					new Transaction('assmCreateDelete',[{
 						  create: true,
 						  vuln: assmnt.vulnerability,
 						  assmnt: [{
@@ -583,26 +583,26 @@ Assessment.prototype = {
 						    }],
 						  clid: nc.id,
 						  cluster: nc.structure()
-						},{
+						}],[{
 						  create: false,
 						  vuln: assmnt.vulnerability,
 						  assmnt: [{
 							  id: assmnt.id
 						    }],
 						  clid: nc.id
-						},
+						}],
 						actiondescr,
 						chain
 					);
 					if (chain) {
 						// Also delete the custom vulnerability
-						new Transaction('vulnCreateDelete',{
+						new Transaction('vulnCreateDelete',[{
 							create: true, id: vln.id,
 							project: vln.project, type: vln.type, title: vln.title, description: vln.description,
 							common: false, cluster: nc.id, cla: nc.assmnt
-						},{
+						}],[{
 							create: false, id: vln.id
-						},actiondescr);
+						}],actiondescr);
 					}
 				};
 				newRasterConfirm(_("Delete vulnerability?"),

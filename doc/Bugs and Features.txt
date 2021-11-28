@@ -3,6 +3,8 @@ See LICENSE.md
 
 
 BUGS
+After Zap, the default project has two service tabs for one service. load() called twice?
+Title on undo/redo buttons should be made HTML-safe with the H()-function on display; the descriptions supplied in new Transaction() should not be HTML-escaped.
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
 Sometimes when moving a node localStorage is not up to date with the node's properties.
 Undoing a threat-create does not repaint list of node clusters in Common cause failure view

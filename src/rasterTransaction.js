@@ -282,7 +282,7 @@ Transaction.prototype = {
 			break;
 		}
 
-		case 'compAssessments': {
+		case 'compAssmntsReorder': {
 			// Change the order of assessments
 			// data: array of objects; each object has these properties
 			//  id: id of the component
@@ -686,9 +686,9 @@ Transaction.prototype = {
 			break;
 		}
 
-		case 'assessmentCreateDelete': {
+		case 'assmCreateDelete': {
 			// Create or remove a assessment from a component
-			// data: an object with these properties
+			// data: array of objects; each object has these properties
 			//  create: true when adding, false when removing an assessment
 			//	vuln: ID of vulnerability for this assessment (iff create)
 			//	assmnt[]: array of objects containing these properties:
@@ -700,41 +700,43 @@ Transaction.prototype = {
 			//    index: position of the assessment within the component (iff create)
 			//  clid: id of the root cluster for this vulnerability
 			//  cluster: object describing the cluster, its subclusters, childnodes etc. Used on undo, see nodeCreateDelete. (iff create)
-			let vln = Vulnerability.get(data.vuln);
-			let nc = NodeCluster.get(data.clid);
-			if (data.create) {
-				// Create/add
-				for (const aa of data.assmnt) {
-					let assmnt = new Assessment(vln.type,aa.id);
-					let cm = Component.get(aa.component);
-					if (aa.freq!=null)  assmnt.setfreq(aa.freq);
-					if (aa.impact!=null)  assmnt.setimpact(aa.impact);
-					if (aa.remark!=null)  assmnt.setremark(aa.remark);
-					assmnt.setvulnerability(vln.id);
-					cm.addassessment(assmnt,aa.index);
-					cm.setmarker();
-					cm.repaint();
-				}
-				if (data.cluster) rebuildCluster(data.cluster);
-			} else {
-				// Delete/remove
-				for (const aa of data.assmnt) {
-					let assmnt = Assessment.get(aa.id);
-					if (!assmnt) {
-						bugreport('No such assessment','Transaction.assessmentCreateDelete');
+			for (const d of data) {
+				let vln = Vulnerability.get(d.vuln);
+				let nc = NodeCluster.get(d.clid);
+				if (d.create) {
+					// Create/add
+					for (const aa of d.assmnt) {
+						let assmnt = new Assessment(vln.type,aa.id);
+						let cm = Component.get(aa.component);
+						if (aa.freq!=null)  assmnt.setfreq(aa.freq);
+						if (aa.impact!=null)  assmnt.setimpact(aa.impact);
+						if (aa.remark!=null)  assmnt.setremark(aa.remark);
+						assmnt.setvulnerability(vln.id);
+						cm.addassessment(assmnt,aa.index);
+						cm.setmarker();
+						cm.repaint();
 					}
-					let cm = Component.get(assmnt.component);
-					cm.removeassessment(assmnt.id); // will destroy assmnt
-					for (let i=0; i< (cm.single?1:cm.nodes.length); i++) {
-						nc.removechildnode(cm.nodes[i]);
+					if (d.cluster) rebuildCluster(d.cluster);
+				} else {
+					// Delete/remove
+					for (const aa of d.assmnt) {
+						let assmnt = Assessment.get(aa.id);
+						if (!assmnt) {
+							bugreport('No such assessment','Transaction.assmCreateDelete');
+						}
+						let cm = Component.get(assmnt.component);
+						cm.removeassessment(assmnt.id); // will destroy assmnt
+						for (let i=0; i< (cm.single?1:cm.nodes.length); i++) {
+							nc.removechildnode(cm.nodes[i]);
+						}
+						nc.normalize();
+						$('#dthdia'+'_'+assmnt.id).remove();
+						$('#dthsfa'+'_'+assmnt.id).remove();
+						cm.setmarker();
+						cm.repaint();
 					}
-					nc.normalize();
-					$('#dthdia'+'_'+assmnt.id).remove();
-					$('#dthsfa'+'_'+assmnt.id).remove();
-					cm.setmarker();
-					cm.repaint();
+					repaintCluster(nc.id);
 				}
-				repaintCluster(nc.id);
 			}
 			break;
 		}
@@ -743,11 +745,11 @@ Transaction.prototype = {
 			// Change the details of a Assessment
 			// data: array of objects; each object has these properties
 			//	assmnt: id of the Assessment
-			//	vuln: vulnerability of the assessment
-			//	freq: frequency-value of the assessment
-			//	impact: impact-value of the assessment
-			//	remark: remark of the assessment
 			//  component, cluster: (either/or) the object to which this assessment belongs
+			//	vuln: vulnerability of the assessment (optional)
+			//	freq: frequency-value of the assessment (optional)
+			//	impact: impact-value of the assessment (optional)
+			//	remark: remark of the assessment (optional)
 			for (const d of data) {
 				let a = Assessment.get(d.assmnt);
 				let prevvuln = a.vulnerability;
@@ -782,7 +784,7 @@ Transaction.prototype = {
 			// Add or remove a Vulnerability (but not any assessments of that Vulnerability)
 			// When deleting, there should not be any Assessments for this Vulnerability! The node clusters
 			// will should be empty, and will be deleted as well
-			// data: a sigle object with these properties
+			// data: an array of objects; each object has these properties
 			//  create: true when adding, false when removing threat(assessment)
 			//	id: ID of the Vulnerability
 			//	project: project ID of the Vulnerability (iff create)
@@ -793,44 +795,46 @@ Transaction.prototype = {
 			//  cluster: ID of the root cluster for this Vulnerability (iff create)
 			//  cla: ID of the Assessment of the cluster (iff create)
 			//	index: position of the Vulnerability within the project (iff create and common==true)
-			if (data.create) {
-				// Add a vulnerability
-				let vln = new Vulnerability(data.project,data.type,data.id);
-				if (data.title!=null) vln.settitle(data.title);
-				if (data.description!=null) vln.setdescription(data.description);
-				if (data.common!=null) vln.setcommon(data.common);
-				if (data.common) {
-					let p = Project.get(data.project);
-					p.addvulnerability(data.id,data.cluster,data.cla,data.index);
+			for (const d of data) {
+				if (d.create) {
+					// Add a vulnerability
+					let vln = new Vulnerability(d.project,d.type,d.id);
+					if (d.title!=null) vln.settitle(d.title);
+					if (d.description!=null) vln.setdescription(d.description);
+					if (d.common!=null) vln.setcommon(d.common);
+					if (d.common) {
+						let p = Project.get(d.project);
+						p.addvulnerability(d.id,d.cluster,d.cla,d.index);
+					} else {
+						let nc = new NodeCluster(d.type,d.cluster);
+						nc.setproject(d.project);
+						nc.settitle(d.title);
+						nc.addassessment(d.cla);
+						Assessment.get(d.cla).setvulnerability(d.id);
+					}
 				} else {
-					let nc = new NodeCluster(data.type,data.cluster);
-					nc.setproject(data.project);
-					nc.settitle(data.title);
-					nc.addassessment(data.cla);
-					Assessment.get(data.cla).setvulnerability(data.id);
+					// Remove a vulnerability and its (emtpy) root cluster
+					let it = new AssessmentIterator({vuln: d.id, ofcomponent: true});
+					if (it.count()>0) {
+						bugreport(_("vulnerability still has assessments"),"Transaction.vulnCreateDelete");
+						break;
+					}
+					let vln = Vulnerability.get(d.id);
+					let p = Project.get(vln.project);
+					it = new NodeClusterIterator({project: vln.project, isroot: true, type: vln.type, title: vln.title});
+					if (it.count()!=1) {
+						bugreport(_("weird number of node clusters"),"Transaction.vulnCreateDelete");
+						break;
+					}
+					let nc = it.first();
+					nc.destroy();
+					if (vln.common) {
+						p.removevulnerability(vln.id);
+					}
+					vln.destroy();
 				}
-			} else {
-				// Remove a vulnerability and its (emtpy) root cluster
-				let it = new AssessmentIterator({vuln: data.id, ofcomponent: true});
-				if (it.count()>0) {
-					bugreport(_("vulnerability still has assessments"),"Transaction.vulnCreateDelete");
-					break;
-				}
-				let vln = Vulnerability.get(data.id);
-				let p = Project.get(vln.project);
-				it = new NodeClusterIterator({project: vln.project, isroot: true, type: vln.type, title: vln.title});
-				if (it.count()!=1) {
-					bugreport(_("weird number of node clusters"),"Transaction.vulnCreateDelete");
-					break;
-				}
-				let nc = it.first();
-				nc.destroy();
-				if (vln.common) {
-					p.removevulnerability(vln.id);
-				}
-				vln.destroy();
+				refreshChecklistsDialog(d.type);
 			}
-			refreshChecklistsDialog(data.type);
 			break;
 		}
 
