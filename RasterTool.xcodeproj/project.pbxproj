@@ -132,13 +132,13 @@
 			path = SharedProjects;
 			sourceTree = "<group>";
 		};
-		49434449203A026600043E80 /* smoothness-1.12.1 */ = {
+		49434449203A026600043E80 /* theme */ = {
 			isa = PBXGroup;
 			children = (
 				4943444A203A026600043E80 /* jquery-ui.min.css */,
 				4943444B203A026600043E80 /* images */,
 			);
-			path = "smoothness-1.12.1";
+			path = theme;
 			sourceTree = "<group>";
 		};
 		4943444B203A026600043E80 /* images */ = {
@@ -207,7 +207,7 @@
 		494B6FA218796E9D00400328 /* css */ = {
 			isa = PBXGroup;
 			children = (
-				49434449203A026600043E80 /* smoothness-1.12.1 */,
+				49434449203A026600043E80 /* theme */,
 				494B6FB518796E9D00400328 /* raster-print.css */,
 				494B6FB618796E9D00400328 /* raster.css */,
 			);

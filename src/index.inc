@@ -13,7 +13,7 @@ See LICENSE.md
 <meta charset="UTF-8"> 
 <title>Raster - Risk Assessment of Telecoms Services</title>
 <!-- First stylesheet must be the one that is a custom setting. -->
-<link rel="stylesheet" href="../css/smoothness-1.12.1/jquery-ui.min.css" class="ui-theme">
+<link rel="stylesheet" href="../css/theme/jquery-ui.min.css" class="ui-theme">
 <link rel="stylesheet" href="../css/raster.css" type="text/css" id="maincssfile">
 <link rel="stylesheet" href="../css/raster-print.css" type="text/css">
 <link rel="shortcut icon" href="../img/Raster.png">

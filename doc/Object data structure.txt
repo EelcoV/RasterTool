@@ -91,7 +91,6 @@ Assessment
 .remark			setremark(str)			.r
 
 RasterPreferences						key raster:version:R:0
-.theme			"name of theme preference"
 .emsize			"em_none", "em_small", "em_large"
 .tab			0..3
 .creator		"name of creator"

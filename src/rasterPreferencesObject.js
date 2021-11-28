@@ -8,10 +8,6 @@
  *
  */
 var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
-	this.settheme = function(/*theme*/) {
-		/* Obsolete */
-	};
-	
 	this.setlabel = function(labelonoff) {
 		this.label = (labelonoff===true);
 		if (this.label) {
@@ -108,7 +104,6 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 	
 	this.store = function() {
 		var data = {};
-		data.theme=this.theme;
 		data.label=this.label;
 		data.emsize =this.emsize;
 		data.currentproject=this.currentproject;
@@ -124,7 +119,6 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 	 * loaded.
 	 */
 	this.currentproject = '';
-	this.theme = 'smoothness';
 	this.label=true;
 	this.emsize = 'small';
 	this.tab = 0;
