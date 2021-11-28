@@ -153,29 +153,8 @@ Service.prototype = {
 		this._addtabsinglefs();
 		
 		SizeDOMElements();
-		// For some reason, the mouseup event on #selectrect is only fired consistently when
-		// the #selectrect div is inside the workspace. If the div is inside diagrams_body or
-		// inside the main <body>, the mouseup is almost always 'lost'. We therefore have to
-		// delete #selectrect, resurrect it, and re-bind the menu event handler.
 		$('.scroller_overview').hide();
 		$('#scroller_overview'+this.id).show();
-		$('#selectrect').remove();
-		$('#diagrams_workspace'+this.id).append('<div id="selectrect"></div>');
-		$('#selectrect').on('contextmenu', function(e) {
-			e.preventDefault();
-			$('#selectmenu').menu('collapseAll');
-			$('#selectmenu').show();
-			$('#selectmenu').position({
-				my: "left top",
-				at: "left+" + e.pageX + "px top+" + e.pageY + "px",
-				of: "body",
-				collision: "fit"
-			});
-			return false;
-		});
-		$('#selectrect').on('click', function(evt) {
-			if (evt.button==0)  $('#selectmenu').hide(); // left mousebutton
-		});
 		var origpos;
 		$('#selectrect').draggable({
 			start: function(event,ui) {

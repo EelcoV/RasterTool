@@ -300,7 +300,8 @@ See LICENSE.md
 
 <div id="tab_diagrams" class="workbody workouter">
   <div id="diagrams_body" class="tabs-bottom">
-  	<div id="mask-collection" class="donotprint"><!-- mask images to be inserted here --></div>
+    <div id="mask-collection" class="donotprint"><!-- mask images to be inserted here --></div>
+    <div id="selectrect"></div>
     <input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
     <ul id="bottomtabsdiagrams">
     </ul>

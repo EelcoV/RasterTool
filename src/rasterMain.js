@@ -636,11 +636,11 @@ var updateFind = function() {
 				res += ' svc="' + s.id + '"';
 				res += '>';
 				res += rn.htmltitle();
-				res += '</span>';
 				res += ' <span style="color:grey;">'
 				+ _("in service")
 				+ '</span> '
 				+ H(s.title);
+				res += '</span>';
 				res += '<br>\n';
 			}
 		}
@@ -684,16 +684,28 @@ var updateFind = function() {
 			// Immediately show when we wiggle the mouse
 			$('#findpanel').dialog('widget').stop().css('opacity',1);
 		});
-		$('#diagrams'+svc_id).animate({
-			scrollLeft: '-='+scrolldist_l,
-			scrollTop: '-='+scrolldist_t
-		});
-		// Draw a selection around the node
-		var o = $('#diagrams_workspace'+svc_id).offset();
-		$('#selectrect').show().offset({
-			left: node.position.x-15+o.left, top: node.position.y-15+o.top}
-		).width(node.position.width+25).height(node.position.height+25);
-		$('#selectrect').effect('shake',{distance:10, times:8},1000);
+		if (scrolldist_l==0 && scrolldist_t==0) {
+			// No scrolling, just wiggle
+			var o = $('#diagrams_workspace'+svc_id).offset();
+			$('#selectrect').show().offset({
+				left: node.position.x-15+o.left, top: node.position.y-15+o.top}
+			).width(node.position.width+25).height(node.position.height+25);
+			$('#selectrect').effect('shake',{distance:10, times:8},1000);
+		} else {
+			// First scroll the workspace, then wiggle the target
+			$('#selectrect').hide();
+			$('#diagrams'+svc_id).animate({
+				scrollLeft: '-='+scrolldist_l,
+				scrollTop: '-='+scrolldist_t
+			}, 400, 'swing', function() {
+				// Draw a selection around the node
+				var o = $('#diagrams_workspace'+svc_id).offset();
+				$('#selectrect').show().offset({
+					left: node.position.x-15+o.left, top: node.position.y-15+o.top}
+				).width(node.position.width+25).height(node.position.height+25);
+				$('#selectrect').effect('shake',{distance:10, times:8},1000);
+			});
+		}
 	});
 	findTimer = window.setTimeout(updateFind,500);
 };
@@ -2926,6 +2938,21 @@ function initTabDiagrams() {
 	$('#mi_scnone span.lc:first').html( _("No label") );
 	$('#mi_scedit span.lc:first').html( _("Edit labels ...") );
 	$('#selectmenu').menu().hide();
+	$('#selectrect').on('contextmenu', function(e) {
+		e.preventDefault();
+		$('#selectmenu').menu('collapseAll');
+		$('#selectmenu').show();
+		$('#selectmenu').position({
+			my: "left top",
+			at: "left+" + e.pageX + "px top+" + e.pageY + "px",
+			of: "body",
+			collision: "fit"
+		});
+		return false;
+	});
+	$('#selectrect').on('click', function(evt) {
+		if (evt.button==0)  $('#selectmenu').hide(); // left mousebutton
+	});
 
 	$('#nodereport').dialog({
 		autoOpen: false,
