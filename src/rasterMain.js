@@ -980,7 +980,6 @@ function loadDefaultProject() {
 	s.autosettitle();
 	p.autosettitle();
 	p.load();
-	s.load();
 }
 
 //function modifyCSS(selector,property,newvalue) {
