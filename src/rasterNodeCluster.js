@@ -17,6 +17,8 @@
  *		named 'ti' of type 'ty'.
  *	removecomponent_assessment: reverse of addcomponent_threat().
  *  structuredata(pid): object describing the structure of all clusters in a project, for undoing node deletion
+ *	titleisused(str): returns true iff there is a cluster with title 'str'
+ *	autotitle(str): get a unique cluster name based on 'str'
  * Instance properties:
  *	id: UUID
  *  type:
@@ -69,7 +71,7 @@ var NodeCluster = function(type, id) {
 	}
 	this.id = (id==null ? createUUID() : id);
 	this.type = type;
-	this.title = _("New cluster")+' '+this.id;
+	this.title = NodeCluster.autotitle();
 	this.project = null;
 	this.parentcluster = null;
 	this.childclusters = [];
@@ -85,6 +87,21 @@ var NodeCluster = function(type, id) {
 NodeCluster._all = new Object();
 NodeCluster.get = function(id) { return NodeCluster._all[id]; };
 
+NodeCluster.titleisused = function(str) {
+	let it = new NodeClusterIterator({title: str});
+	return (!it.isEmpty());
+};
+NodeCluster.autotitle = function(str) {
+	if (!str)  str = _("New cluster");
+	let targettitle = str;
+	if (NodeCluster.titleisused(targettitle)) {
+		var n=0;
+		do {
+			targettitle = str + " (" + (++n) + ")";
+		} while (NodeCluster.titleisused(targettitle));
+	}
+	return targettitle;
+};
 NodeCluster.addnode_threat = function(pid,nid,threattitle,threattype,duplicateok) {
 	// Locate the corresponding cluster in the project. 
 	// There should be exactly one.

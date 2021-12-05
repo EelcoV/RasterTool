@@ -4,7 +4,6 @@ See LICENSE.md
 
 BUGS
 Selectrect is lost when switching projects.
-New clusters get a silly default name
 Title on undo/redo buttons should be made HTML-safe with the H()-function on display; the descriptions supplied in new Transaction() should not be HTML-escaped.
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
 Sometimes when moving a node localStorage is not up to date with the node's properties.
