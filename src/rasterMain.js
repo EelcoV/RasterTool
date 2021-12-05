@@ -782,7 +782,7 @@ var updateFind = function() {
 		FindScrollPos = $('#field_found').scrollTop();
 		// Activate the Diagrams tab
 		$('#tabs').tabs('option','active',0);
-		// Activate the right service
+		// Activate the right service. Since this will remove dialogs, including the Find window, restore the Find window after activation.
 		if (svc_id != Service.cid) {
 			$('#diagramsservicetab'+svc_id+' a').click();
 			FindScrollPos = -FindScrollPos;

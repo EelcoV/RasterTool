@@ -155,7 +155,6 @@ Service.prototype = {
 		this._addtabsinglefs();
 		
 		SizeDOMElements();
-		// delete #selectrect, resurrect it, and re-bind the menu event handler.
 		$('.scroller_overview').hide();
 		$('#scroller_overview'+this.id).show();
 		
@@ -447,7 +446,8 @@ Service.prototype = {
 		$('#singlefs'+this.id).append(snippet);
 		$('#singlefs_body').tabs('refresh');
 		$('#singlefs_body ul li').removeClass('ui-corner-top');
-		$('#singlefs_body').on('click', '.topbuttons', function() {
+		$('#singlefs_body').on('click', '.topbuttons', function(event) {
+			if (event.target!=this) return; // Only direct clicks, not clicks on buttons that bubble
 			let id = $(this).parent().parent().attr('id');
 			$('#'+id).accordion('option','active',false);
 		});

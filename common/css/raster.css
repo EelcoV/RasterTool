@@ -1140,7 +1140,7 @@ for checklists and threat evaluations.
     width: 800px !important;
     margin-bottom: 3px !important;
 }
-.sfaccordion h3 {
+.sfaccordion h3.ui-state-active {
 	border-bottom: none !important;
 }
 .incomplete {

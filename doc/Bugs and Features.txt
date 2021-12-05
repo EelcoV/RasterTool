@@ -3,6 +3,8 @@ See LICENSE.md
 
 
 BUGS
+Undo-chain should be per-project.
+Selectrect is lost when switching projects.
 Renaming a cluster in the left-hand column removes the line characters
 New clusters get a silly default name
 Title on undo/redo buttons should be made HTML-safe with the H()-function on display; the descriptions supplied in new Transaction() should not be HTML-escaped.
