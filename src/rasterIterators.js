@@ -280,6 +280,7 @@ class ProjectIterator extends rasterIterator {		// eslint-disable-line no-unused
  *
  * Options:
  *	project: project id equals value
+ *	title: title string equals value (case insensitive and locale sensitive)
  */
 class ServiceIterator extends rasterIterator {		// eslint-disable-line no-unused-vars
 	constructor(opt) {
@@ -287,6 +288,7 @@ class ServiceIterator extends rasterIterator {		// eslint-disable-line no-unused
 		for (const i in Service._all) {
 			let obj = Service.get(i);
 			if (opt.project!=undefined && opt.project!=obj.project)  continue;
+			if (opt.title!=undefined && !isSameString(obj.title,opt.title))  continue;
 			this.item.push(obj);
 		}
 	}

@@ -1246,15 +1246,9 @@ function switchToProject(pid,dorefresh) {
 	PaintAllClusters();
 	// AddAllAnalysis(); Is redone each time the Analysis tab is activated
 
-	var it = new ServiceIterator({project: pid});
-	var found = false;
-	var s;
-	for (s of it) {
-		found = (s.title == Preferences.service);
-		if (found) break;
-	}
-	if (found) {
-		Service.cid = s.id;
+	var it = new ServiceIterator({project: pid, title: Preferences.service});
+	if (!it.isEmpty()) {
+		Service.cid = it.first().id;
 	}
 	forceSelectVerticalTab(Preferences.tab);
 	if (dorefresh) {
@@ -2313,7 +2307,6 @@ function vertTabSelected(/*event, ui*/) {
 	case 1:		// tab Single Failures
 		$('#sfopts').show();
 		$('#singlefstabtitle'+Service.cid).trigger('click');
-		// Force repainting of that tab
 		Preferences.settab(1);
 		break;
 	case 2:		// tab Common Cause Failures

@@ -600,6 +600,8 @@ Project.prototype = {
 	},
 
 	unload: function() {
+		// Save the selectrect
+		$('#selectrect').hide().detach().appendTo('body');
 		for (const sid of this.services) Service.get(sid).unload();
 		$('#tWLSthreats').empty();
 		$('#tWRDthreats').empty();
