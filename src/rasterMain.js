@@ -3898,17 +3898,6 @@ function addvulnhandler(cid) {
 	);
 }
 	
-function refreshChecklistsDialog(type) {
-	// Remove DOM for all common Vulnerabilities, and re-add them in the right order
-	$('#'+type+'threats').empty();
-	let p = Project.get(Project.cid);
-	for (const id of p.vulns) {
-		let th = Vulnerability.get(id);
-		if (th.type!=type)  continue;
-		th.addtablerow('#'+type+'threats');
-	}
-}
-
 function displayComponentThreatAssessmentsDialog(cid,where) {
 	var c = Component.get(cid);
 	Component.ThreatsComponent = cid;

@@ -21,7 +21,6 @@
 		4918F0BE1FBEBF13008A6208 /* Build and Install.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Build and Install.md"; sourceTree = "<group>"; };
 		491CD6D3187DA7600028B84D /* dropedit.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dropedit.png; sourceTree = "<group>"; };
 		492431532742F79C00FA02BE /* rasterVulnerability.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterVulnerability.js; sourceTree = "<group>"; };
-		49248D7D204985DD00958983 /* headroom.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = headroom.min.js; sourceTree = "<group>"; };
 		4931606627511F1400F41FBC /* rasterIterators.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterIterators.js; sourceTree = "<group>"; };
 		49367205275ADDCA00B4F351 /* cpaste-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cpaste-lo.png"; sourceTree = "<group>"; };
 		49367206275ADDCA00B4F351 /* ccopy-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ccopy-lo.png"; sourceTree = "<group>"; };
@@ -173,7 +172,6 @@
 				4917356927540849008967A2 /* jquery-3.6.0.min.js */,
 				491735622754076B008967A2 /* jquery-ui-1.13.0.min.js */,
 				496C1508233E95BF00769318 /* jsplumb-2.12.0.min.js */,
-				49248D7D204985DD00958983 /* headroom.min.js */,
 				494B6F6918796E9D00400328 /* encodedecode.js */,
 				49D256041A1E87BF00102918 /* jquery.localisation.js */,
 				494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */,

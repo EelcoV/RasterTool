@@ -36,6 +36,10 @@
  *	stub: (boolean) true iff this is a stub.
  *  iconset: (string) name of the preferred iconset for this project.
  *  icondata: an object containing information on this iconset.
+ *  TransactionBase: the start of the transaction list, a special transaction with kind==null
+ *  TransactionCurrent: the most recently performed transaction
+ *  TransactionHead: the most recently posted transaction
+ *		See rasterTransaction.js for description of these, and the transaction list.
  * Methods:
  *	destroy(): destructor for this object
  *	totalnodes(): returns the count of all nodes within all services of this project.
@@ -64,6 +68,7 @@
  *	getDate(): retrieve last saved date of this project.
  *  refreshIfNecessary():
  *  dorefresh():
+ *  updateUI: highlight/lowlight the undo/redo buttons as necessary
  */
 var Project = function(id,asstub) {
 	if (id!=null && Project._all[id]!=null) {
@@ -141,6 +146,10 @@ var Project = function(id,asstub) {
 			}
 		}
 	});
+
+	this.TransactionBase = new Transaction(null,null,null);
+	this.TransactionCurrent = this.TransactionBase;
+	this.TransactionHead = this.TransactionBase;
 
 	this.store();
 	Project._all[this.id]=this;
@@ -429,6 +438,23 @@ Project.prototype = {
 		delete Project._all[this.id];
 	},
 	
+	updateUI: function() {
+		if (this.TransactionCurrent==this.TransactionBase) {
+			$('#undobutton').removeClass('possible');
+			$('#undobutton').attr('title', _("Undo"));
+		} else {
+			$('#undobutton').addClass('possible');
+			$('#undobutton').attr('title', _("Undo") + ' ' + this.TransactionCurrent.descr);
+		}
+		if (this.TransactionCurrent==this.TransactionHead) {
+			$('#redobutton').removeClass('possible');
+			$('#redobutton').attr('title', _("Redo"));
+		} else {
+			$('#redobutton').addClass('possible');
+			$('#redobutton').attr('title', _("Redo") + ' ' + this.TransactionCurrent.next.descr);
+		}
+	},
+
 	totalnodes: function() {
 //		var total=0;
 		let it = new NodeIterator({project: this.id});
@@ -585,7 +611,8 @@ Project.prototype = {
 		Project.cid = this.id;
 		Service.cid = this.services[0];
 		Preferences.setcurrentproject(this.title);
-
+		this.updateUI();
+		
 		this.services.forEach(sid => Service.get(sid).load());
 		for (const vid of this.vulns) {
 			let vln = Vulnerability.get(vid);

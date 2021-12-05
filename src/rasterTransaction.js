@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, refreshChecklistsDialog, repaintCluster
+/* globals _, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, repaintCluster
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -10,7 +10,7 @@
  * Transaction: object representing an undoable, shareable action.
  *
  * Transaction form a doubly linked list with three pointers (class properties):
- *  base: the start of the list, a special transaction with id==null
+ *  base: the start of the list, a special transaction with kind==null
  *  current: the most recently performed transaction
  *  head: the most recently posted transaction
  * When undoing/redoing, 'current' steps through the list while 'base' and 'head' remain unchanged.
@@ -20,9 +20,8 @@
  *  current: the most recently performed transaction
  *  head: the most recently posted transaction
  * Class methods
- *  undo: undo the latest transaction (move Transaction.current backwards)
- *  redo: redo the most recently undone transaction (move Transaction.current forwards)
- *  updateUI: update the status of the Undo and Redo buttons
+ *  undo: undo the latest transaction (move p.TransactionCurrent backwards)
+ *  redo: redo the most recently undone transaction (move p.TransactionCurrent forwards)
  * Instance properties:
  *  kind: (String) the type of transaction
  *  descr: (String, optional) UI description of the transaction
@@ -31,15 +30,17 @@
  *  prev: previous
  *  undo_data: (any) an object or literal containing all information to undo the transaction
  *  do_data: (any) an object or literal containing all information to perform the transaction
+ *	project: the project ot which this Transaction belongs
  * Instance methods:
  *  perform(data): perform the action using data; data defaults to this.do_data
- *  undo: perform the action using this.undo.
+ *  rollback: perform the action using this.undo_data.
  */
 var Transaction = function(knd,undo_data,do_data,descr,chain) {
 	this.kind = knd;
 	this.descr = (descr ? descr : knd);
 	this.chain = (chain ? chain : false);
 	this.timestamp = Date.now();
+	this.project = Project.cid;
 	this.undo_data = undo_data;
 	this.do_data = do_data;
 	if (this.kind==null) {
@@ -49,8 +50,13 @@ var Transaction = function(knd,undo_data,do_data,descr,chain) {
 	}
 	// Perform this action, and make it the head of the transaction list.
 	// If there are any actions between current and head, then these are discarded
-	Transaction.current.next = this;
-	this.prev = Transaction.current;
+	let p = Project.get(Project.cid);
+	if (!p) {
+		bugreport('No active project to work on','new Transaction');
+		return;
+	}
+	p.TransactionCurrent.next = this;
+	this.prev = p.TransactionCurrent;
 /* Test!
  *
  * This block, and undo and redo below, contain a lot of debugging code. The transaction
@@ -64,7 +70,7 @@ let S1 = exportProject(Project.cid);
 
 checkForErrors();
 let S2 = exportProject(Project.cid);
-this.undo();
+this.rollback();
 checkForErrors();
 let S3 = exportProject(Project.cid);
 this.perform();
@@ -78,46 +84,30 @@ if (S2!=S4) {
 }
 /* ^^ end test */
 	
-	Transaction.current = this;
-	Transaction.head = this;
-	Transaction.updateUI();
-};
-
-Transaction.base = new Transaction(null,null,null);
-Transaction.current = Transaction.base;
-Transaction.head = Transaction.base;
-
-Transaction.updateUI = function() {
-	if (Transaction.current==Transaction.base) {
-		$('#undobutton').removeClass('possible');
-		$('#undobutton').attr('title', _("Undo"));
-	} else {
-		$('#undobutton').addClass('possible');
-		$('#undobutton').attr('title', _("Undo") + ' ' + Transaction.current.descr);
-	}
-	if (Transaction.current==Transaction.head) {
-		$('#redobutton').removeClass('possible');
-		$('#redobutton').attr('title', _("Redo"));
-	} else {
-		$('#redobutton').addClass('possible');
-		$('#redobutton').attr('title', _("Redo") + ' ' + Transaction.current.next.descr);
-	}
+	p.TransactionCurrent = this;
+	p.TransactionHead = this;
+	p.updateUI();
 };
 
 Transaction.undo = function() {
-	if (Transaction.current==Transaction.base)  return;
+	let p = Project.get(Project.cid);
+	if (!p) {
+		bugreport('No active project to work on','Transaction.undo');
+		return;
+	}
+	if (p.TransactionCurrent==p.TransactionBase)  return;
 
 	do {
 // Test!
 checkForErrors();
 let S1 = exportProject(Project.cid);
-		Transaction.current.undo();
+		p.TransactionCurrent.rollback();
 checkForErrors();
 let S2 = exportProject(Project.cid);
-Transaction.current.perform();
+p.TransactionCurrent.perform();
 checkForErrors();
 let S3 = exportProject(Project.cid);
-Transaction.current.undo();
+p.TransactionCurrent.rollback();
 checkForErrors();
 let S4 = exportProject(Project.cid);
 if (S1!=S3) {
@@ -125,27 +115,32 @@ if (S1!=S3) {
 } else if (S2!=S4) {
 	logdiff(S2,S4,"in undo: redo,undo != nil");
 }
-		transactionCompleted("<"+ (Transaction.current.chain?"↑":" ") +" "+Transaction.current.kind);
-		Transaction.current = Transaction.current.prev;
-	} while (Transaction.current.chain==true);
-	Transaction.updateUI();
+		transactionCompleted("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
+		p.TransactionCurrent = p.TransactionCurrent.prev;
+	} while (p.TransactionCurrent.chain==true);
+	p.updateUI();
 };
 
 Transaction.redo = function() {
-	if (Transaction.current==Transaction.head)  return;
+	let p = Project.get(Project.cid);
+	if (!p) {
+		bugreport('No active project to work on','Transaction.redo');
+		return;
+	}
+	if (p.TransactionCurrent==p.TransactionHead)  return;
 
 	do {
 // Test!
 checkForErrors();
 let S1 = exportProject(Project.cid);
-		Transaction.current = Transaction.current.next;
-		Transaction.current.perform();
+		p.TransactionCurrent = p.TransactionCurrent.next;
+		p.TransactionCurrent.perform();
 checkForErrors();
 let S2 = exportProject(Project.cid);
-Transaction.current.undo();
+p.TransactionCurrent.rollback();
 checkForErrors();
 let S3 = exportProject(Project.cid);
-Transaction.current.perform();
+p.TransactionCurrent.perform();
 checkForErrors();
 let S4 = exportProject(Project.cid);
 if (S1!=S3) {
@@ -153,14 +148,14 @@ if (S1!=S3) {
 } else if (S2!=S4) {
 	logdiff(S2,S4,"in redo: undo,redo != nil");
 }
-		transactionCompleted(">"+ (Transaction.current.chain?"↓":" ") +" "+Transaction.current.kind);
-	} while(Transaction.current.chain==true);
-	Transaction.updateUI();
+		transactionCompleted(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
+	} while(p.TransactionCurrent.chain==true);
+	p.updateUI();
 };
 
 
 Transaction.prototype = {
-	undo: function() {
+	rollback: function() {
 		this.perform(this.undo_data);
 	},
 
@@ -928,6 +923,17 @@ Transaction.prototype = {
 	}
 };
 
+
+function refreshChecklistsDialog(type) {
+	// Remove DOM for all common Vulnerabilities, and re-add them in the right order
+	$('#'+type+'threats').empty();
+	let p = Project.get(Project.cid);
+	for (const id of p.vulns) {
+		let th = Vulnerability.get(id);
+		if (th.type!=type)  continue;
+		th.addtablerow('#'+type+'threats');
+	}
+}
 
 // rebuildCluster: restore one root cluster and its subclusters to its original state
 //		to undo the deletion of one or more nodes.
