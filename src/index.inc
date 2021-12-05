@@ -84,7 +84,6 @@ See LICENSE.md
  <p><small>goodbye</small></p>
 </div>
 
-#ifdef SERVER
 <div id="toolbar" class="donotprint">
 	<!-- Common toolbar items -->
 	<div id="libraryactivator" class="toolbarlargebutton">Library..</div>
@@ -215,6 +214,7 @@ See LICENSE.md
 <div id="classroom" class="ui-widget"></div>
 <div id="currentProject" class="ui-widget projectname"></div>
 
+#ifdef SERVER
 <div id="librarypanel" class="actpanel">
   <form id="libform">
     <table>
@@ -272,8 +272,6 @@ See LICENSE.md
 #endif
 
 #ifdef STANDALONE
-<div id="templates" class="floatingtoolbar"> <!-- Is filled in Project.load() --></div>
-
 <div id="pdfoptions">
     <div id="pdf_orientation" class="controlgroup">
         <span class="pdflabel ui-widget ui-state-default">Orientation:</span>

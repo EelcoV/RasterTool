@@ -54,6 +54,10 @@ option:checked {
 .ui-state-focus { outline: none; }
 /* Make sure model dialogs are above all other elements. */
 .ui-widget-overlay { z-index: 4000 !important; }
+/* For Chromium */
+:focus {
+	outline: none;
+}
 
 body {
 	background: var(--toolbarbg);
@@ -193,16 +197,6 @@ body {
 	background-image: url(../img/qm-hi.png);
 }
 
-/* In the standalone version, templates are shown using #templates.floatingtoolbar */
-.floatingtoolbar {
-	position: absolute;
-	z-index: 100;
-	background: lightgray;
-	border-radius: 0px 0px 2px 2px !important;
-	left: 50%;
-	transform: translateX(-50%);
-	-webkit-transform: translateX(-50%);
-}
 /* LAYOUT =
  template
   + templateinner

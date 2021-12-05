@@ -6,7 +6,7 @@ PREPROCESS="filepp -pb"
 #PREPROCESS="cpp -E -P -C -w"
 
 # Set $ESLINT to blank to skip the verification.
-ESLINT="/usr/local/bin/eslint"
+ESLINT="$HOME/node_modules/.bin/eslint"
 #ESLINT=""
 
 WINE="/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wine"
@@ -239,12 +239,12 @@ CreateAll()
 	RLANG=$1
 	CreateAppVersion $RLANG
 	CreateMacOSVersion $RLANG
-	CreateWin32Version $RLANG
-	rm -fr $BUILDDIR
+#	CreateWin32Version $RLANG
+#	rm -fr $BUILDDIR
 }
 
 CreateAll "EN"
-CreateAll "NL"
+#CreateAll "NL"
 
 if [ ! -x "$WINE" ]; then
 	# If Parallels Desktop is running, then the following may trigger it to run the winbuild.bat batch file.

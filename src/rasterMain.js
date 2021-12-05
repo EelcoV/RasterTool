@@ -134,14 +134,18 @@ function initAllAndSetup() {
 	getGroupSettings();
 #else
 	ToolGroup = '_%standalone%_';
+	GroupSettings = {
+		classroom: false,
+		template: 'Project Template',
+		iconset: 'default'
+	};
 	// Prevent file drops
 	document.addEventListener('dragover', function(event) {event.preventDefault();} );
 	document.addEventListener('drop', function(event) {event.preventDefault();} );
 
 	// Some CSS tweaks for the standalone version
-	$('.activator').hide();
+	$('#libraryactivator,#networkactivity,#optionsactivator').hide();
 	$('#currentProject').hide();
-	$('#helpbutton').hide();
 	$('.workouter').css('top', '0px');
 
 	// PDF print options dialog
@@ -211,20 +215,9 @@ function initAllAndSetup() {
 	$('#optionsactivator').html(_("Options..."));
 	$('#libraryactivator').attr('title', _("Manage project"));
 	$('#optionsactivator').attr('title', _("Set preferences"));
-	$('#undobutton').attr('title', _("Undo"));
-	$('#redobutton').attr('title', _("Redo"));
-	$('#findbutton').attr('title', _("Locate nodes"));
-	$('#helpbutton').attr('title', _("Assistance"));
 
 	initLibraryPanel();
 	initOptionsPanel();
-
-	$('#undobutton').on('click', Transaction.undo);
-	$('#redobutton').on('click', Transaction.redo);
-	$('#findbutton').on('click', StartFind);
-	$('#helpbutton').on('click',  function() {
-		$('#helppanel').dialog('open');
-	});
 
 	var flashTimer;
 	$(document).ajaxSend(function(){
@@ -238,6 +231,17 @@ function initAllAndSetup() {
 		},200);
 	});
 #endif
+
+	$('#undobutton').attr('title', _("Undo"));
+	$('#redobutton').attr('title', _("Redo"));
+	$('#findbutton').attr('title', _("Locate nodes"));
+	$('#helpbutton').attr('title', _("Assistance"));
+	$('#undobutton').on('click', Transaction.undo);
+	$('#redobutton').on('click', Transaction.redo);
+	$('#findbutton').on('click', StartFind);
+	$('#helpbutton').on('click',  function() {
+		$('#helppanel').dialog('open');
+	});
 
 	$('#helppanel').dialog({
 		title: _("Information on using this tool"),
@@ -410,6 +414,7 @@ function initAllAndSetup() {
 		window.name = 'RasterTool'+String(Math.random()).substring(2);
 	}
 
+	var p;
 #ifdef SERVER
 	if (!testLocalStorage()) {
 		// The splash screen is still visible, and will obscure any interaction.
@@ -444,7 +449,7 @@ function initAllAndSetup() {
 		// indicated by Preferences.currentproject, or take any one project
 		// if that one does not exist.
 		i = Project.withTitle(Preferences.currentproject);
-		var p = (i==null ? Project.firstProject() : Project.get(i) );
+		p = (i==null ? Project.firstProject() : Project.get(i) );
 		if (p===0) {
 			loadDefaultProject();
 		} else {
@@ -654,6 +659,7 @@ function initAllAndSetup() {
 	}, 500);
 }
 
+#ifdef SERVER
 function getGroupSettings() {
 	// Initialise default values, then attempt to retrieve settings from the server
 	GroupSettings = {
@@ -678,6 +684,7 @@ function getGroupSettings() {
 		}
 	});
 }
+#endif
 
 var findTimer;
 var nodeFindString = "";
@@ -1073,6 +1080,7 @@ function mylang(obj) {		// eslint-disable-line no-unused-vars
 /* testLocalStorage(): returns boolean
  * Checks whether the browser supports storing values in localStorage.
  */
+#ifdef SERVER
 function testLocalStorage() {
 	try {
 		if (window.location.href.match(/^file/i)) {
@@ -1094,6 +1102,7 @@ function testLocalStorage() {
 		return false;
 	}
 }
+#endif
 
 function loadDefaultProject() {
 	var p = new Project();
@@ -1148,22 +1157,14 @@ function SizeDOMElements() {
 //	$('.rot-neg-90').css('border-bottom-right-radius','0px');
 
 	$('.workbody').width(ww-36);
-#ifdef SERVER
 	$('.workbody').height(wh-50);
-#else
-	$('.workbody').height(wh-8);
-#endif
 
 	$('#servaddbuttondia').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('.tabs-bottom > .ui-tabs-nav').width(ww-78);
 	// special setting for tab "Analysis"
 	$('#analysis_body > .ui-tabs-nav').width(ww-44);
 	$('.tabs-bottom').width(ww-43);
-#ifdef SERVER
 	$('.tabs-bottom').height(wh-54);
-#else
-	$('.tabs-bottom').height(wh-12);
-#endif
 	sizeworkspaceheight();
 
 	var fh = $('.fancyworkspace').height();
@@ -1194,11 +1195,7 @@ function sizeworkspaceheight() {
 	// and/or a narrow window.
 	var wh = $(window).height();
 	var bh;
-#ifdef SERVER
 	var adj = 77;
-#else
-	var adj = 35;
-#endif
 
 	bh = $('#bottomtabsdiagrams').height();
 	if (bh>0) {
@@ -1315,12 +1312,14 @@ function isSameString(a,b) {
 /* prettyDate: reformat the timestamp string for server projects.
  * prettyDate("20210516 1435 22") = "16-05-2021 14:35"
  */
+#ifdef SERVER
 function prettyDate(d) {
 	// Format is: YYYYMMDD HHMM SS
 	//            1   2 3  4 5  6
 	var r = d.match(/^(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d) (\d\d)$/);
 	return (r==null ? d : r[3]+'-'+r[2]+'-'+r[1]+' '+r[4]+':'+r[5]);
 }
+#endif
 
 /* Replacement for the standard Javascript alert() function. Several differences:
  * - it won't block the browser (only this tab)
@@ -2323,6 +2322,7 @@ function vertTabSelected(/*event, ui*/) {
 	}
 }
 
+#ifdef SERVER
 function initLibraryPanel() {
 	$('#librarypanel').dialog({
 		title: _("Library"),
@@ -2374,9 +2374,7 @@ function initLibraryPanel() {
 				// Do a retrieve operation, and switch to that new project, if successful.
 				Project.retrieve(p.id,function(newpid){
 					switchToProject(newpid);
-#ifdef SERVER
 					startAutoSave();
-#endif
 				});
 			}
 		}
@@ -2391,11 +2389,8 @@ function initLibraryPanel() {
 	// Export --------------------
 	$('#libexport').on('click',  function() {
 		var p = Project.get( $('#libselect option:selected').val() );
-#ifdef SERVER
 		if (!p.stub) {
-#endif
 			singleProjectExport($('#libselect option:selected').val());
-#ifdef SERVER
 		} else {
 			// First retrieve the project, then start exporting it
 			Project.retrieve(p.id,function(newpid){
@@ -2409,7 +2404,6 @@ function initLibraryPanel() {
 				singleProjectExport(newpid);
 			});
 		}
-#endif
 		$('#libselect').focus();
 		$('#libexport').removeClass('ui-state-hover');
 	});
@@ -2418,14 +2412,12 @@ function initLibraryPanel() {
 		var p = Project.get( $('#libselect option:selected').val() );
 		var dokill = function() {
 			$('#libdel').removeClass('ui-state-hover');
-#ifdef SERVER
 			if (p.shared || p.stub) {
 				// Disable the project watch. Otherwise a notification would be triggered.
 				stopWatching(p.id);
 				// remove from the server
 				p.deleteFromServer();
 			}
-#endif
 			if (p.id==Project.cid) {
 				p.destroy();
 				p = Project.firstProject();
@@ -2462,12 +2454,10 @@ function initLibraryPanel() {
 	// Merge --------------------
 	$('#libmerge').on('click',  function() {
 		var otherproject = Project.get( $('#libselect option:selected').val() );
-#ifdef SERVER
 		if (otherproject.stub) {
 			rasterAlert(_("Cannot merge a remote project"),_("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
 			return;
 		}
-#endif
 		var currentproject = Project.get( Project.cid );
 		rasterConfirm(_("Merge '%%' into '%%'?",otherproject.title,currentproject.title),
 			_("Are you sure you want to fold project '%%' into the current project?",
@@ -2628,12 +2618,11 @@ function initLibraryPanel() {
 		$('#librarypanel').dialog('open');
 		// Show project list using current stubs, but do fire an update
 		populateProjectList();
-#ifdef SERVER
 		Project.updateStubs(refreshProjectList);
 		startPeriodicProjectListRefresh();
-#endif
 	});
 }
+#endif
 
 /* Reset the tool. Useful from the CLI when debugging */
 function Zap() {
@@ -2875,6 +2864,7 @@ function refreshProjectList() {
 }
 #endif
 
+#ifdef SERVER
 function initOptionsPanel() {
 	$('#optionspanel').dialog({
 		title: _("Options"),
@@ -2902,7 +2892,6 @@ function initOptionsPanel() {
 	$('[for=label_off]').on('click',  function() { Preferences.setlabel(false); });
 	$('[for=label_on]').on('click',  function() { Preferences.setlabel(true); });
 
-#ifdef SERVER
 	$('#onlineonoff span').first().html( _("Network connection:") );
 	$('#online_off').checkboxradio('option', 'label', _("Offline"));
 	$('#online_on').checkboxradio('option', 'label', _("Online"));
@@ -2914,7 +2903,6 @@ function initOptionsPanel() {
 		Preferences.setcreator($('#creator').val());
 		$('#creator').val(Preferences.creator);
 	});
-#endif
 
 	$('#optionsactivator').on('click',  function() {
 		removetransientwindows();
@@ -2926,6 +2914,7 @@ function initOptionsPanel() {
 		$('#creator').val(Preferences.creator);
 	});
 }
+#endif
 
 function bottomTabsCloseHandler(event) {
 	var p = Project.get(Project.cid);

@@ -257,9 +257,7 @@ function doNew() {
 }
 
 function tryClose(win) {
-	if (!checkSaveModifiedDocument(win)) {
-		return;
-	} else {
+	if (checkSaveModifiedDocument(win)) {
 		// Allow garbage collection to remove the window
 		delete Win[win.id];
 		win.close();
@@ -291,8 +289,7 @@ function doPrint(win) {
 			}
 			try {
 				fs.writeFileSync(filename, data);
-			}
-			catch (e) {
+			} catch (e) {
 				dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
 			}
 		});
@@ -302,9 +299,9 @@ function doPrint(win) {
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-function debug(msg) {
-	dialog.showErrorBox("Debug information", msg);
-}
+//function debug(msg) {
+//	dialog.showErrorBox("Debug information", msg);
+//}
 
 function EnableMenuItems(val)  {
 	if (process.platform !== 'darwin')  return;
@@ -354,8 +351,7 @@ function AllWindowsSetVulnlevel(val) {
 function SavePreferences(/*win*/) {
 	try {
 		fs.writeFileSync(prefsFile, JSON.stringify(app.rasteroptions));
-	}
-	catch (e) {
+	} catch (e) {
 		// ignore silently
 	}
 }
@@ -505,8 +501,7 @@ app.on('web-contents-created', function(event, contents) {
 // Create a directory to store preferences in
 try {
 	fs.mkdirSync(prefsDir);
-}
-catch (e) {
+} catch (e) {
 	// Ignore silently
 }
 
@@ -576,7 +571,9 @@ MenuTemplate = [{
 		type: 'separator'
 	}, {
 		label: _("PDF settings..."),
-		click: function (item, focusedWindow) { doOpen(focusedWindow); }
+		click: function (item, focusedWindow) {
+			if (focusedWindow) focusedWindow.webContents.send('pdf-settings-show');
+		}
 	}, {
 		label: _("Save as PDF"),
 		accelerator: 'CmdOrCtrl+P',
