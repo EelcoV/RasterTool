@@ -11,7 +11,7 @@ bugreport, _, AssessmentIterator, LS, Component, NodeClusterIterator, Transactio
  * Assessment: evaluation of a vulnerability for some component or NodeCluster
  *
  * Class variables (those prefixed with underscore should not be accessed from outside)
- *	_all[]: all Assessment objects, indexed by id
+ *	_all[]: Map of all Assessment objects, indexed by id
  *	values[]: array of possible values (single characters) for frequency and impact
  *	valueindex[]: reverse of values[].
  *	descr[]: textual description of each value-index.
@@ -62,7 +62,7 @@ var Assessment = function(type,id) {
 	if (!id) {
 		console.warn("*** No id specified for new Assessment");
 	}
-	if (id!=null && Assessment._all[id]!=null) {
+	if (id!=null && Assessment._all.has(id)) {
 		bugreport("Assessment with id "+id+" already exists","Assessment.constructor");
 	}
 	if (type=='tACT' || type=='tUNK' || type=='tNOT') {
@@ -82,10 +82,10 @@ var Assessment = function(type,id) {
 	this.remark="";
 	
 	this.store();
-	Assessment._all[this.id]=this;
+	Assessment._all.set(this.id,this);
 };
-Assessment.get = function(id) { return Assessment._all[id]; };
-Assessment._all = new Object();
+Assessment.get = function(id) { return Assessment._all.get(id); };
+Assessment._all = new Map();
 Assessment.Clipboard = [];
 Assessment.values =[
 '-', // unspecified
@@ -179,8 +179,8 @@ Assessment.autotitle = function(pid,newtitle) {
 };
 
 Assessment.projecthastitle= function(pid,str) {
-	for (const ci in Component._all) {
-		let cm = Component.get(ci);
+	for (const cidobj of Component._all) {
+		let cm = cidobj[1];
 		if (cm.project!=pid)  continue;
 		for (const ti of cm.assmnt) {
 			let ta = Assessment.get(ti);
@@ -196,7 +196,7 @@ Assessment.prototype = {
 		if (Component.ThreatsComponent==this.component) {
 			$('#dth'+this.id).remove();
 		}
-		delete Assessment._all[this.id];
+		Assessment._all.delete(this.id);
 	},
 
 	get title() {

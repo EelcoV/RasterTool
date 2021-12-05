@@ -21,7 +21,7 @@ TODO
 Add option to duplicate a project.
 Undo
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
-Make class definitions conform to ES6. Use Map instead of _all. Create modules with import/export.
+Make class definitions conform to ES6. Create modules with import/export.
 Change variables from var to let/const.
 Make the UI more in line with other apps that people are used to these days.
 Replace #modaldialog by an anonymous <div></div>.

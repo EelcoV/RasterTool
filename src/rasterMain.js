@@ -2509,11 +2509,10 @@ function initLibraryPanel() {
 
 	$('#libadd').on('click',  function(){
 		// Check for a template
-		var p, template;
-		var found=false;
-		for (var i=0; !found && i<Project._all.length; i++) {
-			template = Project._all[i];
-			if (template==null) continue;
+		let i, p, template;
+		let found=false;
+		for (var idobj of Project._all) {
+			template = idobj[1];
 			found=(isSameString(template.title,GroupSettings.template) && template.group==ToolGroup);
 		}
 

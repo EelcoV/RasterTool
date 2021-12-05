@@ -105,8 +105,8 @@ class AssessmentIterator extends rasterIterator {		// eslint-disable-line no-unu
 	constructor(opt) {
 		super();
 		if (opt==null) opt={};
-		for (const i in Assessment._all) {
-			let obj = Assessment.get(i);
+		for (const idobj of Assessment._all) {
+			let obj = idobj[1];
 			if (opt.project!=undefined && opt.project!=obj.project)  continue;
 			if (opt.type!=undefined && opt.type!=obj.type)  continue;
 			if (opt.match!=undefined && opt.match!=obj.type && opt.match!='tUNK')  continue;
@@ -131,8 +131,8 @@ class ComponentIterator extends rasterIterator {		// eslint-disable-line no-unus
 	constructor(opt) {
 		super();
 		if (opt==null) opt={};
-		for (const i in Component._all) {
-			var obj =  Component._all[i];
+		for (const idobj of Component._all) {
+			var obj =  idobj[1];
 			if (opt.project!=undefined && opt.project!=obj.project)  continue;
 			if (opt.type!=undefined && opt.type!=obj.type)  continue;
 			// Note that this line is different, as Components can have type 'tUNK' themselves.
@@ -170,8 +170,8 @@ class NodeIterator extends rasterIterator {		// eslint-disable-line no-unused-va
 	constructor(opt) {
 		super();
 		if (opt==null) opt={};
-		for (const i in Node._all) {
-			var obj = Node._all[i];
+		for (const idobj of Node._all) {
+			var obj = idobj[1];
 			if (opt.project!=undefined && opt.project!=obj.project)  continue;
 			if (opt.type!=undefined && opt.type!=obj.type)  continue;
 			if (opt.service!=undefined && opt.service!=obj.service)  continue;
@@ -235,8 +235,8 @@ class NodeClusterIterator extends rasterIterator {		// eslint-disable-line no-un
 	constructor(opt) {
 		super();
 		if (opt==null) opt={};
-		for (const i in NodeCluster._all) {
-			var obj = NodeCluster._all[i];
+		for (const idobj of NodeCluster._all) {
+			var obj = idobj[1];
 			if (opt.project!=undefined && opt.project!=obj.project)  continue;
 			if (opt.type!=undefined && opt.type!=obj.type)  continue;
 			if (opt.match!=undefined && opt.match!=obj.type && opt.match!='tUNK')  continue;
@@ -264,8 +264,8 @@ class ProjectIterator extends rasterIterator {		// eslint-disable-line no-unused
 		super();
 		if (opt==null) opt={};
 		if (opt.stub==null) opt.stub=false;
-		for (const i in Project._all) {
-			let obj =  Project._all[i];
+		for (const idobj of Project._all) {
+			let obj =  idobj[1];
 			if (opt.title!=undefined && !isSameString(obj.title,opt.title))  continue;
 			if (opt.group!=undefined && obj.group!=opt.group)  continue;
 			if (opt.shared!=undefined && opt.shared!=obj.shared) continue;
@@ -285,8 +285,9 @@ class ProjectIterator extends rasterIterator {		// eslint-disable-line no-unused
 class ServiceIterator extends rasterIterator {		// eslint-disable-line no-unused-vars
 	constructor(opt) {
 		super();
-		for (const i in Service._all) {
-			let obj = Service.get(i);
+		if (opt==null) opt={};
+		for (const idobj of Service._all) {
+			let obj = idobj[1];
 			if (opt.project!=undefined && opt.project!=obj.project)  continue;
 			if (opt.title!=undefined && !isSameString(obj.title,opt.title))  continue;
 			this.item.push(obj);
@@ -308,8 +309,8 @@ class VulnerabilityIterator extends rasterIterator {		// eslint-disable-line no-
 	constructor(opt) {
 		super();
 		if (opt==null) opt={};
-		for (const i in Vulnerability._all) {
-			let obj = Vulnerability.get(i);
+		for (const idobj of Vulnerability._all) {
+			let obj = idobj[1];
 			if (opt.project!=undefined && opt.project!=obj.project)  continue;
 			if (opt.type!=undefined && opt.type!=obj.type)  continue;
 			if (opt.match!=undefined && opt.match!=obj.type && opt.match!='tUNK')  continue;

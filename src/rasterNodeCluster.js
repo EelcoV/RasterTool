@@ -9,7 +9,7 @@
  * NodeCluster: a group of nodes that share a threat, and form a threat-domain.
  *
  * Class variables (those prefixed with underscore should not be accessed from outside)
- *	_all: array of all Node elements, indexed by id
+ *	_all: Map of all Node elements, indexed by id
  *	get(i): returns the object with id 'i'.
  *	addnode_threat(p,nid,ti,ty,dupl): update clusters when node with id 'nid' has a threat named 'ti'
  *		of type 'ty'. Raise an error if dupl==false and the combination was already added.
@@ -63,7 +63,7 @@ var NodeCluster = function(type, id) {
 	if (!id) {
 		console.warn("*** No id specified for new NodeCluster");
 	}
-	if (id!=null && NodeCluster._all[id]!=null) {
+	if (id!=null && NodeCluster._all.has(id)) {
 		bugreport("NodeCluster with id "+id+" already exists","NodeCluster.constructor");
 	}
 	if (type=='tACT' || type=='tUNK' || type=='tNOT') {
@@ -82,10 +82,10 @@ var NodeCluster = function(type, id) {
 	this.accordionopened = true;
 
 	this.store();
-	NodeCluster._all[this.id] = this;
+	NodeCluster._all.set(this.id,this);
 };
-NodeCluster._all = new Object();
-NodeCluster.get = function(id) { return NodeCluster._all[id]; };
+NodeCluster._all = new Map();
+NodeCluster.get = function(id) { return NodeCluster._all.get(id); };
 
 NodeCluster.titleisused = function(str) {
 	let it = new NodeClusterIterator({title: str});
@@ -202,7 +202,7 @@ NodeCluster.prototype = {
 	destroy: function() {
 		localStorage.removeItem(LS+'L:'+this.id);
 		Assessment.get(this.assmnt).destroy();
-		delete NodeCluster._all[this.id];
+		NodeCluster._all.delete(this.id);
 	},
 
 	setproject: function(p) {

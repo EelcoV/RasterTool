@@ -9,7 +9,7 @@
  * Component: a physical component, or class of identical components
  *
  * Class variables (those prefixed with underscore should not be accessed from outside)
- *	_all: array of all Node elements, indexed by id
+ *	_all: Map of all Node elements, indexed by id
  *	ThreatsComponent: if of the node for which the threats dialog is visible.
  *	get(i): returns the object with id 'i'.
  *	hasTitleTypeProject(str,type,pid): returns the id of the Component object with title 'str',
@@ -60,7 +60,7 @@ var Component = function(type, pid, id) {
 	if (type=='tNOT') {
 		bugreport("attempt to create component for a note","Component.constructor");
 	}
-	if (id!=null && Component._all[id]!=null) {
+	if (id!=null && Component._all.has(id)) {
 		bugreport("Component with id "+id+" already exists","Component.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);
@@ -75,16 +75,16 @@ var Component = function(type, pid, id) {
 	this.accordionopened = false;
 
 	this.store();
-	Component._all[this.id] = this;
+	Component._all.set(this.id,this);
 };
-Component._all = new Object();
+Component._all = new Map();
 Component.ThreatsComponent = -1;
-Component.get = function(id) { return Component._all[id]; };
+Component.get = function(id) { return Component._all.get(id); };
 Component.hasTitleTypeProject = function(str,typ,pid) {
-	for (var i in Component._all) {
-		if (isSameString(Component._all[i].title,str)
-			&& Component._all[i].type==typ
-			&& Component._all[i].project==pid)  return i;
+	for (var idobj of Component._all) {
+		if (isSameString(idobj[1].title,str)
+			&& idobj[1].type==typ
+			&& idobj[1].project==pid)  return idobj[0];
 	}
 	return -1;
 };
@@ -95,7 +95,7 @@ Component.prototype = {
 			$('#componentthreats').dialog('close');
 		}
 		for (const thid of this.assmnt) Assessment.get(thid).destroy();
-		delete Component._all[this.id];
+		Component._all.delete(this.id);
 	},
 
 	absorbe: function(cm) {
@@ -623,8 +623,8 @@ console.log("Check Component.absorbe()");
 			}
 		}
 		// Duplicate component titles
-		for (i in Component._all) {
-			let cm = Component._all[i];
+		for (let idobj of Component._all) {
+			let cm = idobj[1];
 			if (isSameString(cm.title,this.title)
 				&& cm.id>this.id // when all components are checked, only show this error once
 				&& cm.type==this.type

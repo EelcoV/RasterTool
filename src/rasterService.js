@@ -12,7 +12,7 @@
  *
  * Class variables (those prefixed with underscore should not be accessed from outside)
  *	cid: integer ID of the currently active service
- *	_all[]: array of all services, indexed on service ID
+ *	_all[]: Map of all services, indexed on service ID
  *	get(i): returns the object with id 'i'.
  *	titleisused(p,str,e): checks whether there is a service in project p, other than
  *		service e, having title str.
@@ -42,7 +42,7 @@
  *	store(): store the object into localStorage.
  */
 var Service = function(pid, id) {
-	if (id!=null && Service._all[id]!=null) {
+	if (id!=null && Service._all.has(id)) {
 		bugreport("Service with id "+id+" already exists","Service.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);
@@ -68,16 +68,17 @@ var Service = function(pid, id) {
 	this.sfsortorder = 'alph';
 	
 	this.store();
-	Service._all[this.id]=this;
+	Service._all.set(this.id,this);
 };
-Service.get = function(id) { return Service._all[id]; };
+Service.get = function(id) { return Service._all.get(id); };
 Service.cid = 0;
-Service._all = new Object();
+Service._all = new Map();
 Service.titleisused = function(projectid,str,except) {
-	for (var i in Service._all) {
-		if (i==except) continue;
-		if (Service._all[i].project!=projectid)  continue;
-		if (isSameString(Service._all[i].title,str))  return true;
+	for (const idserv of Service._all) {
+		// idserv = [id,Service object]
+		if (idserv[0]==except) continue;
+		if (idserv[1].project!=projectid)  continue;
+		if (isSameString(idserv[1].title,str))  return true;
 	}
 	return false;
 };
@@ -101,7 +102,7 @@ Service.prototype = {
 		var it = new NodeIterator({service: this.id});
 		it.forEach(rn => rn.destroy(false));
 		localStorage.removeItem(LS+'S:'+this.id);
-		delete Service._all[this.id];
+		Service._all.delete(this.id);
 	},
 	
 	settitle: function(newtitle) {

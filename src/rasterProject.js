@@ -12,7 +12,7 @@
  *
  * Class variables (those prefixed with underscore should not be accessed from outside)
  *	cid: integer ID of the currently active project
- *	_all: array of all projects, indexed on project ID
+ *	_all: Map of all projects, indexed on project ID
  *	get(i): returns the object with id 'i'.
  *	withTitle(str): returns the id of the local project with title 'str', or 'null' otherwise.
  *	firstProject(): returns the an existing local Project object, or null otherwise.
@@ -71,7 +71,7 @@
  *  updateUI: highlight/lowlight the undo/redo buttons as necessary
  */
 var Project = function(id,asstub) {
-	if (id!=null && Project._all[id]!=null) {
+	if (id!=null && Project._all.has(id)) {
 		bugreport("Project with id "+id+" already exists","Project.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);
@@ -152,11 +152,11 @@ var Project = function(id,asstub) {
 	this.TransactionHead = this.TransactionBase;
 
 	this.store();
-	Project._all[this.id]=this;
+	Project._all.set(this.id,this);
 };
-Project.get = function(id) { return Project._all[id]; };
+Project.get = function(id) { return Project._all.get(id); };
 Project.cid = 0;
-Project._all =new Object();
+Project._all =new Map();
 Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Pink"), _("Purple"), _("Grey")];
 Project.colors = ["none","red","orange","yellow","green","blue","pink","purple","grey"];
 Project.defaultVulnerabilities = [		// eslint-disable-line no-unused-vars
@@ -177,8 +177,8 @@ Project.defaultVulnerabilities = [		// eslint-disable-line no-unused-vars
 
 // Check wether there is a project with name 'str' and group ToolGroup
 Project.withTitle = function(str) {
-	for (var i in Project._all) {
-		var p = Project._all[i];
+	for (var idobj of Project._all) {
+		let p = idobj[1];
 		if (p.stub) continue;
 		if (isSameString(p.title,str)  && (!p.shared || p.group==ToolGroup)) {
 			return p.id;
@@ -189,8 +189,8 @@ Project.withTitle = function(str) {
 
 // Retrieve first project in ToolGroup
 Project.firstProject = function() {
-	for (var i in Project._all) {
-		var p = Project._all[i];
+	for (var idobj of Project._all) {
+		var p = idobj[1];
 		if (p.stub) continue;
 		if (!p.shared || p.group==ToolGroup)  return p;
 	}
@@ -435,7 +435,7 @@ Project.prototype = {
 		var it = new NodeClusterIterator({project: this.id});
 		it.forEach(nc => nc.destroy());
 		localStorage.removeItem(LS+'P:'+this.id);
-		delete Project._all[this.id];
+		Project._all.delete(this.id);
 	},
 	
 	updateUI: function() {

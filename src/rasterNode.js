@@ -11,7 +11,7 @@
  * Node: an element in a telecom service diagram
  *
  * Class properties & methods (those prefixed with underscore should not be accessed from outside)
- *	_all: array of all Node elements, indexed by id
+ *	_all: Map of all Node elements, indexed by id
  *	get(i): returns the object with id 'i'.
  *	projecthastitle(p,str): project 'p' has a node with title 'str'.
  *	servicehastitle(s,str): service 's' has a node with title 'str'.
@@ -76,7 +76,7 @@
 var Node = function(type, serv, id) {
 	if (!id) {
 		console.warn("*** No id specified for new Node");
-	}if (id!=null && Node._all[id]!=null) {
+	}if (id!=null && Node._all.has(id)) {
 		bugreport("Node with id "+id+" already exists","Node.constructor");
 	}
 	this.id = (id==null ? createUUID() : id);
@@ -94,22 +94,22 @@ var Node = function(type, serv, id) {
 	this.color = (this.type=='tNOT' ? "yellow" : "none");
 
 	this.store();
-	Node._all[this.id] = this;
+	Node._all.set(this.id,this);
 };
-Node._all = new Object();
-Node.get = function(id) { return Node._all[id]; };
+Node._all = new Map();
+Node.get = function(id) { return Node._all.get(id); };
 Node.projecthastitle = function(pid,str) {
-	for (var i in Node._all) {
-		if (isSameString(Node._all[i].title,str)) {
-			var s = Service.get(Node._all[i].service);
-			if (s.project==pid)  return i;
+	for (var idobj of Node._all) {
+		if (isSameString(idobj[1].title,str)) {
+			var s = Service.get(idobj[1].service);
+			if (s.project==pid)  return idobj[0];
 		}
 	}
 	return -1;
 };
 Node.servicehastitle = function(sid,str) {
-	for (var i in Node._all) {
-		if (isSameString(Node._all[i].title,str) && Node._all[i].service==sid)  return i;
+	for (var idobj of Node._all) {
+		if (isSameString(idobj[1].title,str) && idobj[1].service==sid)  return idobj[0];
 	}
 	return -1;
 };
@@ -208,7 +208,7 @@ Node.prototype = {
 		localStorage.removeItem(LS+'N:'+this.id);
 		this.hidemarker();  // Make it disappear before the animation starts
 		$('#tinynode'+this.id).remove();
-		delete Node._all[this.id];
+		Node._all.delete(this.id);
 		if (effect==undefined || effect==true) {
 			$(this.jnid).effect('explode', 500, function() {
 				var id = nid2id(this.id);
