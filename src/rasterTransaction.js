@@ -271,7 +271,13 @@ Transaction.prototype = {
 			for (const d of data) {
 				let nc = NodeCluster.get(d.id);
 				nc.settitle(d.title);
-				$('#dthE_ccf'+nc.root()+'name'+nc.assmnt).html(H(nc.title));
+				if (nc.isroot()) {
+					$('#dthE_ccf'+nc.id+'name'+nc.assmnt).html(H(nc.title));
+				} else {
+					// We could only repaint the images plus the new title, but repainting the entire cluster is less work
+					repaintCluster(nc.root());
+
+				}
 				$('#litext'+nc.id).html(H(nc.title));
 			}
 			break;

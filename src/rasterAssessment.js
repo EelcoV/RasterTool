@@ -413,6 +413,15 @@ Assessment.prototype = {
 			$('#dth_'+prefix+'name'+this.id).editInPlace({
 				bg_out: 'var(--vlightbg)', bg_over: 'var(--highlt)',
 				callback: function(oid, enteredText) {
+					if (assmnt.vulnerability==null) {
+						// renaming a non-root cluster
+						new Transaction('clusterTitle',
+							[{id: assmnt.cluster, title: assmnt._title}],
+							[{id: assmnt.cluster, title: enteredText}],
+							_("Rename cluster")
+						);
+						return enteredText;
+					}
 					let vln = Vulnerability.get(assmnt.vulnerability);
 					let it = new VulnerabilityIterator({project: vln.project, type: vln.type, title: enteredText});
 					if (it.isEmpty()) {

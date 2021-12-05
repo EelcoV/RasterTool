@@ -4758,7 +4758,7 @@ function repaintClusterDetails(nc,force) {
 			new Transaction('clusterTitle',
 				[{id: nc.id, title: nc.title}],
 				[{id: nc.id, title: enteredText}],
-				_("Rename class")
+				_("Rename cluster")
 			);
 			return H(nc.title);
 		}
