@@ -20,15 +20,14 @@ See LICENSE.md
 #ifdef STANDALONE
   <script type="text/javascript">if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 #endif
-<script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
-<script type="text/javascript" src="../js/jquery-ui-1.12.1.min.js"></script>
+<script type="text/javascript" src="../js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="../js/jquery-ui-1.13.0.min.js"></script>
 #ifdef SERVER
 <script type="text/javascript" src="../js/jquery.localisation.js"></script>
 #endif
 <script type="text/javascript" src="../js/jsplumb-2.12.0.min.js"></script>
 <script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>
 <script type="text/javascript" src="../js/encodedecode.js"></script>
-<script type="text/javascript" src="../js/headroom.min.js"></script>
 #ifdef SERVER
 <script type="text/javascript">$.localise('../js/translation', {async: false, language: "<?= LANGUAGE ?>".replace(/(;.+)/,'').replace(/,.+/,'')});</script>
 #else
@@ -87,17 +86,131 @@ See LICENSE.md
 
 #ifdef SERVER
 <div id="toolbar" class="donotprint">
+	<!-- Common toolbar items -->
+	<div id="libraryactivator" class="toolbarlargebutton">Library..</div>
 	<div id="networkactivity"></div>
-	<div id="libraryactivator" class="ui-widget ui-button toolbaritem activator"><span class="lc">Library</span><span>...</span></div>
-	<div id="optionsactivator" class="ui-widget ui-button toolbaritem activator"><span class="lc">Options</span><span>...</span></div>
+	<div id="optionsactivator" class="toolbarlargebutton">Options...</div>
 	<div class="toolbarspacer"></div>
-	<div id="undobutton" class="ui-button toolbaritem"></div>
-	<div id="redobutton" class="ui-button toolbaritem"></div>
+	<div id="undobutton" class="toolbariconbutton"></div>
+	<div id="redobutton" class="toolbariconbutton"></div>
 	<div class="toolbarspacer"></div>
-	<div id="findbutton" class="ui-button toolbaritem"></div>
-	<div id="helpbutton" class="ui-button toolbaritem"></div>
-	<div class="toolbarspacer"></div>
-	<div id="templates" class="ui-state-default toolbaritem"> <!-- Is filled in Project.load() --></div>
+	<div id="findbutton" class="toolbariconbutton"></div>
+	<div id="helpbutton" class="toolbariconbutton"></div>
+	<!-- Diagrams tab -->
+	<div id="diaopts" class="toolbarsection">
+		<div id="templates"> <!-- Is filled in Project.load() --></div>
+		<div class="toolbarspacer"></div>
+		<div id="vulnlevelsection" class="toolbarlabel">
+			<div>Levels:</div>
+			<div>
+				<fieldset>
+					<input type="radio" id="em_none"  name="emblem_size" value="em_none"><label for="em_none" >None</label>
+					<input type="radio" id="em_small" name="emblem_size" value="em_small"><label for="em_small">Small</label>
+					<input type="radio" id="em_large" name="emblem_size" value="em_large"><label for="em_large">Large</label>
+				</fieldset>
+			</div>
+		</div>
+		<div class="toolbarspacer"></div>
+		<div id="mapsection" class="toolbarlabel">
+			<div>Minimap:</div>
+			<div>
+				<fieldset>
+					<input type="radio" id="showmap_off" name="showmap" value="off"><label for="showmap_off">XX</label>
+					<input type="radio" id="showmap_on"  name="showmap" value="on" ><label for="showmap_on" >XX</label>
+				</fieldset>
+			</div>
+		</div>
+	</div>
+	<!-- Single failures tab -->
+	<div id="sfopts" class="toolbarsection">
+		<div id="sffoldsection" class="toolbarlabel">
+			<div>Fold:</div>
+			<div>
+				<div id="sfcollapseall" class="toolbarbutton">Collapse all</div>
+				<div id="sfexpandall" class="toolbarbutton">Expand all</div>
+			</div>
+		</div>
+		<div class="toolbarspacer"></div>
+		<div id="sfsortsection" class="toolbarlabel">
+			<div>Sort:</div>
+			<div>
+				<fieldset>
+					<input type="radio" id="sfsort_alph" name="sfsort" value="alph"><label for="sfsort_alph">alpha</label>
+					<input type="radio" id="sfsort_type" name="sfsort" value="type"><label for="sfsort_type">type</label>
+					<input type="radio" id="sfsort_thrt" name="sfsort" value="thrt"><label for="sfsort_thrt">vuln level</label>
+				</fieldset>
+			</div>
+		</div>
+	 </div>
+	<!-- Common cause failures tab -->
+	<div id="ccfopts" class="toolbarsection">
+		<div id="ccffoldsection" class="toolbarlabel">
+			<div>Fold:</div>
+			<div>
+				<div id="ccfcollapseall" class="toolbarbutton">Collapse all</div>
+				<div id="ccfexpandall" class="toolbarbutton">Expand all</div>
+			</div>
+		</div>
+		<div class="toolbarspacer"></div>
+		<div id="ccfsortsection" class="toolbarlabel">
+			<div>Sort:</div>
+			<div>
+				<fieldset>
+					<input type="radio" id="ccfsort_alph" name="ccfsort" value="alph"><label for="ccfsort_alph">alpha</label>
+					<input type="radio" id="ccfsort_type" name="ccfsort" value="type"><label for="ccfsort_type">type</label>
+					<input type="radio" id="ccfsort_thrt" name="ccfsort" value="thrt"><label for="ccfsort_thrt">vuln level</label>
+				</fieldset>
+			</div>
+		</div>
+	</div>
+	<!-- Analysis tab - Failures and Vulnerabilities -->
+	<div id="anavulnopts" class="toolbarsection">
+		<div id="anavnsortsection" class="toolbarlabel">
+			<div>Sort nodes and clusters:</div>
+			<div>
+				<fieldset>
+					<input type="radio" id="ana_nodesort_alph" name="ana_nodesort"><label for="ana_nodesort_alph">alpha</label>
+					<input type="radio" id="ana_nodesort_type" name="ana_nodesort"><label for="ana_nodesort_type">type</label>
+					<input type="radio" id="ana_nodesort_thrt" name="ana_nodesort"><label for="ana_nodesort_thrt">vuln level</label>
+				</fieldset>
+			</div>
+		</div>
+		<div class="toolbarspacer"></div>
+		<div id="anavfsortsection" class="toolbarlabel">
+			<div>Sort:</div>
+			<div>
+				<fieldset>
+					<input type="radio" id="ana_failsort_alph" name="ana_failsort"><label for="ana_failsort_alph">alpha</label>
+					<input type="radio" id="ana_failsort_type" name="ana_failsort"><label for="ana_failsort_type">type</label>
+				</fieldset>
+			</div>
+		</div>
+		<div class="toolbarspacer"></div>
+		<div id="anavexcludesection" class="toolbarlabel">
+			<div>SClick cells to include/exclude them.</div>
+			<div>
+				<div id="quickwinslink" class="toolbarbutton">Quick wins</div>
+				<div id="clearexclusions" class="toolbarbutton">Clear exclusions</div>
+			</div>
+		</div>
+	</div>
+	<!-- Analysis tab - Longlist -->
+	<div id="anallopts" class="toolbarsection">
+		<div id="anallincsection" class="toolbarlabel">
+			<div>Include:</div>
+			<div>
+				<input type="checkbox" id="incX" checked><label for="incX">Unknown</label><br>
+				<input type="checkbox" id="incA" checked><label for="incA">Ambiguous</label>
+			</div>
+		</div>
+		<div class="toolbarspacer"></div>
+		<div id="anallminsection" class="toolbarlabel">
+			<div>Minimum value:</div>
+			<div>
+				<select id="minV"></select>
+			</div>
+		</div>
+	</div>
 </div> <!-- toolbar -->
 <div id="classroom" class="ui-widget"></div>
 <div id="currentProject" class="ui-widget projectname"></div>
@@ -129,14 +242,14 @@ See LICENSE.md
 </div>
 
 <div id="optionspanel" class="actpanel">
-    <div id="emblem_size">
+    <!--div id="emblem_size">
         <span class="leftlabel ui-widget ui-state-default">Vulnerability levels:</span>
         <fieldset>
             <input type="radio" id="em_small" name="emblem_size" checked="checked"><label for="em_small">Small</label>
             <input type="radio" id="em_large" name="emblem_size"><label for="em_large">Large</label>
             <input type="radio" id="em_none" name="emblem_size"><label for="em_none">None</label>
         </fieldset>
-    </div>
+    </div-->
     <div id="labelonoff">
         <span class="leftlabel ui-widget ui-state-default">Labels:</span>
         <fieldset>
@@ -203,60 +316,63 @@ See LICENSE.md
 </div>
 
 <ul id="nodemenu">
-    <li id="mi_th"><div><span class="lc">Vulnerabilities</span></div></li>
-    <li id="mi_ct"><div><span class="lc">Change type</span></div>
+    <li class="lcT"><div><span>Node</span></div></li>
+    <li id="mi_th"><div><span>Vulnerabilities</span></div></li>
+    <li id="mi_ct"><div><span>Change type</span></div>
      <ul id="mi_ctsm">
-      <li id="mi_cttWLS"><div><span class="lc">Wireless link</span></div></li>
-      <li id="mi_cttWRD"><div><span class="lc">Wired link</span></div></li>
-      <li id="mi_cttEQT"><div><span class="lc">Equipment</span></div></li>
-      <li id="mi_cttACT"><div><span class="lc">Actor</span></div></li>
-      <li id="mi_cttUNK"><div><span class="lc">Unknown link</span></div></li>
+      <li id="mi_cttWLS"><div><span>Wireless link</span></div></li>
+      <li id="mi_cttWRD"><div><span>Wired link</span></div></li>
+      <li id="mi_cttEQT"><div><span>Equipment</span></div></li>
+      <li id="mi_cttACT"><div><span>Actor</span></div></li>
+      <li id="mi_cttUNK"><div><span>Unknown link</span></div></li>
      </ul>
 	</li>
-    <li id="mi_cl"><div><span class="lc">Class</span></div>
+    <li id="mi_cl"><div><span>Class</span></div>
      <ul id="mi_clsm">
-      <li id="mi_rc"><div><span class="lc">Rename class</span></div></li>
-      <li id="mi_sx"><div><span class="lc">Rename suffix</span></div></li>
-      <li id="mi_sm"><div><span class="lc">Similar/Identical</span></div></li>
+      <li id="mi_rc"><div><span>Rename class</span></div></li>
+      <li id="mi_sx"><div><span>Rename suffix</span></div></li>
+      <li id="mi_sm"><div><span>Similar/Identical</span></div></li>
      </ul>
 	</li>
-    <li id="mi_du"><div><span class="lc">Duplicate</span></div></li>
-    <li id="mi_cc"><div><span class="lc">Label</span></div>
+    <li id="mi_du"><div><span>Duplicate</span></div></li>
+    <li id="mi_cc"><div><span>Label</span></div>
      <ul id="mi_ccsm">
-      <li id="mi_ccnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span class="lc">No label</span></div></li>
-      <li id="mi_ccred"><div><div class="smallblock Bred"></div><span class="lc">Red</span></div></li>
-      <li id="mi_ccorange"><div><div class="smallblock Borange"></div><span class="lc">Orange</span></div></li>
-      <li id="mi_ccyellow"><div><div class="smallblock Byellow"></div><span class="lc">Yellow</span></div></li>
-      <li id="mi_ccgreen"><div><div class="smallblock Bgreen"></div><span class="lc">Green</span></div></li>
-      <li id="mi_ccblue"><div><div class="smallblock Bblue"></div><span class="lc">Blue</span></div></li>
-      <li id="mi_ccpink"><div><div class="smallblock Bpink"></div><span class="lc">Pink</span></div></li>
-      <li id="mi_ccpurple"><div><div class="smallblock Bpurple"></div><span class="lc">Purple</span></div></li>
-      <li id="mi_ccgrey"><div><div class="smallblock Bgrey"></div><span class="lc">Grey</span></div></li>
-      <li id="mi_ccedit"><div><span class="lc">Edit labels ...</span></div></li>
+      <li id="mi_ccnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span>No label</span></div></li>
+      <li id="mi_ccred"><div><div class="smallblock Bred"></div><span>Red</span></div></li>
+      <li id="mi_ccorange"><div><div class="smallblock Borange"></div><span>Orange</span></div></li>
+      <li id="mi_ccyellow"><div><div class="smallblock Byellow"></div><span>Yellow</span></div></li>
+      <li id="mi_ccgreen"><div><div class="smallblock Bgreen"></div><span>Green</span></div></li>
+      <li id="mi_ccblue"><div><div class="smallblock Bblue"></div><span>Blue</span></div></li>
+      <li id="mi_ccpink"><div><div class="smallblock Bpink"></div><span>Pink</span></div></li>
+      <li id="mi_ccpurple"><div><div class="smallblock Bpurple"></div><span>Purple</span></div></li>
+      <li id="mi_ccgrey"><div><div class="smallblock Bgrey"></div><span>Grey</span></div></li>
+      <li id="mi_ccedit"><div><span>Edit labels ...</span></div></li>
      </ul>
 	</li>
-    <li id="mi_de"><div><span class="lc">Delete</span><span class="ui-icon ui-icon-trash"></div></li>
+    <li id="mi_de"><div><span>Delete</span><span class="ui-icon ui-icon-trash"></div></li>
 </ul>
 <ul id="selectmenu">
-	<li id="mi_sc"><div><span class="lc">Label</span></div>
+    <li class="lcT"><div><span>Selection</span></div></li>
+	<li id="mi_sc"><div><span>Label</span></div>
 		<ul id="mi_scsm">
-			<li id="mi_scnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span class="lc">No label</span></div></li>
-			<li id="mi_scred"><div><div class="smallblock Bred"></div><span class="lc">Red</span></div></li>
-			<li id="mi_scorange"><div><div class="smallblock Borange"></div><span class="lc">Orange</span></div></li>
-			<li id="mi_scyellow"><div><div class="smallblock Byellow"></div><span class="lc">Yellow</span></div></li>
-			<li id="mi_scgreen"><div><div class="smallblock Bgreen"></div><span class="lc">Green</span></div></li>
-			<li id="mi_scblue"><div><div class="smallblock Bblue"></div><span class="lc">Blue</span></div></li>
-			<li id="mi_scpink"><div><div class="smallblock Bpink"></div><span class="lc">Pink</span></div></li>
-			<li id="mi_scpurple"><div><div class="smallblock Bpurple"></div><span class="lc">Purple</span></div></li>
-			<li id="mi_scgrey"><div><div class="smallblock Bgrey"></div><span class="lc">Grey</span></div></li>
-			<li id="mi_scedit"><div><span class="lc">Edit labels ...</span></div></li>
+			<li id="mi_scnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span>No label</span></div></li>
+			<li id="mi_scred"><div><div class="smallblock Bred"></div><span>Red</span></div></li>
+			<li id="mi_scorange"><div><div class="smallblock Borange"></div><span>Orange</span></div></li>
+			<li id="mi_scyellow"><div><div class="smallblock Byellow"></div><span>Yellow</span></div></li>
+			<li id="mi_scgreen"><div><div class="smallblock Bgreen"></div><span>Green</span></div></li>
+			<li id="mi_scblue"><div><div class="smallblock Bblue"></div><span>Blue</span></div></li>
+			<li id="mi_scpink"><div><div class="smallblock Bpink"></div><span>Pink</span></div></li>
+			<li id="mi_scpurple"><div><div class="smallblock Bpurple"></div><span>Purple</span></div></li>
+			<li id="mi_scgrey"><div><div class="smallblock Bgrey"></div><span>Grey</span></div></li>
+			<li id="mi_scedit"><div><span>Edit labels ...</span></div></li>
 		</ul>
 	</li>
-	<li id="mi_sd"><div><span class="lc">Delete selection</span><span class="ui-icon ui-icon-trash"></div></li>
+	<li id="mi_sd"><div><span>Delete selection</span><span class="ui-icon ui-icon-trash"></div></li>
 </ul>
 <ul id="ccfmenu">
-	<li id="mi_ccfc"><div><span class="lc">Create new cluster</span></div></li>
-	<li id="mi_ccfm"><div><span class="lc">Move to</span></div>
+    <li class="lcT"><div><span>Common failures</span></div></li>
+	<li id="mi_ccfc"><div><span>Create new cluster</span></div></li>
+	<li id="mi_ccfm"><div><span>Move to</span></div>
 	 <ul id="mi_ccfmsm">
 	 </ul>
 	</li>
@@ -268,25 +384,16 @@ See LICENSE.md
     <div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
     <div id="tWLSthreats" class="threats">
     </div>
-    <input id="tWLSaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
-    <!-- input id="tWLScopythreat" class="copybutton" type="button" value="Copy">
-    <input id="tWLSpastethreat" class="pastebutton" type="button" value="Paste" -->
 </div>
 <div id="checklist_tWRD" class="checklist">
     <div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
     <div id="tWRDthreats" class="threats">
     </div>
-    <input id="tWRDaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
-    <!-- input id="tWRDcopythreat" class="copybutton" type="button" value="Copy">
-    <input id="tWRDpastethreat" class="pastebutton" type="button" value="Paste" -->
 </div>
 <div id="checklist_tEQT" class="checklist">
     <div class="threat"><div class="th_name th_col thr_header">Name</div><div class="th_descr th_col thr_header">Description</div></div>
     <div id="tEQTthreats" class="threats">
     </div>
-    <input id="tEQTaddthreat" class="addthreatbutton" type="button" value="+ Add vulnerability">
-    <!-- input id="tEQTcopythreat" class="copybutton" type="button" value="Copy">
-    <input id="tEQTpastethreat" class="pastebutton" type="button" value="Paste" -->
 </div>
 
 <div id="tabs">

@@ -9,17 +9,57 @@ The UI consists of a main window containing three sections: diagrams, single ele
 
 */
 
-.ui-widget {font-size:11px !important;
+:root {
+  --toolbarbg: #eee;
+  --lighttbbg: #c6c6c6;
+  --greybg: #ccc;
+  --lightbg: #e6e6e6;
+  --vlightbg: #fcfcff;
+  --highlt: #80c0ff;
+  --warn: #d76f00;
 }
 
+.ui-button {
+	background: white;
+}
+.ui-checkboxradio-label {
+	background: var(--lightbg);
+}
+.ui-checkboxradio-label.ui-state-active, .ui-accordion-content, .ui-dialog .ui-dialog-content {
+	background: var(--vlightbg);
+}
+.ui-accordion-header.ui-accordion-header-active {
+	background: var(--lightbg);
+}
+.ui-accordion-content {
+    padding-top: 0px !important;
+    padding-right: 0px !important;
+}
+.ui-dialog {
+    box-shadow: 0px 0px 6px #999;
+    background: var(--vlightbg);
+}
+.ui-dialog .ui-dialog-titlebar-close { /* Restyle because we add buttons to the title bar */
+	border-radius: 6px;
+	border-width: 3px;
+	padding: 8px;
+	top: 13px;
+}
+.ui-dialog-titlebar.ui-widget-header {
+	background: var(--highlt);
+}
+option:checked {
+    background-color: var(--highlt) !important;
+}
 .ui-state-focus { outline: none; }
 /* Make sure model dialogs are above all other elements. */
 .ui-widget-overlay { z-index: 4000 !important; }
 
 body {
-    padding: 0px;
+	background: var(--toolbarbg);
+	padding: 0px;
     border: 0px;
-    margin: 2px 2px 0 2px;
+    margin: 0px 2px 0 2px;
     overflow: hidden;
 }
 .wait {
@@ -41,38 +81,86 @@ body {
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
 
-.toolbaritem {
+#toolbar {
+	background: var(--toolbarbg);
+	display: inline-block;
+	height: 50px;
+	width: 100%;
+}
+#toolbar>div:first-child {
+	margin-left: 8px;
+}
+#toolbar .ui-button {
+	padding: .25em 0.6em;
+
+}
+#toolbar input[type=checkbox] {
+	margin-top: 0;
+	margin-bottom: 2px;
+}
+.toolbarlargebutton {
+	display: inline-block;
+	font-size: 80%;
+	margin-right: 6px;
+	height: 27px;
+	padding: 12px 12px 0px !important;
+	top: 6px;
+}
+.toolbarbutton {
 	display: inline-block;
 	vertical-align: top;
-	margin-left: 6px;
+	margin-right: 6px;
+}
+.toolbariconbutton {
+	display: inline-block;
+	vertical-align: top;
+	margin-right: 6px;
     min-width: 25px;
 	height: 25px;
-	border-radius: 3px;
-	padding: 2px;
+	border-radius: 8px;
+	padding: 2px !important;
 	vertical-align: top;
+	top: 11px;
+	background-size: cover !important;
 }
-.toolbaritem.ui-button {
-	margin-top: 4px;
-}
-.toolbaritem img {
+.toolbariconbutton img {
 	max-width: 25px;
 	max-height: 25px;
 }
 .toolbarspacer {
 	display: inline-block;
-	width: 15px;
+	width: 10px;
 	background: white;
 }
-#toolbar {
-	background: white;
+.toolbarsection {
 	display: inline-block;
-	margin-bottom: 2px;
-	height: 42px;
+	vertical-align: top;
+	height: 100%;
+	margin-left: 10px;
+	border-left: 2px dotted gray;
+	padding-left: 10px;
+}
+.toolbarlabel {
+	display: inline-block;
+	vertical-align: top;
+}
+.toolbarlabel>div:first-child {
+	font-style: italic;
+	line-height: 20px;
+	display: relative;
+}
+.toolbarlabel>div:last-child {
+	display: relative;
+}
+
+#diaopts {
+	padding-top: 6px;
+	position: relative;
 }
 
 #networkactivity {
     position: absolute;
-    left: 10px;
+    left: 14px;
     top: 10px;
     width: 6px;
     height: 6px;
@@ -83,17 +171,7 @@ body {
 .activityyes {background: lightgreen; border: 1px solid grey;}
 .activityno  {background: white; border: 1px solid grey;}
 
-/* Toolbar text buttons */
-.activator {
-	padding: 6px 10px 2px;
-	font-size: 80% !important;
-	height: 21px;
-}
-#libraryactivator { padding-left: 10px; }
-
 #undobutton {
-	background-size: 85%;
-	background-repeat: no-repeat;
 	background-image: url(../img/undo-lo.png);
 }
 #undobutton.possible {
@@ -101,8 +179,6 @@ body {
 }
 
 #redobutton {
-	background-size: 85%;
-	background-repeat: no-repeat;
 	background-image: url(../img/redo-lo.png);
 }
 #redobutton.possible {
@@ -110,23 +186,13 @@ body {
 }
 
 #findbutton {
-	background-size: 85%;
-	background-repeat: no-repeat;
 	background-image: url(../img/find-hi.png);
 }
 
 #helpbutton {
-	background-size: 85%;
-	background-repeat: no-repeat;
 	background-image: url(../img/qm-hi.png);
 }
 
-/* Templates of the 5 node types, for dragging onto the workspace */
-#templates {
-    height: 40px;
-    border-radius: 5px;
-    padding: 0px 7px;
-}
 /* In the standalone version, templates are shown using #templates.floatingtoolbar */
 .floatingtoolbar {
 	position: absolute;
@@ -137,29 +203,46 @@ body {
 	transform: translateX(-50%);
 	-webkit-transform: translateX(-50%);
 }
-.template:last-child {
-	margin-left: 10px;
+/* LAYOUT =
+ template
+  + templateinner
+     + templatelabel
+     + templatebg
+        + templateicon
+     + tC
+*/
+#templates {
+	display: inline-block;
 }
 .template {
 	display: inline-block;
 	width: 64px;
 }
-.template:last-child {
-	margin-left: 20px;
-}
 .templateinner { /* So that we have a positioned DIV to layout against. */
 	position: relative;
 	width: 60px;
 	top: 2px;
-	left: 2px;
 	height: 40px;
 }
+.templatelabel {
+    position: absolute;
+	top: -7px;
+    white-space: nowrap;
+    color: #666;
+	width: 100%;
+	text-align: center;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
 .templatebg {
+	position: absolute;
+	top: 14px;
     width: 100%;
     height: 23px;
     border: 1px solid #333;
     border-radius: 3px;
-    background: #ccccff;
+    background: var(--greybg);
     cursor: move;
     z-index: 100;
 }
@@ -185,21 +268,11 @@ img.tC {
     right: -3px;
     width: 16px;
     height: 16px;
-	border: 1px solid orange;
+	border: 1px solid var(--highlt);
 	border-radius: 6px;
 	box-shadow: 2px 2px 3px gray;
     cursor: context-menu;
-}
-.templatelabel {
-    position: absolute;
-	bottom: 1px;
-    white-space: nowrap;
-    color: #666;
-	width: 100%;
-	text-align: center;
-    user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
+    z-index: 100;
 }
 
 #currentProject {
@@ -213,7 +286,6 @@ img.tC {
     text-overflow: ellipsis;
     text-align: right;
     top: 10px;
-    z-index: -1; /* below templates */
 }
 #classroom {
 	position: fixed;
@@ -223,6 +295,39 @@ img.tC {
 	color: #999;
 	font-style: italic;
 	background: white;
+}
+
+/* Some buttons are shown in the title bar of dialogs or accordions */
+.titlebarbutton {
+	font-size: 0.9em !important;
+	border-radius: 8px;
+	padding: 2px 5px;
+	height: 14px;
+	margin-right: 15px;
+	margin-bottom: 7px;
+	margin-top: 2px;
+}
+.titlebaricon {
+	border-radius: 8px;
+	padding: 0 3px;
+	margin-right: 15px;
+	width: 25px;
+	height: 25px;
+}
+.titlebaricon img {
+	width: 25px;
+	height: 25px;
+}
+
+.topbuttons {
+	background: var(--lightbg);
+	position: relative;
+	width: 100%;
+	padding-left: 25px;
+	left: -25px;
+	height: 30px;
+	top: 0px;
+	margin-bottom: 2px;
 }
 
 
@@ -236,12 +341,15 @@ img.tC {
 	padding: 0px;
 	border: 0px;
 }
+#tabs > ul {
+	padding-right: 1px !important;
+	padding-top: 1px !important;
+}
 .ui-tabs-nav {  z-index: 150; }
 .ui-tabs-vertical-sw > .ui-tabs-nav li { width: 9em; float: right; z-index: 150; }
 .longtab { width: 15.5em !important; }
 .rot-neg-90 {
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
+    border-radius: 0px;
     transform-origin: 0 0;
     -ms-transform-origin: 0 0;
     -moz-transform-origin: 0 0;
@@ -255,10 +363,13 @@ img.tC {
 /* The content panes to each vertical tab */
 .workouter {
 	position: absolute;
-	left: 35px;
+	left: 30px;
 	top: 0px;
 	margin: 0px;
 	padding: 0 !important;
+}
+.workouter > div {
+	border-radius: 0;
 }
 .workinner {
 	overflow: auto;
@@ -279,7 +390,7 @@ input.inplace_field, textarea.inplace_field {
     -moz-outline-border: 4px;
     border: 0;
     z-index: 1100;
-    background: rgb(255,204,102);
+    background: var(--highlt);
 }
 .th_freq .inplace_form {position: relative; z-index:1100; left: -9px;}
 .th_impact .inplace_form {position: relative; z-index:1100; left: -9px;}
@@ -292,6 +403,9 @@ input.inplace_field, textarea.inplace_field {
 
 #helppanel {
     width: auto;
+}
+#helppanel ul {
+	border-radius: 8px 8px 0px 0px;
 }
 #helptabs td { padding: 2px; }
 #helptabs table p { margin: 0; }
@@ -437,15 +551,25 @@ Dialog windows:
 
 .ui-menu {
 	position:absolute;
-	display:none;
 	min-width: 150px;
-	background: #eee;
+	background: var(--lightbg);
 	border: 1px solid gray !important;
-    box-shadow: 7px 7px 6px #999;
+    box-shadow: 0px 0px 8px #999;
 	z-index: 700;
 }
 .ui-menu-item {
 	white-space: nowrap;
+}
+.ui-menu-item-wrapper.ui-state-active {
+    background-color: var(--highlt) !important;
+}
+.lcT {
+	font-weight: bold;
+	border-bottom: 1px solid gray;
+}
+li.lcT div:first-child {
+    background-color: var(--lightbg) !important;
+	font-weight: bold;
 }
 
 .smallblock {
@@ -502,14 +626,13 @@ Dialog windows:
 #form_editlabels input {margin-bottom: 5px; }
 
 /* Dialog: errors connections */
-.ui-dialog {
-    box-shadow: 7px 7px 6px #999;
-}
 div.nodereport p { margin-bottom: 0.5ex; }
 
 /* Dialog: checklist and threat evaluation common parts */
 div.thr_header {
     font-weight: bold;
+	border-bottom: 1px solid gray;
+	border-top: 1px solid gray;
 }
 div.threat {
     display: table-row;
@@ -520,13 +643,16 @@ div.threat {
     float: left;
     height: 19px;
     padding: 3px;
-    background: #eee;
+	border-bottom: 1px solid gray;
 }
 div.th_name {
     width: 14em;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+.ccfaccordionbody .th_col.th_name {
+	border: none;
 }
 div.th_descr {
     width: 46em;
@@ -538,9 +664,14 @@ div.th_del {
     width: 15px;
     padding-left: 0;
     padding-right: 0;
-    background: white;
+	border: none;
 }
-div.th_del input { padding: 1px; }
+div.th_del .ui-button { /* Circle with cross */
+	padding: 0px 6px;
+	font-size: 17px;
+	border: none;
+	top: -5px;
+}
 .th_name span { cursor: text; }
 .th_descr span { cursor: text; }
 .th_name .inplace_field { width: 8em; } /* Less than width of column, to account for tree structure lines */
@@ -548,7 +679,7 @@ div.th_del input { padding: 1px; }
 .errImpact {
 }
 .errImpact > span::after {
-	color: rgb(255,102,0); /* Same as .incomplete */
+	color: var(--warn); /* Same as .incomplete */
 	content: " !";
 }
 .errImpactM > span::after {	content: " < M"; }
@@ -575,8 +706,6 @@ div.th_remark {
 .th_remark span { cursor: text; }
 .th_remark .inplace_field { width: 35em; }
 
-.copybutton {margin-left: 20px; }
-
 .pdflabel {
     display: inline-block;
     width: 10em;
@@ -589,13 +718,14 @@ div.th_remark {
 	width: 30em;
 }
 
+/*
 .displayoptsarea {
-	border: 1px solid #ccccff;
+	border: 1px solid var(--highlt);
     border-radius: 0 0 5px 5px;
-    background: rgba(240,240,240,0.95);
+    background: rgba(240,240,240,0.90);
 	margin: 0;
 	padding: 0 0 0 10px;
-    width: 809px; /* width of .ccfaccordion, plus overhang left and right */
+    width: 809px; /* width of .ccfaccordion, plus overhang left and right *
 	position: fixed;
 	left: 43px;
 	top: auto;
@@ -627,7 +757,7 @@ div.th_remark {
 .collapseall {
 	margin-left: 10px;
 }
-
+*/
 /* modaldialog */
 #modaldialog ul {
 	padding-left: 1.5em;
@@ -649,14 +779,17 @@ div.th_remark {
     overflow: scroll !important;
 }
 .fancyworkspace {
-    width: 2250px;
-    height: 2000px;
-    background: #ddf;
-    background: -moz-linear-gradient(top, #ccccff, #eeeeff);
-    background: -webkit-gradient(linear, left top, left bottom, from(#ccccff), to(#eeeeff));
+	/* Make the drawing area the same proportions as A4-series paper: 1.414 : 1
+	 */
+    width: 2121px;
+    height: 1500px;
     position: relative;
     top: 0;
     left: 0;
+	background: var(--vlightbg);
+	background-image: url('../img/paper.png');
+	background-size: 100px;
+	background-position: 8px 9px;
 }
 .plainworkspace {
     overflow: auto !important;
@@ -670,7 +803,7 @@ div.th_remark {
     bottom: 5px;
 }
 */
-.tabs-bottom .ui-tabs-panel { height: 140px; overflow: auto; }
+.tabs-bottom .ui-tabs-panel { height: 100%; overflow: auto; }
 .tabs-bottom .ui-tabs-nav { position: absolute !important; left: 38px; bottom: -1px; right:0; padding: 0 !important; }
 .tabs-flushleft .ui-tabs-nav { left: 0 !important; }
 .tabs-bottom .ui-tabs-nav li.ui-tabs-selected { margin-top: -2px !important; }
@@ -700,8 +833,8 @@ div.th_remark {
     display: none;
     right: 40px;
     top: 60px;
-    width: 60px;
-    height: 40px;
+    width: 132.6px; /* .facyworkspace.width / 16  */
+    height: 93.8px; /* .facyworkspace.height / 16 */
     background: #aaa;
     border: 1px solid white;
     z-index: 97;
@@ -721,9 +854,9 @@ div.th_remark {
 }
 .tinynode {
     position: absolute;
-    width: 2px;
-    height: 2px;
-    background: red;
+    width: 3px;
+    height: 3px;
+    background: var(--warn);
     z-index: 98;
 }
 
@@ -874,7 +1007,7 @@ div.headerbelow {
     -webkit-transform: translateX(-50%);
     /*border: 1px solid grey;*/
     border-radius: 3px;
-    background: rgba(240,240,240,0.8);
+    background: rgba(255,255,255,0.8);
     padding: 2px 2px 0 2px;
     color: black !important;
 }
@@ -977,8 +1110,6 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
     display: none;
     background: blue;
     opacity: 0.2;
-    border-radius: 7px;
-    border: 4px solid white;
     z-index: 90;
 }
 
@@ -986,11 +1117,14 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 /* * * * * * * * * * * * * * * * *|     SINGLE FAILURES     |* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
+.sfworkspace {
+	width: 900px;
+}
 #servaddbuttonsf {
     position: absolute;
 }
 .sfacclist {
-	margin-top: 80px;
+	margin-top: 10px;
 }
 
 .firstp {
@@ -1006,10 +1140,12 @@ for checklists and threat evaluations.
     width: 800px !important;
     margin-bottom: 3px !important;
 }
-
+.sfaccordion h3 {
+	border-bottom: none !important;
+}
 .incomplete {
     margin-left: 2em;
-    color: rgb(255,102,0);
+    color: var(--warn);
 }
 
 .Magnitude {
@@ -1060,7 +1196,7 @@ for checklists and threat evaluations.
 #someccf {
 }
 #ccfacclist {
-	margin-top: 80px;
+	margin-top: 10px;
 }
 #outerimpacthint {
 	position: absolute;
@@ -1108,14 +1244,6 @@ for checklists and threat evaluations.
     margin-left: 15px !important;
     margin-bottom: 3px !important;
 }
-.ccfhighlight .ui-accordion-header {
-	background: #ccccff !important;
-}
-
-.ccfaccordionbody {
-    padding-top: 0px !important;
-    padding-right: 0px !important;
-}
 
 .linechar {
 	position: relative;
@@ -1140,10 +1268,11 @@ for checklists and threat evaluations.
     border: 1px solid #ccc;
     border-radius: 3px;
     cursor: ns-resize;
+    background: white;
 }
 .li_selected {
-    border: 1px solid red;
-    background: #fee;
+    border: 1px solid #5080ff;
+    background: #80c0ff;
 }
 .tlistroot {
     margin: 0 44px 5px 0px;
@@ -1204,7 +1333,7 @@ for checklists and threat evaluations.
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
 #analysis_body h3 {
-    background: #eee;
+    background: var(--vlightbg);
     margin: 0 0 5px;
     padding: 15px 100px 5px;
 }
@@ -1223,7 +1352,7 @@ for checklists and threat evaluations.
 .ana_nodeccfblock {
 	display: inline-block;
 	vertical-align: top;
-	padding-top: 80px;
+	padding-top: 10px;
 }
 #ana_nodethreattable table {
     table-layout: fixed;
@@ -1277,7 +1406,7 @@ for checklists and threat evaluations.
 .printonlyheadercell {
     display: none;
 }
-.blankcell { background: #eee; }
+.blankcell { background: var(--vlightbg); }
 .continuationcell { background: #faf8f8; }
 .nodetitlecell { text-align: right !important; overflow: hidden; vertical-align: bottom; }
 .largetitlecell { font-size: 14px; text-decoration: underline;}
@@ -1337,6 +1466,6 @@ for checklists and threat evaluations.
 #ana_reports { margin-left: 20px; }
 
 #longlist {
-	margin-top: 80px;
-    margin-bottom: 30px;
+	margin-top: 10px;
+    margin-bottom: 60px;
 }

@@ -116,6 +116,7 @@ Node.servicehastitle = function(sid,str) {
 Node.nodesinselection = function() {
 	var a = [];
 	var o = $('#selectrect').offset();
+	if (!o) return 0;
 	var sl = o.left;
 	var st = o.top;
 	var sw = $('#selectrect').width(); 	
@@ -1026,7 +1027,7 @@ Node.prototype = {
 		});
 	
 		$('#titlemain'+this.id).editInPlace({
-			bg_over: 'rgb(255,204,102)',
+			bg_over: 'var(--highlt)',
 			show_buttons: false,
 			field_type: (this.type=='tNOT' ? 'textarea' : 'text'),
 			callback: function(domid, enteredText) {

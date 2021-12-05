@@ -3,11 +3,11 @@ See LICENSE.md
 
 
 BUGS
-After Zap, the default project has two service tabs for one service. load() called twice?
+Renaming a cluster in the left-hand column removes the line characters
+New clusters get a silly default name
 Title on undo/redo buttons should be made HTML-safe with the H()-function on display; the descriptions supplied in new Transaction() should not be HTML-escaped.
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
 Sometimes when moving a node localStorage is not up to date with the node's properties.
-Undoing a threat-create does not repaint list of node clusters in Common cause failure view
 The How to use help-panel is useless. Either improve or remove. A help-panel on keyboard shortcuts might be useful instead.
 On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
@@ -22,12 +22,10 @@ Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selec
 TODO
 Add option to duplicate a project.
 Undo
-With Undo implemented, Cut/Copy/Paste clipboard actions can become more general.
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
 Make class definitions conform to ES6. Use Map instead of _all. Create modules with import/export.
 Change variables from var to let/const.
 Make the UI more in line with other apps that people are used to these days.
-Refresh the UI theming.
 Replace #modaldialog by an anonymous <div></div>.
 Change node shapes from image to SVG, helps for cleaner resizes. Obsoleted by iconsets?
 Try IndexDB instead of localStorage. This will benefit concurrent use in multiple tabs, and may ease the implementation of Undo and concurrent use across computers.

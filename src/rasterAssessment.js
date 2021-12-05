@@ -354,7 +354,7 @@ Assessment.prototype = {
 			<div id="dth__PF_total_TI_" class="th_total th_col">_TO_</div>\
 			<div id="dth__PF_remark_TI_" class="th_remark th_col"><span>_DR_</span></div>';
 		if (interact) {
-			snippet += '<div class="th_del th_col"><input id="dth__PF_del_TI_" type="button" value="&minus;"></div>';
+			snippet += '<div class="th_del th_col" title="_DD_"><div id="dth__PF_del_TI_"></div></div>';
 		}
 		snippet += '</div>\n';
 		snippet = snippet.replace(/_TI_/g, this.id);
@@ -366,6 +366,7 @@ Assessment.prototype = {
 		snippet = snippet.replace(/_DF_/g, this.freq);
 		snippet = snippet.replace(/_DI_/g, this.impact);
 		snippet = snippet.replace(/_DR_/g, H(this.remark));
+		snippet = snippet.replace(/_DD_/g, _("Remove vulnerability"));
 		this._impactoid = '#dth_'+prefix+'impact'+this.id;
 		return snippet;
 	},
@@ -374,6 +375,7 @@ Assessment.prototype = {
 		if (interact==null) interact=true;
 		$(oid).append( this.addtablerow_textonly(prefix,interact,beforestring,afterstring) );
 		this.addtablerow_behavioronly(oid,prefix,interact);
+		$('dth_'+prefix+'del'+this.id).button({icon: 'ui-icon-trash'});
 	},
 	
 	addtablerow_behavioronly: function(oid,prefix,interact) {
@@ -383,9 +385,6 @@ Assessment.prototype = {
 			$('#dth_'+prefix+'name'+this.id).attr('title', _("For %%: ",Rules.nodetypes[this.type]) + H(this.description));
 		} else {
 			$('#dth_'+prefix+'name'+this.id).attr('title', H(this.description));
-		}
-		if (interact) {
-			$('#dth_'+prefix+'del'+this.id).button().removeClass('ui-corner-all').addClass('ui-corner-right');
 		}
 		
 		var selectoptions = '';
@@ -411,8 +410,8 @@ Assessment.prototype = {
 		}
 		
 		if (!nc_isroot) {
-			$('#dthE_'+prefix+'name'+this.id).editInPlace({
-				bg_out: '#eee', bg_over: 'rgb(255,204,102)',
+			$('#dth_'+prefix+'name'+this.id).editInPlace({
+				bg_out: 'var(--vlightbg)', bg_over: 'var(--highlt)',
 				callback: function(oid, enteredText) {
 					let vln = Vulnerability.get(assmnt.vulnerability);
 					let it = new VulnerabilityIterator({project: vln.project, type: vln.type, title: enteredText});
@@ -461,7 +460,7 @@ Assessment.prototype = {
 			});
 		}
 		$('#dth_'+prefix+'freq'+this.id).editInPlace({
-			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
+			bg_out: 'var(--vlightbg)', bg_over: 'var(--highlt)',
 			field_type: 'select',
 			select_options: selectoptions,
 			select_text: "",
@@ -477,7 +476,7 @@ Assessment.prototype = {
 
 		this.computeminimpact(); // Ignore return value
 		$('#dth_'+prefix+'impact'+this.id).editInPlace({
-			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
+			bg_out: 'var(--vlightbg)', bg_over: 'var(--highlt)',
 			field_type: 'select',
 			select_options: selectoptions,
 			select_text: '',
@@ -538,7 +537,7 @@ Assessment.prototype = {
 		});
 
 		$('#dth_'+prefix+'remark'+this.id).editInPlace({
-			bg_out: '#eee', bg_over: 'rgb(255,204,102)',
+			bg_out: 'var(--vlightbg)', bg_over: 'var(--highlt)',
 			default_text: '-',
 			callback: function(oid, enteredText) {
 				new Transaction('assessmentDetails',
@@ -551,7 +550,7 @@ Assessment.prototype = {
 		});
 	
 		if (interact) {
-			$('#dth_'+prefix+"del"+this.id).on('click',  function() {
+			$('#dth_'+prefix+"del"+this.id).button({label: '⊗'}).on('click',  function() {
 				let assmnt = Assessment.get(nid2id(this.id));
 				let cm;
 				if (assmnt.component!=null) {

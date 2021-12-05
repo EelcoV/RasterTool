@@ -23,6 +23,7 @@
  *	_loaded: boolean, indicates whether all DOM elements have been created;
  *		necessary to avoid painting on non-existing DIVs.
  *	_jsPlumb: instance of jsPlumb for this service and workspace.
+ *	sfsortorder: (string) current sort order of components on the Single Failures tab ('alpha', 'type', 'thrt')
  * Methods:
  *	destroy(): destructor for this object.
  *	settitle(t): change the title to 't' (50 chars max). The actual title may receive
@@ -64,6 +65,7 @@ var Service = function(pid, id) {
 		DragOptions: { cursor: 'move' },
 		Endpoint: [ 'Dot', { radius: 6 } ]
 	});
+	this.sfsortorder = 'alph';
 	
 	this.store();
 	Service._all[this.id]=this;
@@ -153,8 +155,10 @@ Service.prototype = {
 		this._addtabsinglefs();
 		
 		SizeDOMElements();
+		// delete #selectrect, resurrect it, and re-bind the menu event handler.
 		$('.scroller_overview').hide();
 		$('#scroller_overview'+this.id).show();
+		
 		var origpos;
 		$('#selectrect').draggable({
 			start: function(event,ui) {
@@ -337,11 +341,11 @@ Service.prototype = {
 		});
 
 		$('#scroller_overview'+this.id).draggable({
-			stop: function(/*event,ui*/){
-				var l = $('#scroller_overview'+serviceid).position().left;
-				var w = $('#diagrams'+serviceid).width();
-				$('#scroller_overview'+serviceid).css('right', (w-l) + 'px').css('left','');
-			},
+//			stop: function(/*event,ui*/){
+//				var l = $('#scroller_overview'+serviceid).position().left;
+//				var w = $('#diagrams'+serviceid).width();
+//				$('#scroller_overview'+serviceid).css('right', (w-l) + 'px').css('left','');
+//			},
 			containment: 'parent',
 			cursor: 'move'
 		});
@@ -432,7 +436,7 @@ Service.prototype = {
 		snippet = '\n\
 			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n\
 			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
-			<div id="singlefs_workspace_I_" class="workspace plainworkspace"></div>\n\
+			<div id="singlefs_workspace_I_" class="workspace plainworkspace sfworkspace"></div>\n\
 		';
 		snippet = snippet.replace(/_LP_/g, _("Project"));
 		snippet = snippet.replace(/_LSF_/g, _("Single failures"));
@@ -443,6 +447,10 @@ Service.prototype = {
 		$('#singlefs'+this.id).append(snippet);
 		$('#singlefs_body').tabs('refresh');
 		$('#singlefs_body ul li').removeClass('ui-corner-top');
+		$('#singlefs_body').on('click', '.topbuttons', function() {
+			let id = $(this).parent().parent().attr('id');
+			$('#'+id).accordion('option','active',false);
+		});
 	},
 
 	_stringify: function() {

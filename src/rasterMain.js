@@ -177,30 +177,221 @@ function initAllAndSetup() {
 	$('#pdfoptions').parent().addClass('donotprint');
 #endif
 
+	// Load preferences
+	Preferences = new PreferencesObject();
+#ifdef STANDALONE
+	Preferences.online = false;
+#endif
+	var remembertab = Preferences.tab;
+
+	// General UI
+	$('input[type=button]').button();
+	$('input[type=submit]').button();
+	$('input[type=radio]').checkboxradio({icon: false});
+	$('fieldset').controlgroup();
+
+	$('#modaldialog').dialog({ autoOpen:false, modal:true, width: 400 });
+
 	initTabDiagrams();
 	initTabSingleFs();
 	initTabCCFs();
 	initTabAnalysis();
 
+	// Toolbar items
+	$('.toolbarlargebutton,.toolbarbutton,.toolbariconbutton').addClass('ui-widget ui-button ui-corner-all');
+	$('.toolbarlabel').addClass('ui-widget');
+
+#ifdef SERVER
+	if (GroupSettings.classroom) {
+		$("#classroom").html(_("Classroom version")).show();
+	}
+
+	// Generic toolbar items
+	$('#libraryactivator').html(_("Library..."));
+	$('#optionsactivator').html(_("Options..."));
+	$('#libraryactivator').attr('title', _("Manage project"));
+	$('#optionsactivator').attr('title', _("Set preferences"));
+	$('#undobutton').attr('title', _("Undo"));
+	$('#redobutton').attr('title', _("Redo"));
+	$('#findbutton').attr('title', _("Locate nodes"));
+	$('#helpbutton').attr('title', _("Assistance"));
+
+	initLibraryPanel();
+	initOptionsPanel();
+
+	$('#undobutton').on('click', Transaction.undo);
+	$('#redobutton').on('click', Transaction.redo);
+	$('#findbutton').on('click', StartFind);
+	$('#helpbutton').on('click',  function() {
+		$('#helppanel').dialog('open');
+	});
+
+	var flashTimer;
+	$(document).ajaxSend(function(){
+		window.clearTimeout(flashTimer);
+		$('#networkactivity').removeClass('activityoff activityno').addClass('activityyes');
+	});
+	$(document).ajaxStop(function(){
+		// Make sure that the activity light flashes at least some small time
+		flashTimer = window.setTimeout(function(){
+			$('#networkactivity').removeClass('activityoff activityyes').addClass('activityno');
+		},200);
+	});
+#endif
+
+	$('#helppanel').dialog({
+		title: _("Information on using this tool"),
+		autoOpen: false,
+		height: 450,
+		minHeight: 120,
+		width: 600,
+		minWidth: 470,
+		maxWidth: 800,
+		open: function(/*event*/) {
+			initFrequencyTool();
+			$('#helptabs ul').width($('#helppanel').width()-14);
+		},
+		resize: function(/*event,ui*/) {
+			$('#helptabs ul').width($('#helppanel').width()-14);
+		}
+	});
+	$('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
+	$('#helptabs').tabs({
+		heightStyle: 'content',
+		load: function(/*event,ui*/) {
+			if ($('#helptabs').tabs('option','active')==0) {
+				initFrequencyTool();
+			}
+		}
+	});
+	$('#helptabs a').eq(0).html( _("Frequency") );
+	$('#helptabs a').eq(1).html( _("Impact") );
+	$('#helptabs a').eq(2).html( _("How to use") );
+	$('#helptabs a').eq(3).html( _("About") );
+	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
+	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
+	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
+	$('#helptabs a').eq(3).attr('href', _("../help/About.html") );
+	$('#helptabs li:last-of-type').css("margin-left","10px");
+
+	// Diagrams toolbar
+	// templates are set up in Project.load()
+	$('#mapsection>div:first-child').html(_("Minimap:"));
+	$('#showmap_off + label').html(_("off"));
+	$('#showmap_on  + label').html(_("on"));
+	$('#showmap_off').prop('checked',!Preferences.showmap);
+	$('#showmap_on').prop('checked',Preferences.showmap);
+	$('#mapsection input').on('change', function() {
+		Preferences.showmap = $('#showmap_on').prop('checked');
+		if (Preferences.showmap) {
+			$('#scroller_overview'+Service.cid).show();
+		} else {
+			$('.scroller_overview').hide();
+		}
+	});
+	$('#vulnlevelsection>div:first-child').html(_("Vulnerability levels:"));
+	$('#em_none + label').html(_("None"));
+	$('#em_small + label').html(_("Small"));
+	$('#em_large + label').html(_("Large"));
+	$('#'+Preferences.emsize).prop('checked',true);
+	$('#vulnlevelsection input').on('change', function() {
+		Preferences.setemblem($('input[name=emblem_size]:checked').val());
+	});
+
+	// SF toolbar items
+	$('#sffoldsection>div:first-child').html(_("Fold:"));
+	$('#sfsortsection>div:first-child').html(_("Sort:"));
+	$('#sfsort_alph + label').html(_("Alphabetically"));
+	$('#sfsort_type + label').html(_("by Type"));
+	$('#sfsort_thrt + label').html(_("by Vulnerability level"));
+	$('#sfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
+	$('#sfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
+	$('#sfexpandall').on('click',  function(){
+		$('#singlefs_workspace'+Service.cid).scrollTop(0);
+		expandAllSingleF(Service.cid);
+	});
+	$('#sfcollapseall').on('click',  function(){
+		$('#singlefs_workspace'+Service.cid).scrollTop(0);
+		collapseAllSingleF(Service.cid);
+	});
+	$('#sfsortsection input').on('change', function() {
+		paintSingleFailures(Service.get(Service.cid));
+	});
+
+	// CCF toolbar items
+	$('#ccffoldsection>div:first-child').html(_("Fold:"));
+	$('#ccfsortsection>div:first-child').html(_("Sort:"));
+	$('#ccfsort_alph + label').html(_("Alphabetically"));
+	$('#ccfsort_type + label').html(_("by Type"));
+	$('#ccfsort_thrt + label').html(_("by Vulnerability level"));
+	$('#ccfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
+	$('#ccfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
+	$('#ccfexpandall').on('click', function(){
+		$('#ccfs_body').scrollTop(0);
+		expandAllCCF();
+	});
+	$('#ccfcollapseall').on('click', function(){
+		$('#ccfs_body').scrollTop(0);
+		collapseAllCCF();
+	});
+	$('#ccfsortsection input').on('change', function(){
+		PaintAllClusters();
+	});
+
+
+	// Analysis toolbar items
+	$('#anavnsortsection>div:first-child').html(_("Sort nodes and clusters:"));
+	$('#anavfsortsection>div:first-child').html(_("Sort vulnerabilities:"));
+	$('#anavexcludesection>div:first-child').html(_("Click cells to include/exclude them."));
+	$('#ana_nodesort_alph + label').html(_("Alphabetically"));
+	$('#ana_nodesort_type + label').html(_("by Type"));
+	$('#ana_nodesort_thrt + label').html(_("by Vulnerability level"));
+	$('#ana_failsort_alph + label').html(_("Alphabetically"));
+	$('#ana_failsort_type + label').html(_("by Type"));
+	var create_ananode_sortfunc = function(opt) {
+		return function() {
+			FailureThreatSortOpt.node = opt;
+			paintSFTable();
+			paintCCFTable();
+		};
+	};
+	$('[for=ana_nodesort_alph]').on('click', create_ananode_sortfunc('alph'));
+	$('[for=ana_nodesort_type]').on('click', create_ananode_sortfunc('type'));
+	$('[for=ana_nodesort_thrt]').on('click', create_ananode_sortfunc('thrt'));
+	var create_anafail_sortfunc = function(opt) {
+		return function() {
+			FailureThreatSortOpt.threat = opt;
+			paintSFTable();
+			paintCCFTable();
+		};
+	};
+	$('[for=ana_failsort_alph]').on('click', create_anafail_sortfunc('alph'));
+	$('[for=ana_failsort_type]').on('click', create_anafail_sortfunc('type'));
+	$('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
+		var exclCm = computeComponentQuickWins();
+		var exclCl = computeClusterQuickWins();
+		ComponentExclusions = { };
+		ClusterExclusions = { };
+		for (const id of exclCm) ComponentExclusions[id] = true;
+		for (const id of exclCl) ComponentExclusions[id] = true;
+		paintSFTable();
+		paintCCFTable();
+		$('#clearexclusions').button('option','disabled', (exclCm.length==0 && exclCl.length==0));
+	});
+	$('#clearexclusions').button().button('option','disabled',true).on('click',  function() {
+		ComponentExclusions = { };
+		ClusterExclusions = { };
+		paintSFTable();
+		paintCCFTable();
+		$('#clearexclusions').button('option','disabled',true);
+	});
+
+
+	// Vertical tabs
 	$('#tabs').tabs({activate: vertTabSelected});
 	$('#tabs').addClass('ui-tabs-vertical-sw ui-helper-clearfix');
 	$('#tabs > ul').addClass('rot-neg-90');
-
-	$('input[type=radio]').checkboxradio({icon: false});
-	$('fieldset').controlgroup();
-
-	$('input[type=button]').button();
-	$('input[type=submit]').button();
-	$('input[type=button]').css('padding','2px 11px');
-	$('input[type=submit]').css('padding','2px 11px');
-
-	$('#modaldialog').dialog({ autoOpen:false, modal:true, width: 400 });
-
-	$('#tab_singlefs').on('click', removetransientwindows);
-	$('#tab_ccfs').on('click', removetransientwindows);
-	$('#tab_analysis').on('click', removetransientwindows);
-
-	// tab_diagrams, tab_singlefs, tab_ccfs
+	
 	$("a[href^='#tab_diagrams']").attr('title', _("Draw diagrams for the services."));
 	$("a[href^='#tab_singlefs']").attr('title', _("Assess all single failures."));
 	$("a[href^='#tab_ccfs']").attr('title', _("Assess all common cause failures."));
@@ -209,6 +400,10 @@ function initAllAndSetup() {
 	$("a[href^='#tab_singlefs']").html(_("Single failures"));
 	$("a[href^='#tab_ccfs']").html(_("Common cause failures"));
 	$("a[href^='#tab_analysis']").html(_("Analysis"));
+	
+	$('#tab_singlefs').on('click', removetransientwindows);
+	$('#tab_ccfs').on('click', removetransientwindows);
+	$('#tab_analysis').on('click', removetransientwindows);
 
 	// Make sure that each tool window has a unique name
 	if (!window.name.match(/^RasterTool\d+$/)) {
@@ -224,27 +419,7 @@ function initAllAndSetup() {
 			+ _("This app will not work properly. ")
 			+ "<p>" + _("Try adjusting your cookie or privacy settings."));
 	}
-#endif
 
-	// Load preferences
-	Preferences = new PreferencesObject();
-#ifdef STANDALONE
-	Preferences.online = false;
-#endif
-	var remembertab = Preferences.tab;
-
-#ifdef SERVER
-	initLibraryPanel();
-	initOptionsPanel();
-
-	if (GroupSettings.classroom) {
-		$("#classroom").html(_("Classroom version")).show();
-	}
-#endif
-
-	SizeDOMElements();
-
-#ifdef SERVER
 	/* Loading data from localStorage. Tweaked for perfomance.
 	 */
 	var todelete = [];
@@ -297,70 +472,18 @@ function initAllAndSetup() {
 	// May be necessary to wait and resize
 	window.setTimeout(SizeDOMElements, 1000);
 
+	// Diagrams have already been painted on Project.load()
+	p = Project.get(Project.cid);
+	p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
+	PaintAllClusters();
+	// AddAllAnalysis(); Is redone each time the Analysis tab is activated
+	SizeDOMElements();
+
+	// Set/perform all preferences with side effects
+	Preferences.setlabel(Preferences.label);
+	Preferences.setemblem(Preferences.emsize);
 	Preferences.settab(remembertab);
 	forceSelectVerticalTab(Preferences.tab);
-
-	$('#helptabs a').eq(0).html( _("Frequency") );
-	$('#helptabs a').eq(1).html( _("Impact") );
-	$('#helptabs a').eq(2).html( _("How to use") );
-	$('#helptabs a').eq(3).html( _("About") );
-	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
-	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
-	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
-	$('#helptabs a').eq(3).attr('href', _("../help/About.html") );
-	$('#helptabs li:last-of-type').css("margin-left","10px");
-
-	$('#helppanel').dialog({
-		title: _("Information on using this tool"),
-		autoOpen: false,
-		height: 450,
-		minHeight: 120,
-		width: 600,
-		minWidth: 470,
-		maxWidth: 800,
-		open: function(/*event*/) {
-			initFrequencyTool();
-			$('#helptabs ul').width($('#helppanel').width()-14);
-		},
-		resize: function(/*event,ui*/) {
-			$('#helptabs ul').width($('#helppanel').width()-14);
-		}
-	});
-	$('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
-	$('#helptabs').tabs({
-		heightStyle: 'content',
-		load: function(/*event,ui*/) {
-			if ($('#helptabs').tabs('option','active')==0) {
-				initFrequencyTool();
-			}
-		}
-	});
-	$('#helpbutton').attr('title', _("Assistance"));
-	$('#helpbutton').on('click',  function() {
-		$('#helppanel').dialog('open');
-	});
-
-#ifdef SERVER
-	$('#undobutton').on('click', Transaction.undo);
-	$('#redobutton').on('click', Transaction.redo);
-	$('#undobutton').attr('title', _("Undo"));
-	$('#redobutton').attr('title', _("Redo"));
-
-	$('#findbutton').on('click', StartFind);
-	$('#findbutton').attr('title', _("Locate nodes"));
-
-	var flashTimer;
-	$(document).ajaxSend(function(){
-		window.clearTimeout(flashTimer);
-		$('#networkactivity').removeClass('activityoff activityno').addClass('activityyes');
-	});
-	$(document).ajaxStop(function(){
-		// Make sure that the activity light flashes at least some small time
-		flashTimer = window.setTimeout(function(){
-			$('#networkactivity').removeClass('activityoff activityyes').addClass('activityno');
-		},200);
-	});
-#endif
 
 	$('body').on('keydown', function(evt){
 		// Backspace, unfortunately, is bound in the browser to 'Return to previous page'
@@ -465,7 +588,7 @@ function initAllAndSetup() {
 			return;
 		}
 		$('#splash').hide();
-		sizeworkspace();
+		sizeworkspaceheight();
 #ifdef SERVER
 		if (
 			localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
@@ -611,13 +734,13 @@ var updateFind = function() {
 					currtype = rn.type;
 				}
 				// Show a small circle in the label color, if any.
-				if (Preferences.label) {
+//				if (Preferences.label) {
 					if (rn.color && rn.color!='none') {
 						res += '<div class="tinyblock B' + rn.color + '" title="' + H(p.strToLabel(rn.color)) + '"></div>';
 					} else {
 						res += '<div class="tinyblock" style="border: 1px solid white;"></div>';
 					}
-				}
+//				}
 				// Show a small square in the overall vulnerability level, if any
 				if (cm) {
 					if (cm.magnitude!='-') {
@@ -1021,10 +1144,10 @@ function SizeDOMElements() {
 	$('.rot-neg-90').css('-moz-transform',s);
 	$('.rot-neg-90').css('-webkit-transform',s);
 	$('.rot-neg-90').css('-o-transform',s);
-	$('.rot-neg-90').css('border-bottom-left-radius','0px');
-	$('.rot-neg-90').css('border-bottom-right-radius','0px');
+//	$('.rot-neg-90').css('border-bottom-left-radius','0px');
+//	$('.rot-neg-90').css('border-bottom-right-radius','0px');
 
-	$('.workbody').width(ww-43);
+	$('.workbody').width(ww-36);
 #ifdef SERVER
 	$('.workbody').height(wh-50);
 #else
@@ -1032,16 +1155,16 @@ function SizeDOMElements() {
 #endif
 
 	$('#servaddbuttondia').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('.tabs-bottom > .ui-tabs-nav').width(ww-82);
+	$('.tabs-bottom > .ui-tabs-nav').width(ww-78);
 	// special setting for tab "Analysis"
 	$('#analysis_body > .ui-tabs-nav').width(ww-44);
-	$('.tabs-bottom').width(ww-47);
+	$('.tabs-bottom').width(ww-43);
 #ifdef SERVER
 	$('.tabs-bottom').height(wh-54);
 #else
 	$('.tabs-bottom').height(wh-12);
 #endif
-	sizeworkspace();
+	sizeworkspaceheight();
 
 	var fh = $('.fancyworkspace').height();
 	var fw = $('.fancyworkspace').width();
@@ -1065,7 +1188,7 @@ function SizeDOMElements() {
 	}
 }
 
-function sizeworkspace() {
+function sizeworkspaceheight() {
 	// Adjust the workspace height
 	// #bottomtabsdiagrams or #bottomtabssinglefs height is 27px per row. Double rows possible with many services
 	// and/or a narrow window.
@@ -1080,13 +1203,13 @@ function sizeworkspace() {
 	bh = $('#bottomtabsdiagrams').height();
 	if (bh>0) {
 		$('#diagrams_body .workspace').height(wh-adj+27-bh);
-		$('#diagrams_body .servplusbutton').height(bh-4);
+		$('#diagrams_body .servplusbutton').height(bh-9);
 	}
 
 	bh = $('#bottomtabssinglefs').height();
 	if (bh>0) {
 		$('#singlefs_body .workspace').height(wh-adj+27-bh);
-		$('#singlefs_body .servplusbutton').height(bh-4);
+		$('#singlefs_body .servplusbutton').height(bh-9);
 	}
 
 	bh = $('#bottomtabsana').height();
@@ -1095,6 +1218,7 @@ function sizeworkspace() {
 	}
 }
 
+// Remove menus, but *not* the selectrect
 function removetransientwindows(/*evt*/) {
 	$('#nodemenu').hide();
 	$('#selectmenu').hide();
@@ -1108,11 +1232,6 @@ function removetransientwindowsanddialogs(/*evt*/) {
 
 function switchToProject(pid,dorefresh) {
 	if (pid==Project.cid)  return;
-	$('#nodereport').dialog('close');
-	$('#componentthreats').dialog('close');
-	$('#checklist_tWLS').dialog('close');
-	$('#checklist_tWRD').dialog('close');
-	$('#checklist_tEQT').dialog('close');
 	removetransientwindowsanddialogs();
 	$('#ccfs_details').empty();
 	CurrentCluster = null;
@@ -1123,6 +1242,10 @@ function switchToProject(pid,dorefresh) {
 	}
 	var p = Project.get(pid);
 	p.load();
+	p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
+	PaintAllClusters();
+	// AddAllAnalysis(); Is redone each time the Analysis tab is activated
+
 	var it = new ServiceIterator({project: pid});
 	var found = false;
 	var s;
@@ -2177,42 +2300,29 @@ function forceSelectVerticalTab(n) {
  * Event 'event' selects the vertical tab 'ui' of the main window.
  */
 function vertTabSelected(/*event, ui*/) {
-	removetransientwindows();
-
-	$('#nodereport').dialog('close');
-	$('#componentthreats').dialog('close');
-	$('#checklist_tWLS').dialog('close');
-	$('#checklist_tWRD').dialog('close');
-	$('#checklist_tEQT').dialog('close');
-
-	sizeworkspace();
+	removetransientwindowsanddialogs();
+	$('.toolbarsection').hide();
 	switch ($('#tabs').tabs('option','active')) {
 	case 0:		// tab Services
-		$('#templates').show();
+		$('#diaopts').show();
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
 		$('#diagramstabtitle'+Service.cid).trigger('click');
-		Service.get(Service.cid)._jsPlumb.repaintEverything();
 		Preferences.settab(0);
 		break;
 	case 1:		// tab Single Failures
-		$('#selectrect').hide();
-		$('#templates').hide();
+		$('#sfopts').show();
 		$('#singlefstabtitle'+Service.cid).trigger('click');
 		// Force repainting of that tab
-		paintSingleFailures( Service.get(Service.cid) );
 		Preferences.settab(1);
 		break;
 	case 2:		// tab Common Cause Failures
-		$('#selectrect').hide();
-		$('#templates').hide();
-		PaintAllClusters();
+		$('#ccfopts').show();
 		Preferences.settab(2);
 		break;
 	case 3:		// tab Analysis
-		$('#selectrect').hide();
-		$('#templates').hide();
 		AddAllAnalysis();
+		SetAnalysisToolbar();
 		Preferences.settab(3);
 		break;
 	default:
@@ -2221,8 +2331,6 @@ function vertTabSelected(/*event, ui*/) {
 }
 
 function initLibraryPanel() {
-	$('#libraryactivator span').first().html(_("Library"));
-
 	$('#librarypanel').dialog({
 		title: _("Library"),
 		position: {my: 'left+50 top+50', at: 'bottom right', of: '#libraryactivator'},
@@ -2518,11 +2626,6 @@ function initLibraryPanel() {
 	});
 
 	// panel activator --------------------
-	$('#libraryactivator').on('mouseenter', function() {
-		$('#libraryactivator').addClass('ui-state-hover');
-	}).on('mouseleave', function() {
-		$('#libraryactivator').removeClass('ui-state-hover');
-	});
 	$('#libraryactivator').on('click',  function() {
 		var it = new ProjectIterator({group: ToolGroup, stub: false});
 		var nump = it.count();
@@ -2781,8 +2884,6 @@ function refreshProjectList() {
 #endif
 
 function initOptionsPanel() {
-	$('#optionsactivator span').first().html(_("Options"));
-
 	$('#optionspanel').dialog({
 		title: _("Options"),
 		modal: true,
@@ -2795,13 +2896,13 @@ function initOptionsPanel() {
 		}
 	});
 
-	$('#emblem_size span').first().html( _("Vulnerability levels:") );
-	$('#em_small').checkboxradio('option', 'label', _("Small"));
-	$('#em_large').checkboxradio('option', 'label', _("Large"));
-	$('#em_none').checkboxradio('option', 'label', _("None"));
-	$('[for=em_small]').on('click',  function() { Preferences.setemblem('em_small'); });
-	$('[for=em_large]').on('click',  function() { Preferences.setemblem('em_large'); });
-	$('[for=em_none]').on('click',  function() { Preferences.setemblem('em_none'); });
+//	$('#emblem_size span').first().html( _("Vulnerability levels:") );
+//	$('#em_small').checkboxradio('option', 'label', _("Small"));
+//	$('#em_large').checkboxradio('option', 'label', _("Large"));
+//	$('#em_none').checkboxradio('option', 'label', _("None"));
+//	$('[for=em_small]').on('click',  function() { Preferences.setemblem('em_small'); });
+//	$('[for=em_large]').on('click',  function() { Preferences.setemblem('em_large'); });
+//	$('[for=em_none]').on('click',  function() { Preferences.setemblem('em_none'); });
 
 	$('#labelonoff span').first().html( _("Labels:") );
 	$('#label_off').checkboxradio('option', 'label', _("Hide color"));
@@ -2821,21 +2922,16 @@ function initOptionsPanel() {
 		Preferences.setcreator($('#creator').val());
 		$('#creator').val(Preferences.creator);
 	});
-	$('#creator').val(Preferences.creator);
 #endif
 
-	$('#optionsactivator').on('mouseenter', function() {
-		$('#optionsactivator').addClass('ui-state-hover');
-	}).on('mouseleave', function() {
-		$('#optionsactivator').removeClass('ui-state-hover');
-	});
 	$('#optionsactivator').on('click',  function() {
 		removetransientwindows();
 		$('#optionspanel').dialog('open');
-		$('#'+Preferences.emsize).prop('checked',true);
+//		$('#'+Preferences.emsize).prop('checked',true);
 		$(Preferences.online?'#online_on':'#online_off').prop('checked',true);
 		$(Preferences.label?'#label_on':'#label_off').prop('checked',true);
 		$('#optionspanel fieldset').controlgroup('refresh');
+		$('#creator').val(Preferences.creator);
 	});
 }
 
@@ -2870,26 +2966,68 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 	if (!ui.newPanel)  return;
 	var id = nid2id(ui.newPanel[0].id);
 	$('#selectrect').hide();
+	// Reattach the selectrect within this diagram
+	$('#selectrect').detach().appendTo('#diagrams_workspace'+id);
 	removetransientwindowsanddialogs();
 	Service.cid = id;
+	$('.scroller_overview').hide();
+	if (Preferences.showmap) $('#scroller_overview'+id).show();
 	Service.get(id)._jsPlumb.repaintEverything();
 }
 
 function bottomTabsShowHandlerSFaults(event,ui) {
 	/* ui.newPanel.selector is the DOM object with id #tabtitle<nn> */
-	if (!ui.newPanel) {
-		// on creation of the tab, select the first tab.
-		return;
-	}
-	var id = nid2id(ui.newPanel[0].id);
+	if (!ui.newPanel) return;
+	let id = nid2id(ui.newPanel[0].id);
 	Service.cid = id;
-	paintSingleFailures(Service.get(id));
+	let s = Service.get(id);
+	let currorder = $('input[name=sfsort]:checked').val();
+	if (s.sfsortorder!=currorder) {
+		// Repaint if the sort order has changed
+		paintSingleFailures(s);
+	}
 }
 
 function initTabDiagrams() {
 	initChecklistsDialog('tWLS');
 	initChecklistsDialog('tWRD');
 	initChecklistsDialog('tEQT');
+	
+	$('#componentthreats').dialog({
+		closeOnEscape: false,
+		autoOpen: false,
+		minHeight: 180,
+		minWidth: 775,
+		maxWidth: 779,
+		width: 775,
+		create: function() {
+			// Add vulnerability
+			$('<div id="dthadddia" class="titlebarbutton"></div>')
+			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
+			$('#dthadddia').button({label: _("+ Add vulnerability")});
+			// Copy button
+			$(`<div id="dthcopydia" class="titlebaricon" title="${_("Copy")}"><img src="../img/ccopy-hi.png"></div>`)
+			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
+			$('#dthcopydia').button();
+			// Paste button
+			$(`<div id="dthpastedia" class="titlebaricon" title="${_("Paste")}"><img src="../img/cpaste-hi.png"></div>`)
+			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
+			$('#dthpastedia').button();
+		}
+	});
+	$('#dthadddia').on('click', function() {return addvulnhandler(Component.ThreatsComponent);} );
+	$('#dthcopydia').on('click',  function() {
+		var cm = Component.get(Component.ThreatsComponent);
+		Assessment.Clipboard = [];
+		for (const tid of cm.assmnt) {
+			var te = Assessment.get(tid);
+			Assessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
+		}
+	});
+	$('#dthpastedia').on('click',  function() {
+		var cm = Component.get(Component.ThreatsComponent);
+		cm.mergeclipboard();
+	});
 
 	$('#diagrams_body').tabs({
 		activate: bottomTabsShowHandlerDiagrams,
@@ -2956,13 +3094,6 @@ function initTabDiagrams() {
 	$('#nodereport').dialog({
 		autoOpen: false,
 		minHeight: 80
-	});
-	$('#componentthreats').dialog({
-		autoOpen: false,
-		minHeight: 180,
-		minWidth: 775,
-		maxWidth: 779,
-		width: 775
 	});
 
 	$('#servaddbuttondia').on('click', function() {
@@ -3530,7 +3661,15 @@ function initChecklistsDialog(type) {
 		minWidth: 725,
 		minHeight: 180,
 		position: {my: 'left+'+(offsets[type]+50)+' top+'+offsets[type], at: 'left top', of: '#tabs', collision: 'fit'},
-		autoOpen: false
+		autoOpen: false,
+		create: function() {
+			// Add vulnerability
+			$(`<div id="${type}addthreat" class="titlebarbutton"></div>`)
+			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
+			$(`#${type}addthreat`).button({label: _("+ Add vulnerability")});
+		},
+		close: function() {
+		}
 	});
 }
 
@@ -3682,9 +3821,6 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		<div class="th_remark th_col thr_header">_LR_</div>\
 		</div>\
 		<div id="threats_CI_" class="threats"></div>\
-		<input id="dthadddia_CI_" class="addthreatbutton" type="button" value="_BA_">\
-		<input id="dthcopydia_CI_" class="copybutton" type="button" value="_BC_">\
-		<input id="dthpastedia_CI_" class="pastebutton" type="button" value="_BP_">\
 		</div>';
 	snippet = snippet.replace(/_LN_/g, _("Name"));
 	snippet = snippet.replace(/_LF_/g, _("Freq."));
@@ -3702,25 +3838,9 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		if (th==null) continue;
 		Assessment.get(th).addtablerow('#threats'+c.id,'dia');
 	}
-	$('#dthadddia'+c.id).button();
-	$('#dthcopydia'+c.id).button();
-	$('#dthpastedia'+c.id).button();
-	$('#dthadddia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthcopydia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthpastedia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthadddia'+c.id).on('click', function() {return addvulnhandler(c.id);} );
-	$('#dthcopydia'+c.id).on('click',  function() {
-		var cm = Component.get(nid2id(this.id));
-		Assessment.Clipboard = [];
-		for (const tid of cm.assmnt) {
-			var te = Assessment.get(tid);
-			Assessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
-		}
-	});
-	$('#dthpastedia'+c.id).on('click',  function() {
-		var cm = Component.get(nid2id(this.id));
-		cm.mergeclipboard();
-	});
+//	$('#dthadddia'+c.id).button();
+//	$('#dthcopydia'+c.id).button();
+//	$('#dthpastedia'+c.id).button();
 	$('#threats'+c.id).sortable({
 		containment: 'parent',
 		helper: 'clone',
@@ -3778,7 +3898,7 @@ function addvulnhandler(cid) {
 	);
 }
 	
-function refreshChecklistsDialog(type) {		// eslint-disable-line no-unused-vars
+function refreshChecklistsDialog(type) {
 	// Remove DOM for all common Vulnerabilities, and re-add them in the right order
 	$('#'+type+'threats').empty();
 	let p = Project.get(Project.cid);
@@ -3799,8 +3919,7 @@ function displayComponentThreatAssessmentsDialog(cid,where) {
 	refreshComponentThreatAssessmentsDialog(true);
 	$('#componentthreats').dialog({
 		title: _("Vulnerability assessment for '%%'", c.title) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
-		position: {my: 'left top', at: 'right', of: where, collision: 'fit'},
-		closeOnEscape: false
+		position: {my: 'left top', at: 'right', of: where, collision: 'fit'}
 	});
 	$('#componentthreats').dialog('open');
 	// First delete button gains focus, and is highlighted. Looks ugly.
@@ -3808,10 +3927,6 @@ function displayComponentThreatAssessmentsDialog(cid,where) {
 }
 
 function displayChecklistsDialog(type) {
-	$('#'+type+'addthreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#'+type+'copythreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#'+type+'pastethreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-
 	$("#checklist_"+type).dialog('open');
 	$('.checklist input').each( function () {
 		$(this).trigger('blur'); return true;
@@ -3869,10 +3984,8 @@ function initTabSingleFs() {
 	});
 }
 
-var SFSortOpt = 'alph';
-
 function paintSingleFailures(s) {
-	var appendstring = "";
+	var snippet, appendstring = "";
 	$('#singlefs_workspace'+s.id).empty();
 
 	var it = new ComponentIterator({service: s.id});
@@ -3891,94 +4004,33 @@ function paintSingleFailures(s) {
 	// First collect the bulk of the DOM elements to be appended. Then loop
 	// over the components again, adding the vulnerabilities to them, and adding
 	// behaviour stuff.
-	snippet = '\
-		<div id="somesf_SV_" class="displayoptsarea donotprint">\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L1_</span><br>\n\
-			<span id="expandallsf_SV_">_EA_</span>\n\
-			<span id="collapseallsf_SV_" class="collapseall">_CA_</span>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L2_</span><br>\n\
-			<fieldset>\n\
-				<input type="radio" id="sfsort_alph_SV_" name="sfsort_SV_"><label for="sfsort_alph_SV_">_O1_</label>\n\
-				<input type="radio" id="sfsort_type_SV_" name="sfsort_SV_"><label for="sfsort_type_SV_">_O2_</label>\n\
-				<input type="radio" id="sfsort_thrt_SV_" name="sfsort_SV_"><label for="sfsort_thrt_SV_">_O3_</label>\n\
-			</fieldset>\n\
-		  </div>\n\
-		</div>\
-		<div id="sfacclist_SV_" class="sfacclist">\
-		</div>\
-	';
-	snippet = snippet.replace(/_L1_/g, _("Fold:"));
-	snippet = snippet.replace(/_EA_/g, _("Expand all"));
-	snippet = snippet.replace(/_CA_/g, _("Collapse all"));
-	snippet = snippet.replace(/_L2_/g, _("Sort:"));
-	snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
-	snippet = snippet.replace(/_O2_/g, _("by Type"));
-	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
-	snippet = snippet.replace(/_SN_/g, H(s.title));
-	snippet = snippet.replace(/_SV_/g, s.id);
-	snippet = snippet.replace(/_PN_/g, H(Project.get(s.project).title));
-	snippet = snippet.replace(/_PJ_/g, s.project);
-	$('#singlefs_workspace'+s.id).append(snippet);
-	$('#somesf'+s.id).headroom({
-		scroller: document.querySelector('#singlefs_workspace'+s.id),
-		tolerance : {
-			up : 20,
-			down : 20
-		}
-	});
+	$('#singlefs_workspace'+s.id).append(`<div id="sfacclist${s.id}" class="sfacclist"></div>`);
 
-	$('#expandallsf'+s.id).button({icon: 'ui-icon-plus'});
-	$('#collapseallsf'+s.id).button({icon: 'ui-icon-minus'});
-	$('#somesf'+s.id+' input[type=radio]').checkboxradio({icon: false});
-	$('#somesf'+s.id+' fieldset').controlgroup();
-
-	$('#expandallsf'+s.id).on('click',  function(evt){
-		$('#singlefs_workspace'+s.id).scrollTop(0);
-		expandAllSingleF(nid2id(evt.target.id));
-	});
-	$('#collapseallsf'+s.id).on('click',  function(evt){
-		$('#singlefs_workspace'+s.id).scrollTop(0);
-		collapseAllSingleF(nid2id(evt.target.id));
-	});
-
-	var create_sf_sortfunc = function(opt,sid) {
-		return function(/*evt*/) {
-			SFSortOpt = opt;
-			paintSingleFailures(Service.get(sid));
-		};
-	};
-
-	$('[for=sfsort_alph'+s.id+']').on('click', create_sf_sortfunc('alph',s.id));
-	$('[for=sfsort_type'+s.id+']').on('click', create_sf_sortfunc('type',s.id));
-	$('[for=sfsort_thrt'+s.id+']').on('click', create_sf_sortfunc('thrt',s.id));
-
-	switch (SFSortOpt) {
+	let currorder = $('input[name=sfsort]:checked').val();
+	s.sfsortorder = currorder;
+	switch (currorder) {
 	case 'alph':
-		$('#sfsort_alph'+s.id).prop('checked',true);
 		it.sortByTitle();
 		break;
 	case 'type':
-		$('#sfsort_type'+s.id).prop('checked',true);
 		it.sortByType();
 		break;
 	case 'thrt':
-		$('#sfsort_thrt'+s.id).prop('checked',true);
 		it.sortByLevel();
 		break;
 	default:
 		bugreport("Unknown node sort option","paintSingleFailures");
 	}
-	$('#somesf'+s.id+' fieldset').controlgroup('refresh');
 
 	for (const cm of it) {
 		//if (cm.type=='tACT') continue;
-		var snippet = '\n\
+		snippet = '\n\
 		  <div id="sfaccordion_SV___ID_" class="sfaccordion">\n\
 			<h3><a href="#">_LSF_ "_TI_" (_TY__AP_) _LB_<span id="sfamark_SV___ID_"></span></a></h3>\n\
 			<div>\n\
+			 <div class="topbuttons"><div id="sfaadd_SV___ID_" class="addthreatbutton titlebarbutton">_BA_</div>\n\
+			 <div id="sfacopy_SV___ID_" class="copybutton titlebaricon" title="_BC_"><img src="../img/ccopy-hi.png"></div>\n\
+			 <div id="sfapaste_SV___ID_" class="pastebutton titlebaricon" title="_BP_"><img src="../img/cpaste-hi.png"></div></div>\n\
 			 <div id="sfa_SV___ID_">\n\
 			  <div class="threat">\n\
 			   <div class="th_name th_col thr_header">_LN_</div>\n\
@@ -3996,38 +4048,31 @@ function paintSingleFailures(s) {
 		snippet = snippet.replace(/_LT_/g, _("Total"));
 		snippet = snippet.replace(/_LR_/g, _("Remark"));
 
-		if (Preferences.label) {
-			var p = Project.get(cm.project);
-			var labels = [];
-			var str;
-			for (const n of cm.nodes) {
-				let rn = Node.get(n);
-				if (rn.color!='none' && labels.indexOf(rn.color)==-1) {
-					labels.push(rn.color);
-				}
+		var p = Project.get(cm.project);
+		var labels = [];
+		var str;
+		for (const n of cm.nodes) {
+			let rn = Node.get(n);
+			if (rn.color!='none' && labels.indexOf(rn.color)==-1) {
+				labels.push(rn.color);
 			}
-			if (labels.length==0) {
-				snippet = snippet.replace(/_LB_/, '');
-			} else if (labels.length==1) {
-				str = '<div class="sflabelgroup"><div class="smallblock B'+labels[0]+'"></div><span class="labelind">'+H(p.strToLabel(labels[0]))+'</span></div>';
-				snippet = snippet.replace(/_LB_/, str);
-			} else {
-				str = '<div class="sflabelgroup">';
-				for (const l of labels) str += '<div class="smallblock B'+l+'" title="' + H(p.strToLabel(l)) + '"></div>';
-				str += '</div>';
-				snippet = snippet.replace(/_LB_/, str);
-			}
-		} else {
+		}
+		if (labels.length==0) {
 			snippet = snippet.replace(/_LB_/, '');
+		} else if (labels.length==1) {
+			str = '<div class="sflabelgroup"><div class="smallblock B'+labels[0]+'"></div><span class="labelind">'+H(p.strToLabel(labels[0]))+'</span></div>';
+			snippet = snippet.replace(/_LB_/, str);
+		} else {
+			str = '<div class="sflabelgroup">';
+			for (const l of labels) str += '<div class="smallblock B'+l+'" title="' + H(p.strToLabel(l)) + '"></div>';
+			str += '</div>';
+			snippet = snippet.replace(/_LB_/, str);
 		}
 
 		snippet += "<div class='sfa_sortable'>\n";
 		for (const thid of cm.assmnt) snippet += Assessment.get(thid).addtablerow_textonly("sfa"+s.id+'_'+cm.id);
 		snippet += "</div>\n";
 		snippet += '\n\
-			 <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="_BA_">\n\
-			 <input id="sfacopy_SV___ID_" class="copybutton" type="button" value="_BC_">\n\
-			 <input id="sfapaste_SV___ID_" class="pastebutton" type="button" value="_BP_">\n\
 			</div>\n\
 		  </div>\n\
 		';
@@ -4064,9 +4109,9 @@ function paintSingleFailures(s) {
 				cm.mergeclipboard();
 			};
 		};
-		$('#sfaadd'+s.id+'_'+cm.id).on('click',  function() {return addvulnhandler(cm.id);} );
-		$('#sfacopy'+s.id+'_'+cm.id).on('click',  copyhandler(s,cm) );
-		$('#sfapaste'+s.id+'_'+cm.id).on('click',  pastehandler(s,cm) );
+		$('#sfaadd'+s.id+'_'+cm.id).button().on('click',  function() {return addvulnhandler(cm.id);} );
+		$('#sfacopy'+s.id+'_'+cm.id).button().on('click',  copyhandler(s,cm) );
+		$('#sfapaste'+s.id+'_'+cm.id).button().on('click',  pastehandler(s,cm) );
 		var openclose = function(cm){
 			return function(event,ui) {
 				opencloseSFAccordion(cm,s.id,event,ui);
@@ -4101,10 +4146,10 @@ function paintSingleFailures(s) {
 		});
 	}
 
-	$('#singlefs_body input[type=button]').button();
-	$('#singlefs_body input[class~="addthreatbutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#singlefs_body input[class~="copybutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#singlefs_body input[class~="pastebutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+//	$('#singlefs_body input[type=button]').button();
+//	$('#singlefs_body input[class~="addthreatbutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+//	$('#singlefs_body input[class~="copybutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+//	$('#singlefs_body input[class~="pastebutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 }
 
 /* This function is called when the head of the accordion for Component is clicked, but before
@@ -4172,23 +4217,6 @@ function initTabCCFs() {
 		}
 		event.stopPropagation();
 	});
-	$('#ccfs_body').on('click', '#expandallccf', function(){
-		$('#ccfs_body').scrollTop(0);
-		expandAllCCF();
-	});
-	$('#ccfs_body').on('click', '#collapseallccf', function(){
-		$('#ccfs_body').scrollTop(0);
-		collapseAllCCF();
-	});
-	var create_ccf_sortfunc = function(opt) {
-		return function() {
-			CCFSortOpt = opt;
-			PaintAllClusters();
-		};
-	};
-	$('#ccfs_body').on('click', '[for=ccfsort_alph]', create_ccf_sortfunc('alph'));
-	$('#ccfs_body').on('click', '[for=ccfsort_type]', create_ccf_sortfunc('type'));
-	$('#ccfs_body').on('click', '[for=ccfsort_thrt]', create_ccf_sortfunc('thrt'));
 
 	$('#ccfs_details').on('click', '.childnode', clickSelectHandler);
 	$('#ccfs_details').on('click', '.clusternode', clickCollapseHandler);
@@ -4468,7 +4496,6 @@ function getSelectedNodes() {
 	return arr;
 }
 
-var CCFSortOpt = 'alph';
 //var CCFMinOpt = '-';
 
 function PaintAllClusters() {
@@ -4479,21 +4506,6 @@ function PaintAllClusters() {
 		_N2_\
 		_N3_</p>\
 		<div id="outerimpacthint" style="display:none"><div id="hintpoint"></div><img src="../img/hint.png"><div id="impacthint"></div></div>\
-		<div id="someccf" class="donotprint displayoptsarea">\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L1_</span><br>\n\
-			<span id="expandallccf">_EA_</span>\n\
-			<span id="collapseallccf" class="collapseall">_CA_</span>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L2_</span><br>\n\
-			<fieldset>\n\
-				<input type="radio" id="ccfsort_alph" name="ccfsort"><label for="ccfsort_alph">_O1_</label>\n\
-				<input type="radio" id="ccfsort_type" name="ccfsort"><label for="ccfsort_type">_O2_</label>\n\
-				<input type="radio" id="ccfsort_thrt" name="ccfsort"><label for="ccfsort_thrt">_O3_</label>\n\
-			</fieldset>\n\
-		  </div>\n\
-		</div>\
 		<div id="ccfacclist">\
 		</div>\
 	';
@@ -4502,28 +4514,8 @@ function PaintAllClusters() {
 	snippet = snippet.replace(/_N1_/g, _("This space will show all vulnerabilities domains for the components in this project."));
 	snippet = snippet.replace(/_N2_/g, _("Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet."));
 	snippet = snippet.replace(/_N3_/g, _("Add some nodes to the diagrams first."));
-	snippet = snippet.replace(/_L1_/g, _("Fold:"));
-	snippet = snippet.replace(/_EA_/g, _("Expand all"));
-	snippet = snippet.replace(/_CA_/g, _("Collapse all"));
-	snippet = snippet.replace(/_L2_/g, _("Sort:"));
-	snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
-	snippet = snippet.replace(/_O2_/g, _("by Type"));
-	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
-	snippet = snippet.replace(/_PJ_/g, Project.cid);
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	$('#ccfs_body').html(snippet);
-	$('#someccf').headroom({
-		scroller: document.querySelector('#ccfs_body'),
-		tolerance : {
-			up : 20,
-			down : 20
-		}
-	});
-
-	$('#expandallccf').button({icon: 'ui-icon-plus'});
-	$('#collapseallccf').button({icon: 'ui-icon-minus'});
-	$('#someccf input[type=radio]').checkboxradio({icon: false});
-	$('#someccf fieldset').controlgroup();
 
 	// create list of all vulnerabilities
 	// for each vulnerability, list the nested list / vulnerability-domain-tree
@@ -4536,7 +4528,6 @@ function PaintAllClusters() {
 	}
 
 	sortClustersToCurrentOrder(it);
-	$('#someccf fieldset').controlgroup('refresh');
 
 	$('#noccf').css('display', 'none');
 	$('#someccf').css('display', 'block');
@@ -4560,17 +4551,15 @@ function PaintAllClusters() {
 }
 
 function sortClustersToCurrentOrder(it) {
-	switch (CCFSortOpt) {
+	let currorder = $('input[name=ccfsort]:checked').val();
+	switch (currorder) {
 	case 'alph':
-		$('#ccfsort_alph').prop('checked',true);
 		it.sortByTitle();
 		break;
 	case 'type':
-		$('#ccfsort_type').prop('checked',true);
 		it.sortByType();
 		break;
 	case 'thrt':
-		$('#ccfsort_thrt').prop('checked',true);
 		it.sortByLevel();
 		break;
 	default:
@@ -4773,7 +4762,7 @@ function repaintClusterDetails(nc,force) {
 		drop: nodeClusterReorder
 	});
 	$('.litext').editInPlace({
-		bg_over: 'rgb(255,204,102)',
+		bg_over: 'var(--highlt)',
 		text_size: 40,
 		callback: function(domid, enteredText) {
 			var nc = NodeCluster.get( nid2id(domid) );
@@ -4888,27 +4877,25 @@ function listFromCluster(nc) {
 		str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
 		str += rn.htmltitle();
 
-		if (Preferences.label) {
-			var p = Project.get(Project.cid);
-			// Single node classes can have multiple labels
-			var labels = [];
-			if (cm.single) {
-				for (const nid of cm.nodes) {
-					let n = Node.get(nid);
-					if (n.color!='none' && labels.indexOf(n.color)==-1) {
-						labels.push(n.color);
-					}
+		var p = Project.get(Project.cid);
+		// Single node classes can have multiple labels
+		var labels = [];
+		if (cm.single) {
+			for (const nid of cm.nodes) {
+				let n = Node.get(nid);
+				if (n.color!='none' && labels.indexOf(n.color)==-1) {
+					labels.push(n.color);
 				}
-			} else {
-				if (rn.color!='none') labels = [rn.color];
 			}
-			if (labels.length==1 ) {
-				str += '<div class="ccflabelgroup"><div class="smallblock B'+rn.color+'"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
-			} else if (labels.length>1) {
-				str += '<div class="ccflabelgroup">';
-				for (const l of labels) str+='<div class="smallblock B'+l+'" title="' + H(p.strToLabel(l)) + '"></div>';
-				str += '</div>';
-			}
+		} else {
+			if (rn.color!='none') labels = [rn.color];
+		}
+		if (labels.length==1 ) {
+			str += '<div class="ccflabelgroup"><div class="smallblock B'+rn.color+'"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
+		} else if (labels.length>1) {
+			str += '<div class="ccflabelgroup">';
+			for (const l of labels) str+='<div class="smallblock B'+l+'" title="' + H(p.strToLabel(l)) + '"></div>';
+			str += '</div>';
 		}
 
 		str += '</li>\n';
@@ -5193,8 +5180,35 @@ function initTabAnalysis() {
 			"ui-tabs-nav": "ui-corner-bottom",
 			"ui-tabs-tab": "ui-corner-bottom",
 			"ui-tabs-panel": "ui-corner-tl"
-		}
+		},
+		activate: SetAnalysisToolbar
 	});
+
+	$('#minV').selectmenu({
+		appendTo: '#anallopts',
+		select: function(/*event,ui*/) {
+			MinValue = $('#minV').val();
+			$('#longlist').html(listSelectedRisks());
+		}
+	}).val(MinValue);
+}
+
+function SetAnalysisToolbar() {
+	$('.toolbarsection').hide();
+	switch ($('#analysis_body').tabs('option','active')) {
+	case 0:		// tab Failures and Vulnerabilities
+		$('#anavulnopts').show();
+		break;
+	case 1:
+	case 2:
+	case 3:
+		break;
+	case 4:		// tab Longlist
+		$('#anallopts').show();
+		break;
+	default:
+		bugreport('unknown tab encountered','vertTabSelected');
+	}
 }
 
 function AddAllAnalysis() {
@@ -5221,95 +5235,14 @@ function paintNodeThreatTables() {
 	snippet = snippet.replace(/_LP_/g, _("Project:") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
-	snippet += '\n\
-		<div id="ana_nodevuln" class="displayoptsarea donotprint">\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_LS1_</span><br>\n\
-			<fieldset>\n\
-				<input type="radio" id="ana_nodesort_alph" name="ana_nodesort"><label for="ana_nodesort_alph">_O1_</label>\n\
-				<input type="radio" id="ana_nodesort_type" name="ana_nodesort"><label for="ana_nodesort_type">_O2_</label>\n\
-				<input type="radio" id="ana_nodesort_thrt" name="ana_nodesort"><label for="ana_nodesort_thrt">_O3_</label>\n\
-			</fieldset>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_LS2_</span><br>\n\
-			<fieldset>\n\
-				<input type="radio" id="ana_failsort_alph" name="ana_failsort"><label for="ana_failsort_alph">_O1_</label>\n\
-				<input type="radio" id="ana_failsort_type" name="ana_failsort"><label for="ana_failsort_type">_O2_</label>\n\
-			</fieldset>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_LS3_</span><br>\n\
-			<input type="button" id="quickwinslink" value="_Q1_">\n\
-			<input type="button" id="clearexclusions" value="_Q2_"><br>\n\
-		  </div>\n\
-		</div>\n\
-		<div id="ana_nodethreattable" class="ana_nodeccfblock"></div>\n\
+	snippet += '<div id="ana_nodethreattable" class="ana_nodeccfblock"></div>\n\
 		<div id="ana_ccftable" class="ana_nodeccfblock"></div>\n\
 	';
-	snippet = snippet.replace(/_L1_/g, _("Single & Common Cause Failures versus Vulnerabilities"));
-	snippet = snippet.replace(/_LS1_/g, _("Sort nodes and clusters:"));
-	snippet = snippet.replace(/_LS2_/g, _("Sort vulnerabilities:"));
-	snippet = snippet.replace(/_LS3_/g, _("Click cells to include/exclude them."));
-	snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
-	snippet = snippet.replace(/_O2_/g, _("by Type"));
-	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
-	snippet = snippet.replace(/_Q1_/g, _("show Quick Wins"));
-	snippet = snippet.replace(/_Q2_/g, _("clear exclusions"));
 	$('#at1').html(snippet);
-	$('#ana_nodevuln').headroom({
-		scroller: document.querySelector('#at1'),
-		tolerance : {
-			up : 20,
-			down : 20
-		}
-	});
 
-	$('#ana_nodevuln input[type=button]').button();
-	$('#ana_nodevuln input[type=radio]').checkboxradio({icon: false});
 	$('#ana_nodesort_'+FailureThreatSortOpt.node).prop('checked',true);
 	$('#ana_failsort_'+FailureThreatSortOpt.threat).prop('checked',true);
 	$('#ana_nodevuln fieldset').controlgroup();
-
-	var create_ananode_sortfunc = function(opt) {
-		return function() {
-			FailureThreatSortOpt.node = opt;
-			paintSFTable();
-			paintCCFTable();
-		};
-	};
-	$('[for=ana_nodesort_alph]').on('click', create_ananode_sortfunc('alph'));
-	$('[for=ana_nodesort_type]').on('click', create_ananode_sortfunc('type'));
-	$('[for=ana_nodesort_thrt]').on('click', create_ananode_sortfunc('thrt'));
-
-	var create_anafail_sortfunc = function(opt) {
-		return function() {
-			FailureThreatSortOpt.threat = opt;
-			paintSFTable();
-			paintCCFTable();
-		};
-	};
-	$('[for=ana_failsort_alph]').on('click', create_anafail_sortfunc('alph'));
-	$('[for=ana_failsort_type]').on('click', create_anafail_sortfunc('type'));
-
-	$('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
-		var exclCm = computeComponentQuickWins();
-		var exclCl = computeClusterQuickWins();
-		ComponentExclusions = { };
-		ClusterExclusions = { };
-		for (const id of exclCm) ComponentExclusions[id] = true;
-		for (const id of exclCl) ComponentExclusions[id] = true;
-		paintSFTable();
-		paintCCFTable();
-		$('#clearexclusions').button('option','disabled', (exclCm.length==0 && exclCl.length==0));
-	});
-	$('#clearexclusions').button().button('option','disabled',true).on('click',  function() {
-		ComponentExclusions = { };
-		ClusterExclusions = { };
-		paintSFTable();
-		paintCCFTable();
-		$('#clearexclusions').button('option','disabled',true);
-	});
 
 	paintSFTable();
 	paintCCFTable();
@@ -5394,9 +5327,7 @@ function computeClusterQuickWins() {
 }
 
 function paintSFTable() {
-	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	var cit = new ComponentIterator({project: Project.cid});
-
 	switch (FailureThreatSortOpt.node) {
 	case 'alph':
 		cit.sortByTitle();
@@ -5411,6 +5342,7 @@ function paintSFTable() {
 		bugreport("Unknown component sort option","paintSFTable");
 	}
 
+	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	switch (FailureThreatSortOpt.threat) {
 	case 'alph':
 		tit.sortByTitle();
@@ -5525,8 +5457,6 @@ function paintSFTable() {
 
 function paintCCFTable() {
 	var ncit = new NodeClusterIterator({project: Project.cid, isroot: true, isstub: false});
-	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
-
 	switch (FailureThreatSortOpt.node) {
 	case 'alph':
 		ncit.sortByTitle();
@@ -5541,6 +5471,7 @@ function paintCCFTable() {
 		bugreport("Unknown node sort option","paintCCFTable");
 	}
 
+	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	switch (FailureThreatSortOpt.threat) {
 		case 'alph':
 			tit.sortByTitle();
@@ -6235,7 +6166,6 @@ var MinValue = 'H';
 function paintLonglist() {
 	$('#at5').empty();
 
-
 	var snippet = '\
 		<h1 class="printonly underlay">_LTT_</h1>\
 		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
@@ -6246,24 +6176,8 @@ function paintLonglist() {
 	snippet = snippet.replace(/_LD_/g, _("Risk longlist") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
-	snippet += '\n\
-		<div id="lloptions" class="displayoptsarea donotprint">\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L1_</span><br>\n\
-			<input type="checkbox" id="incX" checked><label for="incX">_LU_</label><br>\n\
-			<input type="checkbox" id="incA" checked><label for="incA">_LA_</label>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L2_</span><br>\n\
-			<select id="minV"></select>\n\
-		  </div>\n\
-		</div>\n\
-		<div id="longlist"></div>\
-	';
-	snippet = snippet.replace(/_L1_/g, _("Include:") );
-	snippet = snippet.replace(/_LU_/g, _("Unknown") );
-	snippet = snippet.replace(/_LA_/g, _("Ambiguous") );
-	snippet = snippet.replace(/_L2_/g, _("Minimum value:") );
+	snippet += '<div id="longlist"></div>';
+	$('#at5').html(snippet);
 
 	var selectoptions = "";
 	for (var i=Assessment.valueindex['U']; i<=Assessment.valueindex['V']; i++) {
@@ -6271,21 +6185,8 @@ function paintLonglist() {
 		selectoptions = selectoptions.replace(/_V_/g, Assessment.values[i]);
 		selectoptions = selectoptions.replace(/_D_/g, Assessment.descr[i]);
 	}
-	$('#at5').html(snippet);
-	$('#lloptions').headroom({
-		scroller: document.querySelector('#at5'),
-		tolerance : {
-			up : 20,
-			down : 20
-		}
-	});
-
-	$('#minV').html(selectoptions).selectmenu({
-		select: function(/*event,ui*/) {
-			MinValue = $('#minV').val();
-			$('#longlist').html(listSelectedRisks());
-		}
-	}).val(MinValue).selectmenu('refresh');
+	$('#minV').html(selectoptions);
+	$('#minV').val(MinValue).selectmenu('refresh');
 
 	$('#incX').on('change',  function() {
 		$('#longlist').html(listSelectedRisks());

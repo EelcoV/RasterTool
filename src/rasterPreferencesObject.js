@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global PaintAllClusters, bugreport, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global PaintAllClusters, bugreport, _, paintSingleFailures, Service, Project, ProjectIterator, refreshProjectList, startAutoSave, LS */
 
 /*
  *
@@ -19,9 +19,9 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 			$('.nodecolorbackground').addClass('Bhide');
 			$('.ncontentimg').addClass('Ihide');
 		}
-		if (this.tab==2) {
-			PaintAllClusters();
-		}
+//		let p = Project.get(Project.cid);
+//		p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
+//		PaintAllClusters();
 		this.store();
 	};
 	
@@ -111,6 +111,7 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 		data.service=this.service;
 		data.creator=this.creator;
 		data.online=this.online;
+		data.showmap=this.showmap;
 		localStorage[LS+'R:0'] = JSON.stringify(data);
 	};
 
@@ -120,21 +121,23 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 	 */
 	this.currentproject = '';
 	this.label=true;
-	this.emsize = 'small';
+	this.emsize = 'em_small';
 	this.tab = 0;
 	this.service = 0;
 	this.creator = _("Anonymous");
 	this.online = true;
+	this.showmap = true;
 	try {
 		if (localStorage[LS+'R:0']!=null) {
 			var pr = JSON.parse(localStorage[LS+'R:0']);
-			if (pr.label!=null) this.setlabel(pr.label);
-			if (pr.emsize!=null) this.setemblem(pr.emsize);
-			if (pr.currentproject!=null) this.setcurrentproject(pr.currentproject);
-			if (pr.tab!=null) this.settab(pr.tab);
-			if (pr.service!=null) this.setservice(pr.service);
-			if (pr.creator!=null) this.setcreator(pr.creator);
-			if (pr.online!=null) this.setonline(pr.online);
+			if (pr.label!=null) this.label = pr.label;
+			if (pr.emsize!=null) this.emsize = pr.emsize;
+			if (pr.currentproject!=null) this.currentproject = pr.currentproject;
+			if (pr.tab!=null) this.tab = pr.tab;
+			if (pr.service!=null) this.service = pr.service;
+			if (pr.creator!=null) this.creator = pr.creator;
+			if (pr.online!=null) this.online = pr.online;
+			if (pr.showmap!=null) this.showmap = pr.showmap;
 		}
 	} catch(e) {
 		// silently ignore

@@ -582,6 +582,10 @@ Project.prototype = {
 	},
 
 	load: function() {
+		Project.cid = this.id;
+		Service.cid = this.services[0];
+		Preferences.setcurrentproject(this.title);
+
 		this.services.forEach(sid => Service.get(sid).load());
 		for (const vid of this.vulns) {
 			let vln = Vulnerability.get(vid);
@@ -653,10 +657,10 @@ Project.prototype = {
 				if (icn.type!=t)  continue;
 				var str = '\
 					<div class="template"><div class="templateinner">\n\
+						<div class="ui-widget templatelabel">_TN_</div>\n\
 						<div id="_TY_" class="templatebg">\n\
 							<img class="templateicon" src="../img/iconset/_IS_/_IT_">\n\
 						</div>\n\
-						<div class="ui-widget templatelabel">_TN_</div>\n\
 						<img id="tC__TY_" class="tC" src="../img/dropedit.png">\n\
 					<div></div>\
 				';
@@ -691,11 +695,6 @@ Project.prototype = {
 #ifdef SERVER
 		document.title = "Raster - " + this.title;
 #endif
-		Project.cid = this.id;
-		Service.cid = this.services[0];
-// Do not paint, because we may want to show a tab other than the diagram
-//		Service.get(Service.cid).paintall();
-		Preferences.setcurrentproject(this.title);
 	},
 
 	strToLabel: function(str) {
