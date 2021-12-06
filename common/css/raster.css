@@ -88,7 +88,7 @@ body {
 #toolbar {
 	background: var(--toolbarbg);
 	display: inline-block;
-	height: 50px;
+	height: 52px;
 	width: 100%;
 }
 #toolbar>div:first-child {
@@ -522,9 +522,6 @@ fieldset {
 	width: 470px;
 }
 
-/* Panel for options */
-#optionspanel .ui-button .ui-button-text { line-height: 1.0; } /* radio buttons */
-#switcher,#labelonoff, #emblem_size, #onlineonoff { margin-bottom: 10px; }
 .leftlabel {
     display: inline-block;
     width: 13em;
@@ -810,16 +807,15 @@ div.th_remark {
     padding-bottom: 1px !important;
 }
 .tabtitle { width: 9em; }
-#servaddbuttondia {
-    position: absolute;
-}
 .servplusbutton {
+    position: absolute;
     bottom: -1px;
     left: -1px;
     width: 40px;
     height: 29px;
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
+    z-index: 150;
 }
 
 .scroller_overview {
@@ -1113,9 +1109,6 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 
 .sfworkspace {
 	width: 900px;
-}
-#servaddbuttonsf {
-    position: absolute;
 }
 .sfacclist {
 	margin-top: 10px;

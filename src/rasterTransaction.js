@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, setModified
+/* globals _, paintSingleFailures, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, setModified
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -378,14 +378,18 @@ Transaction.prototype = {
 			//    accordionopened: cluster is folded open in CCF view
 			//    childnode: array of IDs of all child nodes of this cluster
 			//    childcluster: object containing the same properties (except childnode/childcluster)
+			let repaintservices = new Set();
 			for (const d of data.nodes) {
 				if (d.type==null) {
 					// Delete the node
 // Change to true when not debugging
-					Node.get(d.id).destroy(false);
+					let rn = Node.get(d.id);
+					repaintservices.add(rn.service);
+					rn.destroy(false);
 					continue;
 				}
 
+				repaintservices.add(d.service);
 				let rn = new Node(d.type, d.service, d.id);
 				rn.iconinit();
 				rn.title = d.title;
@@ -460,6 +464,8 @@ Transaction.prototype = {
 				}
 				rn.setmarker();
 			}
+			// Repaint any services that have been modified
+			repaintservices.forEach(sid => paintSingleFailures(Service.get(sid)) );
 
 			data.clusters.forEach(d => rebuildCluster(d));
 			let it = new NodeClusterIterator({project: Project.cid, isroot: true});
@@ -622,6 +628,7 @@ Transaction.prototype = {
 				s.settitle(d.title);
 				if (d.project==Project.cid) {
 					s.load();
+					paintSingleFailures(s);
 					$('#diagramstabtitle'+s.id).trigger('click');
 				}
 			}

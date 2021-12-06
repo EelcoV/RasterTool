@@ -88,7 +88,6 @@ See LICENSE.md
 	<!-- Common toolbar items -->
 	<div id="libraryactivator" class="toolbarlargebutton">Library..</div>
 	<div id="networkactivity"></div>
-	<div id="optionsactivator" class="toolbarlargebutton">Options...</div>
 	<div class="toolbarspacer"></div>
 	<div id="undobutton" class="toolbariconbutton"></div>
 	<div id="redobutton" class="toolbariconbutton"></div>
@@ -98,6 +97,7 @@ See LICENSE.md
 	<!-- Diagrams tab -->
 	<div id="diaopts" class="toolbarsection">
 		<div id="templates"> <!-- Is filled in Project.load() --></div>
+
 		<div class="toolbarspacer"></div>
 		<div id="vulnlevelsection" class="toolbarlabel">
 			<div>Levels:</div>
@@ -109,6 +109,18 @@ See LICENSE.md
 				</fieldset>
 			</div>
 		</div>
+
+		<div class="toolbarspacer"></div>
+		<div id="labelsection" class="toolbarlabel">
+			<div>Labels:</div>
+			<div>
+				<fieldset>
+					<input type="radio" id="label_off" name="labelonoff"><label for="label_off">Hide color</label>
+					<input type="radio" id="label_on"  name="labelonoff"><label for="label_on" >Show color</label>
+				</fieldset>
+			</div>
+		</div>
+
 		<div class="toolbarspacer"></div>
 		<div id="mapsection" class="toolbarlabel">
 			<div>Minimap:</div>
@@ -129,6 +141,7 @@ See LICENSE.md
 				<div id="sfexpandall" class="toolbarbutton">Expand all</div>
 			</div>
 		</div>
+
 		<div class="toolbarspacer"></div>
 		<div id="sfsortsection" class="toolbarlabel">
 			<div>Sort:</div>
@@ -150,6 +163,7 @@ See LICENSE.md
 				<div id="ccfexpandall" class="toolbarbutton">Expand all</div>
 			</div>
 		</div>
+
 		<div class="toolbarspacer"></div>
 		<div id="ccfsortsection" class="toolbarlabel">
 			<div>Sort:</div>
@@ -237,37 +251,23 @@ See LICENSE.md
         <input id="libzap" type="button" value="Zap library">
     </td>
     </tr>
+	<tr><td>
+		<div id="onlineonoff">
+			<span class="leftlabel ui-widget ui-state-default">Network connection:</span>
+			<fieldset>
+				<input type="radio" id="online_off" name="onlineonoff"><label for="online_off">Offline</label>
+				<input type="radio" id="online_on" name="onlineonoff" checked="checked"><label for="online_on">Online</label>
+			</fieldset>
+		</div>
+	</td></tr>
+	<tr><td>
+		<div id="creator_name">
+			<span class="leftlabel ui-widget ui-state-default">Your name:</span>
+			<input type="text" id="creator">
+		</div>
+	</td></tr>
     </table>
   </form>
-</div>
-
-<div id="optionspanel" class="actpanel">
-    <!--div id="emblem_size">
-        <span class="leftlabel ui-widget ui-state-default">Vulnerability levels:</span>
-        <fieldset>
-            <input type="radio" id="em_small" name="emblem_size" checked="checked"><label for="em_small">Small</label>
-            <input type="radio" id="em_large" name="emblem_size"><label for="em_large">Large</label>
-            <input type="radio" id="em_none" name="emblem_size"><label for="em_none">None</label>
-        </fieldset>
-    </div-->
-    <div id="labelonoff">
-        <span class="leftlabel ui-widget ui-state-default">Labels:</span>
-        <fieldset>
-            <input type="radio" id="label_off" name="labelonoff"><label for="label_off">Hide color</label>
-            <input type="radio" id="label_on" name="labelonoff" checked="checked"><label for="label_on">Show color</label>
-        </fieldset>
-    </div>
-    <div id="onlineonoff">
-        <span class="leftlabel ui-widget ui-state-default">Network connection:</span>
-        <fieldset>
-            <input type="radio" id="online_off" name="onlineonoff"><label for="online_off">Offline</label>
-            <input type="radio" id="online_on" name="onlineonoff" checked="checked"><label for="online_on">Online</label>
-        </fieldset>
-    </div>
-    <div id="creator_name">
-        <span class="leftlabel ui-widget ui-state-default">Your name:</span>
-        <input type="text" id="creator">
-    </div>
 </div>
 #endif
 

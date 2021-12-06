@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global PaintAllClusters, bugreport, _, paintSingleFailures, Service, Project, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global bugreport, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
 
 /*
  *

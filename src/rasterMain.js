@@ -144,7 +144,7 @@ function initAllAndSetup() {
 	document.addEventListener('drop', function(event) {event.preventDefault();} );
 
 	// Some CSS tweaks for the standalone version
-	$('#libraryactivator,#networkactivity,#optionsactivator').hide();
+	$('#libraryactivator,#networkactivity).hide();
 	$('#currentProject').hide();
 	$('.workouter').css('top', '0px');
 
@@ -212,12 +212,10 @@ function initAllAndSetup() {
 
 	// Generic toolbar items
 	$('#libraryactivator').html(_("Library..."));
-	$('#optionsactivator').html(_("Options..."));
 	$('#libraryactivator').attr('title', _("Manage project"));
-	$('#optionsactivator').attr('title', _("Set preferences"));
 
 	initLibraryPanel();
-	initOptionsPanel();
+//	initOptionsPanel();
 
 	var flashTimer;
 	$(document).ajaxSend(function(){
@@ -280,6 +278,23 @@ function initAllAndSetup() {
 
 	// Diagrams toolbar
 	// templates are set up in Project.load()
+	$('#vulnlevelsection>div:first-child').html(_("Vulnerability levels:"));
+	$('#em_none + label').html(_("None"));
+	$('#em_small + label').html(_("Small"));
+	$('#em_large + label').html(_("Large"));
+	$('#'+Preferences.emsize).prop('checked',true);
+	$('#vulnlevelsection input').on('change', function() {
+		Preferences.setemblem($('input[name=emblem_size]:checked').val());
+	});
+	$('#labelsection>div:first-child').html(_("Label colors:"));
+	$('#label_off + label').html(_("hide"));
+	$('#label_on  + label').html(_("show"));
+	$('#label_off').prop('checked',!Preferences.showmap);
+	$('#label_on').prop('checked',Preferences.showmap);
+	$('#label_'+ (Preferences.label ? 'on' : 'off') ).prop('checked',true);
+	$('#labelsection input').on('change', function() {
+		Preferences.setlabel($('#label_on').prop('checked'));
+	});
 	$('#mapsection>div:first-child').html(_("Minimap:"));
 	$('#showmap_off + label').html(_("off"));
 	$('#showmap_on  + label').html(_("on"));
@@ -293,14 +308,6 @@ function initAllAndSetup() {
 			$('.scroller_overview').hide();
 		}
 	});
-	$('#vulnlevelsection>div:first-child').html(_("Vulnerability levels:"));
-	$('#em_none + label').html(_("None"));
-	$('#em_small + label').html(_("Small"));
-	$('#em_large + label').html(_("Large"));
-	$('#'+Preferences.emsize).prop('checked',true);
-	$('#vulnlevelsection input').on('change', function() {
-		Preferences.setemblem($('input[name=emblem_size]:checked').val());
-	});
 
 	// SF toolbar items
 	$('#sffoldsection>div:first-child').html(_("Fold:"));
@@ -310,6 +317,8 @@ function initAllAndSetup() {
 	$('#sfsort_thrt + label').html(_("by Vulnerability level"));
 	$('#sfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
 	$('#sfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
+	// No remembered preference for the sort order
+	$('#sfsort_alph').prop('checked',true);
 	$('#sfexpandall').on('click',  function(){
 		$('#singlefs_workspace'+Service.cid).scrollTop(0);
 		expandAllSingleF(Service.cid);
@@ -330,6 +339,8 @@ function initAllAndSetup() {
 	$('#ccfsort_thrt + label').html(_("by Vulnerability level"));
 	$('#ccfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
 	$('#ccfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
+	// No remembered preference for the sort order
+	$('#ccfsort_alph').prop('checked',true);
 	$('#ccfexpandall').on('click', function(){
 		$('#ccfs_body').scrollTop(0);
 		expandAllCCF();
@@ -533,8 +544,8 @@ function initAllAndSetup() {
 		}
 		// Cmd-O for MacOS or Ctrl-O for Windows: to trigger the Options panel
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='o') {
-			simulateClick('#optionsactivator');
-			evt.preventDefault();
+//			simulateClick('#optionsactivator');
+//			evt.preventDefault();
 			return;
 		}
 #endif
@@ -1159,7 +1170,7 @@ function SizeDOMElements() {
 	$('.workbody').width(ww-36);
 	$('.workbody').height(wh-50);
 
-	$('#servaddbuttondia').removeClass('ui-corner-all').addClass('ui-corner-bottom');
+	$('.servplusbutton').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 	$('.tabs-bottom > .ui-tabs-nav').width(ww-78);
 	// special setting for tab "Analysis"
 	$('#analysis_body > .ui-tabs-nav').width(ww-44);
@@ -2358,6 +2369,23 @@ function initLibraryPanel() {
 	$('#libzap').val(_("Zap library"));
 	$('#libcheck').val(_("?"));
 
+	$('#onlineonoff span').first().html( _("Network connection:") );
+	$('#online_off').checkboxradio('option', 'label', _("Offline"));
+	$('#online_on').checkboxradio('option', 'label', _("Online"));
+	$('[for=online_off]').on('click',  function() { Preferences.setonline(false); });
+	$('[for=online_on]').on('click',  function() { Preferences.setonline(true); });
+
+	$('#creator_name span').first().html( _("Your name:") );
+	$('#creator').on('change',  function(/*evt*/){
+		Preferences.setcreator($('#creator').val());
+		$('#creator').val(Preferences.creator);
+	});
+
+	$(Preferences.online?'#online_on':'#online_off').prop('checked',true);
+	$(Preferences.label?'#label_on':'#label_off').prop('checked',true);
+	$('#optionspanel fieldset').controlgroup('refresh');
+	$('#creator').val(Preferences.creator);
+
 	// Activate --------------------
 	$('#libactivate').on('click',  function() {
 		var p = Project.get( $('#libselect option:selected').val() );
@@ -2864,58 +2892,6 @@ function refreshProjectList() {
 }
 #endif
 
-#ifdef SERVER
-function initOptionsPanel() {
-	$('#optionspanel').dialog({
-		title: _("Options"),
-		modal: true,
-		position: {my: 'left+50 top+50', at: 'bottom right', of: '#optionsactivator'},
-		width: 420,
-		resizable: false,
-		autoOpen: false,
-		close: function() {
-			$('#optionsactivator').removeClass('ui-state-hover');
-		}
-	});
-
-//	$('#emblem_size span').first().html( _("Vulnerability levels:") );
-//	$('#em_small').checkboxradio('option', 'label', _("Small"));
-//	$('#em_large').checkboxradio('option', 'label', _("Large"));
-//	$('#em_none').checkboxradio('option', 'label', _("None"));
-//	$('[for=em_small]').on('click',  function() { Preferences.setemblem('em_small'); });
-//	$('[for=em_large]').on('click',  function() { Preferences.setemblem('em_large'); });
-//	$('[for=em_none]').on('click',  function() { Preferences.setemblem('em_none'); });
-
-	$('#labelonoff span').first().html( _("Labels:") );
-	$('#label_off').checkboxradio('option', 'label', _("Hide color"));
-	$('#label_on').checkboxradio('option', 'label', _("Show color"));
-	$('[for=label_off]').on('click',  function() { Preferences.setlabel(false); });
-	$('[for=label_on]').on('click',  function() { Preferences.setlabel(true); });
-
-	$('#onlineonoff span').first().html( _("Network connection:") );
-	$('#online_off').checkboxradio('option', 'label', _("Offline"));
-	$('#online_on').checkboxradio('option', 'label', _("Online"));
-	$('[for=online_off]').on('click',  function() { Preferences.setonline(false); });
-	$('[for=online_on]').on('click',  function() { Preferences.setonline(true); });
-
-	$('#creator_name span').first().html( _("Your name:") );
-	$('#creator').on('change',  function(/*evt*/){
-		Preferences.setcreator($('#creator').val());
-		$('#creator').val(Preferences.creator);
-	});
-
-	$('#optionsactivator').on('click',  function() {
-		removetransientwindows();
-		$('#optionspanel').dialog('open');
-//		$('#'+Preferences.emsize).prop('checked',true);
-		$(Preferences.online?'#online_on':'#online_off').prop('checked',true);
-		$(Preferences.label?'#label_on':'#label_off').prop('checked',true);
-		$('#optionspanel fieldset').controlgroup('refresh');
-		$('#creator').val(Preferences.creator);
-	});
-}
-#endif
-
 function bottomTabsCloseHandler(event) {
 	var p = Project.get(Project.cid);
 	if (p.services.length==1) {
@@ -3077,7 +3053,8 @@ function initTabDiagrams() {
 		minHeight: 80
 	});
 
-	$('#servaddbuttondia').on('click', function() {
+	// This wil set the behavior of the plus-button on the SF tab as well
+	$('.servplusbutton').on('click', function() {
 		let newid = createUUID();
 		let newtitle = Service.autotitle(Project.cid);
 		new Transaction('serviceCreate',
@@ -3943,15 +3920,6 @@ function initTabSingleFs() {
 		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 
-	$('#servaddbuttonsf').on('click',  function() {
-		let newid = createUUID();
-		let newtitle = Service.autotitle(Project.cid);
-		new Transaction('serviceCreate',
-			[{id: newid, project: Project.cid}],
-			[{id: newid, project: Project.cid, title: newtitle}],
-			_("Add a service")
-		);
-	});
 }
 
 function paintSingleFailures(s) {
