@@ -15,7 +15,6 @@ In a deeply nested tree, the inplace editor for a cluster's name may not fit. So
 When removing the last vulnerability on a component, the overall vulnerability level should be set to Extremely Low.
 Be consistent: cloud, unknown link, unexplored link. Decision: use "unknown link" as the official term, with "cloud" as a possible informal nickname.
 When printing CCF, the accordions are not always all expanded.
-SizeDOMElements is not called when browser goes fullscreen. The bottom tab bar may require adjustment. Have to do browser reload instead now. Possible: call SizeDOMEvents whenever a vertical tab is selected?
 Change details of a project on the server but not active: function not implemented.
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
@@ -25,7 +24,6 @@ Undo
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
 Make class definitions conform to ES6. Create modules with import/export.
 Change variables from var to let/const.
-Make the UI more in line with other apps that people are used to these days.
 Replace #modaldialog by an anonymous <div></div>.
 Change node shapes from image to SVG, helps for cleaner resizes. Obsoleted by iconsets?
 Try IndexDB instead of localStorage. This will benefit concurrent use in multiple tabs, and may ease the implementation of Undo and concurrent use across computers.

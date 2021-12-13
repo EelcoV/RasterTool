@@ -1366,6 +1366,9 @@ for checklists and threat evaluations.
     margin-left: 15px !important;
     margin-bottom: 3px !important;
 }
+.ccfhighlight .ui-accordion-header {
+	background: var(--highlt) !important;
+}
 
 .linechar {
 	position: relative;
@@ -1390,7 +1393,7 @@ for checklists and threat evaluations.
     border: 1px solid #ccc;
     border-radius: 3px;
     cursor: ns-resize;
-    background: white;
+    background: var(--vlightbg);
 }
 .li_selected {
     border: 1px solid #5080ff;

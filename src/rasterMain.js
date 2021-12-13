@@ -4504,6 +4504,7 @@ function addClusterElements(nc) {
 				var it = new NodeClusterIterator({project:Project.cid, isroot:true, isstub: false});
 				sortClustersToCurrentOrder(it);
 				$('#ccfs_details').empty();
+				$('.ccfhighlight').removeClass('ccfhighlight');
 				CurrentCluster = null;
 				for (const cl of it) {
 					if (cl.id==nc.id)  continue;
