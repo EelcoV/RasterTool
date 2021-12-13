@@ -306,13 +306,11 @@ body {
 #libdel {background-image: url(../img/del_p.png);}
 #libmerge {background-image: url(../img/merge_p.png);}
 
-#undobutton {background-image: url(../img/undo-lo.png);}
-#undobutton.possible {background-image: url(../img/undo-hi.png);}
-#redobutton {background-image: url(../img/redo-lo.png);}
-#redobutton.possible {background-image: url(../img/redo-hi.png);}
+#undobutton {background-image: url(../img/undo.png);}
+#redobutton {background-image: url(../img/redo.png);}
 
-#findbutton {background-image: url(../img/find-hi.png);}
-#helpbutton {background-image: url(../img/qm-hi.png);}
+#findbutton {background-image: url(../img/find.png);}
+#helpbutton {background-image: url(../img/qm.png);}
 
 /* LAYOUT =
  template
@@ -777,11 +775,16 @@ div.th_del {
 }
 div.th_del .ui-button { /* Circle with cross */
 	padding: 0px 6px;
-	font-size: 17px;
+	font-size: 16px;
 	border: none;
-	top: -5px;
+	top: -4px;
 	background-color: var(--vlightbg);
 }
+div.th_del .ui-button:hover {
+	outline: 1px solid grey;
+	background: white;
+}
+
 .th_name span { cursor: text; }
 .th_descr span { cursor: text; }
 .th_name .inplace_field { width: 8em; } /* Less than width of column, to account for tree structure lines */

@@ -3937,7 +3937,7 @@ function paintSingleFailures(s) {
 		  <div id="sfaccordion_SV___ID_" class="sfaccordion">\n\
 			<h3><a href="#">_LSF_ "_TI_" (_TY__AP_) _LB_<span id="sfamark_SV___ID_"></span></a></h3>\n\
 			<div>\n\
-			 <div class="topbuttons"><div id="sfaadd_SV___ID_" class="addthreatbutton titlebarbutton">_BA_</div>\n\
+			 <div class="topbuttons donotprint"><div id="sfaadd_SV___ID_" class="addthreatbutton titlebarbutton">_BA_</div>\n\
 			 <div id="sfacopy_SV___ID_" class="copybutton titlebaricon" title="_BC_"><img src="../img/ccopy.png"></div>\n\
 			 <div id="sfapaste_SV___ID_" class="pastebutton titlebaricon" title="_BP_"><img src="../img/cpaste.png"></div></div>\n\
 			 <div id="sfa_SV___ID_">\n\

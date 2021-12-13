@@ -440,17 +440,17 @@ Project.prototype = {
 	
 	updateUndoRedoUI: function() {
 		if (this.TransactionCurrent==this.TransactionBase) {
-			$('#undobutton').removeClass('possible');
+			$('#undobutton').addClass('ui-state-disabled');
 			$('#undobutton').attr('title', _("Undo"));
 		} else {
-			$('#undobutton').addClass('possible');
+			$('#undobutton').removeClass('ui-state-disabled');
 			$('#undobutton').attr('title', _("Undo") + ' ' + this.TransactionCurrent.descr);
 		}
 		if (this.TransactionCurrent==this.TransactionHead) {
-			$('#redobutton').removeClass('possible');
+			$('#redobutton').addClass('ui-state-disabled');
 			$('#redobutton').attr('title', _("Redo"));
 		} else {
-			$('#redobutton').addClass('possible');
+			$('#redobutton').removeClass('ui-state-disabled');
 			$('#redobutton').attr('title', _("Redo") + ' ' + this.TransactionCurrent.next.descr);
 		}
 	},
