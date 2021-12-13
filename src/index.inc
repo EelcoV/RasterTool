@@ -84,20 +84,151 @@ See LICENSE.md
  <p><small>goodbye</small></p>
 </div>
 
-<div id="toolbar" class="donotprint">
-	<!-- Common toolbar items -->
-	<div id="libraryactivator" class="toolbarlargebutton">Library..</div>
-	<div id="networkactivity"></div>
-	<div class="toolbarspacer"></div>
-	<div id="undobutton" class="toolbariconbutton"></div>
-	<div id="redobutton" class="toolbariconbutton"></div>
-	<div class="toolbarspacer"></div>
-	<div id="findbutton" class="toolbariconbutton"></div>
-	<div id="helpbutton" class="toolbariconbutton"></div>
-	<!-- Diagrams tab -->
-	<div id="diaopts" class="toolbarsection">
-		<div id="templates"> <!-- Is filled in Project.load() --></div>
+<div id="toolbars" class="donotprint">
+	<ul>
+		<li><a href="#tb_projects">Projects</a></li>
+		<li><a href="#tb_home">Home</a></li>
+		<li><a href="#tb_options">Options</a></li>
+	</ul>
 
+	<div id="tb_projects" class="toolbar">
+		<!-- On current project -->
+		<div class="toolbarspacer"></div>
+		<div id="libadd" class="toolbarlargeiconbutton"></div>
+		<input id="fileElem" type="file">
+		<div id="libimport" class="toolbarlargeiconbutton"></div>
+		<div id="libexport" class="toolbarlargeiconbutton"></div>
+		<!-- On selected project -->
+		<div id="projselected" class="toolbarsection">
+			<div id="projlistsection" class="toolbarlabel">
+				<div>xyz</div>
+				<div>
+					<select name="projlist" id="projlist">
+					<option>Select a project</option>
+					</select>
+				</div>
+			</div>
+			<div id="libactivate" class="toolbarlargeiconbutton"></div>
+			<div id="libdel" class="toolbarlargeiconbutton"></div>
+			<div id="libmerge" class="toolbarlargeiconbutton"></div>
+		</div>
+		<div id="projdebug" class="toolbarsection">
+			<div class="toolbarspacer"></div>
+			<div class="toolbarspacer"></div>
+			<div id="libcheck" class="toolbarbutton">?</div>
+			<div id="libexportall" class="toolbarbutton">Export library</div>
+			<div id="libzap" class="toolbarbutton">Zap library</div>
+			<div id="networkactivity" class="toolbariconbutton"></div>
+		</div>
+	</div>
+
+	<div id="tb_home" class="toolbar">
+		<!-- Common toolbar items -->
+		<div class="toolbarspacer"></div>
+		<div id="undobutton" class="toolbariconbutton"></div>
+		<div id="redobutton" class="toolbariconbutton"></div>
+		<div class="toolbarspacer"></div>
+		<div id="findbutton" class="toolbariconbutton"></div>
+		<div id="helpbutton" class="toolbariconbutton"></div>
+		<!-- Diagrams tab -->
+		<div id="diaopts" class="toolbarsection">
+			<div id="templates"> <!-- Is filled in Project.load() --></div>
+		</div>
+		<!-- Single failures tab -->
+		<div id="sfopts" class="toolbarsection">
+			<div id="sffoldsection" class="toolbarlabel">
+				<div>Fold</div>
+				<div>
+					<div id="sfcollapseall" class="toolbarbutton">Collapse all</div>
+					<div id="sfexpandall" class="toolbarbutton">Expand all</div>
+				</div>
+			</div>
+
+			<div class="toolbarspacer"></div>
+			<div id="sfsortsection" class="toolbarlabel">
+				<div>Sort</div>
+				<div>
+					<fieldset>
+						<input type="radio" id="sfsort_alph" name="sfsort" value="alph"><label for="sfsort_alph">alpha</label>
+						<input type="radio" id="sfsort_type" name="sfsort" value="type"><label for="sfsort_type">type</label>
+						<input type="radio" id="sfsort_thrt" name="sfsort" value="thrt"><label for="sfsort_thrt">vuln level</label>
+					</fieldset>
+				</div>
+			</div>
+		 </div>
+		<!-- Common cause failures tab -->
+		<div id="ccfopts" class="toolbarsection">
+			<div id="ccffoldsection" class="toolbarlabel">
+				<div>Fold</div>
+				<div>
+					<div id="ccfcollapseall" class="toolbarbutton">Collapse all</div>
+					<div id="ccfexpandall" class="toolbarbutton">Expand all</div>
+				</div>
+			</div>
+
+			<div class="toolbarspacer"></div>
+			<div id="ccfsortsection" class="toolbarlabel">
+				<div>Sort</div>
+				<div>
+					<fieldset>
+						<input type="radio" id="ccfsort_alph" name="ccfsort" value="alph"><label for="ccfsort_alph">alpha</label>
+						<input type="radio" id="ccfsort_type" name="ccfsort" value="type"><label for="ccfsort_type">type</label>
+						<input type="radio" id="ccfsort_thrt" name="ccfsort" value="thrt"><label for="ccfsort_thrt">vuln level</label>
+					</fieldset>
+				</div>
+			</div>
+		</div>
+		<!-- Analysis tab - Failures and Vulnerabilities -->
+		<div id="anavulnopts" class="toolbarsection">
+			<div id="anavnsortsection" class="toolbarlabel">
+				<div>Sort nodes and clusters:</div>
+				<div>
+					<fieldset>
+						<input type="radio" id="ana_nodesort_alph" name="ana_nodesort"><label for="ana_nodesort_alph">alpha</label>
+						<input type="radio" id="ana_nodesort_type" name="ana_nodesort"><label for="ana_nodesort_type">type</label>
+						<input type="radio" id="ana_nodesort_thrt" name="ana_nodesort"><label for="ana_nodesort_thrt">vuln level</label>
+					</fieldset>
+				</div>
+			</div>
+			<div class="toolbarspacer"></div>
+			<div id="anavfsortsection" class="toolbarlabel">
+				<div>Sort</div>
+				<div>
+					<fieldset>
+						<input type="radio" id="ana_failsort_alph" name="ana_failsort"><label for="ana_failsort_alph">alpha</label>
+						<input type="radio" id="ana_failsort_type" name="ana_failsort"><label for="ana_failsort_type">type</label>
+					</fieldset>
+				</div>
+			</div>
+			<div class="toolbarspacer"></div>
+			<div id="anavexcludesection" class="toolbarlabel">
+				<div>SClick cells to include/exclude them.</div>
+				<div>
+					<div id="quickwinslink" class="toolbarbutton">Quick wins</div>
+					<div id="clearexclusions" class="toolbarbutton">Clear exclusions</div>
+				</div>
+			</div>
+		</div>
+		<!-- Analysis tab - Longlist -->
+		<div id="anallopts" class="toolbarsection">
+			<div id="anallincsection" class="toolbarlabel">
+				<div>Include:</div>
+				<div>
+					<input type="checkbox" id="incX" checked><label for="incX">Unknown</label><br>
+					<input type="checkbox" id="incA" checked><label for="incA">Ambiguous</label>
+				</div>
+			</div>
+			<div class="toolbarspacer"></div>
+			<div id="anallminsection" class="toolbarlabel">
+				<div>Minimum value:</div>
+				<div>
+					<select id="minV"></select>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="tb_options" class="toolbar">
 		<div class="toolbarspacer"></div>
 		<div id="vulnlevelsection" class="toolbarlabel">
 			<div>Levels:</div>
@@ -112,7 +243,7 @@ See LICENSE.md
 
 		<div class="toolbarspacer"></div>
 		<div id="labelsection" class="toolbarlabel">
-			<div>Labels:</div>
+			<div>Labels</div>
 			<div>
 				<fieldset>
 					<input type="radio" id="label_off" name="labelonoff"><label for="label_off">Hide color</label>
@@ -120,10 +251,10 @@ See LICENSE.md
 				</fieldset>
 			</div>
 		</div>
-
+		
 		<div class="toolbarspacer"></div>
 		<div id="mapsection" class="toolbarlabel">
-			<div>Minimap:</div>
+			<div>Minimap</div>
 			<div>
 				<fieldset>
 					<input type="radio" id="showmap_off" name="showmap" value="off"><label for="showmap_off">XX</label>
@@ -131,145 +262,87 @@ See LICENSE.md
 				</fieldset>
 			</div>
 		</div>
-	</div>
-	<!-- Single failures tab -->
-	<div id="sfopts" class="toolbarsection">
-		<div id="sffoldsection" class="toolbarlabel">
-			<div>Fold:</div>
-			<div>
-				<div id="sfcollapseall" class="toolbarbutton">Collapse all</div>
-				<div id="sfexpandall" class="toolbarbutton">Expand all</div>
+		
+		<div id="projectproperties" class="toolbarsection">
+			<div id="projnamesection" class="toolbarlabel">
+				<div>Project name</div>
+				<div>
+					<div id="projname"></div>
+				</div>
+			</div>
+			<div class="toolbarspacer"></div>
+			<div id="sharingsection" class="toolbarlabel">
+				<div>Sharing</div>
+				<div>
+					<fieldset>
+						<input type="radio" id="sharing_off" name="sharing" value="off"><label for="sharing_off">XX</label>
+						<input type="radio" id="sharing_on"  name="sharing" value="on" ><label for="sharing_on" >XX</label>
+					</fieldset>
+				</div>
+			</div>
+			<div class="toolbarspacer"></div>
+			<div id="projdescrsection" class="toolbarlabel">
+				<div>Project description</div>
+				<div>
+					<div id="projdescr"></div>
+				</div>
 			</div>
 		</div>
+	</div>
 
-		<div class="toolbarspacer"></div>
-		<div id="sfsortsection" class="toolbarlabel">
-			<div>Sort:</div>
-			<div>
-				<fieldset>
-					<input type="radio" id="sfsort_alph" name="sfsort" value="alph"><label for="sfsort_alph">alpha</label>
-					<input type="radio" id="sfsort_type" name="sfsort" value="type"><label for="sfsort_type">type</label>
-					<input type="radio" id="sfsort_thrt" name="sfsort" value="thrt"><label for="sfsort_thrt">vuln level</label>
-				</fieldset>
-			</div>
-		</div>
-	 </div>
-	<!-- Common cause failures tab -->
-	<div id="ccfopts" class="toolbarsection">
-		<div id="ccffoldsection" class="toolbarlabel">
-			<div>Fold:</div>
-			<div>
-				<div id="ccfcollapseall" class="toolbarbutton">Collapse all</div>
-				<div id="ccfexpandall" class="toolbarbutton">Expand all</div>
-			</div>
-		</div>
-
-		<div class="toolbarspacer"></div>
-		<div id="ccfsortsection" class="toolbarlabel">
-			<div>Sort:</div>
-			<div>
-				<fieldset>
-					<input type="radio" id="ccfsort_alph" name="ccfsort" value="alph"><label for="ccfsort_alph">alpha</label>
-					<input type="radio" id="ccfsort_type" name="ccfsort" value="type"><label for="ccfsort_type">type</label>
-					<input type="radio" id="ccfsort_thrt" name="ccfsort" value="thrt"><label for="ccfsort_thrt">vuln level</label>
-				</fieldset>
-			</div>
-		</div>
-	</div>
-	<!-- Analysis tab - Failures and Vulnerabilities -->
-	<div id="anavulnopts" class="toolbarsection">
-		<div id="anavnsortsection" class="toolbarlabel">
-			<div>Sort nodes and clusters:</div>
-			<div>
-				<fieldset>
-					<input type="radio" id="ana_nodesort_alph" name="ana_nodesort"><label for="ana_nodesort_alph">alpha</label>
-					<input type="radio" id="ana_nodesort_type" name="ana_nodesort"><label for="ana_nodesort_type">type</label>
-					<input type="radio" id="ana_nodesort_thrt" name="ana_nodesort"><label for="ana_nodesort_thrt">vuln level</label>
-				</fieldset>
-			</div>
-		</div>
-		<div class="toolbarspacer"></div>
-		<div id="anavfsortsection" class="toolbarlabel">
-			<div>Sort:</div>
-			<div>
-				<fieldset>
-					<input type="radio" id="ana_failsort_alph" name="ana_failsort"><label for="ana_failsort_alph">alpha</label>
-					<input type="radio" id="ana_failsort_type" name="ana_failsort"><label for="ana_failsort_type">type</label>
-				</fieldset>
-			</div>
-		</div>
-		<div class="toolbarspacer"></div>
-		<div id="anavexcludesection" class="toolbarlabel">
-			<div>SClick cells to include/exclude them.</div>
-			<div>
-				<div id="quickwinslink" class="toolbarbutton">Quick wins</div>
-				<div id="clearexclusions" class="toolbarbutton">Clear exclusions</div>
-			</div>
-		</div>
-	</div>
-	<!-- Analysis tab - Longlist -->
-	<div id="anallopts" class="toolbarsection">
-		<div id="anallincsection" class="toolbarlabel">
-			<div>Include:</div>
-			<div>
-				<input type="checkbox" id="incX" checked><label for="incX">Unknown</label><br>
-				<input type="checkbox" id="incA" checked><label for="incA">Ambiguous</label>
-			</div>
-		</div>
-		<div class="toolbarspacer"></div>
-		<div id="anallminsection" class="toolbarlabel">
-			<div>Minimum value:</div>
-			<div>
-				<select id="minV"></select>
-			</div>
-		</div>
-	</div>
-</div> <!-- toolbar -->
-<div id="classroom" class="ui-widget"></div>
-<div id="currentProject" class="ui-widget projectname"></div>
-
-#ifdef SERVER
-<div id="librarypanel" class="actpanel">
-  <form id="libform">
-    <table>
-    <tr><td>
-        <input id="libactivate" type="button" value="Activate">
-        <input id="libprops" type="button" value="Details">
-        <input id="libexport" type="button" value="Export">
-        <input id="libdel" type="button" value="Delete">
-        <input id="libmerge" type="button" value="Merge">
-    </td></tr>
-    <tr><td>
-        <select id="libselect" size="8"></select>
-    </td></tr>
-    <tr><td style="padding-bottom:1px">
-        <input id="libadd" type="button" value="New">
-        <input id="libimport" type="button" value="Import">
-        <input id="libexportall" type="button" value="Export library">
-        <input id="fileElem" type="file">
-        <input id="libcheck" type="button" value="?">
-        <input id="libzap" type="button" value="Zap library">
-    </td>
-    </tr>
-	<tr><td>
-		<div id="onlineonoff">
-			<span class="leftlabel ui-widget ui-state-default">Network connection:</span>
-			<fieldset>
-				<input type="radio" id="online_off" name="onlineonoff"><label for="online_off">Offline</label>
-				<input type="radio" id="online_on" name="onlineonoff" checked="checked"><label for="online_on">Online</label>
-			</fieldset>
-		</div>
-	</td></tr>
-	<tr><td>
-		<div id="creator_name">
-			<span class="leftlabel ui-widget ui-state-default">Your name:</span>
-			<input type="text" id="creator">
-		</div>
-	</td></tr>
-    </table>
-  </form>
+	<div id="classroom" class="ui-widget donotprint"></div>
+	<div id="currentProject" class="ui-widget projectname donotprint"></div>
 </div>
-#endif
+
+<div id="workspace">
+	<ul id="workspacetabs">
+		<li><a href="#tab_diagrams">Diagrams</a></li>
+		<li><a href="#tab_singlefs">Single failures</a></li>
+		<li class="longtab"><a href="#tab_ccfs" class="longlink">Common cause failures</a></li>
+		<li><a href="#tab_analysis">Analysis</a></li>
+	</ul>
+
+
+	<div id="tab_diagrams" class="workbody tabs-bottom">
+		<div id="mask-collection" class="donotprint"><!-- mask images to be inserted here --></div>
+		<div id="selectrect"></div>
+		<input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
+		<ul id="bottomtabsdiagrams">
+		</ul>
+	</div>
+
+
+	<div id="tab_singlefs" class="workbody tabs-bottom">
+		<input id="servaddbuttonsf" class="servplusbutton" type="button" value=" + ">
+		<ul id="bottomtabssinglefs">
+		</ul>
+	</div>
+
+
+	<div id="tab_ccfs" class="workbody">
+		<div id="ccfs_body" class="workbody ui-widget-content"></div>
+		<div id="ccfs_details" class="workbody ui-widget-content"></div>
+	</div>
+
+
+	<div id="tab_analysis" class="workbody tabs-bottom">
+		<ul id="bottomtabsana">
+			<li class="longtab"><a class="longlink" href="#at1">Failures and Vulnerabilities</a></li>
+			<li class="longtab"><a class="longlink" href="#at2">Single failures by level</a></li>
+			<li class="longtab"><a class="longlink" href="#at3">Node counts</a></li>
+			<li class="longtab"><a class="longlink" href="#at4">Checklist reports</a></li>
+			<li class="longtab"><a class="longlink" href="#at5">Longlist</a></li>
+		</ul>
+		<div id="at1" class="workspace plainworkspace"></div>
+		<div id="at2" class="workspace plainworkspace"></div>
+		<div id="at3" class="workspace plainworkspace"></div>
+		<div id="at4" class="workspace plainworkspace"></div>
+		<div id="at5" class="workspace plainworkspace"></div>
+	</div>
+</div> <!-- id="workspace" -->
+
+<div id="vtabs" class="donotprint"><!-- empty overflow region --></div>
+<div id="htabs" class="donotprint"><!-- empty overflow region --></div>
 
 #ifdef STANDALONE
 <div id="pdfoptions">
@@ -394,60 +467,6 @@ See LICENSE.md
     </div>
 </div>
 
-<div id="tabs">
-    <ul>
-        <li><a href="#tab_diagrams">Diagrams</a></li>
-        <li><a href="#tab_singlefs">Single failures</a></li>
-        <li class="longtab"><a href="#tab_ccfs" class="longlink">Common cause failures</a></li>
-        <li><a href="#tab_analysis">Analysis</a></li>
-    </ul>
-    
-
-<div id="tab_diagrams" class="workbody workouter">
-  <div id="diagrams_body" class="tabs-bottom">
-    <div id="mask-collection" class="donotprint"><!-- mask images to be inserted here --></div>
-    <div id="selectrect"></div>
-    <input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
-    <ul id="bottomtabsdiagrams">
-    </ul>
-  </div>    
-</div>
-
-
-<div id="tab_singlefs" class="workbody workouter">
-  <div id="singlefs_body" class="tabs-bottom">
-    <input id="servaddbuttonsf" class="servplusbutton" type="button" value=" + ">
-    <ul id="bottomtabssinglefs">
-    </ul>
-  </div>    
-</div>
-
-
-<div id="tab_ccfs" class="workbody workouter">
-  <div id="ccfs_body" class="workbody workinner ui-widget-content"></div>
-  <div id="ccfs_details" class="workbody workinner ui-widget-content"></div>
-</div>
-
-
-<div id="tab_analysis" class="workbody workouter">
-  <div id="analysis_body" class="tabs-bottom tabs-flushleft">
-  <ul id="bottomtabsana">
-     <li class="longtab"><a class="longlink" href="#at1">Failures and Vulnerabilities</a></li>
-     <li class="longtab"><a class="longlink" href="#at2">Single failures by level</a></li>
-     <li class="longtab"><a class="longlink" href="#at3">Node counts</a></li>
-     <li class="longtab"><a class="longlink" href="#at4">Checklist reports</a></li>
-     <li class="longtab"><a class="longlink" href="#at5">Longlist</a></li>
-  </ul>
-  <div id="at1" class="workspace plainworkspace"></div>
-  <div id="at2" class="workspace plainworkspace"></div>
-  <div id="at3" class="workspace plainworkspace"></div>
-  <div id="at4" class="workspace plainworkspace"></div>
-  <div id="at5" class="workspace plainworkspace"></div>
-  </div>
-</div>
-
-
-</div> <!-- id="tabs" -->
 
 <div id="modaldialog"></div>
 

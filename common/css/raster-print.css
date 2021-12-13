@@ -13,6 +13,7 @@ body {
 	overflow: auto;
 	margin: 0;
 	-webkit-print-color-adjust: exact;
+	background: white !important;
 }
 
 .printonly { display: block; }
@@ -33,10 +34,6 @@ body {
 .workspace {
 	position: static;
 	background: white !important;
-}
-
-.workouter {
-	position: static;
 }
 
 .plainworkspace {
@@ -75,7 +72,7 @@ body {
 #ccfs_details { display: none !important; }
 .ccfhighlight .ui-accordion-header { background: transparent !important; }
 
-#analysis_body h3 {
+#tab_analysis h3 {
 	padding: 0 0 !important;
 	font-size: 16px;
 }

@@ -20,12 +20,16 @@
 		4917356927540849008967A2 /* jquery-3.6.0.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.6.0.min.js"; sourceTree = "<group>"; };
 		4918F0BE1FBEBF13008A6208 /* Build and Install.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Build and Install.md"; sourceTree = "<group>"; };
 		491CD6D3187DA7600028B84D /* dropedit.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dropedit.png; sourceTree = "<group>"; };
+		492038FE276547590067A740 /* export_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = export_p.png; sourceTree = "<group>"; };
+		492038FF276547590067A740 /* import_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = import_p.png; sourceTree = "<group>"; };
+		49203900276547590067A740 /* new_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = new_p.png; sourceTree = "<group>"; };
+		4920390227669ADB0067A740 /* del_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = del_p.png; sourceTree = "<group>"; };
+		4920390327669ADB0067A740 /* merge_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = merge_p.png; sourceTree = "<group>"; };
+		4920390527669ADB0067A740 /* activate_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = activate_p.png; sourceTree = "<group>"; };
 		492431532742F79C00FA02BE /* rasterVulnerability.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterVulnerability.js; sourceTree = "<group>"; };
 		4931606627511F1400F41FBC /* rasterIterators.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterIterators.js; sourceTree = "<group>"; };
-		49367205275ADDCA00B4F351 /* cpaste-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cpaste-lo.png"; sourceTree = "<group>"; };
-		49367206275ADDCA00B4F351 /* ccopy-lo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ccopy-lo.png"; sourceTree = "<group>"; };
-		49367207275ADDCA00B4F351 /* cpaste-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cpaste-hi.png"; sourceTree = "<group>"; };
-		49367208275ADDCA00B4F351 /* ccopy-hi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ccopy-hi.png"; sourceTree = "<group>"; };
+		49367207275ADDCA00B4F351 /* cpaste.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cpaste.png; sourceTree = "<group>"; };
+		49367208275ADDCA00B4F351 /* ccopy.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ccopy.png; sourceTree = "<group>"; };
 		4938942D239C0FA300C3E2A5 /* _lang.bat */ = {isa = PBXFileReference; lastKnownFileType = text; path = _lang.bat; sourceTree = "<group>"; };
 		493AA22F1A7419A9005DDFFB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4943444A203A026600043E80 /* jquery-ui.min.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "jquery-ui.min.css"; sourceTree = "<group>"; };
@@ -43,7 +47,6 @@
 		494B6F6818796E9D00400328 /* designAtomicActions.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = designAtomicActions.txt; sourceTree = "<group>"; };
 		494B6F6918796E9D00400328 /* encodedecode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = encodedecode.js; sourceTree = "<group>"; };
 		494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.editinplace-2.2.1.js"; sourceTree = "<group>"; };
-		494B6F7A18796E9D00400328 /* layout.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = layout.odg; sourceTree = "<group>"; };
 		494B6F7F18796E9D00400328 /* rasterComponent.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterComponent.js; sourceTree = "<group>"; wrapsLines = 0; };
 		494B6F8118796E9D00400328 /* rasterMain.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = rasterMain.js; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.javascript; };
 		494B6F8218796E9D00400328 /* rasterNode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterNode.js; sourceTree = "<group>"; };
@@ -206,10 +209,14 @@
 		494B6FEB18796E9D00400328 /* img */ = {
 			isa = PBXGroup;
 			children = (
-				49367208275ADDCA00B4F351 /* ccopy-hi.png */,
-				49367206275ADDCA00B4F351 /* ccopy-lo.png */,
-				49367207275ADDCA00B4F351 /* cpaste-hi.png */,
-				49367205275ADDCA00B4F351 /* cpaste-lo.png */,
+				4920390527669ADB0067A740 /* activate_p.png */,
+				4920390227669ADB0067A740 /* del_p.png */,
+				4920390327669ADB0067A740 /* merge_p.png */,
+				492038FE276547590067A740 /* export_p.png */,
+				492038FF276547590067A740 /* import_p.png */,
+				49203900276547590067A740 /* new_p.png */,
+				49367208275ADDCA00B4F351 /* ccopy.png */,
+				49367207275ADDCA00B4F351 /* cpaste.png */,
 				496A429D27558381005BA08F /* paper.png */,
 				49CA255E23CB3A32002F7B74 /* redo-hi.png */,
 				49CA255C23CB3A31002F7B74 /* redo-lo.png */,
@@ -338,7 +345,6 @@
 				499A6BA01A72DC080047E182 /* LICENSE.md */,
 				494B6F6818796E9D00400328 /* designAtomicActions.txt */,
 				494B6F8818796E9D00400328 /* Testcase.txt */,
-				494B6F7A18796E9D00400328 /* layout.odg */,
 				49CD587F1F93922E00A9F17F /* Object data structure.txt */,
 				4918F0BE1FBEBF13008A6208 /* Build and Install.md */,
 			);

@@ -3,7 +3,7 @@
  */
 
 /* global
- Component, ComponentIterator, GroupSettings, H, LS, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, ToolGroup, Transaction, _, bugreport, createUUID, exportProject, isSameString, loadFromString, mylang, newRasterConfirm, nid2id, prettyDate, rasterAlert, startAutoSave, switchToProject, urlEncode
+_, Assessment, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, mylang, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, prettyDate, ProjectIterator, rasterAlert, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -68,7 +68,7 @@
  *	getDate(): retrieve last saved date of this project.
  *  refreshIfNecessary():
  *  dorefresh():
- *  updateUI: highlight/lowlight the undo/redo buttons as necessary
+ *  updateUndoRedoUI: highlight/lowlight the undo/redo buttons as necessary
  */
 var Project = function(id,asstub) {
 	if (id!=null && Project._all.has(id)) {
@@ -438,7 +438,7 @@ Project.prototype = {
 		Project._all.delete(this.id);
 	},
 	
-	updateUI: function() {
+	updateUndoRedoUI: function() {
 		if (this.TransactionCurrent==this.TransactionBase) {
 			$('#undobutton').removeClass('possible');
 			$('#undobutton').attr('title', _("Undo"));
@@ -613,7 +613,7 @@ Project.prototype = {
 		Project.cid = this.id;
 		Service.cid = this.services[0];
 		Preferences.setcurrentproject(this.title);
-		this.updateUI();
+		this.updateUndoRedoUI();
 		
 		this.services.forEach(sid => Service.get(sid).load());
 		for (const vid of this.vulns) {
@@ -685,13 +685,13 @@ Project.prototype = {
 			for (const icn of icns) {
 				if (icn.type!=t)  continue;
 				var str = '\
-					<div class="template"><div class="templateinner">\n\
+					<div class="template">\n\
 						<div class="ui-widget templatelabel">_TN_</div>\n\
 						<div id="_TY_" class="templatebg">\n\
 							<img class="templateicon" src="../img/iconset/_IS_/_IT_">\n\
 						</div>\n\
 						<img id="tC__TY_" class="tC" src="../img/dropedit.png">\n\
-					<div></div>\
+					<div>\
 				';
 				str =str.replace(/_TY_/g, icn.type);
 				str =str.replace(/_TN_/g, Rules.nodetypes[icn.type]);
@@ -719,6 +719,12 @@ Project.prototype = {
 			cursor: 'move',
 			helper: 'clone'
 		});
+
+		SizeDOMElements();  // Correct the scroller regions
+		$('#projlist').find(`option[value=${this.id}]`).attr("selected",true);
+		$('#projlist-button span:last-child').html( H(this.title) );
+		$('#libactivate').addClass('ui-state-disabled');
+		$('#libmerge').addClass('ui-state-disabled');
 
 		$('.projectname').text(this.title);
 #ifdef SERVER

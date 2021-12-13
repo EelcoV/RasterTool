@@ -306,7 +306,7 @@ function doPrint(win) {
 function EnableMenuItems(val)  {
 	if (process.platform !== 'darwin')  return;
 	// MacOS. Grey out the several menu items when no windows are open
-	var menuitems = Menu.getApplicationMenu().items;
+	var menuitems = Menu.getApplicationMenu().items; // Deprecated
 	var fileMenu = menuitems[1].submenu.items;
 	fileMenu[2].enabled = val;
 	fileMenu[3].enabled = val;

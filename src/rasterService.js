@@ -3,7 +3,7 @@
  */
 
 /* globals
- H, LS, Preferences, Project, RefreshNodeReportDialog, SizeDOMElements, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, workspacedrophandler
+ H, LS, Preferences, Project, RefreshNodeReportDialog, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, workspacedrophandler
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -141,8 +141,8 @@ Service.prototype = {
 		var it = new NodeIterator({service: this.id});
 		it.forEach(rn => rn.unpaint());
 		this._jsPlumb.reset();
-		this.removetab('diagrams');
-		this.removetab('singlefs');
+		this.removetab('tab_diagrams');
+		this.removetab('tab_singlefs');
 		this._loaded=false;
 	},
 
@@ -150,14 +150,13 @@ Service.prototype = {
 		let p = Project.get(this.project);
 		let idx = p.services.indexOf(this.id);
 		let jsp = this._jsPlumb;
-		this.inserttab('diagrams',idx);
-		this.inserttab('singlefs',idx);
+		this.inserttab('tab_diagrams',idx);
+		this.inserttab('tab_singlefs',idx);
 		this._addtabdiagrams();
 		this._addtabsinglefs();
 		
-		SizeDOMElements();
-		$('.scroller_overview').hide();
-		$('#scroller_overview'+this.id).show();
+//		$('.scroller_overview').hide();
+//		$('#scroller_overview'+this.id).show();
 		
 		var origpos;
 		$('#selectrect').draggable({
@@ -238,8 +237,8 @@ Service.prototype = {
 		// Remove the tab contents
 		$('#'+tabprefix+this.id).remove();
 		// Remove the bottom tab (the one that controls div#tabprefix+sid)
-		$('#'+tabprefix+'_body').find('li[aria-controls='+tabprefix+this.id+']').remove();
-		$('#'+tabprefix+'_body').tabs('refresh');
+		$('#'+tabprefix).find('li[aria-controls='+tabprefix+this.id+']').remove();
+		$('#'+tabprefix).tabs('refresh');
 		if (tabprefix=='diagrams') {
 			$('#scroller_overview'+this.id).remove();
 		}
@@ -258,15 +257,13 @@ Service.prototype = {
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_PF_/g, tabprefix);
 		if (idx==null) {
-			$('#'+tabprefix+'_body .ui-tabs-nav').append(snippet);
+			$('#'+tabprefix+' .ui-tabs-nav').append(snippet);
 		} else if (idx==0) {
-			$('#'+tabprefix+'_body .ui-tabs-nav').prepend(snippet);
+			$('#'+tabprefix+' .ui-tabs-nav').prepend(snippet);
 		} else {
-			$('#'+tabprefix+'_body .ui-tabs-nav li').eq(idx-1).after(snippet);
+			$('#'+tabprefix+' .ui-tabs-nav li').eq(idx-1).after(snippet);
 		}
-//		$(snippet).appendTo( '#diagrams_body .ui-tabs-nav' );
 		
-		/* We have bottom tabs, so have to correct the tab corners */
 		$('a[href^="#'+tabprefix+this.id+'"]').on('dblclick',  diagramTabEditStart );
 		$('a[href^="#'+tabprefix+this.id+'"]').on('click',  function(/*evt,ui*/) {
 			var s = Service.get(nid2id(this.hash));
@@ -300,13 +297,13 @@ Service.prototype = {
 		
 		/* Add content to the new tab */
 		var snippet = '\n\
-			<div id="diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-tl workspace"></div>\n\
+			<div id="tab_diagrams_I_" class="ui-tabs-panel ui-widget-content ui-corner-tl workspace">\n\
 			<div id="scroller_overview_I_" class="scroller_overview">\n\
 				<div id="scroller_region_I_" class="scroller_region"></div>\n\
-			</div>\n\
+			</div></div>\n\
 		';
 		snippet = snippet.replace(/_I_/g, this.id);
-		$('#diagrams_body').append(snippet);
+		$('#tab_diagrams').append(snippet);
 		snippet = '\n\
 			<h1 class="printonly underlay servicename_I_">_SN_</h1>\n\
 			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
@@ -317,19 +314,19 @@ Service.prototype = {
 		snippet = snippet.replace(/_SN_/g, H(this.title));
 		snippet = snippet.replace(/_PN_/g, H(Project.get(this.project).title));
 		snippet = snippet.replace(/_PJ_/g, this.project);
-		$('#diagrams'+this.id).append(snippet);
-		$('#diagrams_body').tabs('refresh');
-		$('#diagrams_body ul li').removeClass('ui-corner-top');
+		$('#tab_diagrams'+this.id).append(snippet);
+		$('#tab_diagrams').tabs('refresh');
+		$('#tab_diagrams ul li').removeClass('ui-corner-top');
 
 		/* Note: Firefox warns about scroll-linked positioning effects in combination with asynchronous
 		 * scrolling. It may be better to implement this event handler asynchronously, although the
 		 * improvement may be small because the visual impact of the scroller_region movement is tiny.
 		 */
 		// Update the scroll_region when the workspace is scrolled.
-		$('#diagrams'+this.id).on('scroll', function(/*event*/){
+		$('#tab_diagrams'+this.id).on('scroll', function(/*event*/){
 			if (ScrollerDragging)  return;
-			var wst = $('#diagrams'+serviceid).scrollTop();
-			var wsl = $('#diagrams'+serviceid).scrollLeft();
+			var wst = $('#tab_diagrams'+serviceid).scrollTop();
+			var wsl = $('#tab_diagrams'+serviceid).scrollLeft();
 			var fh = $('.fancyworkspace').height();
 			var fw = $('.fancyworkspace').width();
 			var oh = $('#scroller_overview'+serviceid).height();
@@ -340,7 +337,7 @@ Service.prototype = {
 		$('#scroller_overview'+this.id).draggable({
 //			stop: function(/*event,ui*/){
 //				var l = $('#scroller_overview'+serviceid).position().left;
-//				var w = $('#diagrams'+serviceid).width();
+//				var w = $('#tab_diagrams'+serviceid).width();
 //				$('#scroller_overview'+serviceid).css('right', (w-l) + 'px').css('left','');
 //			},
 			containment: 'parent',
@@ -406,8 +403,8 @@ Service.prototype = {
 				var dleft = (rO.left * fw)/ow;
 				if (dtop<0) dtop=0;
 				if (dleft<0) dleft=0;
-				$('#diagrams'+serviceid).scrollTop(dtop);
-				$('#diagrams'+serviceid).scrollLeft(dleft);
+				$('#tab_diagrams'+serviceid).scrollTop(dtop);
+				$('#tab_diagrams'+serviceid).scrollLeft(dleft);
 			},
 			start: function() {
 				ScrollerDragging = true;
@@ -417,7 +414,7 @@ Service.prototype = {
 			}
 		});
 
-		$('.workspace').droppable({
+		$('.fancyworkspace').droppable({
 			accept: '.templatebg',
 			drop: workspacedrophandler
 		});
@@ -426,10 +423,10 @@ Service.prototype = {
 	_addtabsinglefs: function() {
 		/* Add content to the new tab */
 		var snippet = '\n\
-			<div id="singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-tl workspace"></div>\n\
+			<div id="tab_singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-tl workspace"></div>\n\
 		';
 		snippet = snippet.replace(/_I_/g, this.id);
-		$('#singlefs_body').append(snippet);
+		$('#tab_singlefs').append(snippet);
 		snippet = '\n\
 			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n\
 			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
@@ -441,10 +438,10 @@ Service.prototype = {
 		snippet = snippet.replace(/_SN_/g, H(this.title));
 		snippet = snippet.replace(/_PN_/g, H(Project.get(this.project).title));
 		snippet = snippet.replace(/_PJ_/g, this.project);
-		$('#singlefs'+this.id).append(snippet);
-		$('#singlefs_body').tabs('refresh');
-		$('#singlefs_body ul li').removeClass('ui-corner-top');
-		$('#singlefs_body').on('click', '.topbuttons', function(event) {
+		$('#tab_singlefs'+this.id).append(snippet);
+		$('#tab_singlefs').tabs('refresh');
+		$('#tab_singlefs ul li').removeClass('ui-corner-top');
+		$('#tab_singlefs').on('click', '.topbuttons', function(event) {
 			if (event.target!=this) return; // Only direct clicks, not clicks on buttons that bubble
 			let id = $(this).parent().parent().attr('id');
 			$('#'+id).accordion('option','active',false);

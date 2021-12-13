@@ -86,7 +86,7 @@ if (S2!=S4) {
 	
 	p.TransactionCurrent = this;
 	p.TransactionHead = this;
-	p.updateUI();
+	p.updateUndoRedoUI();
 };
 
 Transaction.undo = function() {
@@ -118,7 +118,7 @@ if (S1!=S3) {
 		transactionCompleted("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
 		p.TransactionCurrent = p.TransactionCurrent.prev;
 	} while (p.TransactionCurrent.chain==true);
-	p.updateUI();
+	p.updateUndoRedoUI();
 };
 
 Transaction.redo = function() {
@@ -150,7 +150,7 @@ if (S1!=S3) {
 }
 		transactionCompleted(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
 	} while(p.TransactionCurrent.chain==true);
-	p.updateUI();
+	p.updateUndoRedoUI();
 };
 
 
@@ -666,8 +666,8 @@ Transaction.prototype = {
 				s.inserttab('singlefs');
 			});
 			p.store();
-			$('#diagrams_body').tabs('refresh');
-			$('#singlefs_body').tabs('refresh');
+			$('#tab_diagrams').tabs('refresh');
+			$('#tab_singlefs').tabs('refresh');
 			break;
 		}
 
