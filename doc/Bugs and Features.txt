@@ -3,7 +3,7 @@ See LICENSE.md
 
 
 BUGS
-When renaming a service, the right-hand side of the CCF tab should be repainted (title popup on nodes refers to the old service)
+When renaming a service, the bottom tabs should be renamed and the right-hand side of the CCF tab should be repainted (title popup on nodes refers to the old service)
 Selectrect should have a popup menu indicator, just like nodes do.
 Title on undo/redo buttons should be made HTML-safe with the H()-function on display; the descriptions supplied in new Transaction() should not be HTML-escaped.
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.

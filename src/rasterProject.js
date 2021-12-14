@@ -3,7 +3,7 @@
  */
 
 /* global
-_, Assessment, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, mylang, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, prettyDate, ProjectIterator, rasterAlert, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
+_, Assessment, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, mylang, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, populateProjectList, Preferences, prettyDate, ProjectIterator, rasterAlert, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -430,10 +430,11 @@ Project.getProps = function(pname,doWhenReady) {
 
 Project.prototype = {
 	destroy: function() {
-		for (const vid of this.vulns) Vulnerability.get(vid).destroy();
+		this.unload();
 		for (const sid of this.services) Service.get(sid).destroy();
 		var it = new NodeClusterIterator({project: this.id});
 		it.forEach(nc => nc.destroy());
+		for (const vid of this.vulns) Vulnerability.get(vid).destroy();
 		localStorage.removeItem(LS+'P:'+this.id);
 		Project._all.delete(this.id);
 	},
@@ -721,6 +722,7 @@ Project.prototype = {
 		});
 
 		SizeDOMElements();  // Correct the scroller regions
+		populateProjectList();
 		$('#projlist').find(`option[value=${this.id}]`).attr("selected",true);
 		$('#projlist-button span:last-child').html( H(this.title) );
 		$('#libactivate').addClass('ui-state-disabled');

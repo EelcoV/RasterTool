@@ -113,12 +113,17 @@ See LICENSE.md
 			<div id="libmerge" class="toolbarlargeiconbutton"></div>
 		</div>
 		<div id="projdebug" class="toolbarsection">
-			<div class="toolbarspacer"></div>
-			<div class="toolbarspacer"></div>
-			<div id="libcheck" class="toolbarbutton">?</div>
-			<div id="libexportall" class="toolbarbutton">Export library</div>
-			<div id="libzap" class="toolbarbutton">Zap library</div>
-			<div id="networkactivity" class="toolbariconbutton"></div>
+			<div id="projdebugsection" class="toolbarlabel">
+				<div>xyz</div>
+				<div>
+					<div class="toolbarspacer"></div>
+					<div class="toolbarspacer"></div>
+					<div id="libcheck" class="toolbarbutton">?</div>
+					<div id="libexportall" class="toolbarbutton">Export library</div>
+					<div id="libzap" class="toolbarbutton">Zap library</div>
+					<div id="networkactivity" class="toolbariconbutton"></div>
+				</div>
+			</div>
 		</div>
 	</div>
 

@@ -239,7 +239,7 @@ Service.prototype = {
 		// Remove the bottom tab (the one that controls div#tabprefix+sid)
 		$('#'+tabprefix).find('li[aria-controls='+tabprefix+this.id+']').remove();
 		$('#'+tabprefix).tabs('refresh');
-		if (tabprefix=='diagrams') {
+		if (tabprefix=='tab_diagrams') {
 			$('#scroller_overview'+this.id).remove();
 		}
 	},
@@ -316,7 +316,7 @@ Service.prototype = {
 		snippet = snippet.replace(/_PJ_/g, this.project);
 		$('#tab_diagrams'+this.id).append(snippet);
 		$('#tab_diagrams').tabs('refresh');
-		$('#tab_diagrams ul li').removeClass('ui-corner-top');
+//		$('#tab_diagrams ul li').removeClass('ui-corner-top');
 
 		/* Note: Firefox warns about scroll-linked positioning effects in combination with asynchronous
 		 * scrolling. It may be better to implement this event handler asynchronously, although the

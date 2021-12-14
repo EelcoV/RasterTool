@@ -386,7 +386,7 @@ function initAllAndSetup() {
 				p.destroy();
 				p = Project.firstProject();
 				// Add a blank project if none would be left
-				if (p===0) {
+				if (p==null) {
 					loadDefaultProject();
 				} else {
 					switchToProject(p.id);
@@ -431,6 +431,7 @@ function initAllAndSetup() {
 		});
 	});
 
+	$('#projdebugsection>div:first-child').html(_("Debugging functions"));
 	$('#libcheck').val(_("?"));
 	$('#libexportall').val(_("Export all"));
 	$('#libzap').val(_("Zap library"));
@@ -745,7 +746,7 @@ function initAllAndSetup() {
 		// if that one does not exist.
 		i = Project.withTitle(Preferences.currentproject);
 		p = (i==null ? Project.firstProject() : Project.get(i) );
-		if (p===0) {
+		if (p==null) {
 			loadDefaultProject();
 		} else {
 			p.load();
@@ -1450,6 +1451,7 @@ function loadDefaultProject() {
 	s.autosettitle();
 	p.autosettitle();
 	p.load();
+	$(`#tab_diagramsservicetab${s.id} a`).trigger('click');
 }
 
 //function modifyCSS(selector,property,newvalue) {
