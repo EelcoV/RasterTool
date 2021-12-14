@@ -494,7 +494,6 @@ Assessment.prototype = {
 				// Add a hint: the impact probably should be at least that of the highest impact of its member nodes.
 				var highnodes = assmnt.computeminimpact();
 
-				$(this).removeClass();
 				$(this).addClass('th_impact th_col');
 				// Only warn of the impact should be at least Medium
 				if ("MHV".indexOf(assmnt.minimpact)==-1)  return;
@@ -512,15 +511,15 @@ Assessment.prototype = {
 				$('#impacthint').html(str);
 
 #ifdef SERVER
-				var fuzz = 60;
-				var ofuzz = 45;
+				var fuzz = 10;
+				var ofuzz = 0;
 #else
 				var fuzz = 15;
 				var ofuzz = 3;
 #endif
 				$('#outerimpacthint').show();
-				var otop = $('#outerimpacthint').offset().top-ofuzz;
-				var top = $(this).offset().top-fuzz-otop;
+				var otop = $('#outerimpacthint').position().top-ofuzz;
+				var top = $(this).position().top-fuzz-otop;
 				if (top<10) {
 					otop -= 10-top;
 					top = 10;
