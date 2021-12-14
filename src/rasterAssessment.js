@@ -489,7 +489,6 @@ Assessment.prototype = {
 			field_type: 'select',
 			select_options: selectoptions,
 			select_text: '',
-			save_if_nothing_changed: true, // make sure callback is called even if no change
 			preinit: function() {
 				// Add a hint: the impact probably should be at least that of the highest impact of its member nodes.
 				var highnodes = assmnt.computeminimpact();
