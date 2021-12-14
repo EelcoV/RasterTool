@@ -725,8 +725,7 @@ Project.prototype = {
 		populateProjectList();
 		$('#projlist').find(`option[value=${this.id}]`).attr("selected",true);
 		$('#projlist-button span:last-child').html( H(this.title) );
-		$('#libactivate').addClass('ui-state-disabled');
-		$('#libmerge').addClass('ui-state-disabled');
+		$('#projlist').selectmenu('refresh');	// this will trigger a select event on the selectmenu
 
 		$('.projectname').text(this.title);
 #ifdef SERVER

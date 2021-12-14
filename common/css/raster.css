@@ -302,6 +302,7 @@ body {
 #libimport {background-image: url(../img/import_p.png);}
 #libexport {background-image: url(../img/export_p.png);}
 
+#projlist-menu {width: 350px; height: 250px}
 #libactivate {background-image: url(../img/activate_p.png);}
 #libdel {background-image: url(../img/del_p.png);}
 #libmerge {background-image: url(../img/merge_p.png);}
@@ -409,9 +410,9 @@ img.tC {
 	padding: 6px 3px;
 	background: white;
 	border: 1px solid gray;
+	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
 }
 
 #projdescr {
