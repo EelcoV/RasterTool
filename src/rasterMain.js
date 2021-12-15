@@ -4620,7 +4620,6 @@ function repaintCluster(elem) {
 	$('#ccfaccordionbody'+nc.id).html( snippet );
 	computeSpacesMakeup(nc,'#ccftable'+nc.id,'ccf'+nc.id);
 	nc.calculatemagnitude();
-	nc.setallmarkeroid('#ccfamark');
 
 	if (nc.childclusters.length + nc.childnodes.length < 2) {
 		// Just an empty/invisible placeholder for a node cluster that is too small
@@ -4638,7 +4637,6 @@ function repaintCluster(elem) {
 	$('#noccf').css('display', 'none');
 	$('#someccf').css('display', 'block');
 	$('#ccfaccordion'+nc.id).css('display', 'block');
-	nc.setallmarkeroid('#ccfamark');
 	repaintClusterDetails(nc,false);
 }
 

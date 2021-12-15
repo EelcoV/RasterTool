@@ -29,7 +29,7 @@
  *	childclusters[]: Child clusters of this cluster.
  *	childnodes[]: Nodes that share this threat.
  *	magnitude:
- *	_markeroid:
+ *	_markeroid: (getter) DOM id of the vulnerability marker of this cluster
  *	accordionopened: whether the NodeCluster accordion needs to be opened in Common Cause Failure view.
  * Methods:
  *	destroy(): destructor.
@@ -51,9 +51,7 @@
  *	allclusters(): returns a flat aray of all clusters in this tree (including this cluster itself).
  *	normalize(): flattens child clusters with zero or one childclusters/nodes.
  *	calculatemagnitude(): compute this.magnitude and update DOM.
- *	setmarkeroid(oid): set this._markeroid to 'oid'.
  *	setmarker: set HTML of _markeroid based on this.magnitude.
- *	setallmarkeroid(): set _markeroid's of clusters in this tree based on 'prefix' and the id of the cluster.
  *  structure(): return an object describing this nodecluster
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
@@ -78,7 +76,6 @@ var NodeCluster = function(type, id) {
 	this.childnodes = [];
 	this.assmnt = null;
 	this.magnitude = '-';
-	this._markeroid = null;
 	this.accordionopened = true;
 
 	this.store();
@@ -199,6 +196,10 @@ NodeCluster.structuredata = function(pid) {
 };
 
 NodeCluster.prototype = {
+	get _markeroid() {
+		return '#ccfamark'+this.id;
+	},
+
 	destroy: function() {
 		localStorage.removeItem(LS+'L:'+this.id);
 		Assessment.get(this.assmnt).destroy();
@@ -388,13 +389,7 @@ NodeCluster.prototype = {
 		return false;
 	},
 	
-	setmarkeroid: function(oid) {
-		this._markeroid = oid;
-		this.setmarker();
-	},
-	
 	setmarker: function() {
-		if (this._markeroid==null)  return;
 		var str = '<span class="Magnitude M'
 				+Assessment.valueindex[this.magnitude]
 				+'" title="'+Assessment.descr[Assessment.valueindex[this.magnitude]]+'">'+this.magnitude+'</span>';
@@ -403,12 +398,7 @@ NodeCluster.prototype = {
 		}
 		$(this._markeroid).html(str);
 	},
-	
-	setallmarkeroid: function(prefix) {
-		this.setmarkeroid(prefix+this.id);
-		for (const clid of this.childclusters) NodeCluster.get(clid).setallmarkeroid(prefix);
-	},
-	
+		
 	setaccordionopened: function(b) {
 		this.accordionopened = b;
 		this.store();

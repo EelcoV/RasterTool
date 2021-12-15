@@ -536,7 +536,6 @@ Project.prototype = {
 			nc.childnodes.forEach( (v,i) => cc.childnodes[i]=tr.get(v) );
 			cc.assmnt = tr.get(nc.assmnt);
 			cc.magnitude = nc.magnitude;
-			cc._markeroid = '#ccfamark'+tr.get(nc.id);
 			cc.accordionopened = nc.accordionopened;
 			cc.store();
 		});
