@@ -299,6 +299,7 @@ body {
 #fileElem {visibility: hidden; width: 0; height: 0; }
 
 #libadd {background-image: url(../img/new_p.png);}
+#libduplicate {background-image: url(../img/duplicate_p.png);}
 #libimport {background-image: url(../img/import_p.png);}
 #libexport {background-image: url(../img/export_p.png);}
 

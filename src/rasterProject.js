@@ -3,7 +3,7 @@
  */
 
 /* global
-_, Assessment, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, mylang, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, populateProjectList, Preferences, prettyDate, ProjectIterator, rasterAlert, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
+_, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, mylang, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, populateProjectList, Preferences, prettyDate, ProjectIterator, rasterAlert, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -42,6 +42,7 @@ _, Assessment, bugreport, Component, ComponentIterator, createUUID, exportProjec
  *		See rasterTransaction.js for description of these, and the transaction list.
  * Methods:
  *	destroy(): destructor for this object
+ *	duplicate(): creates an exact copy of this project, and returns that duplicate. Note: this will create two projects with the samen name.
  *	totalnodes(): returns the count of all nodes within all services of this project.
  *	settitle(t): change the title to 't' (50 chars max). The actual title may receive
  *		a numerical suffix to make it unique.
@@ -437,6 +438,109 @@ Project.prototype = {
 		for (const vid of this.vulns) Vulnerability.get(vid).destroy();
 		localStorage.removeItem(LS+'P:'+this.id);
 		Project._all.delete(this.id);
+	},
+	
+	duplicate: function() {
+		let tr = new Map();	// translates UUIDs in this to new UUIDs
+		tr.set(null,null);
+		let it;
+		// First collect all new UUIDs
+		it = new VulnerabilityIterator({project: this.id});
+		it.forEach(obj => tr.set(obj.id,createUUID()));
+		it = new ServiceIterator({project: this.id});
+		it.forEach(obj => tr.set(obj.id,createUUID()));
+		it = new ComponentIterator({project: this.id});
+		it.forEach(obj => tr.set(obj.id,createUUID()));
+		it = new NodeIterator({project: this.id});
+		it.forEach(obj => tr.set(obj.id,createUUID()));
+		it = new AssessmentIterator({project: this.id});
+		it.forEach(obj => tr.set(obj.id,createUUID()));
+		it = new NodeClusterIterator({project: this.id});
+		it.forEach(obj => tr.set(obj.id,createUUID()));
+		tr.set(this.id,createUUID());
+		// Now that we have all existing and new UUIDs, clone each of the objects
+		let p = new Project(tr.get(this.id));
+		p.title = this.title;
+		p.group = this.group;
+		p.description = this.description;
+		this.services.forEach( (v,i) => p.services[i]=tr.get(v) );
+		this.vulns.forEach( (v,i) => p.vulns[i]=tr.get(v) );
+		p.labels = this.labels.slice();
+		p.creator = this.creator;
+		p.date = this.date;
+		p.shared = this.shared;
+		p.stub = this.stub;
+		p.store();
+		it = new VulnerabilityIterator({project: this.id});
+		it.forEach(vln => {
+			let vc = new Vulnerability(p.id,vln.type,tr.get(vln.id));
+			vc.title = vln.title;
+			vc.description = vln.description;
+			vc.common = vln.common;
+			vc.store();
+		});
+		it = new ServiceIterator({project: this.id});
+		it.forEach(svc => {
+			let sc = new Service(p.id,tr.get(svc.id));
+			sc.title = svc.title;
+			sc.store();
+		});
+		it = new ComponentIterator({project: this.id});
+		it.forEach(cm => {
+			let cc = new Component(cm.type, p.id, tr.get(cm.id));
+			cm.nodes.forEach( (v,i) => cc.nodes[i] = tr.get(v) );
+			cc.title = cm.title;
+			cm.assmnt.forEach( (v,i) => cc.assmnt[i] = tr.get(v) );
+			cc.magnitude = cm.magnitude;
+			cc.single = cm.single;
+			cc._markeriod = "#sfamark"+'_asdfasdf_'+'_'+tr.get(cm.id);
+			cc.accordionopened = cm.accordionopened;
+			cc.store();
+		});
+		it = new NodeIterator({project: this.id});
+		it.forEach(nd => {
+			let nc = new Node(nd.type,tr.get(nd.service),tr.get(nd.id));
+			nc.index = nd.index;
+			nc.position = Object.assign({},nd.position);	// clone position object
+			nd.connect.forEach( (v,i) => nc.connect[i] = tr.get(v) );
+			nc._normw = nd._normw;
+			nc._normh = nd._normh;
+			nc.component = tr.get(nd.component);
+			nc.title = nd.title;
+			nc.suffix = nd.suffix;
+			nc.color = nd.color;
+			nc.store();
+		});
+		it = new AssessmentIterator({project: this.id});
+		it.forEach(assm => {
+			let ac = new Assessment(assm.type,tr.get(assm.id));
+			ac.vulnerability = tr.get(assm.vulnerability);
+			ac.component = tr.get(assm.component);
+			ac.cluster = tr.get(assm.cluster);
+			ac._title = assm._title;
+			ac.freq = assm.freq;
+			ac.impact = assm.impact;
+			ac.minimpact = assm.minimpact;
+//			ac._impactoid = ... ;
+			ac.total = assm.total;
+			ac.remark = assm.remark;
+			ac.store();
+		});
+		it = new NodeClusterIterator({project: this.id});
+		it.forEach(nc => {
+			let cc = new NodeCluster(nc.type,tr.get(nc.id));
+			cc.title = nc.title;
+			cc.project = p.id;
+			cc.parentcluster = tr.get(nc.parentcluster);
+			nc.childclusters.forEach( (v,i) => cc.childclusters[i]=tr.get(v) );
+			nc.childnodes.forEach( (v,i) => cc.childnodes[i]=tr.get(v) );
+			cc.assmnt = tr.get(nc.assmnt);
+			cc.magnitude = nc.magnitude;
+			cc._markeroid = '#ccfamark'+tr.get(nc.id);
+			cc.accordionopened = nc.accordionopened;
+			cc.store();
+		});
+		return p;
 	},
 	
 	updateUndoRedoUI: function() {

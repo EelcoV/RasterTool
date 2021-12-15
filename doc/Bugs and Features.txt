@@ -19,8 +19,10 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
+_markeriod (component and node cluster) should be a getter; _impactoid same.
 Add option to duplicate a project.
-Undo
+Duplicate template projects on load.
+Duplicate any remote project on load, if classroom==true
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
 Make class definitions conform to ES6. Create modules with import/export.
 Change variables from var to let/const.

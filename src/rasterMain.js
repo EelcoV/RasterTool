@@ -218,6 +218,7 @@ function initAllAndSetup() {
 	// Projects toolbar
 
 	$('#libadd').attr('title',_("Add a new, blank project to the library."));
+	$('#libduplicate').attr('title',_("Create a copy of this project."));
 	$('#libimport').attr('title',_("Load a project from a file."));
 	$('#libexport').attr('title',_("Save the current project to a file."));
 	// Add --------------------
@@ -285,6 +286,13 @@ function initAllAndSetup() {
 			// Blank project
 			addEmptyProject();
 		}
+	});
+	// Duplicate --------------------
+	$('#libduplicate').on('click',  function() {
+		let p = Project.get(Project.cid);
+		let clone = p.duplicate();
+		clone.settitle(p.title+_(" (copy)"));
+		switchToProject(clone.id,true);
 	});
 	// Import --------------------
 	$('#libimport').on('click',  function() {

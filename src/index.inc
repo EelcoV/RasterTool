@@ -95,6 +95,7 @@ See LICENSE.md
 		<!-- On current project -->
 		<div class="toolbarspacer"></div>
 		<div id="libadd" class="toolbarlargeiconbutton"></div>
+		<div id="libduplicate" class="toolbarlargeiconbutton"></div>
 		<input id="fileElem" type="file">
 		<div id="libimport" class="toolbarlargeiconbutton"></div>
 		<div id="libexport" class="toolbarlargeiconbutton"></div>
