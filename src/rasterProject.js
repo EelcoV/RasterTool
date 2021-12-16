@@ -825,13 +825,12 @@ Project.prototype = {
 		});
 
 		SizeDOMElements();  // Correct the scroller regions
+		$('.projectname').text(this.title);
+#ifdef SERVER
 		populateProjectList();
 		$('#projlist').find(`option[value=${this.id}]`).attr("selected",true);
 		$('#projlist-button span:last-child').html( H(this.title) );
 		$('#projlist').selectmenu('refresh');	// this will trigger a select event on the selectmenu
-
-		$('.projectname').text(this.title);
-#ifdef SERVER
 		document.title = "Raster - " + this.title;
 #endif
 	},

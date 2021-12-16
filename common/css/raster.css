@@ -59,6 +59,12 @@ option:checked {
 :focus {
 	outline: none;
 }
+fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
 
 /* Named grid:
 +---+----------------------+
@@ -117,7 +123,6 @@ body {
 
 
 .printonly { display: none; }
-.printonlycell { display: none; }
 .doshow { visibility: visible !important; }
 .noselect {
     user-select: none;
@@ -159,38 +164,6 @@ body {
 	font-size: 110%;
 	width: auto;
 }
-/* Alternative, with rounded tabs
-#toolbars ul {
-	width: 100% !important;
-	border-radius: 0;
-	border: none;
-	border-bottom: 1px solid grey;
-	padding: 0;
-	background: white;
-}
-#toolbars li:first-child {
-	margin-left: 10px;
-}
-#toolbars li {
-	position: relative;
-	top: 1px;
-	border: 1px solid lightgrey;
-	border-bottom: none;
-	margin: 0;
-}
-#toolbars li:first-child {
-	margin-left: 10px;
-}
-#toolbars li.ui-state-active {
-	border: 1px solid grey;
-	border-bottom: 1px solid var(--toolbarbg);
-	background: var(--toolbarbg);
-}
-#toolbars li a {
-	padding: 2px 5px 2px 10px;
-	font-size: 110%
-}
-*/
 .toolbar {
 	background: var(--toolbarbg) !important;
 	height: 52px;
@@ -281,11 +254,6 @@ body {
 	font-style: italic;
 	line-height: 20px;
 	white-space: nowrap;
-}
-
-#diaopts {
-	padding-top: 6px;
-	position: relative;
 }
 
 #networkactivity {
@@ -611,28 +579,8 @@ input.inplace_field, textarea.inplace_field {
 }
 ::-webkit-input-placeholder { font-style: italic; }
 ::-moz-placeholder { font-style: italic; }
-:-ms-input-placeholder { font-style: italic; }
+::placeholder { font-style: italic; }
 
-
-/* Common settings for all panels */
-.actpanel {
-    display: none;
-    padding: 1em 1em 0.5em 1em !important;
-}
-.actpanel table { font-size: 11px; width: 100%; }
-.actpanel tr { vertical-align: top; }
-.actpanel .tlabel {width: 10em; text-align: left;}
-.actpanel input { margin-top: 0px; margin-bottom: 6px; }
-.actpanel select { width: 34em; margin: 0 0 10px;}
-.actpanel optgroup {color: #888; font-style: normal; font-weight: normal; margin: 0 0 4px 2px; }
-.actpanel option {background-repeat: no-repeat; padding-left:20px; color: black;}
-.actpanel #libcheck  {float: right; margin-left: 4px;}
-.actpanel #libzap  {float: right;}
-fieldset {
-    margin: 0;
-    padding: 0;
-    border: none;
-}
 
 /* Panel for projects */
 #form_projectprops input,textarea,#sh_onoff { margin: 0 0 5px; }
@@ -640,12 +588,6 @@ fieldset {
 	width: 470px;
 }
 
-.leftlabel {
-    display: inline-block;
-    width: 13em;
-    background: transparent !important;
-    border: 0 !important;
-}
 #creator {
 	width: 260px;
 }
@@ -714,21 +656,6 @@ li.lcT div:first-child {
     margin-right: 3px;
 }
 .labelmenuitem { width: 160px !important; }
-.labeltext {
-    display: inline-block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 115px;
-}
-.labeltextw {
-    display: inline-block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 145px;
-}
-#mlabel {width:95px !important}
 .field_label_text {
 	width: 220px;
 }
@@ -833,46 +760,6 @@ div.th_remark {
 	width: 30em;
 }
 
-/*
-.displayoptsarea {
-	border: 1px solid var(--highlt);
-    border-radius: 0 0 5px 5px;
-    background: rgba(240,240,240,0.90);
-	margin: 0;
-	padding: 0 0 0 10px;
-    width: 809px; /* width of .ccfaccordion, plus overhang left and right *
-	position: fixed;
-	left: 43px;
-	top: auto;
-	height: 65px;
-	z-index: 98;
-}
-.displayopt {
-	display: inline-block;
-	margin-right: 25px;
-	margin-top: 5px;
-	vertical-align: top;
-}
-.displayoptlabel {
-	font-style: italic;
-	line-height: 20px;
-}
-.headroom {
-    transition: height 200ms linear;
-    overflow: hidden;
-}
-.headroom--pinned {
-}
-.headroom--unpinned {
-    height: 2px !important;
-}
-.ui-selectmenu-open {
-	z-index: 2000 !important;
-}
-.collapseall {
-	margin-left: 10px;
-}
-*/
 /* modaldialog */
 #modaldialog ul {
 	padding-left: 1.5em;
@@ -929,7 +816,6 @@ div.th_remark {
 	height: var(--tab_height);
 	width: 100%;
 }
-.tabs-flushleft .ui-tabs-nav { left: 0 !important; }
 .tabs-bottom .ui-tabs-nav li.ui-tabs-selected { margin-top: -2px !important; }
 .tabs-bottom .ui-tabs-nav li {
     margin-top: 0px !important;
@@ -1252,7 +1138,6 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 .firstp {
     margin-top: 22px;
 }
-.sortalls { margin-left: 30px; }
 
 /*
 This tab (as does the common cause failures tab) borrows definitions from the dialogs
@@ -1418,10 +1303,6 @@ for checklists and threat evaluations.
 .tlisthigh {
     background: #dfd !important;
 }
-
-/*.tlisthigh:before {
-    content: "\2666";
-}*/
 
 .tlisthover {
     background: #bdb !important;

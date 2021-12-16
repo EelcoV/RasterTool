@@ -148,7 +148,9 @@ function initAllAndSetup() {
 
 	// Some CSS tweaks for the standalone version
 	$('#currentProject').hide();
-
+	$('#toolbars li:first-child').hide();
+	$('#tb_projects').hide();
+	
 	// PDF print options dialog
 	$('#pdf_orientation span').html(_("Orientation:"));
 	$('#label_portrait').html(_("Portrait"));
@@ -194,6 +196,9 @@ function initAllAndSetup() {
 	$('input[type=submit]').button();
 	$('input[type=radio]').checkboxradio({icon: false});
 	$('fieldset').controlgroup();
+	// Toolbar items
+	$('.toolbarlargebutton,.toolbarbutton,.toolbarlargeiconbutton,.toolbariconbutton').addClass('ui-widget ui-button ui-corner-all');
+	$('.toolbarlabel').addClass('ui-widget');
 
 	$('#modaldialog').dialog({ autoOpen:false, modal:true, width: 400 });
 
@@ -206,494 +211,11 @@ function initAllAndSetup() {
 		beforeActivate: toolbartabselected
 	});
 
-	// Toolbar items
-	$('.toolbarlargebutton,.toolbarbutton,.toolbarlargeiconbutton,.toolbariconbutton').addClass('ui-widget ui-button ui-corner-all');
-	$('.toolbarlabel').addClass('ui-widget');
-
 #ifdef SERVER
-	if (GroupSettings.classroom) {
-		$("#classroom").html(_("Classroom version")).show();
-	}
-
-	// Projects toolbar
-
-	$('#libadd').attr('title',_("Add a new, blank project to the library."));
-	$('#libduplicate').attr('title',_("Create a copy of this project."));
-	$('#libimport').attr('title',_("Load a project from a file."));
-	$('#libexport').attr('title',_("Save the current project to a file."));
-	// Add --------------------
-	function addEmptyProject() {
-		var p = new Project();
-		var s = new Service(p.id);
-		p.adddefaultvulns();
-		p.addservice(s.id);
-		s.autosettitle();
-		p.autosettitle();
-		switchToProject(p.id);
-		transactionCompleted("Project add");
-	}
-
-	$('#libadd').on('click',  function(){
-		// Check for a template
-		let i, p, template;
-		let found=false;
-		for (var idobj of Project._all) {
-			template = idobj[1];
-			found=(isSameString(template.title,GroupSettings.template) && template.group==ToolGroup);
-		}
-
-		/* There are 4 possibilities:
-		   1. The template exists on the server (a stub locally): retrieve the template; when it fails create a blank project.
-		   2. The template exists on the server, and has been retrieved: duplicate the template.
-		   3. The template does exists as a private project: duplicate the template
-		   4. The template does not exists: create a blank project
-		 */
-		// Possibility 1
-		if (found && template.stub && Preferences.online) {
-			Project.retrieve(template.id, function(newpid) {
-				// Success
-				p = Project.get(newpid);
-				p.stub = false;
-				p.setshared(false,false);
-				p.autosettitle();
-				switchToProject(p.id);
-				transactionCompleted("Project add");
-			}, function() {
-				// Error
-				addEmptyProject();
-			});
-		// Possibility 2 and 3
-		} else if (found) {
-			// To duplicate the template, export it into a string, then read & load that string
-			var savedcopy = exportProject(template.id);
-			i = loadFromString(
-				savedcopy,	// the string to parse
-				true,		// show errors
-				false,		// allow empty
-				'Project from template'		// Source of the string, used in error messages
-			);
-			if (i==null) {
-				// Some kind of error occurred. This is not normal, so return without doing anything else.
-				return;
-			}
-			p = Project.get(i);
-			p.stub = false;
-			p.setshared(false,false);
-			p.autosettitle();
-			switchToProject(p.id);
-			transactionCompleted("Project add");
-		} else {
-			// Blank project
-			addEmptyProject();
-		}
-	});
-	// Duplicate --------------------
-	$('#libduplicate').on('click',  function() {
-		let p = Project.get(Project.cid);
-		let clone = p.duplicate();
-		clone.settitle(p.title+_(" (copy)"));
-		switchToProject(clone.id,true);
-	});
-	// Import --------------------
-	$('#libimport').on('click',  function() {
-		$('#libimport').removeClass('ui-state-hover');
-		$('#body').off('click');
-		$('#fileElem').trigger('click');
-		$('#body').on('click',  function(){ return false; });
-	});
-	$('#fileElem').on('change',  function(event) {
-		var files = event.target.files;
-		if (files.length==null || files.length==0)  return;
-		var reader = new FileReader();
-		reader.onload = function(evt) {
-			var newp = loadFromString(evt.target.result,true,false,'File "'+files[0].name+'"');
-			if (newp!=null) {
-				// Make sure the newly imported project is indeed private
-				var p = Project.get(newp);
-				p.setshared(false,false);
-				switchToProject(newp);
-			}
-			// Remove the default project, as long as it is still unmodified??
-			transactionCompleted("Project add");
-			// Import checks are not as thorough as the internal consistency checks on components.
-			// Therefore, force a check after load.
-			checkForErrors(false);
-			checkUpgradeDone();
-		};
-		reader.readAsText(files[0]);
-	});
-	// Export --------------------
-	$('#libexport').on('click',  function() {
-		singleProjectExport(Project.cid);
-	});
-
-	$('#projlistsection>div:first-child').html(_("Project library"));
-	$('#projlist').selectmenu({
-		open: function() {
-			let it = new ProjectIterator({group: ToolGroup, stub: false});
-			let nump = it.count();
-			nump += 4; // Allow space for option group titles.
-			if (nump<8) nump=8;
-			if (nump>15) nump=15;
-			$('#projlist').attr("size",nump);
-			// Show project list using current stubs, but do fire an update
-			populateProjectList();
-			Project.updateStubs(refreshProjectList);
-			$('#projlist').selectmenu('refresh');
-		},
-		select: function(event,data) {
-			// data.item.value = id of selected project
-			// data.item.label = name of selected project
-			if (data.item.value==Project.cid) {
-				$('#libactivate').addClass('ui-state-disabled');
-				$('#libmerge').addClass('ui-state-disabled');
-			} else {
-				$('#libactivate').removeClass('ui-state-disabled');
-				$('#libmerge').removeClass('ui-state-disabled');
-			}
-		}
-	});
-	$('#selector').attr('title',_("Library of all projects."));
-	$('#libactivate').attr('title',_("Continue working with the selected project."));
-	$('#libdel').attr('title',_("Permanently remove the selected project."));
-	$('#libmerge').attr('title',_("Join the selected project into the current one."));
-	// Project list
-	// Activate --------------------
-	$('#libactivate').on('click',  function() {
-		let p = Project.get( $('#projlist').val() );
-		if (!p) return;
-		if (!p.stub) {
-			switchToProject(p.id,true);
-		} else {
-			// Activating a stub project.
-			// Make sure that there is no local project with that name
-			if (Project.withTitle(p.title)!=null) {
-				rasterAlert(_('That project name is used already'),
-					_("There is already a project called '%%'. Please rename that project first.", H(p.title))
-				);
-			} else {
-				// Do a retrieve operation, and switch to that new project, if successful.
-				Project.retrieve(p.id,function(newpid){
-					switchToProject(newpid);
-					startAutoSave();
-				});
-			}
-		}
-	});
-	// Delete --------------------
-	$('#libdel').on('click',  function(/*evt*/){
-		let p = Project.get( $('#projlist').val() );
-		let dokill = function() {
-			if (p.shared || p.stub) {
-				// Disable the project watch. Otherwise a notification would be triggered.
-				stopWatching(p.id);
-				// remove from the server
-				p.deleteFromServer();
-			}
-			if (p.id==Project.cid) {
-				p.destroy();
-				p = Project.firstProject();
-				// Add a blank project if none would be left
-				if (p==null) {
-					loadDefaultProject();
-				} else {
-					switchToProject(p.id);
-				}
-			} else {
-				p.destroy();
-			}
-		};
-		newRasterConfirm(_("Delete project?"),
-		_("Are you sure you want to remove project <i>'%%'</i>?\n<strong>This cannot be undone.</strong>", H(p.title)),
-		_("Remove"),_("Cancel")
-		).done(function() {
-			var t=p.totalnodes();
-			if (t>3) {
-				newRasterConfirm(_("Delete project?"),
-					_("This project has %% nodes.\nAre you <i>really</i> sure you want to discard these?", t),
-					_("Yes, really remove"),_("Cancel"))
-				.done(dokill);
-			} else {
-				dokill();
-			}
-		});
-	});
-	// Merge --------------------
-	$('#libmerge').on('click',  function() {
-		var otherproject = Project.get( $('#libselect option:selected').val() );
-		if (otherproject.stub) {
-			rasterAlert(_("Cannot merge a remote project"),_("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
-			return;
-		}
-		var currentproject = Project.get( Project.cid );
-		rasterConfirm(_("Merge '%%' into '%%'?",otherproject.title,currentproject.title),
-			_("Are you sure you want to fold project '%%' into the current project?",
-				H(otherproject.title))
-			+'<br>\n'+
-			_("This will copy the diagrams of '%%' into '%%'.",
-				H(otherproject.title),H(currentproject.title)),
-			_("Merge"),_("Cancel"),
-			function() {
-				Project.merge(currentproject,otherproject);
-				$('#librarypanel').dialog('close');
-		});
-	});
-
-	$('#projdebugsection>div:first-child').html(_("Debugging functions"));
-	$('#libcheck').val(_("?"));
-	$('#libexportall').val(_("Export all"));
-	$('#libzap').val(_("Zap library"));
-	$('#libcheck').attr('title',_("Check the projects for internal consistency."));
-	$('#libexportall').attr('title',_("Save all projects into a single file."));
-	$('#libzap').attr('title',_("Permanently remove all projects."));
-	$('#networkactivity').attr('title',_("Flashes on network activity."));
-	// Check --------------------
-	$('#libcheck').on('click',  function() {
-		checkForErrors(true);
-	});
-	// Export all --------------------
-	$('#libexportall').on('click',  function() {
-		exportAll();
-	});
-	// Zap! --------------------
-	$('#libzap').on('click',  function(){
-		rasterConfirm('Delete all?',
-			_("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
-			_("Erase everything"),_("Cancel"),
-			function() {
-				rasterConfirm(_('Delete all?'),
-					_("Really sure? You will lose <b>all private</b> projects!\n"),
-					_("Yes, really erase all"),_("Cancel"),
-					Zap
-				);
-			}
-		);
-	});
-
-	var flashTimer;
-	$(document).ajaxSend(function(){
-		window.clearTimeout(flashTimer);
-		$('#networkactivity').removeClass('activityoff activityno').addClass('activityyes');
-	});
-	$(document).ajaxStop(function(){
-		// Make sure that the activity light flashes at least some small time
-		flashTimer = window.setTimeout(function(){
-			$('#networkactivity').removeClass('activityoff activityyes').addClass('activityno');
-		},200);
-	});
+	initProjectsToolbar();
 #endif
-
-	$('#undobutton').attr('title', _("Undo"));
-	$('#redobutton').attr('title', _("Redo"));
-	$('#findbutton').attr('title', _("Locate nodes"));
-	$('#helpbutton').attr('title', _("Assistance"));
-	$('#undobutton').on('click', Transaction.undo);
-	$('#redobutton').on('click', Transaction.redo);
-	$('#findbutton').on('click', StartFind);
-	$('#helpbutton').on('click',  function() {
-		$('#helppanel').dialog('open');
-	});
-
-	$('#helppanel').dialog({
-		title: _("Information on using this tool"),
-		autoOpen: false,
-		height: 450,
-		minHeight: 120,
-		width: 600,
-		minWidth: 470,
-		maxWidth: 800,
-		open: function(/*event*/) {
-			initFrequencyTool();
-			$('#helptabs ul').width($('#helppanel').width()-14);
-		},
-		resize: function(/*event,ui*/) {
-			$('#helptabs ul').width($('#helppanel').width()-14);
-		}
-	});
-	$('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
-	$('#helptabs').tabs({
-		heightStyle: 'content',
-		load: function(/*event,ui*/) {
-			if ($('#helptabs').tabs('option','active')==0) {
-				initFrequencyTool();
-			}
-		}
-	});
-	$('#helptabs a').eq(0).html( _("Frequency") );
-	$('#helptabs a').eq(1).html( _("Impact") );
-	$('#helptabs a').eq(2).html( _("How to use") );
-	$('#helptabs a').eq(3).html( _("About") );
-	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
-	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
-	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
-	$('#helptabs a').eq(3).attr('href', _("../help/About.html") );
-	$('#helptabs li:last-of-type').css("margin-left","10px");
-
-	// Home toolbar | Diagram items: templates are set up in Project.load()
-
-	// Home toolbar | SF items
-	$('#sffoldsection>div:first-child').html(_("Fold"));
-	$('#sfsortsection>div:first-child').html(_("Sort"));
-	$('#sfsort_alph + label').html(_("Alphabetically"));
-	$('#sfsort_type + label').html(_("by Type"));
-	$('#sfsort_thrt + label').html(_("by Vulnerability level"));
-	$('#sfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
-	$('#sfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
-	// No remembered preference for the sort order
-	$('#sfsort_alph').prop('checked',true);
-	$('#sfexpandall').on('click',  function(){
-		$('#singlefs_workspace'+Service.cid).scrollTop(0);
-		expandAllSingleF(Service.cid);
-	});
-	$('#sfcollapseall').on('click',  function(){
-		$('#singlefs_workspace'+Service.cid).scrollTop(0);
-		collapseAllSingleF(Service.cid);
-	});
-	$('#sfsortsection input').on('change', function() {
-		paintSingleFailures(Service.get(Service.cid));
-	});
-
-	// Home toolbar | CCF items
-	$('#ccffoldsection>div:first-child').html(_("Fold"));
-	$('#ccfsortsection>div:first-child').html(_("Sort"));
-	$('#ccfsort_alph + label').html(_("Alphabetically"));
-	$('#ccfsort_type + label').html(_("by Type"));
-	$('#ccfsort_thrt + label').html(_("by Vulnerability level"));
-	$('#ccfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
-	$('#ccfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
-	// No remembered preference for the sort order
-	$('#ccfsort_alph').prop('checked',true);
-	$('#ccfexpandall').on('click', function(){
-		$('#ccfs_body').scrollTop(0);
-		expandAllCCF();
-	});
-	$('#ccfcollapseall').on('click', function(){
-		$('#ccfs_body').scrollTop(0);
-		collapseAllCCF();
-	});
-	$('#ccfsortsection input').on('change', function(){
-		PaintAllClusters();
-	});
-
-	// Home toolbar | Analysis items
-	$('#anavnsortsection>div:first-child').html(_("Sort nodes and clusters"));
-	$('#anavfsortsection>div:first-child').html(_("Sort vulnerabilities"));
-	$('#anavexcludesection>div:first-child').html(_("Click cells to include/exclude them"));
-	$('#ana_nodesort_alph + label').html(_("Alphabetically"));
-	$('#ana_nodesort_type + label').html(_("by Type"));
-	$('#ana_nodesort_thrt + label').html(_("by Vulnerability level"));
-	$('#ana_failsort_alph + label').html(_("Alphabetically"));
-	$('#ana_failsort_type + label').html(_("by Type"));
-	var create_ananode_sortfunc = function(opt) {
-		return function() {
-			FailureThreatSortOpt.node = opt;
-			paintSFTable();
-			paintCCFTable();
-		};
-	};
-	$('[for=ana_nodesort_alph]').on('click', create_ananode_sortfunc('alph'));
-	$('[for=ana_nodesort_type]').on('click', create_ananode_sortfunc('type'));
-	$('[for=ana_nodesort_thrt]').on('click', create_ananode_sortfunc('thrt'));
-	var create_anafail_sortfunc = function(opt) {
-		return function() {
-			FailureThreatSortOpt.threat = opt;
-			paintSFTable();
-			paintCCFTable();
-		};
-	};
-	$('[for=ana_failsort_alph]').on('click', create_anafail_sortfunc('alph'));
-	$('[for=ana_failsort_type]').on('click', create_anafail_sortfunc('type'));
-	$('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
-		var exclCm = computeComponentQuickWins();
-		var exclCl = computeClusterQuickWins();
-		ComponentExclusions = { };
-		ClusterExclusions = { };
-		for (const id of exclCm) ComponentExclusions[id] = true;
-		for (const id of exclCl) ComponentExclusions[id] = true;
-		paintSFTable();
-		paintCCFTable();
-		$('#clearexclusions').button('option','disabled', (exclCm.length==0 && exclCl.length==0));
-	});
-	$('#clearexclusions').button().button('option','disabled',true).on('click',  function() {
-		ComponentExclusions = { };
-		ClusterExclusions = { };
-		paintSFTable();
-		paintCCFTable();
-		$('#clearexclusions').button('option','disabled',true);
-	});
-
-	// Options toolbar | diagrams options
-	$('#vulnlevelsection>div:first-child').html(_("Vulnerability levels"));
-	$('#em_none + label').html(_("None"));
-	$('#em_small + label').html(_("Small"));
-	$('#em_large + label').html(_("Large"));
-	$('#'+Preferences.emsize).prop('checked',true);
-	$('#vulnlevelsection input').on('change', function() {
-		Preferences.setemblem($('input[name=emblem_size]:checked').val());
-	});
-	$('#labelsection>div:first-child').html(_("Label colors"));
-	$('#label_off + label').html(_("hide"));
-	$('#label_on  + label').html(_("show"));
-	$('#label_off').prop('checked',!Preferences.showmap);
-	$('#label_on').prop('checked',Preferences.showmap);
-	$('#label_'+ (Preferences.label ? 'on' : 'off') ).prop('checked',true);
-	$('#labelsection input').on('change', function() {
-		Preferences.setlabel($('#label_on').prop('checked'));
-	});
-	$('#mapsection>div:first-child').html(_("Minimap"));
-	$('#showmap_off + label').html(_("off"));
-	$('#showmap_on  + label').html(_("on"));
-	$('#showmap_off').prop('checked',!Preferences.showmap);
-	$('#showmap_on').prop('checked',Preferences.showmap);
-	$('#mapsection input').on('change', function() {
-		Preferences.showmap = $('#showmap_on').prop('checked');
-		if (Preferences.showmap) {
-			$('#scroller_overview'+Service.cid).show();
-		} else {
-			$('.scroller_overview').hide();
-		}
-	});
-
-	// Options toolbar | project options
-	$('#projnamesection>div:first-child').html(_("Project name"));
-	$('#projname').editInPlace({
-		bg_over: 'var(--highlt)',
-		bg_out: 'white',
-		text_size: 50,
-		callback: function(domid, enteredText) {
-			let p = Project.get(Project.cid);
-			p.settitle(enteredText);
-			$('.projectname').html(H(p.title));
-			document.title = "Raster - " + p.title;
-			Preferences.setcurrentproject(p.title);
-			return p.title;
-		}
-	});
-	$('#projdescrsection>div:first-child').html(_("Project description"));
-	$('#projdescr').editInPlace({
-		bg_over: 'var(--highlt)',
-		bg_out: 'white',
-		field_type: 'textarea',
-		textarea_rows: 7,
-		textarea_cols: 50,
-		show_buttons: false,
-		callback: function(domid, enteredText) {
-			let p = Project.get(Project.cid);
-			p.setdescription(enteredText);
-			$('#projdescr').css('overflow','hidden');
-			return p.description;
-		},
-		delegate: {
-			shouldOpenEditInPlace: function() {
-				$('#projdescr').css('overflow','visible');
-			}
-		}
-	});
-
-	$('#sharingsection>div:first-child').html(_("Sharing"));
-	$('#sharing_off + label').html(_("off"));
-	$('#sharing_on  + label').html(_("on"));
-//	$('#sharingsection input').on('change', function(...) );
+	initHomeToolbar();
+	initOptionsToolbar();
 
 	// Vertical tabs
 	$('#workspace').tabs({heightStyle: 'fill', activate: vertTabSelected});
@@ -990,6 +512,273 @@ function populateProjectList() {
 }
 
 #ifdef SERVER
+function initProjectsToolbar() {
+	$('#libadd').attr('title',_("Add a new, blank project to the library."));
+	$('#libduplicate').attr('title',_("Create a copy of this project."));
+	$('#libimport').attr('title',_("Load a project from a file."));
+	$('#libexport').attr('title',_("Save the current project to a file."));
+	// Add --------------------
+	function addEmptyProject() {
+		var p = new Project();
+		var s = new Service(p.id);
+		p.adddefaultvulns();
+		p.addservice(s.id);
+		s.autosettitle();
+		p.autosettitle();
+		switchToProject(p.id);
+		transactionCompleted("Project add");
+	}
+
+	$('#libadd').on('click',  function(){
+		// Check for a template
+		let i, p, template;
+		let found=false;
+		for (var idobj of Project._all) {
+			template = idobj[1];
+			found=(isSameString(template.title,GroupSettings.template) && template.group==ToolGroup);
+		}
+
+		/* There are 4 possibilities:
+		   1. The template exists on the server (a stub locally): retrieve the template; when it fails create a blank project.
+		   2. The template exists on the server, and has been retrieved: duplicate the template.
+		   3. The template does exists as a private project: duplicate the template
+		   4. The template does not exists: create a blank project
+		 */
+		// Possibility 1
+		if (found && template.stub && Preferences.online) {
+			Project.retrieve(template.id, function(newpid) {
+				// Success
+				p = Project.get(newpid);
+				p.stub = false;
+				p.setshared(false,false);
+				p.autosettitle();
+				switchToProject(p.id);
+				transactionCompleted("Project add");
+			}, function() {
+				// Error
+				addEmptyProject();
+			});
+		// Possibility 2 and 3
+		} else if (found) {
+			// To duplicate the template, export it into a string, then read & load that string
+			var savedcopy = exportProject(template.id);
+			i = loadFromString(
+				savedcopy,	// the string to parse
+				true,		// show errors
+				false,		// allow empty
+				'Project from template'		// Source of the string, used in error messages
+			);
+			if (i==null) {
+				// Some kind of error occurred. This is not normal, so return without doing anything else.
+				return;
+			}
+			p = Project.get(i);
+			p.stub = false;
+			p.setshared(false,false);
+			p.autosettitle();
+			switchToProject(p.id);
+			transactionCompleted("Project add");
+		} else {
+			// Blank project
+			addEmptyProject();
+		}
+	});
+	// Duplicate --------------------
+	$('#libduplicate').on('click',  function() {
+		let p = Project.get(Project.cid);
+		let clone = p.duplicate();
+		clone.settitle(p.title+_(" (copy)"));
+		switchToProject(clone.id,true);
+	});
+	// Import --------------------
+	$('#libimport').on('click',  function() {
+		$('#libimport').removeClass('ui-state-hover');
+		$('#body').off('click');
+		$('#fileElem').trigger('click');
+		$('#body').on('click',  function(){ return false; });
+	});
+	$('#fileElem').on('change',  function(event) {
+		var files = event.target.files;
+		if (files.length==null || files.length==0)  return;
+		var reader = new FileReader();
+		reader.onload = function(evt) {
+			var newp = loadFromString(evt.target.result,true,false,'File "'+files[0].name+'"');
+			if (newp!=null) {
+				// Make sure the newly imported project is indeed private
+				var p = Project.get(newp);
+				p.setshared(false,false);
+				switchToProject(newp);
+			}
+			// Remove the default project, as long as it is still unmodified??
+			transactionCompleted("Project add");
+			// Import checks are not as thorough as the internal consistency checks on components.
+			// Therefore, force a check after load.
+			checkForErrors(false);
+			checkUpgradeDone();
+		};
+		reader.readAsText(files[0]);
+	});
+	// Export --------------------
+	$('#libexport').on('click',  function() {
+		singleProjectExport(Project.cid);
+	});
+
+	$('#projlistsection>div:first-child').html(_("Project library"));
+	$('#projlist').selectmenu({
+		open: function() {
+			let it = new ProjectIterator({group: ToolGroup, stub: false});
+			let nump = it.count();
+			nump += 4; // Allow space for option group titles.
+			if (nump<8) nump=8;
+			if (nump>15) nump=15;
+			$('#projlist').attr("size",nump);
+			// Show project list using current stubs, but do fire an update
+			populateProjectList();
+			Project.updateStubs(refreshProjectList);
+			$('#projlist').selectmenu('refresh');
+		},
+		select: function(event,data) {
+			// data.item.value = id of selected project
+			// data.item.label = name of selected project
+			if (data.item.value==Project.cid) {
+				$('#libactivate').addClass('ui-state-disabled');
+				$('#libmerge').addClass('ui-state-disabled');
+			} else {
+				$('#libactivate').removeClass('ui-state-disabled');
+				$('#libmerge').removeClass('ui-state-disabled');
+			}
+		}
+	});
+	$('#selector').attr('title',_("Library of all projects."));
+	$('#libactivate').attr('title',_("Continue working with the selected project."));
+	$('#libdel').attr('title',_("Permanently remove the selected project."));
+	$('#libmerge').attr('title',_("Join the selected project into the current one."));
+	// Project list
+	// Activate --------------------
+	$('#libactivate').on('click',  function() {
+		let p = Project.get( $('#projlist').val() );
+		if (!p) return;
+		if (!p.stub) {
+			switchToProject(p.id,true);
+		} else {
+			// Activating a stub project.
+			// Make sure that there is no local project with that name
+			if (Project.withTitle(p.title)!=null) {
+				rasterAlert(_('That project name is used already'),
+					_("There is already a project called '%%'. Please rename that project first.", H(p.title))
+				);
+			} else {
+				// Do a retrieve operation, and switch to that new project, if successful.
+				Project.retrieve(p.id,function(newpid){
+					switchToProject(newpid);
+					startAutoSave();
+				});
+			}
+		}
+	});
+	// Delete --------------------
+	$('#libdel').on('click',  function(/*evt*/){
+		let p = Project.get( $('#projlist').val() );
+		let dokill = function() {
+			if (p.shared || p.stub) {
+				// Disable the project watch. Otherwise a notification would be triggered.
+				stopWatching(p.id);
+				// remove from the server
+				p.deleteFromServer();
+			}
+			if (p.id==Project.cid) {
+				p.destroy();
+				p = Project.firstProject();
+				// Add a blank project if none would be left
+				if (p==null) {
+					loadDefaultProject();
+				} else {
+					switchToProject(p.id);
+				}
+			} else {
+				p.destroy();
+			}
+		};
+		newRasterConfirm(_("Delete project?"),
+		_("Are you sure you want to remove project <i>'%%'</i>?\n<strong>This cannot be undone.</strong>", H(p.title)),
+		_("Remove"),_("Cancel")
+		).done(function() {
+			var t=p.totalnodes();
+			if (t>3) {
+				newRasterConfirm(_("Delete project?"),
+					_("This project has %% nodes.\nAre you <i>really</i> sure you want to discard these?", t),
+					_("Yes, really remove"),_("Cancel"))
+				.done(dokill);
+			} else {
+				dokill();
+			}
+		});
+	});
+	// Merge --------------------
+	$('#libmerge').on('click',  function() {
+		var otherproject = Project.get( $('#libselect option:selected').val() );
+		if (otherproject.stub) {
+			rasterAlert(_("Cannot merge a remote project"),_("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
+			return;
+		}
+		var currentproject = Project.get( Project.cid );
+		rasterConfirm(_("Merge '%%' into '%%'?",otherproject.title,currentproject.title),
+			_("Are you sure you want to fold project '%%' into the current project?",
+				H(otherproject.title))
+			+'<br>\n'+
+			_("This will copy the diagrams of '%%' into '%%'.",
+				H(otherproject.title),H(currentproject.title)),
+			_("Merge"),_("Cancel"),
+			function() {
+				Project.merge(currentproject,otherproject);
+				$('#librarypanel').dialog('close');
+		});
+	});
+
+	$('#projdebugsection>div:first-child').html(_("Debugging functions"));
+	$('#libcheck').val(_("?"));
+	$('#libexportall').val(_("Export all"));
+	$('#libzap').val(_("Zap library"));
+	$('#libcheck').attr('title',_("Check the projects for internal consistency."));
+	$('#libexportall').attr('title',_("Save all projects into a single file."));
+	$('#libzap').attr('title',_("Permanently remove all projects."));
+	$('#networkactivity').attr('title',_("Flashes on network activity."));
+	// Check --------------------
+	$('#libcheck').on('click',  function() {
+		checkForErrors(true);
+	});
+	// Export all --------------------
+	$('#libexportall').on('click',  function() {
+		exportAll();
+	});
+	// Zap! --------------------
+	$('#libzap').on('click',  function(){
+		rasterConfirm('Delete all?',
+			_("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
+			_("Erase everything"),_("Cancel"),
+			function() {
+				rasterConfirm(_('Delete all?'),
+					_("Really sure? You will lose <b>all private</b> projects!\n"),
+					_("Yes, really erase all"),_("Cancel"),
+					Zap
+				);
+			}
+		);
+	});
+
+	var flashTimer;
+	$(document).ajaxSend(function(){
+		window.clearTimeout(flashTimer);
+		$('#networkactivity').removeClass('activityoff activityno').addClass('activityyes');
+	});
+	$(document).ajaxStop(function(){
+		// Make sure that the activity light flashes at least some small time
+		flashTimer = window.setTimeout(function(){
+			$('#networkactivity').removeClass('activityoff activityyes').addClass('activityno');
+		},200);
+	});
+}
+
 function getGroupSettings() {
 	// Initialise default values, then attempt to retrieve settings from the server
 	GroupSettings = {
@@ -1004,6 +793,7 @@ function getGroupSettings() {
 		success: function(data) {
 			if (data.classroom===true) {
 				GroupSettings.classroom = true;
+				$("#classroom").html(_("Classroom version")).show();
 			}
 			if (typeof data.template==='string') {
 				GroupSettings.template = data.template;
@@ -1015,6 +805,222 @@ function getGroupSettings() {
 	});
 }
 #endif
+
+function initHomeToolbar() {
+	$('#undobutton').attr('title', _("Undo"));
+	$('#redobutton').attr('title', _("Redo"));
+	$('#findbutton').attr('title', _("Locate nodes"));
+	$('#helpbutton').attr('title', _("Assistance"));
+	$('#undobutton').on('click', Transaction.undo);
+	$('#redobutton').on('click', Transaction.redo);
+	$('#findbutton').on('click', StartFind);
+	$('#helpbutton').on('click',  function() {
+		$('#helppanel').dialog('open');
+	});
+
+	$('#helppanel').dialog({
+		title: _("Information on using this tool"),
+		autoOpen: false,
+		height: 450,
+		minHeight: 120,
+		width: 600,
+		minWidth: 470,
+		maxWidth: 800,
+		open: function(/*event*/) {
+			initFrequencyTool();
+			$('#helptabs ul').width($('#helppanel').width()-14);
+		},
+		resize: function(/*event,ui*/) {
+			$('#helptabs ul').width($('#helppanel').width()-14);
+		}
+	});
+	$('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
+	$('#helptabs').tabs({
+		heightStyle: 'content',
+		load: function(/*event,ui*/) {
+			if ($('#helptabs').tabs('option','active')==0) {
+				initFrequencyTool();
+			}
+		}
+	});
+	$('#helptabs a').eq(0).html( _("Frequency") );
+	$('#helptabs a').eq(1).html( _("Impact") );
+	$('#helptabs a').eq(2).html( _("How to use") );
+	$('#helptabs a').eq(3).html( _("About") );
+	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
+	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
+	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
+	$('#helptabs a').eq(3).attr('href', _("../help/About.html") );
+	$('#helptabs li:last-of-type').css("margin-left","10px");
+
+	// Home toolbar | Diagram items: templates are set up in Project.load()
+
+	// Home toolbar | SF items
+	$('#sffoldsection>div:first-child').html(_("Fold"));
+	$('#sfsortsection>div:first-child').html(_("Sort"));
+	$('#sfsort_alph + label').html(_("Alphabetically"));
+	$('#sfsort_type + label').html(_("by Type"));
+	$('#sfsort_thrt + label').html(_("by Vulnerability level"));
+	$('#sfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
+	$('#sfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
+	// No remembered preference for the sort order
+	$('#sfsort_alph').prop('checked',true);
+	$('#sfexpandall').on('click',  function(){
+		$('#singlefs_workspace'+Service.cid).scrollTop(0);
+		expandAllSingleF(Service.cid);
+	});
+	$('#sfcollapseall').on('click',  function(){
+		$('#singlefs_workspace'+Service.cid).scrollTop(0);
+		collapseAllSingleF(Service.cid);
+	});
+	$('#sfsortsection input').on('change', function() {
+		paintSingleFailures(Service.get(Service.cid));
+	});
+
+	// Home toolbar | CCF items
+	$('#ccffoldsection>div:first-child').html(_("Fold"));
+	$('#ccfsortsection>div:first-child').html(_("Sort"));
+	$('#ccfsort_alph + label').html(_("Alphabetically"));
+	$('#ccfsort_type + label').html(_("by Type"));
+	$('#ccfsort_thrt + label').html(_("by Vulnerability level"));
+	$('#ccfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
+	$('#ccfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
+	// No remembered preference for the sort order
+	$('#ccfsort_alph').prop('checked',true);
+	$('#ccfexpandall').on('click', function(){
+		$('#ccfs_body').scrollTop(0);
+		expandAllCCF();
+	});
+	$('#ccfcollapseall').on('click', function(){
+		$('#ccfs_body').scrollTop(0);
+		collapseAllCCF();
+	});
+	$('#ccfsortsection input').on('change', function(){
+		PaintAllClusters();
+	});
+
+	// Home toolbar | Analysis items
+	$('#anavnsortsection>div:first-child').html(_("Sort nodes and clusters"));
+	$('#anavfsortsection>div:first-child').html(_("Sort vulnerabilities"));
+	$('#anavexcludesection>div:first-child').html(_("Click cells to include/exclude them"));
+	$('#ana_nodesort_alph + label').html(_("Alphabetically"));
+	$('#ana_nodesort_type + label').html(_("by Type"));
+	$('#ana_nodesort_thrt + label').html(_("by Vulnerability level"));
+	$('#ana_failsort_alph + label').html(_("Alphabetically"));
+	$('#ana_failsort_type + label').html(_("by Type"));
+	var create_ananode_sortfunc = function(opt) {
+		return function() {
+			FailureThreatSortOpt.node = opt;
+			paintSFTable();
+			paintCCFTable();
+		};
+	};
+	$('[for=ana_nodesort_alph]').on('click', create_ananode_sortfunc('alph'));
+	$('[for=ana_nodesort_type]').on('click', create_ananode_sortfunc('type'));
+	$('[for=ana_nodesort_thrt]').on('click', create_ananode_sortfunc('thrt'));
+	var create_anafail_sortfunc = function(opt) {
+		return function() {
+			FailureThreatSortOpt.threat = opt;
+			paintSFTable();
+			paintCCFTable();
+		};
+	};
+	$('[for=ana_failsort_alph]').on('click', create_anafail_sortfunc('alph'));
+	$('[for=ana_failsort_type]').on('click', create_anafail_sortfunc('type'));
+	$('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
+		var exclCm = computeComponentQuickWins();
+		var exclCl = computeClusterQuickWins();
+		ComponentExclusions = { };
+		ClusterExclusions = { };
+		for (const id of exclCm) ComponentExclusions[id] = true;
+		for (const id of exclCl) ComponentExclusions[id] = true;
+		paintSFTable();
+		paintCCFTable();
+		$('#clearexclusions').button('option','disabled', (exclCm.length==0 && exclCl.length==0));
+	});
+	$('#clearexclusions').button().button('option','disabled',true).on('click',  function() {
+		ComponentExclusions = { };
+		ClusterExclusions = { };
+		paintSFTable();
+		paintCCFTable();
+		$('#clearexclusions').button('option','disabled',true);
+	});
+}
+
+function initOptionsToolbar() {
+	// Options toolbar | diagrams options
+	$('#vulnlevelsection>div:first-child').html(_("Vulnerability levels"));
+	$('#em_none + label').html(_("None"));
+	$('#em_small + label').html(_("Small"));
+	$('#em_large + label').html(_("Large"));
+	$('#'+Preferences.emsize).prop('checked',true);
+	$('#vulnlevelsection input').on('change', function() {
+		Preferences.setemblem($('input[name=emblem_size]:checked').val());
+	});
+	$('#labelsection>div:first-child').html(_("Label colors"));
+	$('#label_off + label').html(_("hide"));
+	$('#label_on  + label').html(_("show"));
+	$('#label_off').prop('checked',!Preferences.showmap);
+	$('#label_on').prop('checked',Preferences.showmap);
+	$('#label_'+ (Preferences.label ? 'on' : 'off') ).prop('checked',true);
+	$('#labelsection input').on('change', function() {
+		Preferences.setlabel($('#label_on').prop('checked'));
+	});
+	$('#mapsection>div:first-child').html(_("Minimap"));
+	$('#showmap_off + label').html(_("off"));
+	$('#showmap_on  + label').html(_("on"));
+	$('#showmap_off').prop('checked',!Preferences.showmap);
+	$('#showmap_on').prop('checked',Preferences.showmap);
+	$('#mapsection input').on('change', function() {
+		Preferences.showmap = $('#showmap_on').prop('checked');
+		if (Preferences.showmap) {
+			$('#scroller_overview'+Service.cid).show();
+		} else {
+			$('.scroller_overview').hide();
+		}
+	});
+
+	// Options toolbar | project options
+	$('#projnamesection>div:first-child').html(_("Project name"));
+	$('#projname').editInPlace({
+		bg_over: 'var(--highlt)',
+		bg_out: 'white',
+		text_size: 50,
+		callback: function(domid, enteredText) {
+			let p = Project.get(Project.cid);
+			p.settitle(enteredText);
+			$('.projectname').html(H(p.title));
+			document.title = "Raster - " + p.title;
+			Preferences.setcurrentproject(p.title);
+			return p.title;
+		}
+	});
+	$('#projdescrsection>div:first-child').html(_("Project description"));
+	$('#projdescr').editInPlace({
+		bg_over: 'var(--highlt)',
+		bg_out: 'white',
+		field_type: 'textarea',
+		textarea_rows: 7,
+		textarea_cols: 50,
+		show_buttons: false,
+		callback: function(domid, enteredText) {
+			let p = Project.get(Project.cid);
+			p.setdescription(enteredText);
+			$('#projdescr').css('overflow','hidden');
+			return p.description;
+		},
+		delegate: {
+			shouldOpenEditInPlace: function() {
+				$('#projdescr').css('overflow','visible');
+			}
+		}
+	});
+
+	$('#sharingsection>div:first-child').html(_("Sharing"));
+	$('#sharing_off + label').html(_("off"));
+	$('#sharing_on  + label').html(_("on"));
+//	$('#sharingsection input').on('change', function(...) );
+}
 
 function toolbartabselected(evt,ui) {
 	let p;
