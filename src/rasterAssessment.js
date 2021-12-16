@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, _, AssessmentIterator, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id
+bugreport, _, AssessmentIterator, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id, toolbar_height
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -508,27 +508,22 @@ Assessment.prototype = {
 				}
 				str += '</ul>';
 				$('#impacthint').html(str);
-
-#ifdef SERVER
-				var fuzz = 10;
-				var ofuzz = 0;
-#else
-				var fuzz = 15;
-				var ofuzz = 3;
-#endif
 				$('#outerimpacthint').show();
-				var otop = $('#outerimpacthint').position().top-ofuzz;
-				var top = $(this).position().top-fuzz-otop;
-				if (top<10) {
-					otop -= 10-top;
-					top = 10;
+
+				let point_offset_top = $(this).offset().top-10; // 10 means half the point, so the tip will be at the impact
+				let point_css_top = point_offset_top - $('#outerimpacthint').offset().top;
+				let hint_css_top = parseInt($('#outerimpacthint').css('top'),10);
+				// to fix the point on the screen keep point_css_top+hint_css_top invariant
+				if (point_css_top<10) {
+					hint_css_top -= 10-point_css_top;
+					point_css_top = 10;
 				}
-				if (top>250) {
-					otop += top-250;
-					top = 250;
+				if (point_css_top>250) {
+					hint_css_top += point_css_top-250;
+					point_css_top = 250;
 				}
-				$('#hintpoint').animate({top: top});
-				$('#outerimpacthint').animate({top: otop});
+				$('#hintpoint').animate({top: point_css_top});
+				$('#outerimpacthint').animate({top: hint_css_top});
 			},
 			postclose: function() {
 				$('#outerimpacthint').hide();	// When editing impact of CCFs
