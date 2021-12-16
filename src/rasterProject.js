@@ -588,6 +588,11 @@ Project.prototype = {
 
 #ifdef SERVER
 	setshared: function(b,updateServer) {
+		if (GroupSettings.nostore) {
+			this.shared = false;
+			this.store;
+			return;
+		}
 		var newstatus = (b===true);
 		if (this.shared==newstatus)  return;
 
@@ -871,7 +876,7 @@ Project.prototype = {
 
 #ifdef SERVER
 	storeOnServer: function(auto,exportstring,callback) {
-		if (!Preferences.online)  return; // No actions when offline
+		if (!Preferences.online || GroupSettings.nostore)  return; // No actions when offline
 		var thisp = this;
 		// First, check that no other browser has touched the versions since we last
 		// retrieved it.
@@ -913,7 +918,7 @@ Project.prototype = {
 	},
 
 	storeIfNotPresent: function(exportstring,callback) {
-		if (!Preferences.online)  return; // No actions when offline
+		if (!Preferences.online || GroupSettings.nostore)  return; // No actions when offline
 		var thisp = this;
 		// First, check that no other browser has touched the versions since we last
 		// retrieved it.
@@ -955,7 +960,7 @@ Project.prototype = {
 	},
 
 	deleteFromServer: function() {
-		if (!Preferences.online)  return; // No actions when offline
+		if (!Preferences.online || GroupSettings.nostore)  return; // No actions when offline
 		var thisp = this;
 		Project.getProps(this.title,function(details){
 			if (details==null)  return; // Project is not on server

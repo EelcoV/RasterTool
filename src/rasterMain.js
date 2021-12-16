@@ -140,7 +140,8 @@ function initAllAndSetup() {
 	GroupSettings = {
 		classroom: false,
 		template: 'Project Template',
-		iconset: 'default'
+		iconset: 'default',
+		nostore: true
 	};
 	// Prevent file drops
 	document.addEventListener('dragover', function(event) {event.preventDefault();} );
@@ -784,7 +785,8 @@ function getGroupSettings() {
 	GroupSettings = {
 		classroom: false,
 		template: 'Project Template',
-		iconset: 'default'
+		iconset: 'default',
+		nostore: false
 	};
 	$.ajax({
 		url: 'group.json',
@@ -800,6 +802,9 @@ function getGroupSettings() {
 			}
 			if (typeof data.iconset==='string') {
 				GroupSettings.iconset = data.iconset;
+			}
+			if (data.nostore===true) {
+				GroupSettings.nostore = true;
 			}
 		}
 	});
