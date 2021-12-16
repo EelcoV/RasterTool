@@ -91,6 +91,7 @@
 		499A6B9F1A72D97A0047E182 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		49ADB675276A8CB300A99B47 /* duplicate_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = duplicate_p.png; sourceTree = "<group>"; };
+		49ADB676276BE41000A99B47 /* checktranslation.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = checktranslation.sh; sourceTree = "<group>"; };
 		49ADD30023CA0B5C003BE3D4 /* rasterTransaction.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = rasterTransaction.js; sourceTree = "<group>"; };
 		49AE7CC62378595A00F12B9D /* winbuild.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = winbuild.bat; sourceTree = "<group>"; };
 		49BEE0DE23C1F90E00AC17F7 /* group.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = group.json; sourceTree = "<group>"; };
@@ -309,6 +310,7 @@
 		49F279FD1F91DB23003F360B /* script */ = {
 			isa = PBXGroup;
 			children = (
+				49ADB676276BE41000A99B47 /* checktranslation.sh */,
 				4915A6371FA1178D00B4B205 /* Versions.sh */,
 				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
 				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,

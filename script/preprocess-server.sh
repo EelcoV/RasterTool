@@ -18,6 +18,8 @@ if [ ! -d $BUILDDIR ]; then
 	mkdir -p $BUILDDIR
 fi
 
+./script/checktranslation.sh  > $BUILDDIR/../translation-errors.txt
+
 # Fixed sources
 cp -R -p server/* $BUILDDIR
 cp -R -p common/* $BUILDDIR
