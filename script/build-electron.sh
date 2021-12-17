@@ -251,15 +251,15 @@ CreateAll()
 	RLANG=$1
 	CreateAppVersion $RLANG
 	CreateMacOSVersion $RLANG arm64	&
-	CreateMacOSVersion $RLANG x64	&
-	CreateWin32Version $RLANG x64	&
-	CreateWin32Version $RLANG ia32	&
+#	CreateMacOSVersion $RLANG x64	&
+#	CreateWin32Version $RLANG x64	&
+#	CreateWin32Version $RLANG ia32	&
 	wait
 #	rm -fr $BUILDDIR
 }
 
 CreateAll "EN"
-CreateAll "NL"
+#CreateAll "NL"
 
 if [ ! -x "$WINE" ]; then
 	# If Parallels Desktop is running, then the following may trigger it to run the winbuild.bat batch file.

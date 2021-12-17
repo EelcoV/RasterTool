@@ -79,7 +79,8 @@ function createWindow(filename) {
 			 * all Raster objects, simply preloading the ipc-calls from a separate Javascript file is not
 			 * feasible. We *know* that we only load our own scripts, so Node integration should not pose a danger.
 			 */
-			nodeIntegration: true
+			nodeIntegration: true,
+			contextIsolation: false
 		},
 		x: pos.x,
 		y: pos.y,
@@ -150,6 +151,7 @@ function ForceWindowRepaint() {
 */
 
 function ReadFileAndLoad(win,filename) {
+console.log("xxxxx");
 	try {
 		var str = fs.readFileSync(filename, 'utf8');
 		win.webContents.send('document-start-open', str);
@@ -520,8 +522,7 @@ try {
 			app.rasteroptions[key] = raw_pref[key];
 		}
 	});
-}
-catch (e) {
+} catch (e) {
 	// ignore silently
 }
 
