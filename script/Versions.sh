@@ -2,7 +2,7 @@
 # Common settings for all builds
 #
 
-ELECTRONVERSION="6.0.12"
+ELECTRONVERSION="16.0.2"
 RASTERNUMVERSION="4.0beta"
 RASTERVERSION="4.0 beta"
 RASTERSEASON="Winter 2022"

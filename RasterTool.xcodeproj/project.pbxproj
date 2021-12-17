@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		4912CBDE1F966ED700DF081C /* base.NL.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.NL.dmg; sourceTree = "<group>"; };
 		4915A62E1F9E819300B4B205 /* rcedit-x86.exe */ = {isa = PBXFileReference; lastKnownFileType = file; path = "rcedit-x86.exe"; sourceTree = "<group>"; };
 		4915A6301FA0482800B4B205 /* raster.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = raster.ico; sourceTree = "<group>"; };
 		4915A6311FA049DD00B4B205 /* Raster.EN.nsis */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 4; path = Raster.EN.nsis; sourceTree = "<group>"; };
@@ -71,7 +70,6 @@
 		494B702918796E9D00400328 /* share.inc */ = {isa = PBXFileReference; explicitFileType = text.script.php; path = share.inc; sourceTree = "<group>"; };
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
-		4954ADED1F954398002A6FBC /* base.EN.dmg */ = {isa = PBXFileReference; lastKnownFileType = text; path = base.EN.dmg; sourceTree = "<group>"; };
 		495E762623B4E37000C1F367 /* iconset */ = {isa = PBXFileReference; lastKnownFileType = folder; path = iconset; sourceTree = "<group>"; };
 		49656F6E235662CB00A731AC /* selected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = selected.png; sourceTree = "<group>"; };
 		496A429C27555845005BA08F /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
@@ -83,7 +81,7 @@
 		4997D9151F8A5DF300E3481A /* barCV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barCV.png; sourceTree = "<group>"; };
 		4997D9161F8A5DF300E3481A /* barV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barV.png; sourceTree = "<group>"; };
 		499804E3187F29D10063E8C5 /* qm.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = qm.png; sourceTree = "<group>"; };
-		4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "preprocess-server.sh"; sourceTree = "<group>"; };
+		4999EB4B1F8FEAAB009BBF18 /* build-server.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-server.sh"; sourceTree = "<group>"; };
 		4999EB5F1F9004D0009BBF18 /* clean.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
 		4999EB651F9007CE009BBF18 /* build-electron.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-electron.sh"; sourceTree = "<group>"; };
 		4999EB6B1F900AA9009BBF18 /* standalone.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = standalone.html; sourceTree = "<group>"; };
@@ -92,6 +90,9 @@
 		499A6BA01A72DC080047E182 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		49ADB675276A8CB300A99B47 /* duplicate_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = duplicate_p.png; sourceTree = "<group>"; };
 		49ADB676276BE41000A99B47 /* checktranslation.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = checktranslation.sh; sourceTree = "<group>"; };
+		49ADB677276CF02300A99B47 /* installbg_EN.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = installbg_EN.png; sourceTree = "<group>"; };
+		49ADB678276CF02300A99B47 /* installbg_NL.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = installbg_NL.png; sourceTree = "<group>"; };
+		49ADB679276D30E700A99B47 /* fix-the-disk-image.applescript */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.applescript; path = "fix-the-disk-image.applescript"; sourceTree = "<group>"; };
 		49ADD30023CA0B5C003BE3D4 /* rasterTransaction.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = rasterTransaction.js; sourceTree = "<group>"; };
 		49AE7CC62378595A00F12B9D /* winbuild.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = winbuild.bat; sourceTree = "<group>"; };
 		49BEE0DE23C1F90E00AC17F7 /* group.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = group.json; sourceTree = "<group>"; };
@@ -103,7 +104,6 @@
 		49CD587F1F93922E00A9F17F /* Object data structure.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Object data structure.txt"; sourceTree = "<group>"; };
 		49D256041A1E87BF00102918 /* jquery.localisation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.localisation.js; sourceTree = "<group>"; };
 		49D256061A1E88A200102918 /* translation-nl.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "translation-nl.js"; sourceTree = "<group>"; };
-		49E402A81F99378B00978B5C /* Untitled 1.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Untitled 1.odg"; sourceTree = "<group>"; };
 		49E402A91F99378B00978B5C /* RasterIcon.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = RasterIcon.odg; sourceTree = "<group>"; };
 		49E402B61F99381500978B5C /* icon_256x256.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_256x256.png; sourceTree = "<group>"; };
 		49E402B71F99381600978B5C /* icon_16x16@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_16x16@2x.png"; sourceTree = "<group>"; };
@@ -310,25 +310,25 @@
 		49F279FD1F91DB23003F360B /* script */ = {
 			isa = PBXGroup;
 			children = (
-				49ADB676276BE41000A99B47 /* checktranslation.sh */,
 				4915A6371FA1178D00B4B205 /* Versions.sh */,
+				49ADB676276BE41000A99B47 /* checktranslation.sh */,
+				4999EB5F1F9004D0009BBF18 /* clean.sh */,
+				4915A6361FA116CF00B4B205 /* fillcache.sh */,
+				4999EB4B1F8FEAAB009BBF18 /* build-server.sh */,
+				4999EB651F9007CE009BBF18 /* build-electron.sh */,
+				49ADB679276D30E700A99B47 /* fix-the-disk-image.applescript */,
 				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
 				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,
-				4915A6361FA116CF00B4B205 /* fillcache.sh */,
-				4999EB4B1F8FEAAB009BBF18 /* preprocess-server.sh */,
-				4999EB5F1F9004D0009BBF18 /* clean.sh */,
-				4999EB651F9007CE009BBF18 /* build-electron.sh */,
 				49AE7CC62378595A00F12B9D /* winbuild.bat */,
 				4938942D239C0FA300C3E2A5 /* _lang.bat */,
 				49F827AB2351CF7600EAE982 /* eslint-xcode-format.js */,
 				49F827AA2351B37A00EAE982 /* eslintrc */,
 				49E402C11F99383100978B5C /* electron.iconset */,
 				49E402A91F99378B00978B5C /* RasterIcon.odg */,
-				49E402A81F99378B00978B5C /* Untitled 1.odg */,
-				4954ADED1F954398002A6FBC /* base.EN.dmg */,
-				4912CBDE1F966ED700DF081C /* base.NL.dmg */,
 				4915A6301FA0482800B4B205 /* raster.ico */,
 				494AF84E1FA48AA100356A28 /* installraster.ico */,
+				49ADB677276CF02300A99B47 /* installbg_EN.png */,
+				49ADB678276CF02300A99B47 /* installbg_NL.png */,
 				4915A63D1FA126E600B4B205 /* nsis.zip */,
 				4915A6321FA113D900B4B205 /* FileAssociation.nsh */,
 				494AF84D1FA3BCBF00356A28 /* 7z.zip */,
@@ -363,31 +363,17 @@
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
-		4915A6381FA119A100B4B205 /* Fill cache */ = {
+		4999EB521F8FEB7B009BBF18 /* Build Server */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "$(ACTION)";
-			buildConfigurationList = 4915A6391FA119A100B4B205 /* Build configuration list for PBXLegacyTarget "Fill cache" */;
+			buildConfigurationList = 4999EB551F8FEB7B009BBF18 /* Build configuration list for PBXLegacyTarget "Build Server" */;
 			buildPhases = (
 			);
-			buildToolPath = script/fillcache.sh;
+			buildToolPath = "script/build-server.sh";
 			buildWorkingDirectory = "$(PROJECT_DIR)";
 			dependencies = (
 			);
-			name = "Fill cache";
-			passBuildSettingsInEnvironment = 1;
-			productName = Lint;
-		};
-		4999EB521F8FEB7B009BBF18 /* Preprocess-server */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION)";
-			buildConfigurationList = 4999EB551F8FEB7B009BBF18 /* Build configuration list for PBXLegacyTarget "Preprocess-server" */;
-			buildPhases = (
-			);
-			buildToolPath = "script/preprocess-server.sh";
-			buildWorkingDirectory = "$(PROJECT_DIR)";
-			dependencies = (
-			);
-			name = "Preprocess-server";
+			name = "Build Server";
 			passBuildSettingsInEnvironment = 0;
 			productName = Lint;
 		};
@@ -419,20 +405,6 @@
 			passBuildSettingsInEnvironment = 1;
 			productName = Lint;
 		};
-		49BC2AFD1A262C3400EC5A9A /* CreateDistribution */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION)";
-			buildConfigurationList = 49BC2AFE1A262C3400EC5A9A /* Build configuration list for PBXLegacyTarget "CreateDistribution" */;
-			buildPhases = (
-			);
-			buildToolPath = script/build_tgz.sh;
-			buildWorkingDirectory = "$(PROJECT_DIR)";
-			dependencies = (
-			);
-			name = CreateDistribution;
-			passBuildSettingsInEnvironment = 1;
-			productName = Lint;
-		};
 /* End PBXLegacyTarget section */
 
 /* Begin PBXProject section */
@@ -456,92 +428,14 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				49BC2AFD1A262C3400EC5A9A /* CreateDistribution */,
-				4999EB521F8FEB7B009BBF18 /* Preprocess-server */,
+				4999EB521F8FEB7B009BBF18 /* Build Server */,
 				4999EB601F900553009BBF18 /* Clean */,
 				4999EB661F9007E5009BBF18 /* Build Electron */,
-				4915A6381FA119A100B4B205 /* Fill cache */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin XCBuildConfiguration section */
-		4915A63A1FA119A100B4B205 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUGGING_SYMBOLS = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
-		4915A63B1FA119A100B4B205 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Release;
-		};
 		494B6F6318796DD000400328 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -838,94 +732,9 @@
 			};
 			name = Release;
 		};
-		49BC2AFF1A262C3400EC5A9A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUGGING_SYMBOLS = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "Lint copy";
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
-		49BC2B001A262C3400EC5A9A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "Lint copy";
-				SDKROOT = macosx;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4915A6391FA119A100B4B205 /* Build configuration list for PBXLegacyTarget "Fill cache" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4915A63A1FA119A100B4B205 /* Debug */,
-				4915A63B1FA119A100B4B205 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		494B6F6218796DD000400328 /* Build configuration list for PBXProject "RasterTool" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -935,7 +744,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4999EB551F8FEB7B009BBF18 /* Build configuration list for PBXLegacyTarget "Preprocess-server" */ = {
+		4999EB551F8FEB7B009BBF18 /* Build configuration list for PBXLegacyTarget "Build Server" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4999EB561F8FEB7B009BBF18 /* Debug */,
@@ -958,15 +767,6 @@
 			buildConfigurations = (
 				4999EB681F9007E5009BBF18 /* Debug */,
 				4999EB691F9007E5009BBF18 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		49BC2AFE1A262C3400EC5A9A /* Build configuration list for PBXLegacyTarget "CreateDistribution" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				49BC2AFF1A262C3400EC5A9A /* Debug */,
-				49BC2B001A262C3400EC5A9A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

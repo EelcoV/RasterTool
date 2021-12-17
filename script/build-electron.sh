@@ -1,6 +1,7 @@
 #!/bin/sh -e
 
 . script/Versions.sh
+./script/fillcache.sh
 
 PREPROCESS="filepp -pb"
 #PREPROCESS="cpp -E -P -C -w"
@@ -29,6 +30,10 @@ CreateAppVersion()
 	cp -R -p common/* $BUILDDIR
 
 	echo "{\"name\":\"Raster\",\"version\":\"$RASTERVERSION ($RASTERSEASON)\",\"main\":\"main.js\"}" >$BUILDDIR/package.json
+
+	if [ -n "$ESLINT" ]; then
+		$ESLINT --config script/eslintrc --format script/eslint-xcode-format.js standalone/main.js || exit 1
+	fi
 
 	for srcfile in src/*.js
 	do
@@ -68,15 +73,12 @@ CreateAppVersion()
 CreateMacOSVersion()
 {
 	RLANG=$1
+	ARCH=$2
 	BUILDDIR=build/app-$RLANG
-	BASEDIR=build/electron-v$ELECTRONVERSION-darwin-x64-$RLANG
+	BASEDIR=build/electron-v$ELECTRONVERSION-darwin-$ARCH-$RLANG
 	APPDIR=$BASEDIR/Raster.app/Contents/Resources/app
 
-	echo "************************** Building $RLANG version for MacOS..."
-
-	if [ -n "$ESLINT" ]; then
-		$ESLINT --config script/eslintrc --format script/eslint-xcode-format.js standalone/main.js || exit 1
-	fi
+	echo "************************** Building $RLANG version for MacOS-$ARCH..."
 
 	if [ ! -d $BUILDDIR ]; then
 		echo "Build directory $BUILDDIR does not exist." && exit 1
@@ -87,12 +89,15 @@ CreateMacOSVersion()
 		rm -fr $APPDIR
 	else
 		mkdir -p $BASEDIR
-		( cd $BASEDIR && unzip ../../cache/electron-v$ELECTRONVERSION-darwin-x64.zip )
+		( cd $BASEDIR && unzip -q ../../cache/electron-v$ELECTRONVERSION-darwin-$ARCH.zip )
 		mv $BASEDIR/Electron.app $BASEDIR/Raster.app
+		mkdir $BASEDIR/Licenses
+		mv $BASEDIR/LICENSE* $BASEDIR/Licenses
+		rm -f $BASEDIR/version
 		xattr -d com.apple.quarantine $BASEDIR/Raster.app || true
 	fi
 
-echo creating dirs
+	echo creating dirs
 	mkdir $APPDIR
 	mkdir $APPDIR/js
 	mkdir $APPDIR/img
@@ -102,9 +107,6 @@ echo creating dirs
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR
 
-	if [ script/electron.iconset -nt cache/raster.icns ]; then
-		iconutil --convert icns --output cache/raster.icns script/electron.iconset
-	fi
 	rm -f $APPDIR/../electron.icns
 	cp cache/raster.icns $APPDIR/../raster.icns
 	# This is silly, but it works to force an icon refresh onto the Finder
@@ -121,23 +123,36 @@ echo creating dirs
 	defaults write $INFO "CFBundleIconFile" "raster.icns"
 	mv $BASEDIR/Raster.app/Contents/MacOS/Electron $BASEDIR/Raster.app/Contents/MacOS/Raster 2> /dev/null || true
 
-	VOLDIR="/Volumes/Raster $RLANG"
+#	VOLDIR="/Volumes/Raster $RLANG"
+#
+#	cp script/base.$RLANG.dmg build/temp.dmg
+#	# An image may have been mounted during debugging
+#	hdiutil detach -quiet "$VOLDIR" || true
+#	if [ -d "$VOLDIR" ]; then
+#		echo "Mount directory already in use."
+#		exit 1
+#	fi
+#	hdiutil attach build/temp.dmg
+#	rm -fr "$VOLDIR/Raster.app"
+#	cp -R -p $BASEDIR/Raster.app "$VOLDIR"
+#	sync && sync
+#	hdiutil detach "$VOLDIR"
+#	rm -f build/Raster-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
+#	hdiutil convert build/temp.dmg -format UDRO -o build/Raster-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
+#	rm -f build/temp.dmg
 
-	cp script/base.$RLANG.dmg build/temp.dmg
-	# An image may have been mounted during debugging
-	hdiutil detach -quiet "$VOLDIR" || true
-	if [ -d "$VOLDIR" ]; then
-		echo "Mount directory already in use."
-		exit 1
-	fi
-	hdiutil attach build/temp.dmg
-	rm -fr "$VOLDIR/Raster.app"
-	cp -R -p $BASEDIR/Raster.app "$VOLDIR"
-	sync && sync
-	hdiutil detach "$VOLDIR"
-	rm -f build/Raster-v$RASTERNUMVERSION.$RLANG.dmg
-	hdiutil convert build/temp.dmg -format UDRO -o build/Raster-v$RASTERNUMVERSION.$RLANG.dmg
-	rm -f build/temp.dmg
+	rm -fr $BASEDIR/.background
+	mkdir $BASEDIR/.background
+	cp script/installbg_$RLANG.png $BASEDIR/.background/image.png
+	ln -s -f /Applications $BASEDIR
+	rm -f build/Raster-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
+	hdiutil create -format UDRW -srcfolder $BASEDIR -volname "Raster $RLANG-$ARCH" build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
+	hdiutil attach build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
+	rm -fr "Volumes/Raster $RLANG-$ARCH/.fseventsd"
+	/usr/bin/osascript script/fix-the-disk-image.applescript "Raster $RLANG-$ARCH" || exit 55
+	hdiutil detach "/Volumes/Raster $RLANG-$ARCH"
+	hdiutil convert build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg -format UDZO -o build/Raster-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
+	rm build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
 
 	echo "************************** ...done."
 }
@@ -145,11 +160,12 @@ echo creating dirs
 CreateWin32Version()
 {
 	RLANG=$1
+	ARCH=$2
 	BUILDDIR=build/app-$RLANG
-	BASEDIR=build/electron-v$ELECTRONVERSION-win32-ia32-$RLANG
+	BASEDIR=build/electron-v$ELECTRONVERSION-win32-$ARCH-$RLANG
 	APPDIR=$BASEDIR/resources/app
 
-	echo "************************** Building $RLANG version for Win32..."
+	echo "************************** Building $RLANG version for Win32-$ARCH..."
 
 	if [ ! -x "$WINE" ]; then
 		cat >cache/versions-$RLANG.bat <<-EOT
@@ -164,10 +180,6 @@ CreateWin32Version()
 			EOT
 	fi
 
-	if [ -n "$ESLINT" ]; then
-		$ESLINT --config script/eslintrc --format script/eslint-xcode-format.js standalone/main.js || exit 1
-	fi
-
 	if [ ! -d $BUILDDIR ]; then
 		echo "Build directory $BUILDDIR does not exist." && exit 1
 	fi
@@ -177,7 +189,7 @@ CreateWin32Version()
 		rm -fr $APPDIR
 	else
 		mkdir -p $BASEDIR
-		( cd $BASEDIR && unzip ../../cache/electron-v$ELECTRONVERSION-win32-ia32.zip )
+		( cd $BASEDIR && unzip -q ../../cache/electron-v$ELECTRONVERSION-win32-$ARCH.zip )
 		mv $BASEDIR/electron.exe $BASEDIR/raster.exe
 		# At this stage, it would be cool to convert the icon PNGs into an ICO file
 		cp script/raster.ico $BASEDIR/resources/icon.ico
@@ -217,17 +229,17 @@ CreateWin32Version()
 
 		(
 		 cd build
-		 ln -s electron-v$ELECTRONVERSION-win32-ia32-$RLANG Raster
+		 ln -s electron-v$ELECTRONVERSION-win32-$ARCH-$RLANG Raster-$ARCH-$RLANG
 
-		 rm -f raster-win32-v$RASTERNUMVERSION-$RLANG.zip
-		 zip -r raster-win32-v$RASTERNUMVERSION-$RLANG.zip Raster
+		 rm -f raster-win32-v$RASTERNUMVERSION-$ARCH-$RLANG.zip
+		 zip -q -r raster-win32-v$RASTERNUMVERSION-$ARCH-$RLANG.zip Raster-$ARCH-$RLANG
 
-		 rm -f raster-v$RASTERNUMVERSION-$RLANG-unpack.exe
+		 rm -f raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe
 		 # Filenames containing "instal" require admin privileges!?
-		 "$WINE" ../cache/7z/7z.exe a -sfx7z.sfx raster-v$RASTERNUMVERSION-$RLANG-unpack.exe Raster
-		 "$WINE" ../script/rcedit-x86.exe raster-v$RASTERNUMVERSION-$RLANG-unpack.exe --set-icon ../script/installraster.ico
+		 "$WINE" ../cache/7z/7z.exe a -sfx7z.sfx raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe Raster-$ARCH-$RLANG
+		 "$WINE" ../script/rcedit-x86.exe raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe --set-icon ../script/installraster.ico
 
-		 rm Raster
+		 rm Raster-$ARCH-$RLANG
 		)
 	fi
 
@@ -238,13 +250,16 @@ CreateAll()
 {
 	RLANG=$1
 	CreateAppVersion $RLANG
-	CreateMacOSVersion $RLANG
-#	CreateWin32Version $RLANG
+	CreateMacOSVersion $RLANG arm64	&
+	CreateMacOSVersion $RLANG x64	&
+	CreateWin32Version $RLANG x64	&
+	CreateWin32Version $RLANG ia32	&
+	wait
 #	rm -fr $BUILDDIR
 }
 
 CreateAll "EN"
-#CreateAll "NL"
+CreateAll "NL"
 
 if [ ! -x "$WINE" ]; then
 	# If Parallels Desktop is running, then the following may trigger it to run the winbuild.bat batch file.
