@@ -362,7 +362,7 @@ img.tC {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: right;
-    top: 45px;
+    top: 3px;
 }
 #classroom {
 	position: fixed;

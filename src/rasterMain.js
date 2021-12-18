@@ -1175,12 +1175,17 @@ var updateFind = function() {
 		
 		var draw_and_wiggle = function() {
 			let o = $('#tab_diagrams'+svc_id).offset();
-			$('#selectrect').show().offset({
-				left: node.position.x-15+o.left, top: node.position.y-15+o.top}
-			).width(node.position.width+25).height(node.position.height+25);
-			$('#selectrect').effect('shake',{distance:10, times:8},1000);
+			let scrollp = $('#diagrams_workspace'+svc_id).position();
+			$('#selectrect')
+			.show()
+			.offset({left: node.position.x-15+o.left, top: node.position.y-15+o.top})
+			.width(node.position.width+30)
+			.height(node.position.height+30)
+			.effect('shake',{distance:10, times:8},1000, function() {
+				$('#selectrect').offset({left: node.position.x-15+o.left+scrollp.left, top: node.position.y-15+o.top+scrollp.top});
+			});
 		};
-		
+
 		if (scrolldist_l==0 && scrolldist_t==0) {
 			// No scrolling, just wiggle
 			draw_and_wiggle();
