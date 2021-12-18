@@ -851,14 +851,8 @@ function initHomeToolbar() {
 
 	// Home toolbar | SF items
 	$('#sffoldsection>div:first-child').html(_("Fold"));
-	$('#sfsortsection>div:first-child').html(_("Sort"));
-	$('#sfsort_alph + label').html(_("Alphabetically"));
-	$('#sfsort_type + label').html(_("by Type"));
-	$('#sfsort_thrt + label').html(_("by Vulnerability level"));
 	$('#sfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
 	$('#sfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
-	// No remembered preference for the sort order
-	$('#sfsort_alph').prop('checked',true);
 	$('#sfexpandall').on('click',  function(){
 		$('#singlefs_workspace'+Service.cid).scrollTop(0);
 		expandAllSingleF(Service.cid);
@@ -867,20 +861,20 @@ function initHomeToolbar() {
 		$('#singlefs_workspace'+Service.cid).scrollTop(0);
 		collapseAllSingleF(Service.cid);
 	});
+	$('#sfsortsection>div:first-child').html(_("Sort"));
+	$('#sfsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
+	$('#sfsort_type').checkboxradio('option', 'label', _("by Type"));
+	$('#sfsort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
+	$('#sfsort_alph').prop('checked',true);
+	$('input[name=sfsort]').checkboxradio('refresh');
 	$('#sfsortsection input').on('change', function() {
 		paintSingleFailures(Service.get(Service.cid));
 	});
 
 	// Home toolbar | CCF items
 	$('#ccffoldsection>div:first-child').html(_("Fold"));
-	$('#ccfsortsection>div:first-child').html(_("Sort"));
-	$('#ccfsort_alph + label').html(_("Alphabetically"));
-	$('#ccfsort_type + label').html(_("by Type"));
-	$('#ccfsort_thrt + label').html(_("by Vulnerability level"));
 	$('#ccfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
 	$('#ccfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
-	// No remembered preference for the sort order
-	$('#ccfsort_alph').prop('checked',true);
 	$('#ccfexpandall').on('click', function(){
 		$('#ccfs_body').scrollTop(0);
 		expandAllCCF();
@@ -889,6 +883,12 @@ function initHomeToolbar() {
 		$('#ccfs_body').scrollTop(0);
 		collapseAllCCF();
 	});
+	$('#ccfsortsection>div:first-child').html(_("Sort"));
+	$('#ccfsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
+	$('#ccfsort_type').checkboxradio('option', 'label', _("by Type"));
+	$('#ccfsort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
+	$('#ccfsort_alph').prop('checked',true);
+	$('input[name=ccfsort]').checkboxradio('refresh');
 	$('#ccfsortsection input').on('change', function(){
 		PaintAllClusters();
 	});
@@ -897,11 +897,15 @@ function initHomeToolbar() {
 	$('#anavnsortsection>div:first-child').html(_("Sort nodes and clusters"));
 	$('#anavfsortsection>div:first-child').html(_("Sort vulnerabilities"));
 	$('#anavexcludesection>div:first-child').html(_("Click cells to include/exclude them"));
-	$('#ana_nodesort_alph + label').html(_("Alphabetically"));
-	$('#ana_nodesort_type + label').html(_("by Type"));
-	$('#ana_nodesort_thrt + label').html(_("by Vulnerability level"));
-	$('#ana_failsort_alph + label').html(_("Alphabetically"));
-	$('#ana_failsort_type + label').html(_("by Type"));
+	$('#ana_nodesort_alph').checkboxradio('option', 'label', _("Alphabetically"));
+	$('#ana_nodesort_type').checkboxradio('option', 'label', _("by Type"));
+	$('#ana_nodesort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
+	$('#ana_failsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
+	$('#ana_failsort_type').checkboxradio('option', 'label', _("by Type"));
+	$('#ana_nodesort_alph').prop('checked',true);
+	$('#ana_failsort_type').prop('checked',true);
+	$('input[name=ana_nodesort]').checkboxradio('refresh');
+	$('input[name=ana_failsort]').checkboxradio('refresh');
 	var create_ananode_sortfunc = function(opt) {
 		return function() {
 			FailureThreatSortOpt.node = opt;
@@ -944,27 +948,30 @@ function initHomeToolbar() {
 function initOptionsToolbar() {
 	// Options toolbar | diagrams options
 	$('#vulnlevelsection>div:first-child').html(_("Vulnerability levels"));
-	$('#em_none + label').html(_("None"));
-	$('#em_small + label').html(_("Small"));
-	$('#em_large + label').html(_("Large"));
+
+	$('#em_none').checkboxradio('option', 'label', _("None"));
+	$('#em_small').checkboxradio('option', 'label', _("Small"));
+	$('#em_large').checkboxradio('option', 'label', _("Large"));
 	$('#'+Preferences.emsize).prop('checked',true);
+	$('input[name=emblem_size]').checkboxradio('refresh');
 	$('#vulnlevelsection input').on('change', function() {
 		Preferences.setemblem($('input[name=emblem_size]:checked').val());
 	});
 	$('#labelsection>div:first-child').html(_("Label colors"));
-	$('#label_off + label').html(_("hide"));
-	$('#label_on  + label').html(_("show"));
+	$('#label_off').checkboxradio('option', 'label', _("hide"));
+	$('#label_on').checkboxradio('option', 'label', _("show"));
 	$('#label_off').prop('checked',!Preferences.showmap);
 	$('#label_on').prop('checked',Preferences.showmap);
-	$('#label_'+ (Preferences.label ? 'on' : 'off') ).prop('checked',true);
+	$('input[name=labelonoff]').checkboxradio('refresh');
 	$('#labelsection input').on('change', function() {
 		Preferences.setlabel($('#label_on').prop('checked'));
 	});
 	$('#mapsection>div:first-child').html(_("Minimap"));
-	$('#showmap_off + label').html(_("off"));
-	$('#showmap_on  + label').html(_("on"));
+	$('#showmap_off').checkboxradio('option', 'label', _("off"));
+	$('#showmap_on').checkboxradio('option', 'label', _("on"));
 	$('#showmap_off').prop('checked',!Preferences.showmap);
 	$('#showmap_on').prop('checked',Preferences.showmap);
+	$('input[name=showmap]').checkboxradio('refresh');
 	$('#mapsection input').on('change', function() {
 		Preferences.showmap = $('#showmap_on').prop('checked');
 		if (Preferences.showmap) {
@@ -1011,8 +1018,10 @@ function initOptionsToolbar() {
 	});
 
 	$('#sharingsection>div:first-child').html(_("Sharing"));
-	$('#sharing_off + label').html(_("off"));
-	$('#sharing_on  + label').html(_("on"));
+	$('#sharing_off').checkboxradio('option', 'label', _("off"));
+	$('#sharing_on').checkboxradio('option', 'label', _("on"));
+	$('#sharing_off').prop('checked',true);
+	$('input[name=sharing]').checkboxradio('refresh');
 //	$('#sharingsection input').on('change', function(...) );
 }
 
