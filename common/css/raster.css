@@ -679,7 +679,7 @@ div.threat {
     float: left;
     height: 19px;
     padding: 3px;
-	border-bottom: 1px solid gray;
+/*	border-bottom: 1px solid gray;*/
 }
 div.th_name {
     width: 14em;
@@ -687,9 +687,9 @@ div.th_name {
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-.ccfaccordionbody .th_col.th_name {
-	border: none;
-}
+/*.ccfaccordionbody .th_col.th_name {*/
+/*	border: none;*/
+/*}*/
 div.th_descr {
     width: 46em;
     overflow: hidden;
