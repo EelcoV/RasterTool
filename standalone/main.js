@@ -75,17 +75,16 @@ function createWindow(filename) {
 	// Create the browser window.
 	var win = new BrowserWindow({
 		webPreferences: {
-			/* Node integration is disabled by default since 5.0.0. Because we do ipc-calls from within almost
-			 * all Raster objects, simply preloading the ipc-calls from a separate Javascript file is not
-			 * feasible. We *know* that we only load our own scripts, so Node integration should not pose a danger.
+			/* Node integration is disabled by default since 5.0.0. Context isolation is enabled since 12.0.0.
+			 * We *know* that we only load local scripts, so Node integration should not pose a danger.
 			 */
 			nodeIntegration: true,
 			contextIsolation: false
 		},
 		x: pos.x,
 		y: pos.y,
-		width: 1500, // Need more width for split-view CCFs
-		height: 600,
+		width: 1450, // Need more width for split-view CCFs
+		height: 650,
 		show: false
 	});
 	Win[win.id] = win;
@@ -151,7 +150,6 @@ function ForceWindowRepaint() {
 */
 
 function ReadFileAndLoad(win,filename) {
-console.log("xxxxx");
 	try {
 		var str = fs.readFileSync(filename, 'utf8');
 		win.webContents.send('document-start-open', str);
@@ -573,7 +571,7 @@ MenuTemplate = [{
 	}, {
 		label: _("PDF settings..."),
 		click: function (item, focusedWindow) {
-			if (focusedWindow) focusedWindow.webContents.send('pdf-settings-show');
+			if (focusedWindow) focusedWindow.webContents.send('pdf-settings-show',app.rasteroptions);
 		}
 	}, {
 		label: _("Save as PDF"),

@@ -7,8 +7,11 @@ Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObjec
 */
 
 "use strict";
-//const DEBUG = true;  // set to false for production version
-var DEBUG = true;  // set to false for production version
+/* Global preferences */
+const DEBUG = true;  // set to false for production version
+let Preferences;
+let ToolGroup;
+let GroupSettings;
 
 /* LS is prefixed to all keys of data entered into localStorage. The prefix
  * is versioned. In future, the app can check for presence of keys from
@@ -18,12 +21,6 @@ const LS_prefix = 'raster';
 const LS_version = 4;
 const LS = LS_prefix+':'+LS_version+':';
 
-/* Global preferences */
-var Preferences;
-var ToolGroup;
-var GroupSettings;
-//var UserLanguage;
-
 const tab_height = 31;		// See CSS definition of <body>
 const toolbar_height = 94;	// See CSS definition of <body>
 
@@ -32,37 +29,29 @@ const toolbar_height = 94;	// See CSS definition of <body>
  * Glue code for Electron
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-var WindowID = null;
+let WindowID = null;
+let ipc = require('electron').ipcRenderer;
+let Modified = false;
 
-localStorage.clear();
-
-var ipc=null, url=null;
-if (typeof(process)=='object') {
-	ipc = require('electron').ipcRenderer;
-	url = require('url');
-}
-
-var Modified = false;
-
-ipc && ipc.on('window-id', function(event,id) {
+ipc.on('window-id', function(event,id) {
 	WindowID = id;
 });
-ipc && ipc.on('document-start-save', function() {
+ipc.on('document-start-save', function() {
 	var s = CurrentProjectAsString();
-	ipc && ipc.send('document-save',WindowID,s);
+	ipc.send('document-save',WindowID,s);
 });
-ipc && ipc.on('document-start-saveas', function() {
+ipc.on('document-start-saveas', function() {
 	var s = CurrentProjectAsString();
-	ipc && ipc.send('document-saveas',WindowID,s);
+	ipc.send('document-saveas',WindowID,s);
 });
-ipc && ipc.on('document-save-success', function(event,docname) {
+ipc.on('document-save-success', function(event,docname) {
 	clearModified();
 	if (!docname)  return;
 	docname = docname.replace(/\.raster$/,"");
 	$('.projectname').html(H(docname));
 	Project.get(Project.cid).settitle(docname);
 });
-ipc && ipc.on('document-start-open', function(event,str) {
+ipc.on('document-start-open', function(event,str) {
 	var newp = loadFromString(str,true,false,_("File"));
 	if (newp!=null) {
 		switchToProject(newp);
@@ -71,7 +60,7 @@ ipc && ipc.on('document-start-open', function(event,str) {
 	}
 	clearModified();
 });
-ipc && ipc.on('options', function(event,option,val) {
+ipc.on('options', function(event,option,val) {
 	if (option=='labels') {
 		Preferences.setlabel(val);
 	}
@@ -85,13 +74,13 @@ ipc && ipc.on('options', function(event,option,val) {
 		}
 	}
 });
-ipc && ipc.on('help-show', function() {
+ipc.on('help-show', function() {
 	$('#helppanel').dialog('open');
 });
-ipc && ipc.on('find-show', function() {
+ipc.on('find-show', function() {
 	StartFind();
 });
-ipc && ipc.on('pdf-settings-show', function(event,pdfoptions) {
+ipc.on('pdf-settings-show', function(event,pdfoptions) {
 	if (pdfoptions.pdforientation==0) {
 		$('#paperorientation_portrait').prop('checked',true);
 	} else {
@@ -109,7 +98,7 @@ ipc && ipc.on('pdf-settings-show', function(event,pdfoptions) {
 
 function setModified() {
 	Modified = true;
-	ipc && ipc.send('document-modified',WindowID);
+	ipc.send('document-modified',WindowID);
 }
 
 function clearModified() {
@@ -119,7 +108,6 @@ function clearModified() {
 function CurrentProjectAsString() {
 	return exportProject(Project.cid);
 }
-
 #endif
 
 /* This jQuery function executes when the document is ready, but before all
@@ -159,17 +147,17 @@ function initAllAndSetup() {
 	$('#pdf_papersize span').html(_("Paper size:"));
 	$('#pdf_scale span').html(_("Scale:"));
 
-	$('[for=paperorientation_portrait]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdforientation',0); });
-	$('[for=paperorientation_landscape]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdforientation',1); });
-	$('[for=papersize_a3]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfsize',3); });
-	$('[for=papersize_a4]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfsize',4); });
-	$('[for=pdfscale_40]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',40); });
-	$('[for=pdfscale_50]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',50); });
-	$('[for=pdfscale_60]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',60); });
-	$('[for=pdfscale_70]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',70); });
-	$('[for=pdfscale_80]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',80); });
-	$('[for=pdfscale_90]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',90); });
-	$('[for=pdfscale_100]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',100); });
+	$('[for=paperorientation_portrait]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdforientation',0); });
+	$('[for=paperorientation_landscape]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdforientation',1); });
+	$('[for=papersize_a3]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfsize',3); });
+	$('[for=papersize_a4]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfsize',4); });
+	$('[for=pdfscale_40]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',40); });
+	$('[for=pdfscale_50]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',50); });
+	$('[for=pdfscale_60]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',60); });
+	$('[for=pdfscale_70]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',70); });
+	$('[for=pdfscale_80]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',80); });
+	$('[for=pdfscale_90]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',90); });
+	$('[for=pdfscale_100]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',100); });
 
 	$('#pdfoptions').dialog({
 		title: _("Settings for PDF"),
@@ -298,6 +286,7 @@ function initAllAndSetup() {
 	}
 	startAutoSave();
 #else
+	localStorage.clear();
 	loadDefaultProject();
 #endif
 
