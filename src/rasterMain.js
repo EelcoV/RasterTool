@@ -1166,12 +1166,9 @@ var updateFind = function() {
 		if (nodepos.left > view_o.left+view_w)  scrolldist_l = view_w - nodepos.left - view_o.left - 100;
 		if (nodepos.top < view_o.top)    scrolldist_t = view_o.top - nodepos.top + 100;
 		if (nodepos.top > view_o.top+view_h)  scrolldist_t = view_h - nodepos.top - view_o.top - 100;
-		// The node may be behind the Find window
+		// The node may be behind the Find window, or the scroller
 		$('#findpanel').dialog('widget').stop().fadeTo('slow', 0.5);
-		$('#findpanel').one('mousemove', function() {
-			// Immediately show when we wiggle the mouse
-			$('#findpanel').dialog('widget').stop().css('opacity',1);
-		});
+		$('#scroller_overview'+svc_id).stop().fadeTo('slow', 0.5);
 		
 		var draw_and_wiggle = function() {
 			let o = $('#tab_diagrams'+svc_id).offset();
@@ -1183,6 +1180,11 @@ var updateFind = function() {
 			.height(node.position.height+30)
 			.effect('shake',{distance:10, times:8},1000, function() {
 				$('#selectrect').offset({left: node.position.x-15+o.left+scrollp.left, top: node.position.y-15+o.top+scrollp.top});
+				$('#findpanel').one('mousemove', function() {
+					// Immediately show when we wiggle the mouse
+					$('#findpanel').dialog('widget').stop().css('opacity',1);
+					$('#scroller_overview'+svc_id).stop().css('opacity', 1);
+				});
 			});
 		};
 
