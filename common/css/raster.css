@@ -282,6 +282,15 @@ body {
 #findbutton {background-image: url(../img/find.png);}
 #helpbutton {background-image: url(../img/qm.png);}
 
+#projectprops {background-image: url(../img/props_p.png);}
+#field_projectdescription {
+	resize: none;
+}
+#creatorf {
+	width: 15em;
+}
+
+
 /* LAYOUT =
  template
 	+ templatelabel

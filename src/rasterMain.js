@@ -127,7 +127,7 @@ function initAllAndSetup() {
 	ToolGroup = '_%standalone%_';
 	GroupSettings = {
 		classroom: false,
-		template: 'Project Template',
+		template: null,
 		iconset: 'default',
 		nostore: true
 	};
@@ -139,6 +139,7 @@ function initAllAndSetup() {
 	$('#currentProject').hide();
 	$('#toolbars li:first-child').hide();
 	$('#tb_projects').hide();
+	$('#onlinesection').hide();
 	
 	// PDF print options dialog
 	$('#pdf_orientation span').html(_("Orientation:"));
@@ -175,6 +176,10 @@ function initAllAndSetup() {
 
 	// Load preferences
 	Preferences = new PreferencesObject();
+	if (GroupSettings.nostore) {
+		$('#onlinesection').hide();
+		Preferences.online = false;
+	}
 #ifdef STANDALONE
 	Preferences.online = false;
 #endif
@@ -204,7 +209,7 @@ function initAllAndSetup() {
 	initProjectsToolbar();
 #endif
 	initHomeToolbar();
-	initOptionsToolbar();
+	initSettingsToolbar();
 
 	// Vertical tabs
 	$('#workspace').tabs({heightStyle: 'fill', activate: vertTabSelected});
@@ -459,50 +464,9 @@ function initAllAndSetup() {
 	}, 500);
 }
 
-function populateProjectList() {
-	var snippet = "";
-	var newoptions = "";
-	var it = new ProjectIterator({group: ToolGroup});
-	it.sortByTitle();
-
-	// First all private projects
-	for (const p of it) {
-		if (p.stub || p.shared) continue;
-		if (snippet=="") {
-			snippet = '<optgroup class="optgroup" label="'+_("Private projects")+'">\n';
-		}
-		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
-	}
-	if (snippet!="") {
-		snippet += '</optgroup>\n';
-	}
-	newoptions += snippet;
-#ifdef SERVER
-	//	 Then all shared projects, if they belong to group ToolGroup
-	snippet = "";
-	for (const p of it) {
-		if (p.stub || !p.shared) continue;
-		if (snippet=="") {
-			snippet = '<optgroup class="optgroup" label="'+_("Shared projects")+'">\n';
-		}
-		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
-	}
-	if (snippet!="") {
-		snippet += '</optgroup>\n';
-	}
-	newoptions += snippet;
-#endif
-	$('#projlist').html(newoptions);
-	// Finally all stubs projects
-#ifdef SERVER
-	refreshProjectList();
-#endif
-	// Select the current project, and enable/disable the buttons
-	$('#projlist').val(Project.cid).focus().trigger('change');
-}
-
 #ifdef SERVER
 function initProjectsToolbar() {
+	$("a[href^='#tb_projects']").html(_("Projects"));
 	$('#libadd').attr('title',_("Add a new, blank project to the library."));
 	$('#libduplicate').attr('title',_("Create a copy of this project."));
 	$('#libimport').attr('title',_("Load a project from a file."));
@@ -615,18 +579,7 @@ function initProjectsToolbar() {
 
 	$('#projlistsection>div:first-child').html(_("Project library"));
 	$('#projlist').selectmenu({
-		open: function() {
-			let it = new ProjectIterator({group: ToolGroup, stub: false});
-			let nump = it.count();
-			nump += 4; // Allow space for option group titles.
-			if (nump<8) nump=8;
-			if (nump>15) nump=15;
-			$('#projlist').attr("size",nump);
-			// Show project list using current stubs, but do fire an update
-			populateProjectList();
-			Project.updateStubs(refreshProjectList);
-			$('#projlist').selectmenu('refresh');
-		},
+		open: populateProjectList,
 		select: function(event,data) {
 			// data.item.value = id of selected project
 			// data.item.label = name of selected project
@@ -706,7 +659,7 @@ function initProjectsToolbar() {
 	});
 	// Merge --------------------
 	$('#libmerge').on('click',  function() {
-		var otherproject = Project.get( $('#libselect option:selected').val() );
+		var otherproject = Project.get( $('#projlist').val() );
 		if (otherproject.stub) {
 			rasterAlert(_("Cannot merge a remote project"),_("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
 			return;
@@ -726,9 +679,9 @@ function initProjectsToolbar() {
 	});
 
 	$('#projdebugsection>div:first-child').html(_("Debugging functions"));
-	$('#libcheck').val(_("?"));
-	$('#libexportall').val(_("Export all"));
-	$('#libzap').val(_("Zap library"));
+	$('#libcheck').html(_("Check"));
+	$('#libexportall').html(_("Export all"));
+	$('#libzap').html(_("Zap library"));
 	$('#libcheck').attr('title',_("Check the projects for internal consistency."));
 	$('#libexportall').attr('title',_("Save all projects into a single file."));
 	$('#libzap').attr('title',_("Permanently remove all projects."));
@@ -769,6 +722,98 @@ function initProjectsToolbar() {
 	});
 }
 
+/* populateProjectList: Show project list using current stubs, and do fire periodic updates
+ */
+function populateProjectList() {
+	var snippet = "";
+	var newoptions = "";
+	var it = new ProjectIterator({group: ToolGroup});
+	it.sortByTitle();
+
+	// First all private projects
+	for (const p of it) {
+		if (p.stub || p.shared) continue;
+		if (snippet=="") {
+			snippet = '<optgroup class="optgroup" label="'+_("Private projects")+'">\n';
+		}
+		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
+	}
+	if (snippet!="") {
+		snippet += '</optgroup>\n';
+	}
+	newoptions += snippet;
+#ifdef SERVER
+	//	 Then all shared projects, if they belong to group ToolGroup
+	if (!Preferences.nostore) {
+		snippet = "";
+		for (const p of it) {
+			if (p.stub || !p.shared) continue;
+			if (snippet=="") {
+				snippet = '<optgroup class="optgroup" label="'+_("Shared projects")+'">\n';
+			}
+			snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
+		}
+		if (snippet!="") {
+			snippet += '</optgroup>\n';
+		}
+		newoptions += snippet;
+	}
+#endif
+	$('#projlist').html(newoptions);
+#ifdef SERVER
+	// Finally all stubs projects
+	refreshStubList(false); // Add current stubs, possibly outdated wrt server status
+	if (!Preferences.nostore && Preferences.online) {
+		startPeriodicStubListRefresh(); // Update stubs from server and refresh
+	}
+#endif
+	// Select the current project, and enable/disable the buttons
+//	$('#projlist').val(Project.cid).focus().trigger('change');
+	$('#projlist').val(Project.cid).selectmenu('refresh');
+}
+
+#ifdef SERVER
+var ProjectListTimer = null;
+
+function startPeriodicStubListRefresh() {
+	if (ProjectListTimer!=null)  return;
+	// Update very 2 seconds. Updates in progress will not be interrupted
+	Project.asyncUpdateStubs();
+	ProjectListTimer = window.setInterval(function() {
+		if ($('#projlist-menu').parent().css('display')=='none') {
+			window.clearInterval(ProjectListTimer);
+			ProjectListTimer=null;
+			return;
+		}
+		Project.asyncUpdateStubs();
+	},2000);
+}
+
+
+function refreshStubList(dorepaint) {
+	let snippet = '';
+	let it = new ProjectIterator({group: ToolGroup, stub: true});
+	it.sortByTitle();
+	for (const p of it) {
+		if (snippet=='') {
+			snippet = `<optgroup id="stubgroup" class="optgroup" label="${_("Other projects on the server")}">\n`;
+		}
+		snippet += `<option value="${p.id}" title="${H(p.description)}">${H(p.title)}, by ${H(p.creator)} on ${prettyDate(p.date)}</option>\n`;
+	}
+	if (snippet!='') {
+		snippet += '</optgroup>\n';
+	}
+	$('#stubgroup').remove();
+	$('#projlist').append(snippet);
+	if (dorepaint) {
+		$('#projlist').val(Project.cid).selectmenu('refresh');
+	}
+	// This hack will ensure that the item under the pointer, that is currently highlighted,
+	// will not change its color after the menu has been refreshed.
+	$('#projlist-menu li').trigger('mousemove');
+}
+#endif
+
 function getGroupSettings() {
 	// Initialise default values, then attempt to retrieve settings from the server
 	GroupSettings = {
@@ -794,6 +839,7 @@ function getGroupSettings() {
 			}
 			if (data.nostore===true) {
 				GroupSettings.nostore = true;
+				GroupSettings.classroom = true;
 			}
 		}
 	});
@@ -801,6 +847,7 @@ function getGroupSettings() {
 #endif
 
 function initHomeToolbar() {
+	$("a[href^='#tb_home']").html(_("Home"));
 	$('#undobutton').attr('title', _("Undo"));
 	$('#redobutton').attr('title', _("Redo"));
 	$('#findbutton').attr('title', _("Locate nodes"));
@@ -851,6 +898,8 @@ function initHomeToolbar() {
 
 	// Home toolbar | SF items
 	$('#sffoldsection>div:first-child').html(_("Fold"));
+	$('#sfexpandall').html(_("Expand all"));
+	$('#sfcollapseall').html(_("Collapse all"));
 	$('#sfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
 	$('#sfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
 	$('#sfexpandall').on('click',  function(){
@@ -873,6 +922,8 @@ function initHomeToolbar() {
 
 	// Home toolbar | CCF items
 	$('#ccffoldsection>div:first-child').html(_("Fold"));
+	$('#ccfexpandall').html(_("Expand all"));
+	$('#ccfcollapseall').html(_("Collapse all"));
 	$('#ccfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
 	$('#ccfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
 	$('#ccfexpandall').on('click', function(){
@@ -896,7 +947,6 @@ function initHomeToolbar() {
 	// Home toolbar | Analysis items
 	$('#anavnsortsection>div:first-child').html(_("Sort nodes and clusters"));
 	$('#anavfsortsection>div:first-child').html(_("Sort vulnerabilities"));
-	$('#anavexcludesection>div:first-child').html(_("Click cells to include/exclude them"));
 	$('#ana_nodesort_alph').checkboxradio('option', 'label', _("Alphabetically"));
 	$('#ana_nodesort_type').checkboxradio('option', 'label', _("by Type"));
 	$('#ana_nodesort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
@@ -906,6 +956,9 @@ function initHomeToolbar() {
 	$('#ana_failsort_type').prop('checked',true);
 	$('input[name=ana_nodesort]').checkboxradio('refresh');
 	$('input[name=ana_failsort]').checkboxradio('refresh');
+	$('#anavexcludesection>div:first-child').html(_("Click cells to include/exclude them"));
+	$('#quickwinslink').html(_("Quick wins"));
+	$('#clearexclusions').html(_("Clear exclusions"));
 	var create_ananode_sortfunc = function(opt) {
 		return function() {
 			FailureThreatSortOpt.node = opt;
@@ -943,9 +996,15 @@ function initHomeToolbar() {
 		paintCCFTable();
 		$('#clearexclusions').button('option','disabled',true);
 	});
+	
+	$('#anallincsection>div:first-child').html(_("Include"));
+	$('#anallminsection>div:first-child').html(_("Minimum value"));
+	$('#anallincsection label[for=incX]').html(_("Undetermined"));
+	$('#anallincsection label[for=incA]').html(_("Ambiguous"));
 }
 
-function initOptionsToolbar() {
+function initSettingsToolbar() {
+	$("a[href^='#tb_settings']").html(_("Settings"));
 	// Options toolbar | diagrams options
 	$('#vulnlevelsection>div:first-child').html(_("Vulnerability levels"));
 
@@ -982,47 +1041,34 @@ function initOptionsToolbar() {
 	});
 
 	// Options toolbar | project options
-	$('#projnamesection>div:first-child').html(_("Project name"));
-	$('#projname').editInPlace({
-		bg_over: 'var(--highlt)',
-		bg_out: 'white',
-		text_size: 50,
-		callback: function(domid, enteredText) {
-			let p = Project.get(Project.cid);
-			p.settitle(enteredText);
-			$('.projectname').html(H(p.title));
-			document.title = "Raster - " + p.title;
-			Preferences.setcurrentproject(p.title);
-			return p.title;
-		}
-	});
-	$('#projdescrsection>div:first-child').html(_("Project description"));
-	$('#projdescr').editInPlace({
-		bg_over: 'var(--highlt)',
-		bg_out: 'white',
-		field_type: 'textarea',
-		textarea_rows: 7,
-		textarea_cols: 50,
-		show_buttons: false,
-		callback: function(domid, enteredText) {
-			let p = Project.get(Project.cid);
-			p.setdescription(enteredText);
-			$('#projdescr').css('overflow','hidden');
-			return p.description;
-		},
-		delegate: {
-			shouldOpenEditInPlace: function() {
-				$('#projdescr').css('overflow','visible');
-			}
-		}
-	});
+	$('#projectprops').attr('title',_("Inspect and modify this project."));
+	$('#projectprops').on('click',  ShowDetails);
 
-	$('#sharingsection>div:first-child').html(_("Sharing"));
-	$('#sharing_off').checkboxradio('option', 'label', _("off"));
-	$('#sharing_on').checkboxradio('option', 'label', _("on"));
-	$('#sharing_off').prop('checked',true);
-	$('input[name=sharing]').checkboxradio('refresh');
-//	$('#sharingsection input').on('change', function(...) );
+#ifdef SERVER
+	// Creator name
+	if (!Preferences.creator) Preferences.creator = _("Anonymous");
+	$('#creatorlabel>div:first-child').html(_("Your name"));
+	$('#creatorf').prop('placeholder',Preferences.creator);
+	$('#creatorf').attr('title',_("The author's name projects that you share."));
+	$('#creatorf').on('click', function() {
+		$(this).val(Preferences.creator);
+	});
+	$('#creatorf').on('keypress', (e) => {if (e.which == 13) $('#creatorf').trigger('blur');});
+	$('#creatorf').on('blur', function() {
+		Preferences.setcreator($(this).val());
+		$('#creatorf').val("").prop('placeholder',Preferences.creator);
+	});
+	// Online / offline settings
+	$('#onlinelabel>div:first-child').html(_("Server synchronisation"));
+	$('#online_off').checkboxradio('option', 'label', _("offline"));
+	$('#online_on').checkboxradio('option', 'label', _("online"));
+	$('#online_off').prop('checked',!Preferences.online);
+	$('#online_on').prop('checked',Preferences.online);
+	$('input[name=onlineonoff]').checkboxradio('refresh');
+	$('#onlinesection input').on('change', function() {
+		Preferences.setonline($('#online_on').prop('checked'));
+	});
+#endif
 }
 
 function toolbartabselected(evt,ui) {
@@ -1032,7 +1078,7 @@ function toolbartabselected(evt,ui) {
 		break;
 	case 'tb_home':		// Home toolbar
 		break;
-	case 'tb_options':		// Options toolbar
+	case 'tb_settings':		// Options toolbar
 		p = Project.get(Project.cid);
 		$('#projname').html(H(p.title));
 		$('#projdescr').html(H(p.description));
@@ -1367,6 +1413,108 @@ function freqIndicatorUpdate(anim) {
 		});
 	}
 }
+
+/* ShowDetails: a dialog to edit the current project's properties
+ */
+function ShowDetails() {
+	let p = Project.get(Project.cid);
+	let snippet =`<form id="form_projectprops">
+		${_("Title:")}<br><input id="field_projecttitle" name="fld" type="text" value="${H(p.title)}"><br>
+		`;
+	if (!GroupSettings.nostore && p.shared) { //For standalone .nostore==true
+		snippet += `<div>${_("Creator:")} ${p.stub ? H(p.creator) : H(Preferences.creator)}, ${_("last stored on")} ${H(prettyDate(p.date))}.<br><br></div>
+			`;
+	}
+	snippet +=`${_("Description:")}<br><textarea id="field_projectdescription" rows="3">${H(p.description)}</textarea><br>
+		`;
+	if (!GroupSettings.nostore) { //For standalone .nostore==false
+		snippet += `<fieldset>
+		<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">${_("Private")}</label>
+		<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">${_("Shared")}</label>
+		</fieldset>
+		`;
+	}
+	snippet += '</form>';
+
+	let dialog = $('<div></div>');
+	dialog.append(snippet);
+	let dbuttons = [];
+	dbuttons.push({
+		text: _("Cancel"),
+		click: function() {
+				$(this).dialog('close');
+			}
+	});
+	dbuttons.push({
+		text: _("Change properties"),
+		click: function() {
+					let fname = $('#field_projecttitle');
+					p.settitle(fname.val());
+					$('.projectname').html(H(p.title));
+					document.title = "Raster - " + p.title;
+					Preferences.setcurrentproject(p.title);
+					
+					fname = $('#field_projectdescription');
+					p.setdescription(fname.val());
+#ifdef SERVER
+					if (!GroupSettings.nostore) {
+						let becomesShared = $('#sh_on').prop('checked');
+						if (!p.shared && becomesShared) {
+							// Before changing the sharing status from 'private' to 'shared', first
+							// check if there already is a project with this name. If so, refuse to rename.
+							let it = new ProjectIterator({title: p.title, group: ToolGroup, stub: true});
+							if (it.count()>0) {
+								rasterAlert(_("Cannot share this project yet"),
+									_("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
+								);
+							} else {
+								// transactionCompleted() will take care of the server, if project p is the current project.
+								p.setshared(becomesShared,false);
+							}
+						} else if (p.shared && !becomesShared) {
+							// Stop watching the project, or we will notify ourselves about its deletion
+							stopWatching(p.id);
+							p.setshared(becomesShared,true);
+						} else if (p.shared && becomesShared) {
+							p.storeOnServer(false,exportProject(p.id),{});
+						}
+					}
+#endif
+					$(this).dialog('close');
+					populateProjectList();
+					transactionCompleted("Project props change");
+			}
+	});
+	dialog.dialog({
+		title: _("Properties for project '%%'", p.title),
+		modal: true,
+		width: 490, maxWidth: 490, minWidth: 490,
+		buttons: dbuttons,
+		open: function() {
+#ifdef SERVER
+			if (!GroupSettings.nostore) {
+				$('#form_projectprops input[type=radio]').checkboxradio({icon: false});
+				$('#form_projectprops fieldset').controlgroup();
+				$('#sh_off').prop('checked',!p.shared);
+				$('#sh_on').prop('checked',p.shared);
+				$('input[name="sh_onoff"]').checkboxradio('refresh');
+			}
+			if (GroupSettings.classroom) {
+				$('input[name="sh_onoff"]').checkboxradio('option','disabled',true);
+			}
+#endif
+			$('#field_projecttitle').focus().select();
+			$('#form_projectprops').submit(function() {
+				// Ignore, must close with dialog widgets
+				return false;
+			});
+		},
+		close: function(/*event, ui*/) {
+			dialog.remove();
+		}
+	});
+}
+
 
 function log10(x) { return Math.LOG10E * Math.log(x); }
 
@@ -2726,170 +2874,6 @@ function checkForErrors(verbose) {
 		rasterAlert(_("Your projects contain errors:"), errors);
 	}
 }
-
-function ShowDetails(p) {
-	var dialog = $('<div></div>');
-#ifdef STANDALONE
-	var snippet ='\
-		<form id="form_projectprops">\n\
-		_LT_<br><input id="field_projecttitle" name="fld" type="text" value="_PN_"><br>\n\
-		_LD_<br><textarea id="field_projectdescription" rows="2">_PD_</textarea><br>\n\
-		</form>\
-	';
-#else
-	var snippet ='\
-		<form id="form_projectprops">\n\
-		_LT_<br><input id="field_projecttitle" name="fld" type="text" value="_PN_"><br>\n\
-		<div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n\
-		_LD_<br><textarea id="field_projectdescription" rows="2">_PD_</textarea><br>\n\
-		<fieldset>\n\
-		<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
-		<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n\
-		</fieldset>\n\
-		</form>\
-	';
-#endif
-	snippet = snippet.replace(/_LT_/g, _("Title:"));
-	snippet = snippet.replace(/_LD_/g, _("Description:"));
-	snippet = snippet.replace(/_PN_/g, H(p.title));
-	snippet = snippet.replace(/_PD_/g, H(p.description));
-#ifdef SERVER
-	snippet = snippet.replace(/_LC_/g, _("Creator:"));
-	snippet = snippet.replace(/_LP_/g, _("Private"));
-	snippet = snippet.replace(/_LS_/g, _("Shared"));
-	snippet = snippet.replace(/_STR_/g, _("last stored on"));
-	snippet = snippet.replace(/_CR_/g, (p.shared && !p.stub ? H(Preferences.creator) : H(p.creator)));
-	snippet = snippet.replace(/_DA_/g, H(prettyDate(p.date)));
-	snippet = snippet.replace(/_DI_/g, (p.stub||p.shared ? 'block' : 'none'));
-#endif
-	dialog.append(snippet);
-	var dbuttons = [];
-	dbuttons.push({
-		text: _("Cancel"),
-		click: function() {
-				$(this).dialog('close');
-			}
-	});
-	dbuttons.push({
-		text: _("Change properties"),
-		click: function() {
-#ifdef SERVER
-				if (!p.stub) {
-#endif
-					var fname = $('#field_projecttitle');
-					p.settitle(fname.val());
-					if (Project.cid==p.id) {
-						$('.projectname').html(H(p.title));
-						document.title = "Raster - " + p.title;
-						Preferences.setcurrentproject(p.title);
-					}
-					fname = $('#field_projectdescription');
-					p.setdescription(fname.val());
-#ifdef SERVER
-					var becomesShared = $('#sh_on:checked').length>0;
-					if (!p.shared && becomesShared) {
-						// Before changing the sharing status from 'private' to 'shared', first
-						// check if there already is a project with this name. If so, refuse to rename.
-						var it = new ProjectIterator({title: p.title, group: ToolGroup, stub: true});
-						if (it.count()>0) {
-							rasterAlert(_("Cannot share this project yet"),
-								_("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
-							);
-						} else {
-							// transactionCompleted() will take care of the server, if project p is the current project.
-							p.setshared(becomesShared,(p.id!=Project.cid));
-//								if (p.id == Project.cid)
-//									startAutoSave();
-						}
-					} else if (p.shared && !becomesShared) {
-						// Stop watching the project, or we will notify ourselves about its deletion
-						stopWatching(p.id);
-						p.setshared(becomesShared,true);
-					} else if (p.shared && becomesShared) {
-						p.storeOnServer(false,exportProject(p.id),{});
-					}
-#endif
-					$(this).dialog('close');
-					populateProjectList();
-					transactionCompleted("Project props change");
-#ifdef SERVER
-				} else {
-					// Not implemented yet.
-					rasterAlert(_("Cannot change project on server"),_("This function is not implemented yet."));
-				}
-#endif
-			}
-	});
-	dialog.dialog({
-		title: _("Properties for project '%%'", p.title),
-		modal: true,
-		width: 490,
-#ifdef SERVER
-		height: 280,
-#endif
-		buttons: dbuttons,
-		open: function() {
-#ifdef SERVER
-			$('#form_projectprops input[type=radio]').checkboxradio({icon: false});
-			$('#form_projectprops fieldset').controlgroup();
-			$('#sh_off')[0].checked = !p.shared;
-			$('#sh_on')[0].checked = p.shared;
-			$('input[name="sh_onoff"]').checkboxradio("refresh");
-
-			if (GroupSettings.classroom) {
-				$('input[name="sh_onoff"]').checkboxradio({
-					disabled: true
-				});
-			}
-#endif
-			$('#field_projecttitle').focus().select();
-			$('#form_projectprops').submit(function() {
-				// Ignore, must close with dialog widgets
-				return false;
-			});
-		},
-		close: function(/*event, ui*/) {
-			dialog.remove();
-			$('#libselect').focus();
-		}
-	});
-}
-
-#ifdef SERVER
-var ProjectListTimer;
-
-function startPeriodicProjectListRefresh() {
-	if (ProjectListTimer!=null)  return;
-	// Update very 6 seconds. Must be more than the default Ajax timeout is 5 seconds.
-	ProjectListTimer = window.setInterval(function() {
-		if ($('#librarypanel').css('display')=='none') {
-			window.clearInterval(ProjectListTimer);
-			ProjectListTimer=null;
-			return;
-		}
-		Project.updateStubs(refreshProjectList);
-	},6000);
-}
-
-function refreshProjectList() {
-	var prevselected = $('#libselect option:selected').val();
-	var snippet = "";
-	var it = new ProjectIterator({group: ToolGroup, stub: true});
-	it.sortByTitle();
-	for (const p of it) {
-		if (snippet=="") {
-			snippet = '<optgroup id="stubgroup" class="optgroup" label="'+_("Other projects on the server")+'">\n';
-		}
-		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+', by '+H(p.creator)+' on '+prettyDate(p.date)+'</option>\n';
-	}
-	if (snippet!="") {
-		snippet += '</optgroup>\n';
-	}
-	$('#stubgroup').remove();
-	$('#libselect').append(snippet);
-	$('#libselect').val(prevselected);
-}
-#endif
 
 function bottomTabsCloseHandler(event) {
 	var p = Project.get(Project.cid);
@@ -5049,6 +5033,7 @@ function nodeClusterReorder(event,ui) {
 function allowDrop(elem) {
 	if (Preferences.tab!=2)  return false;
 	if (this==elem[0])  return false;
+	if (!$(elem).hasClass('tlistitem')) return false; // Could be dragging a dialog box without an id
 	// Source and target information
 	var drag_n, drag;	// source node and cluster (id)
 	var drop_n, drop; // destination node and cluster (id)

@@ -3,7 +3,7 @@
  */
 
 /* global
-_, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, mylang, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, populateProjectList, Preferences, prettyDate, ProjectIterator, rasterAlert, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
+_, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, mylang, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, populateProjectList, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -17,7 +17,7 @@ _, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, crea
  *	withTitle(str): returns the id of the local project with title 'str', or 'null' otherwise.
  *	firstProject(): returns the an existing local Project object, or null otherwise.
  *  merge(target,source): merge source project into target project, deleting source project.
- *	updateStubs(blocking): retrieve list of projects from server.
+ *	asyncUpdateStubs(): retrieve list of projects from server and update the UI.
  *	retrieve(i): download the project with id 'i' from the server.
  *	getProps(s): retrieve properties of remote project with name 's'.
  * Instance properties:
@@ -85,12 +85,12 @@ var Project = function(id,asstub) {
 	this.creator = "";
 	this.date = "";
 #ifdef SERVER
-	this.shared = false;
 	if (asstub==null) {
 		this.stub = false;
 	} else {
 		this.stub = (asstub===true);
 	}
+	this.shared = this.stub;	// default to private, but stubs are always shared
 #else
 	this.stub = false;
 #endif
@@ -278,10 +278,11 @@ var updateStubsInProgress=false;
 /* Add all projects that can be found on the server, except those that share their name with a
  * project that is shared, as stub projects.
  */
-Project.updateStubs = function(doWhenReady) {
+Project.asyncUpdateStubs = function() {
 	if (!Preferences.online)  return; // No actions when offline
 	// Ignore if we already have a request running.
 	if (updateStubsInProgress) {
+		console.log('Project.updateStubs aborted; already in progress');
 		return;
 	}
 	updateStubsInProgress=true;
@@ -291,7 +292,7 @@ Project.updateStubs = function(doWhenReady) {
 		dataType: 'json',
 		success: function(data) {
 			// Remove all current stub projects
-			var it = new ProjectIterator({stub: true});
+			var it = new ProjectIterator({group: ToolGroup, stub: true});
 			it.forEach(p => p.destroy());
 			for (const rp of data) {
 				// Skip the server version if we are already sharing this project (avoid duplicate)
@@ -299,15 +300,12 @@ Project.updateStubs = function(doWhenReady) {
 				if (p!=null && Project.get(p).shared==true) continue;
 
 				p = new Project(null,true);
-				p.shared = true;
 				p.title = rp.name;
 				p.creator = rp.creator;
 				p.date = rp.date;
 				p.description = unescapeNewlines(rp.description);
 			}
-			if (doWhenReady) {
-				doWhenReady(data);
-			}
+			refreshStubList(true);
 		},
 		error: function(jqXHR, textStatus) {
 			if (textStatus=="timeout") {
@@ -832,10 +830,7 @@ Project.prototype = {
 		SizeDOMElements();  // Correct the scroller regions
 		$('.projectname').text(this.title);
 #ifdef SERVER
-		populateProjectList();
-		$('#projlist').find(`option[value=${this.id}]`).attr("selected",true);
 		$('#projlist-button span:last-child').html( H(this.title) );
-		$('#projlist').selectmenu('refresh');	// this will trigger a select event on the selectmenu
 		document.title = "Raster - " + this.title;
 #endif
 	},

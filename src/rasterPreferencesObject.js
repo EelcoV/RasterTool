@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global bugreport, _, ProjectIterator, refreshStubList, startAutoSave, LS */
 
 /*
  *
@@ -96,7 +96,7 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 			// Remove all current stub projects
 			var it = new ProjectIterator({stub: true});
 			it.forEach(p => p.destroy());
-			refreshProjectList();
+			refreshStubList();
 		}
 		this.store();
 		startAutoSave();

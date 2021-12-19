@@ -3,6 +3,8 @@ See LICENSE.md
 
 
 BUGS
+Toolbar buttons should be greyed out when the workspace is empty (SF, CCF, analysis)
+Set title attributes on all checkboxradio options
 When renaming a service, the bottom tabs should be renamed and the right-hand side of the CCF tab should be repainted (title popup on nodes refers to the old service)
 Selectrect should have a popup menu indicator, just like nodes do.
 Title on undo/redo buttons should be made HTML-safe with the H()-function on display; the descriptions supplied in new Transaction() should not be HTML-escaped.

@@ -71,7 +71,6 @@
 		494B702A18796E9D00400328 /* ReleaseNotes.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReleaseNotes.txt; sourceTree = "<group>"; };
 		494B702C18796E9D00400328 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		495E762623B4E37000C1F367 /* iconset */ = {isa = PBXFileReference; lastKnownFileType = folder; path = iconset; sourceTree = "<group>"; };
-		49656F6E235662CB00A731AC /* selected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = selected.png; sourceTree = "<group>"; };
 		496A429C27555845005BA08F /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
 		496A429D27558381005BA08F /* paper.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = paper.png; sourceTree = "<group>"; };
 		496C1508233E95BF00769318 /* jsplumb-2.12.0.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jsplumb-2.12.0.min.js"; sourceTree = "<group>"; };
@@ -93,6 +92,7 @@
 		49ADB677276CF02300A99B47 /* installbg_EN.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = installbg_EN.png; sourceTree = "<group>"; };
 		49ADB678276CF02300A99B47 /* installbg_NL.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = installbg_NL.png; sourceTree = "<group>"; };
 		49ADB679276D30E700A99B47 /* fix-the-disk-image.applescript */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.applescript; path = "fix-the-disk-image.applescript"; sourceTree = "<group>"; };
+		49ADB67B276E7BFB00A99B47 /* props_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = props_p.png; sourceTree = "<group>"; };
 		49ADD30023CA0B5C003BE3D4 /* rasterTransaction.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = rasterTransaction.js; sourceTree = "<group>"; };
 		49AE7CC62378595A00F12B9D /* winbuild.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = winbuild.bat; sourceTree = "<group>"; };
 		49BEE0DE23C1F90E00AC17F7 /* group.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = group.json; sourceTree = "<group>"; };
@@ -209,6 +209,7 @@
 		494B6FEB18796E9D00400328 /* img */ = {
 			isa = PBXGroup;
 			children = (
+				49ADB67B276E7BFB00A99B47 /* props_p.png */,
 				49ADB675276A8CB300A99B47 /* duplicate_p.png */,
 				4920390527669ADB0067A740 /* activate_p.png */,
 				4920390227669ADB0067A740 /* del_p.png */,
@@ -233,7 +234,6 @@
 				494B6FF318796E9D00400328 /* dropdown.png */,
 				494B700218796E9D00400328 /* nolabel.png */,
 				494B701518796E9D00400328 /* Raster.png */,
-				49656F6E235662CB00A731AC /* selected.png */,
 				494B702218796E9D00400328 /* warn.png */,
 			);
 			path = img;
