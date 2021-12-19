@@ -1481,7 +1481,9 @@ function ShowDetails() {
 					}
 #endif
 					$(this).dialog('close');
+#ifdef SERVER
 					populateProjectList();
+#endif
 					transactionCompleted("Project props change");
 			}
 	});
@@ -1778,14 +1780,12 @@ function isSameString(a,b) {
 /* prettyDate: reformat the timestamp string for server projects.
  * prettyDate("20210516 1435 22") = "16-05-2021 14:35"
  */
-#ifdef SERVER
 function prettyDate(d) {
 	// Format is: YYYYMMDD HHMM SS
 	//            1   2 3  4 5  6
 	var r = d.match(/^(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d) (\d\d)$/);
 	return (r==null ? d : r[3]+'-'+r[2]+'-'+r[1]+' '+r[4]+':'+r[5]);
 }
-#endif
 
 /* Replacement for the standard Javascript alert() function. Several differences:
  * - it won't block the browser (only this tab)
