@@ -83,7 +83,7 @@ function createWindow(filename) {
 		},
 		x: pos.x,
 		y: pos.y,
-		width: 1450, // Need more width for split-view CCFs
+		width: 1400, // Need more width for split-view CCFs
 		height: 650,
 		show: false
 	});

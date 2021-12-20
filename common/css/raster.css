@@ -1188,14 +1188,14 @@ for checklists and threat evaluations.
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
 #ccfs_body {
-    width: 847px !important;
+    width: 790px !important;
 	border-right: none;
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 	overflow-y: scroll !important;
 }
 #ccfs_details {
-	width: calc(100% - 859px) !important;
+	width: calc(100% - 797px) !important;
 	min-width: 500px;
 	position: absolute;
 	top: 0;
@@ -1258,7 +1258,7 @@ for checklists and threat evaluations.
 	line-height: 1.7em;
 }
 .ccfaccordion {
-    width: 800px !important;
+    width: 750px !important;
     margin-left: 15px !important;
     margin-bottom: 3px !important;
 }
@@ -1284,7 +1284,7 @@ for checklists and threat evaluations.
 }
 
 .tlistitem {
-    margin: 0 44px 5px 0px;
+    margin: 0 20px 5px 0px;
     padding: 1px 5px;
     border: 1px solid #ccc;
     border-radius: 3px;
@@ -1296,7 +1296,7 @@ for checklists and threat evaluations.
     background: #80c0ff;
 }
 .tlistroot {
-    margin: 0 44px 5px 0px;
+    margin: 0 20px 5px 0px;
     padding: 1px 5px;
     border: 2px solid gray !important;
     font-size: 120%;
