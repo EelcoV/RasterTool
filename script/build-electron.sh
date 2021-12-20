@@ -22,10 +22,12 @@ CreateAppVersion()
 	echo "************************** Building $RLANG version for standalone into $BUILDDIR..."
 
 	if [ ! -d $BUILDDIR ]; then
-		mkdir -p $BUILDDIR
+		mkdir -p $BUILDDIR/doc
 	fi
 
 	# Fixed sources
+	cp -R -p README.md $BUILDDIR
+	cp -R -p doc/[A-Z]* $BUILDDIR/doc
 	cp -p standalone/* $BUILDDIR
 	cp -R -p common/* $BUILDDIR
 

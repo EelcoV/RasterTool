@@ -15,12 +15,14 @@ BUILDDIR=build/server
 echo "Building server version $RASTERVERSION into $BUILDDIR..."
 
 if [ ! -d $BUILDDIR ]; then
-	mkdir -p $BUILDDIR
+	mkdir -p $BUILDDIR/doc
 fi
 
 ./script/checktranslation.sh  > $BUILDDIR/../translation-errors.txt
 
 # Fixed sources
+cp -R -p README.md $BUILDDIR
+cp -R -p doc/[A-Z]* $BUILDDIR/doc
 cp -R -p server/* $BUILDDIR
 cp -R -p common/* $BUILDDIR
 cp -R -p public_group $BUILDDIR

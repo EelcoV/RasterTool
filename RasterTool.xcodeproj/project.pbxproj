@@ -17,7 +17,7 @@
 		4915A63D1FA126E600B4B205 /* nsis.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = nsis.zip; sourceTree = "<group>"; };
 		491735622754076B008967A2 /* jquery-ui-1.13.0.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery-ui-1.13.0.min.js"; sourceTree = "<group>"; };
 		4917356927540849008967A2 /* jquery-3.6.0.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "jquery-3.6.0.min.js"; sourceTree = "<group>"; };
-		4918F0BE1FBEBF13008A6208 /* Build and Install.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Build and Install.md"; sourceTree = "<group>"; };
+		4918F0BE1FBEBF13008A6208 /* build and Install.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "build and Install.md"; sourceTree = "<group>"; };
 		491CD6D3187DA7600028B84D /* dropedit.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dropedit.png; sourceTree = "<group>"; };
 		492038FE276547590067A740 /* export_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = export_p.png; sourceTree = "<group>"; };
 		492038FF276547590067A740 /* import_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = import_p.png; sourceTree = "<group>"; };
@@ -54,7 +54,7 @@
 		494B6F8518796E9D00400328 /* rasterProject.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterProject.js; sourceTree = "<group>"; };
 		494B6F8618796E9D00400328 /* rasterService.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterService.js; sourceTree = "<group>"; };
 		494B6F8718796E9D00400328 /* rasterAssessment.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = rasterAssessment.js; sourceTree = "<group>"; };
-		494B6F8818796E9D00400328 /* Testcase.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Testcase.txt; sourceTree = "<group>"; };
+		494B6F8818796E9D00400328 /* testcase.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testcase.txt; sourceTree = "<group>"; };
 		494B6F8A18796E9D00400328 /* index.inc */ = {isa = PBXFileReference; explicitFileType = text.html.documentation; path = index.inc; sourceTree = "<group>"; };
 		494B6FA118796E9D00400328 /* sse_projmon.inc */ = {isa = PBXFileReference; explicitFileType = text.script.php; path = sse_projmon.inc; sourceTree = "<group>"; };
 		494B6FB518796E9D00400328 /* raster-print.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "raster-print.css"; sourceTree = "<group>"; };
@@ -101,7 +101,7 @@
 		49CA255F23CB3A32002F7B74 /* undo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = undo.png; sourceTree = "<group>"; };
 		49CD587D1F92238E00A9F17F /* e-translation-NL.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "e-translation-NL.js"; sourceTree = "<group>"; };
 		49CD587E1F933CD600A9F17F /* e-translation-EN.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "e-translation-EN.js"; sourceTree = "<group>"; };
-		49CD587F1F93922E00A9F17F /* Object data structure.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Object data structure.txt"; sourceTree = "<group>"; };
+		49CD587F1F93922E00A9F17F /* object data structure.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "object data structure.txt"; sourceTree = "<group>"; };
 		49D256041A1E87BF00102918 /* jquery.localisation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.localisation.js; sourceTree = "<group>"; };
 		49D256061A1E88A200102918 /* translation-nl.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "translation-nl.js"; sourceTree = "<group>"; };
 		49E402A91F99378B00978B5C /* RasterIcon.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = RasterIcon.odg; sourceTree = "<group>"; };
@@ -344,9 +344,9 @@
 				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
 				499A6BA01A72DC080047E182 /* LICENSE.md */,
 				494B6F6818796E9D00400328 /* designAtomicActions.txt */,
-				494B6F8818796E9D00400328 /* Testcase.txt */,
-				49CD587F1F93922E00A9F17F /* Object data structure.txt */,
-				4918F0BE1FBEBF13008A6208 /* Build and Install.md */,
+				494B6F8818796E9D00400328 /* testcase.txt */,
+				49CD587F1F93922E00A9F17F /* object data structure.txt */,
+				4918F0BE1FBEBF13008A6208 /* build and Install.md */,
 			);
 			path = doc;
 			sourceTree = "<group>";

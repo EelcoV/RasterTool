@@ -129,7 +129,7 @@ function initAllAndSetup() {
 		classroom: false,
 		template: null,
 		iconset: 'default',
-		nostore: true
+		localonly: true
 	};
 	// Prevent file drops
 	document.addEventListener('dragover', function(event) {event.preventDefault();} );
@@ -176,7 +176,7 @@ function initAllAndSetup() {
 
 	// Load preferences
 	Preferences = new PreferencesObject();
-	if (GroupSettings.nostore) {
+	if (GroupSettings.localonly) {
 		$('#onlinesection').hide();
 		Preferences.online = false;
 	}
@@ -744,7 +744,7 @@ function populateProjectList() {
 	newoptions += snippet;
 #ifdef SERVER
 	//	 Then all shared projects, if they belong to group ToolGroup
-	if (!Preferences.nostore) {
+	if (!Preferences.localonly) {
 		snippet = "";
 		for (const p of it) {
 			if (p.stub || !p.shared) continue;
@@ -763,7 +763,7 @@ function populateProjectList() {
 #ifdef SERVER
 	// Finally all stubs projects
 	refreshStubList(false); // Add current stubs, possibly outdated wrt server status
-	if (!Preferences.nostore && Preferences.online) {
+	if (!Preferences.localonly && Preferences.online) {
 		startPeriodicStubListRefresh(); // Update stubs from server and refresh
 	}
 #endif
@@ -820,7 +820,7 @@ function getGroupSettings() {
 		classroom: false,
 		template: 'Project Template',
 		iconset: 'default',
-		nostore: false
+		localonly: false
 	};
 	$.ajax({
 		url: 'group.json',
@@ -837,8 +837,8 @@ function getGroupSettings() {
 			if (typeof data.iconset==='string') {
 				GroupSettings.iconset = data.iconset;
 			}
-			if (data.nostore===true) {
-				GroupSettings.nostore = true;
+			if (data.localonly===true) {
+				GroupSettings.localonly = true;
 				GroupSettings.classroom = true;
 			}
 		}
@@ -1421,13 +1421,13 @@ function ShowDetails() {
 	let snippet =`<form id="form_projectprops">
 		${_("Title:")}<br><input id="field_projecttitle" name="fld" type="text" value="${H(p.title)}"><br>
 		`;
-	if (!GroupSettings.nostore && p.shared) { //For standalone .nostore==true
+	if (!GroupSettings.localonly && p.shared) { //For standalone .localonly==true
 		snippet += `<div>${_("Creator:")} ${p.stub ? H(p.creator) : H(Preferences.creator)}, ${_("last stored on")} ${H(prettyDate(p.date))}.<br><br></div>
 			`;
 	}
 	snippet +=`${_("Description:")}<br><textarea id="field_projectdescription" rows="3">${H(p.description)}</textarea><br>
 		`;
-	if (!GroupSettings.nostore) { //For standalone .nostore==false
+	if (!GroupSettings.localonly) { //For standalone .localonly==false
 		snippet += `<fieldset>
 		<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">${_("Private")}</label>
 		<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">${_("Shared")}</label>
@@ -1457,7 +1457,7 @@ function ShowDetails() {
 					fname = $('#field_projectdescription');
 					p.setdescription(fname.val());
 #ifdef SERVER
-					if (!GroupSettings.nostore) {
+					if (!GroupSettings.localonly) {
 						let becomesShared = $('#sh_on').prop('checked');
 						if (!p.shared && becomesShared) {
 							// Before changing the sharing status from 'private' to 'shared', first
@@ -1494,7 +1494,7 @@ function ShowDetails() {
 		buttons: dbuttons,
 		open: function() {
 #ifdef SERVER
-			if (!GroupSettings.nostore) {
+			if (!GroupSettings.localonly) {
 				$('#form_projectprops input[type=radio]').checkboxradio({icon: false});
 				$('#form_projectprops fieldset').controlgroup();
 				$('#sh_off').prop('checked',!p.shared);

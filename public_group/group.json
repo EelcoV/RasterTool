@@ -2,5 +2,5 @@
 "classroom": false,
 "template": "Project Template",
 "iconset": "default",
-"nostore": false
+"localonly": false
 }
