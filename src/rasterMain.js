@@ -3233,10 +3233,10 @@ function initTabDiagrams() {
 		let cm = Component.get(rn.component);
 		if (!cm.single) {
 			// Only allow Class to become singular iff there is at most one member node per service
-			let count =[];
+			let count = {};
 			for (const s of Project.get(cm.project).services) count[s]=0;
 			for (const n of cm.nodes) count[Node.get(n).service]++;
-			for (const s of count) {
+			for (const s in count) {
 				if(count[s]<2) continue;
 				// Flash the offending nodes
 				for (const n of cm.nodes) $('#node'+n).effect('pulsate', { times:2 }, 800);

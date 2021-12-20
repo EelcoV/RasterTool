@@ -1151,13 +1151,14 @@ Node.prototype = {
 		$('#mi_cc span').eq(1).html(s);
 		$('#nodemenu')
 		.menu('collapseAll')
+		.show()
 		.position({
 			my: "left top",
 			at: "center",
 			of: evt,
 			collision: "flipfit"
 			})
-		.show();
+		;
 		$('#nodemenu').data('menunode', this.id);
 
 	},
