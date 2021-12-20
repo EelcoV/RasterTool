@@ -143,17 +143,37 @@ CreateMacOSVersion()
 #	hdiutil convert build/temp.dmg -format UDRO -o build/Raster-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
 #	rm -f build/temp.dmg
 
+echo "** Unmounting previous volume, if any (OK to fail)"
+	hdiutil detach "/Volumes/Raster $RLANG-$ARCH" || true
+echo "** Copying background image"
 	rm -fr $BASEDIR/.background
 	mkdir $BASEDIR/.background
 	cp script/installbg_$RLANG.png $BASEDIR/.background/image.png
+echo "** Creating link to /Applications"
 	ln -s -f /Applications $BASEDIR
+echo "** Deleting old disk images"
+	rm -f build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
 	rm -f build/Raster-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
+echo "** Creating RW disk image"
 	hdiutil create -format UDRW -srcfolder $BASEDIR -volname "Raster $RLANG-$ARCH" build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
+echo "** Attaching RW image"
 	hdiutil attach build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
-	rm -fr "Volumes/Raster $RLANG-$ARCH/.fseventsd"
-	/usr/bin/osascript script/fix-the-disk-image.applescript "Raster $RLANG-$ARCH" || exit 55
+echo "** Removing fseventsd directory"
+	rm -fr "/Volumes/Raster $RLANG-$ARCH/.fseventsd"
+echo "** Running AppleScript"
+	if (/usr/bin/osascript -s o script/fix-the-disk-image.applescript "Raster $RLANG-$ARCH" | grep "error")
+	then
+		echo "   fail. Trying once more."
+		sleep 1
+		/usr/bin/osascript script/fix-the-disk-image.applescript "Raster $RLANG-$ARCH" || exit 55
+	else
+		echo "   success."
+	fi
+echo "** Unmounting RW image"
 	hdiutil detach "/Volumes/Raster $RLANG-$ARCH"
+echo "** Converting RW to final compressed image"
 	hdiutil convert build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg -format UDZO -o build/Raster-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
+echo "** Removing RW image"
 	rm build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
 
 	echo "************************** ...done."
