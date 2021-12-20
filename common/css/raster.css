@@ -802,7 +802,7 @@ div.th_remark {
 	background-image: url('../img/paper.png') !important;
 	background-size: 100px !important;
 	background-position: 15px 15px !important;
-	overflow: scroll !important;
+/*	overflow: scroll !important;*/
 }
 .plainworkspace {
     overflow: auto !important;

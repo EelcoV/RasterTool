@@ -3,7 +3,7 @@
  */
 
 /* globals
-Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, unescapeNewlines, urlDecode, urlEncode
+AssessmentIterator, Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, unescapeNewlines, urlDecode, urlEncode
 */
 
 "use strict";
@@ -2670,70 +2670,28 @@ function singleProjectExport(p) {
 }
 
 function exportProject(pid) {
-	var p = Project.get(pid);
+	let p = Project.get(pid);
+	let s = "";
 	// We must ignore the date on export. It must be preserved in localStorage, but
 	// like the creator it is not part of the project data. It is metadata, stored
 	// and retrieved by the server separately from the project data.
-	var olddate = p.date;
+	let olddate = p.date;
 	p.date = "";
-	var s = p.exportstring();
+	s += p.exportstring();
 	p.date = olddate;
-	NodeExported = [];
-	ComponentExported = [];
-	for (const vid of p.vulns) s += exportVulnerability(vid);
-	for (const sid of p.services) s += exportService(sid);
-	var it = new NodeClusterIterator({project: pid});
-	it.forEach(nc => s += exportNodeCluster(nc.id));
-	return s;
-}
-
-function exportVulnerability(vid) {
-	var s = Vulnerability.get(vid).exportstring();
-	return s;
-}
-
-function exportService(sid) {
-	var s = Service.get(sid).exportstring();
-	var it = new NodeIterator({service: sid});
-	it.forEach(rn => s += exportNode(rn.id));
-	return s;
-}
-
-function exportNode(n) {
-	if (NodeExported.indexOf(n)>-1) {
-		return "";
-	}
-	var rn = Node.get(n);
-	var s = rn.exportstring();
-	NodeExported.push(n);
-	rn.connect.forEach(c => s += exportNode(c));
-	if (rn.component!=null) {
-		s += exportComponent(rn.component);
-	}
-	return s;
-}
-
-function exportComponent(c) {
-	if (ComponentExported.indexOf(c)>-1) {
-		return "";
-	}
-	var cm = Component.get(c);
-	var s = cm.exportstring();
-	ComponentExported.push(c);
-	cm.nodes.forEach(n => s += exportNode(n));
-	cm.assmnt.forEach(aid => s += exportAssessment(aid));
-	return s;
-}
-
-function exportAssessment(aid) {
-	var s = Assessment.get(aid).exportstring();
-	return s;
-}
-
-function exportNodeCluster(ncid) {
-	var nc = NodeCluster.get(ncid);
-	var s = nc.exportstring();
-	s += exportAssessment(nc.assmnt);
+	let it;
+	it = new AssessmentIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new ComponentIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new NodeIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new NodeClusterIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new ServiceIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new VulnerabilityIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
 	return s;
 }
 
@@ -3917,8 +3875,14 @@ function paintSingleFailures(s) {
 			+ _("Since this diagram for this service is empty, there is nothing to see here yet. ")
 			+ _("Add some nodes to the diagrams first.")
 		);
+		$('#sfexpandall').button('disable');
+		$('#sfcollapseall').button('disable');
+		$('input[name=sfsort]').checkboxradio('disable');
 		return;
 	}
+	$('#sfexpandall').button('enable');
+	$('#sfcollapseall').button('enable');
+	$('input[name=sfsort]').checkboxradio('enable');
 
 	// Adding elements to the DOM is slow, so it is best to do it all at
 	// once, rather than piece by piece.
@@ -4419,7 +4383,7 @@ function PaintAllClusters() {
 	var snippet = '\
 		<h1 class="printonly underlay">_LCCF_</h1>\
 		<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\
-		<p id="noccf" class="firstp sfaccordion">_N1_\
+		<p id="noccf" class="firstp">_N1_\
 		_N2_\
 		_N3_</p>\
 		<div id="outerimpacthint" style="display:none"><div id="hintpoint"></div><img src="../img/hint.png"><div id="impacthint"></div></div>\
@@ -4439,16 +4403,11 @@ function PaintAllClusters() {
 	// allow manipulation of nested list
 	var it = new NodeClusterIterator({project:Project.cid, isroot:true});
 	if (it.isEmpty()) {
-		$('#noccf').css('display', 'block');
-		$('#someccf').css('display', 'none');
+		ccfsVisible(false);
 		return;
 	}
-
+	ccfsVisible(true);
 	sortClustersToCurrentOrder(it);
-
-	$('#noccf').css('display', 'none');
-	$('#someccf').css('display', 'block');
-
 	for (const nc of it) {
 		addClusterElements(nc);
 		repaintCluster(nc.id);
@@ -4464,6 +4423,24 @@ function PaintAllClusters() {
 			}, 1000);
 			break;
 		}
+	}
+}
+
+function ccfsVisible(vis) {
+	if (vis) {
+		$('#noccf').hide();
+		$('#someccf').show();
+		$('#ccfs_details').show();
+		$('#ccfexpandall').button('enable');
+		$('#ccfcollapseall').button('enable');
+		$('input[name=ccfsort]').checkboxradio('enable');
+	} else {
+		$('#noccf').show();
+		$('#someccf').hide();
+		$('#ccfs_details').hide();
+		$('#ccfexpandall').button('disable');
+		$('#ccfcollapseall').button('disable');
+		$('input[name=ccfsort]').checkboxradio('disable');
 	}
 }
 
@@ -4631,14 +4608,11 @@ function repaintCluster(elem) {
 		var it = new NodeClusterIterator({project:Project.cid, isroot:true, isstub: false});
 		if (!it.isEmpty()) return;
 		// None were visible
-		$('#noccf').css('display', 'block');
-		$('#someccf').css('display', 'none');
-		$('#ccfs_details').empty().scrollTop(0);
+		ccfsVisible(false);
 		return;
 	}
 
-	$('#noccf').css('display', 'none');
-	$('#someccf').css('display', 'block');
+	ccfsVisible(true);
 	$('#ccfaccordion'+nc.id).css('display', 'block');
 	repaintClusterDetails(nc,false);
 }

@@ -3,8 +3,9 @@ See LICENSE.md
 
 
 BUGS
-The CCF details show, when no CCFs are visible (e.g. empty project).
-Toolbar buttons should be greyed out when the workspace is empty (SF, CCF, analysis)
+When activating a stub: invalid project retrieved from the server. Assessment cca5003c-1fec-4961-9478-c28ae9c383aa does not belong to a valid Vulnerability
+Change Notes to HTML-styled decorations, instead of an image.
+Toolbar buttons should be greyed out when the analysis workspace is empty. Which requires that the analysis screen is repainted on Undo/Redo, if the Analysis tab is currently active. It is not necessary to repaint when other vertical tabs are active, as the entire set will be repainted when the Analysis-tab is clicked.
 Set title attributes on all checkboxradio options
 Fancy workspace, indicate right and bottom borders, for those with huge screens or large zoom factors?
 When renaming a service, the bottom tabs should be renamed and the right-hand side of the CCF tab should be repainted (title popup on nodes refers to the old service)
