@@ -93,6 +93,8 @@
 		49ADB678276CF02300A99B47 /* installbg_NL.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = installbg_NL.png; sourceTree = "<group>"; };
 		49ADB679276D30E700A99B47 /* fix-the-disk-image.applescript */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.applescript; path = "fix-the-disk-image.applescript"; sourceTree = "<group>"; };
 		49ADB67B276E7BFB00A99B47 /* props_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = props_p.png; sourceTree = "<group>"; };
+		49ADB67C277066D400A99B47 /* icons.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = icons.odg; sourceTree = "<group>"; };
+		49ADB67D2770673B00A99B47 /* filepp-1.8.0.tar.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = "filepp-1.8.0.tar.gz"; sourceTree = "<group>"; };
 		49ADD30023CA0B5C003BE3D4 /* rasterTransaction.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = rasterTransaction.js; sourceTree = "<group>"; };
 		49AE7CC62378595A00F12B9D /* winbuild.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = winbuild.bat; sourceTree = "<group>"; };
 		49BEE0DE23C1F90E00AC17F7 /* group.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = group.json; sourceTree = "<group>"; };
@@ -311,11 +313,11 @@
 			isa = PBXGroup;
 			children = (
 				4915A6371FA1178D00B4B205 /* Versions.sh */,
-				49ADB676276BE41000A99B47 /* checktranslation.sh */,
 				4999EB5F1F9004D0009BBF18 /* clean.sh */,
 				4915A6361FA116CF00B4B205 /* fillcache.sh */,
 				4999EB4B1F8FEAAB009BBF18 /* build-server.sh */,
 				4999EB651F9007CE009BBF18 /* build-electron.sh */,
+				49ADB676276BE41000A99B47 /* checktranslation.sh */,
 				49ADB679276D30E700A99B47 /* fix-the-disk-image.applescript */,
 				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
 				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,
@@ -325,6 +327,7 @@
 				49F827AA2351B37A00EAE982 /* eslintrc */,
 				49E402C11F99383100978B5C /* electron.iconset */,
 				49E402A91F99378B00978B5C /* RasterIcon.odg */,
+				49ADB67C277066D400A99B47 /* icons.odg */,
 				4915A6301FA0482800B4B205 /* raster.ico */,
 				494AF84E1FA48AA100356A28 /* installraster.ico */,
 				49ADB677276CF02300A99B47 /* installbg_EN.png */,
@@ -332,6 +335,7 @@
 				4915A63D1FA126E600B4B205 /* nsis.zip */,
 				4915A6321FA113D900B4B205 /* FileAssociation.nsh */,
 				494AF84D1FA3BCBF00356A28 /* 7z.zip */,
+				49ADB67D2770673B00A99B47 /* filepp-1.8.0.tar.gz */,
 				4915A62E1F9E819300B4B205 /* rcedit-x86.exe */,
 			);
 			path = script;
