@@ -2992,27 +2992,29 @@ function initTabDiagrams() {
 	$('.copybutton').val( _("Copy"));
 	$('.pastebutton').val( _("Paste"));
 
-	$('#mi_th span.lc:first').html( _("Vulnerabilities") );
-	$('#mi_ct span.lc:first').html( _("Change type") );
-	$('#mi_cttWLS span.lc:first').html( _("Wireless link") );
-	$('#mi_cttWRD span.lc:first').html( _("Wired link") );
-	$('#mi_cttEQT span.lc:first').html( _("Equipment") );
-	$('#mi_cttACT span.lc:first').html( _("Actor") );
-	$('#mi_cttUNK span.lc:first').html( _("Unknown link") );
-	$('#mi_cl span.lc:first').html( _("Class") );
-	$('#mi_rc span.lc:first').html( _("Rename class") );
-	$('#mi_sx span.lc:first').html( _("Rename suffix") );
+	$('#mi_th span').html( _("Vulnerabilities") );
+	$('#mi_ct span').html( _("Change type") );
+	$('#mi_cttWLS span').html( _("Wireless link") );
+	$('#mi_cttWRD span').html( _("Wired link") );
+	$('#mi_cttEQT span').html( _("Equipment") );
+	$('#mi_cttACT span').html( _("Actor") );
+	$('#mi_cttUNK span').html( _("Unknown link") );
+	$('#mi_cl span').html( _("Class") );
+	$('#mi_rc span').html( _("Rename class") );
+	$('#mi_sx span').html( _("Rename suffix") );
 	// Menu item Similar/Identical is handled inside Nodecluster:_showpopupmenu()
-	$('#mi_du span.lc:first').html( _("Duplicate") );
-	$('#mi_de span.lc:first').html( _("Delete") );
-	$('#mi_ccnone  span.lc:first').html( _("No label") );
-	$('#mi_ccedit  span.lc:first').html( _("Edit labels ...") );
+	$('#mi_du span').html( _("Duplicate") );
+	$('#mi_de span').html( _("Delete") );
+	$('#mi_ccnone span').html( _("No label") );
+	$('#mi_ccedit span').html( _("Edit labels ...") );
+	$('#nodemenu li.lcT span').html(_("Node"));
 	$('#nodemenu').menu().hide();
 
-	$('#mi_sd span.lc:first').html( _("Delete selection") );
-	$('#mi_sc span.lc:first').html( _("Label") );
-	$('#mi_scnone span.lc:first').html( _("No label") );
-	$('#mi_scedit span.lc:first').html( _("Edit labels ...") );
+	$('#mi_sd span').html( _("Delete selection") );
+	$('#mi_sc span').html( _("Label") );
+	$('#mi_scnone span').html( _("No label") );
+	$('#mi_scedit span').html( _("Edit labels ...") );
+	$('#selectmenu li.lcT span').html(_("Selection"));
 	$('#selectmenu').menu().hide();
 	$('#selectrect').on('contextmenu', function(e) {
 		e.preventDefault();
@@ -3615,23 +3617,23 @@ function initChecklistsDialog(type) {
 
 function populateLabelMenu() {
 	var p = Project.get(Project.cid);
-	$('#mi_ccred span.lc:first').html( '"' + H(p.labels[0]) + '"' );
-	$('#mi_ccorange span.lc:first').html( '"' + H(p.labels[1]) + '"' );
-	$('#mi_ccyellow span.lc:first').html( '"' + H(p.labels[2]) + '"' );
-	$('#mi_ccgreen span.lc:first').html( '"' + H(p.labels[3]) + '"' );
-	$('#mi_ccblue span.lc:first').html( '"' + H(p.labels[4]) + '"' );
-	$('#mi_ccpink span.lc:first').html( '"' + H(p.labels[5]) + '"' );
-	$('#mi_ccpurple span.lc:first').html( '"' + H(p.labels[6]) + '"' );
-	$('#mi_ccgrey span.lc:first').html( '"' + H(p.labels[7]) + '"' );
+	$('#mi_ccred span').html( '"' + H(p.labels[0]) + '"' );
+	$('#mi_ccorange span').html( '"' + H(p.labels[1]) + '"' );
+	$('#mi_ccyellow span').html( '"' + H(p.labels[2]) + '"' );
+	$('#mi_ccgreen span').html( '"' + H(p.labels[3]) + '"' );
+	$('#mi_ccblue span').html( '"' + H(p.labels[4]) + '"' );
+	$('#mi_ccpink span').html( '"' + H(p.labels[5]) + '"' );
+	$('#mi_ccpurple span').html( '"' + H(p.labels[6]) + '"' );
+	$('#mi_ccgrey span').html( '"' + H(p.labels[7]) + '"' );
 
-	$('#mi_scred span.lc:first').html( '"' + H(p.labels[0]) + '"' );
-	$('#mi_scorange span.lc:first').html( '"' + H(p.labels[1]) + '"' );
-	$('#mi_scyellow span.lc:first').html( '"' + H(p.labels[2]) + '"' );
-	$('#mi_scgreen span.lc:first').html( '"' + H(p.labels[3]) + '"' );
-	$('#mi_scblue span.lc:first').html( '"' + H(p.labels[4]) + '"' );
-	$('#mi_scpink span.lc:first').html( '"' + H(p.labels[5]) + '"' );
-	$('#mi_scpurple span.lc:first').html( '"' + H(p.labels[6]) + '"' );
-	$('#mi_scgrey span.lc:first').html( '"' + H(p.labels[7]) + '"' );
+	$('#mi_scred span').html( '"' + H(p.labels[0]) + '"' );
+	$('#mi_scorange span').html( '"' + H(p.labels[1]) + '"' );
+	$('#mi_scyellow span').html( '"' + H(p.labels[2]) + '"' );
+	$('#mi_scgreen span').html( '"' + H(p.labels[3]) + '"' );
+	$('#mi_scblue span').html( '"' + H(p.labels[4]) + '"' );
+	$('#mi_scpink span').html( '"' + H(p.labels[5]) + '"' );
+	$('#mi_scpurple span').html( '"' + H(p.labels[6]) + '"' );
+	$('#mi_scgrey span').html( '"' + H(p.labels[7]) + '"' );
 }
 
 function showLabelEditForm() {
@@ -4119,8 +4121,9 @@ function initTabCCFs() {
 	CurrentCluster = null;
 
 	// Localise user interface
-	$('#mi_ccfc span.lc:first').html( _("Create new cluster") );
-	$('#mi_ccfm span.lc:first').html( _("Move to") );
+	$('#mi_ccfc span').html( _("Create new cluster") );
+	$('#mi_ccfm span').html( _("Move to") );
+	$('#ccfmenu li.lcT span').html(_("Common failures"));
 	$('#ccfmenu').menu().hide();
 
 	// Event handlers for mouse actions
@@ -4271,14 +4274,14 @@ function contextMenuHandler(ev) {
 		// Cannot move to the parent (because that's where it is already), nor can it be
 		// moved into any of its own descendants. And it cannot be moved onto itself.
 		populateClusterSubmenu(cluster, cluster.allclusters().concat(cluster.parentcluster));
-		$('#mi_ccfc span.lc:first').html( _("Remove cluster") );
+		$('#mi_ccfc span').html( _("Remove cluster") );
 		$('#mi_ccfc div').append('<span class="ui-icon ui-icon-trash"></span>');
 		$('#mi_ccfc').removeClass('ui-state-disabled');
 		LastSelectedNode = null;
 	} else {
 		// Popup menu called on node
 		populateClusterSubmenu(cluster,[]);
-		$('#mi_ccfc span.lc:first').html( _("Create new cluster") );
+		$('#mi_ccfc span').html( _("Create new cluster") );
 		$('#mi_ccfc span.ui-icon').remove();
 		LastSelectedNode = this.id;
 		// Remove the selection unless the current node is also selected

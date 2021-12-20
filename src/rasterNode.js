@@ -1135,7 +1135,7 @@ Node.prototype = {
 		if (cm!=null && cm.single) {
 			$('#mi_sx').addClass('ui-state-disabled');
 		}
-		$('#mi_sm span.lc:first').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
+		$('#mi_sm span:first-child').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
 		if (cm!=null && cm.single) {
 			$('#mi_du').addClass('ui-state-disabled');
 		}
@@ -1148,15 +1148,16 @@ Node.prototype = {
 		} else {
 			s = '"' + s + '"';
 		}
-		$('#mi_cc span.lc:first').html(s);
-		$('#nodemenu').menu('collapseAll');
-		$('#nodemenu').show();
-		$('#nodemenu').position({
+		$('#mi_cc span').eq(1).html(s);
+		$('#nodemenu')
+		.menu('collapseAll')
+		.position({
 			my: "left top",
 			at: "center",
 			of: evt,
 			collision: "flipfit"
-		});
+			})
+		.show();
 		$('#nodemenu').data('menunode', this.id);
 
 	},
