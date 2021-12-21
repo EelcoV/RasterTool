@@ -3,8 +3,10 @@ See LICENSE.md
 
 
 BUGS
-When activating a stub: invalid project retrieved from the server. Assessment cca5003c-1fec-4961-9478-c28ae9c383aa does not belong to a valid Vulnerability
+Bug/crash when changing type of an Actor to Wireless.
 Change Notes to HTML-styled decorations, instead of an image.
+Must duplicate template projects on load.
+Must duplicate any remote project on load, if classroom==true
 Toolbar buttons should be greyed out when the analysis workspace is empty. Which requires that the analysis screen is repainted on Undo/Redo, if the Analysis tab is currently active. It is not necessary to repaint when other vertical tabs are active, as the entire set will be repainted when the Analysis-tab is clicked.
 Set title attributes on all checkboxradio options
 Fancy workspace, indicate right and bottom borders, for those with huge screens or large zoom factors?
@@ -24,8 +26,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
-Duplicate template projects on load.
-Duplicate any remote project on load, if classroom==true
+Change <ul> and <li> on #ccfs_details to <div>s, to enable "position: sticky".
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
 Make class definitions conform to ES6. Create modules with import/export.
 Change variables from var to let/const.

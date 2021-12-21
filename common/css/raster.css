@@ -55,6 +55,11 @@ option:checked {
 .ui-state-focus { outline: none; }
 /* Make sure model dialogs are above all other elements. */
 .ui-widget-overlay { z-index: 4000 !important; }
+.ui-tabs-nav {  z-index: 150; }
+.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150; outline: none;}
+.longlink { width: 12.5em !important; }
+.tabcloseicon {margin-top:0.4em !important; cursor: pointer;}
+
 /* For Chromium */
 :focus {
 	outline: none;
@@ -64,6 +69,11 @@ fieldset {
     padding: 0;
     border: none;
 }
+
+
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|       MAIN LAYOUT       |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
 
 /* Named grid:
@@ -92,6 +102,7 @@ body {
 	height: 100%;
 	width: 100%;
 	overflow: hidden;
+	min-width: 1240px;
 }
 #toolbars {
 	grid-area: toolbar;
@@ -120,6 +131,37 @@ body {
 	margin: 0;
 	background: var(--greybg);
 }
+
+
+#workspace > ul {
+	padding: 0;
+	border: 0;
+}
+.ui-tabs-vertical-sw > .ui-tabs-nav li { width: 9em; float: right; z-index: 150; }
+.longtab { width: 15.5em !important; }
+.rot-neg-90 {
+    border-radius: 0px;
+    transform-origin: bottom left;
+}
+
+.workspace {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    padding: 0 !important;
+    border-radius: 0;
+}
+.workbody {
+	position: absolute;
+	top: 0px;
+	padding: 0 !important;
+    border-radius: 0;
+	height: 100% !important;
+	width: calc(100% - 2px); 	/* subtract border width */
+	overflow: visible !important;
+}
+.workbody h1 {margin-top: 0;}
 
 
 .printonly { display: none; }
@@ -438,38 +480,6 @@ img.tC {
 
 
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
-/* * * * * * * * * * * * * * * * *|       MAIN LAYOUT       |* * * * * * * * * * * * * * * * */
-/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
-
-
-#workspace > ul {
-	padding: 0;
-	border: 0;
-}
-.workbody {
-	position: absolute;
-	top: 0px;
-	padding: 0 !important;
-    border-radius: 0;
-	height: 100% !important;
-	width: calc(100% - 2px); 	/* subtract border width */
-	overflow: visible !important;
-}
-.ui-tabs-nav {  z-index: 150; }
-.ui-tabs-vertical-sw > .ui-tabs-nav li { width: 9em; float: right; z-index: 150; }
-.longtab { width: 15.5em !important; }
-.rot-neg-90 {
-    border-radius: 0px;
-    transform-origin: bottom left;
-}
-.ui-tabs-nav li a { width: 9em; overflow: hidden; z-index: 150; outline: none;}
-.longlink { width: 12.5em !important; }
-.tabcloseicon {margin-top:0.4em !important; cursor: pointer;}
-
-.workbody h1 {margin-top: 0;}
-
-
-/* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *|         DIALOGS         |* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
@@ -747,7 +757,7 @@ div.th_freq { width: 4.5em; }
 div.th_impact { width: 4.5em; }
 div.th_total { width: 5em; text-align: center; }
 div.th_remark {
-    width: 35em;
+    width: 29em;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -778,15 +788,6 @@ div.th_remark {
 /* * * * * * * * * * * * * * * * *|         DIAGRAMS        |* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
-/* Main workspace (element nodes described further down) */
-.workspace {
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    right: 0px;
-    padding: 0 !important;
-    border-radius: 0;
-}
 #tabdiagrams .workspace {
     overflow: scroll !important;
 }
@@ -1187,20 +1188,23 @@ for checklists and threat evaluations.
 /* * * * * * * * * * * * * * * * *|  COMMON CAUSE FAILURES  |* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 
+#tab_ccfs {
+	display: flex;
+}
 #ccfs_body {
-    width: 790px !important;
+    flex: 1 720px;
+    position: unset; /* overwrite .workspace definition */
+	padding-right: 15px !important;
 	border-right: none;
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 	overflow-y: scroll !important;
 }
 #ccfs_details {
-	width: calc(100% - 797px) !important;
-	min-width: 500px;
-	position: absolute;
-	top: 0;
-	right: 0;
-	padding-left: 10px;
+	flex: 1 500px;
+	position: unset; /* overwrite .workspace definition */
+	padding-left: 5px !important; /* Leave a bit of space for the scrollbar for #ccfs_body */
+	padding-right: 10px !important;
 	border-left: none;
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
@@ -1258,8 +1262,7 @@ for checklists and threat evaluations.
 	line-height: 1.7em;
 }
 .ccfaccordion {
-    width: 750px !important;
-    margin-left: 15px !important;
+    margin-left: 10px !important;
     margin-bottom: 3px !important;
 }
 .ccfhighlight .ui-accordion-header {
@@ -1284,7 +1287,7 @@ for checklists and threat evaluations.
 }
 
 .tlistitem {
-    margin: 0 20px 5px 0px;
+    margin: 0 5px 5px 0px;
     padding: 1px 5px;
     border: 1px solid #ccc;
     border-radius: 3px;
@@ -1296,7 +1299,7 @@ for checklists and threat evaluations.
     background: #80c0ff;
 }
 .tlistroot {
-    margin: 0 20px 5px 0px;
+    margin: 0 5px 5px 0px;
     padding: 1px 5px;
     border: 2px solid gray !important;
     font-size: 120%;

@@ -4624,6 +4624,7 @@ function repaintClusterDetails(nc,force) {
 	CurrentCluster = nc.id;
 	$('#ccfs_details').empty().scrollTop(0);
 	$('#ccfs_details').append( listFromCluster(nc) );
+	$('#ccfs_details').append('<br><br>');
 	$('.ccfaccordion').removeClass('ccfhighlight');
 	$('#ccfaccordion'+nc.id).addClass('ccfhighlight');
 
