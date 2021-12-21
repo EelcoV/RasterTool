@@ -691,6 +691,7 @@ Node.prototype = {
 	},
 
 	iconinit: function() {
+		if (this.type=='tNOT') return;
 		// Try to preserve the center-position of the node
 		let oldcx, oldcy;
 		if (this.position.width>10 && this.position.height>10 ) {
@@ -742,55 +743,63 @@ Node.prototype = {
 	},
 
 	paint: function(effect) {
-		var p = Project.get(this.project);
-		if (this.index==null) {
-			bugreport("Node index is null","Node.paint");
-			this.iconinit();
-		}
-
-		var icn = p.icondata.icons[this.index];
-		var jsP = Service.get(this.service)._jsPlumb;
-		if (this.position.x<0 || this.position.y<0
-			|| this.position.x>3000 || this.position.y>3000) {
-			bugreport("extreme values of node '"+H(this.title)+"' corrected", "Node.paint");
-			this.position.x = 100;
-			this.position.y = 100;
-			this.store();
-		}
-		var str = '\n\
-			<div id="node_ID_" class="node node_TY_" tabindex="2">\n\
-				<div id="nodecolorbackground_ID_" class="nodecolorbackground B_CO_"></div>\n\
-				<img id="nodeimg_ID_" src="../img/iconset/_IS_/_IM_" class="contentimg I_CO_">\n\
-				<div id="nodeheader_ID_" class="nodeheader _HB_ H_CO_">\n\
-				  <div id="nodetitle_ID_" class="_TB_"><span id="titlemain_ID_"></span><span id="titlesuffix_ID_"></span></div>\n\
-				</div>\n\
-				<img id="nodeC_ID_" class="nodeC" src="../img/dropdown.png">\n\
-				<img id="nodeW_ID_" class="nodeW" src="../img/warn.png">\n\
-				<div id="nodeMagnitude_ID_" class="nodeMagnitude"></div>\n\
-			</div>\n\
-			';
-		str = str.replace(/_ID_/g, this.id);
-		str = str.replace(/_TY_/g, this.type);
-		str = str.replace(/_IS_/g, p.iconset);
-		str = str.replace(/_IM_/g, icn.image);
-		str = str.replace(/_CO_/g, (Preferences.label ? this.color : 'none'));
-		if (icn.title == 'below') {
-			str = str.replace(/_HB_/g, 'headerbelow');
-			str = str.replace(/_TB_/g, 'titlebelow');
-		} else if (icn.title == 'topleft') {
-			str = str.replace(/_HB_/g, 'headertopleft');
-			str = str.replace(/_TB_/g, 'titletopleft');
+		if (this.type=='tNOT') {
+			$('#diagrams_workspace'+this.service).append(`
+				<div id="node${this.id}" class="node node${this.type}" tabindex="2">
+					<div id="nodecolorbackground${this.id}" class="nodecolorbackground B${(Preferences.label?this.color:'none')}"></div>
+					<div id="nodeheader${this.id}" class="nodeheader headertopleft H${(Preferences.label?this.color:'none')}">
+					  <div id="nodetitle${this.id}" class="titletopleft"><span id="titlemain${this.id}"></span><span></span></div>
+					</div>
+					<img id="nodeC${this.id}" class="nodeC" src="../img/dropdown.png">
+				</div>
+			`);
+			// Random rotation between -1 and 1 degree
+			$(this.jnid).css('transform', `rotate(${randomrot()}deg)`);
 		} else {
-			str = str.replace(/_HB_/g, 'headerinside');
-			str = str.replace(/_TB_/g, 'titleinside');
-		}
-		$('#diagrams_workspace'+this.service).append(str);
-		this.setmarker();
-		$('#nodeheader'+this.id).css('--margin', icn.margin+'%');
-		// See comments in raster.css at nodecolorbackground
-		$('#nodecolorbackground'+this.id).css('-webkit-mask-image', 'url(../img/iconset/'+p.iconset+'/'+icn.mask+')');
-		$('#nodecolorbackground'+this.id).css('-webkit-mask-image', '-moz-element(#'+icn.maskid+')');
+			var p = Project.get(this.project);
+			if (this.index==null) {
+				bugreport("Node index is null","Node.paint");
+				this.iconinit();
+			}
 
+			var icn = p.icondata.icons[this.index];
+			if (this.position.x<0 || this.position.y<0
+				|| this.position.x>3000 || this.position.y>3000) {
+				bugreport("extreme values of node '"+H(this.title)+"' corrected", "Node.paint");
+				this.position.x = 100;
+				this.position.y = 100;
+				this.store();
+			}
+			var str = `
+				<div id="node${this.id}" class="node node${this.type}" tabindex="2">
+					<div id="nodecolorbackground${this.id}" class="nodecolorbackground B${(Preferences.label?this.color:'none')}"></div>
+					<img id="nodeimg${this.id}" src="../img/iconset/${p.iconset}/${icn.image}" class="contentimg I${(Preferences.label?this.color:'none')}">
+					<div id="nodeheader${this.id}" class="nodeheader _HB_ H${(Preferences.label?this.color:'none')}">
+					  <div id="nodetitle${this.id}" class="_TB_"><span id="titlemain${this.id}"></span><span id="titlesuffix${this.id}"></span></div>
+					</div>
+					<img id="nodeC${this.id}" class="nodeC" src="../img/dropdown.png">
+					<img id="nodeW${this.id}" class="nodeW" src="../img/warn.png">
+					<div id="nodeMagnitude${this.id}" class="nodeMagnitude"></div>
+				</div>
+			`;
+			if (icn.title == 'below') {
+				str = str.replace(/_HB_/g, 'headerbelow');
+				str = str.replace(/_TB_/g, 'titlebelow');
+			} else if (icn.title == 'topleft') {
+				str = str.replace(/_HB_/g, 'headertopleft');
+				str = str.replace(/_TB_/g, 'titletopleft');
+			} else {
+				str = str.replace(/_HB_/g, 'headerinside');
+				str = str.replace(/_TB_/g, 'titleinside');
+			}
+			$('#diagrams_workspace'+this.service).append(str);
+			this.setmarker();
+			$('#nodeheader'+this.id).css('--margin', icn.margin+'%');
+			// See comments in raster.css at nodecolorbackground
+			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url(../img/iconset/${p.iconset}/${icn.mask})`);
+			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
+		}
+		
 		str = '<div id="tinynode_ID_" class="tinynode"></div>\n';
 		str = str.replace(/_ID_/g, this.id);
 		$('#scroller_overview'+this.service).append(str);
@@ -804,6 +813,7 @@ Node.prototype = {
 		}
 		this.setposition(this.position.x, this.position.y, true);
 
+		var jsP = Service.get(this.service)._jsPlumb;
 		/* This is *not* jQuery's draggable, but Katavorio's!
 		 * See https://github.com/jsplumb/katavorio/wiki
 		 */
@@ -1067,10 +1077,10 @@ Node.prototype = {
 			handles: 'se',
 			autoHide: true,
 			aspectRatio: (this.type=='tNOT' ? false : true),
-			minWidth: this._normw,
-			maxWidth: (this.type=='tNOT' ? 3 : 2) * this._normw,
-			minHeight: this._normh,
-			maxHeight: (this.type=='tNOT' ? 3 : 2) * this._normh,
+			minWidth:  (this.type=='tNOT' ?  30 : this._normw),
+			maxWidth:  (this.type=='tNOT' ? 300 : 2*this._normw),
+			minHeight: (this.type=='tNOT' ?  30 : this._normh),
+			maxHeight: (this.type=='tNOT' ? 300 : 2*this._normh),
 			start: function(/*event,ui*/) {
 				let rn = Node.get( nid2id(this.id) );
 				rn.undo_data = {};
@@ -1378,3 +1388,9 @@ var Rules = {
 		return true;	
 	}
 };
+
+function randomrot() {
+	let rot = 3*Math.random()-1.5;
+	rot = (rot<0 ? rot-0.6 : rot+0.6); // exaggerate away from straight horizontally
+	return rot;
+}

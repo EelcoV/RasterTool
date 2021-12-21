@@ -3,7 +3,7 @@
  */
 
 /* global
-_, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, mylang, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, populateProjectList, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
+_, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, populateProjectList, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -744,15 +744,9 @@ Project.prototype = {
 		var sortfunc = function(/*event,ui*/) {
 			var p = Project.get(pid);
 			var newlist = [];
-			$('#tWLSthreats .threat').each( function(index,elem) {
-				newlist.push( nid2id(elem.id) );
-			});
-			$('#tWRDthreats .threat').each( function(index,elem) {
-				newlist.push( nid2id(elem.id) );
-			});
-			$('#tEQTthreats .threat').each( function(index,elem) {
-				newlist.push( nid2id(elem.id) );
-			});
+			$('#tWLSthreats .threat').each( (index,elem) => newlist.push(nid2id(elem.id)) );
+			$('#tWRDthreats .threat').each( (index,elem) => newlist.push(nid2id(elem.id)) );
+			$('#tEQTthreats .threat').each( (index,elem) => newlist.push(nid2id(elem.id)) );
 			if (newlist.length != p.vulns.length) {
 				bugreport("internal error in sorting default vulnerabilities","Project.load");
 			}
@@ -789,29 +783,32 @@ Project.prototype = {
 		$('#templates').empty();
 		var icns = this.icondata.icons;
 		for (const t of Object.keys(Rules.nodetypes)) {
+			if (t=='tNOT') continue;
 			for (const icn of icns) {
 				if (icn.type!=t)  continue;
-				var str = '\
-					<div class="template">\n\
-						<div class="ui-widget templatelabel">_TN_</div>\n\
-						<div id="_TY_" class="templatebg">\n\
-							<img class="templateicon" src="../img/iconset/_IS_/_IT_">\n\
-						</div>\n\
-						<img id="tC__TY_" class="tC" src="../img/dropedit.png">\n\
-					<div>\
-				';
-				str =str.replace(/_TY_/g, icn.type);
-				str =str.replace(/_TN_/g, Rules.nodetypes[icn.type]);
-				str =str.replace(/_IS_/g, icn.iconset);
-				str =str.replace(/_IM_/g, icn.image);
-				str =str.replace(/_IT_/g, icn.template);
-				$('#templates').append(str);
+				$('#templates').append(`
+					<div class="template">
+						<div class="ui-widget templatelabel">${Rules.nodetypes[icn.type]}</div>
+						<div id="${icn.type}" class="templatebg">
+							<img class="templateicon" src="../img/iconset/${icn.iconset}/${icn.template}">
+						</div>
+						<img id="tC_${icn.type}" class="tC" src="../img/dropedit.png">
+					<div>
+				`);
 				// See comments in raster.css at nodecolorbackground
-				$('#tbg_'+icn.type).css('-webkit-mask-image', 'url(../img/iconset/'+icn.iconset+'/'+icn.mask+')');
-				$('#tbg_'+icn.type).css('-webkit-mask-image', '-moz-element(#'+icn.maskid+')');
+				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `url(../img/iconset/${icn.iconset}/${icn.mask})`);
+				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
 				break;
 			}
 		}
+		$('#templates').append(`
+			<div class="template">
+				<div class="ui-widget templatelabel">${_("note")}</div>
+				<div id="tNOT" class="templatebg">
+					<img class="templateicon" src="../img/tNOTicon.png">
+				</div>
+			<div>
+		`);
 		$('#tWLS').attr('title', _("Drag to add a wireless link."));
 		$('#tWRD').attr('title', _("Drag to add a wired link (cable)."));
 		$('#tEQT').attr('title', _("Drag to add an equipment item."));
@@ -1232,6 +1229,31 @@ function escapeNewlines(s) {
 
 function unescapeNewlines(s) {
 	return s.replace(/\\n/g,'\n').replace(/\\!/g,'\\');
+}
+
+/* mylang(obj): retrieve language specific element from obj.
+ *  obj = {'EN': 'English', 'NL': 'Not English'}
+ *  mylang('EN') --> 'English'
+ *  mylang('NL') --> 'Not English'
+ *  mylang('ES') --> undefined
+ */
+function mylang(obj) {		// eslint-disable-line no-unused-vars
+#ifdef SERVER
+	var lang = $.localise.defaultLanguage.toLocaleUpperCase();
+#else
+	var lang = 'EN'; // default
+#ifdef LANG_NL
+	lang = 'NL';
+#endif
+#endif
+
+	if (obj[lang]) {
+		return obj[lang];
+	} else {
+		// Fallback from 'en-US' to 'EN'
+		lang = lang.replace(/([^_]+)-.+/, "$1");
+		return obj[lang];
+	}
 }
 
 #ifdef SERVER

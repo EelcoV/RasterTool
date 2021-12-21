@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, setModified
+/* globals _, paintSingleFailures, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, setModified, randomrot
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -486,6 +486,7 @@ Transaction.prototype = {
 					rn.position.height = d.height;
 				}
 				rn.setposition(d.x,d.y);
+				if (rn.type=='tNOT') $(rn.jnid).css('transform', `rotate(${randomrot()}deg)`);
 			}
 			break;
 		}

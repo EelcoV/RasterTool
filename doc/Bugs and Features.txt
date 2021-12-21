@@ -4,7 +4,6 @@ See LICENSE.md
 
 BUGS
 Bug/crash when changing type of an Actor to Wireless.
-Change Notes to HTML-styled decorations, instead of an image.
 Must duplicate template projects on load.
 Must duplicate any remote project on load, if classroom==true
 Toolbar buttons should be greyed out when the analysis workspace is empty. Which requires that the analysis screen is repainted on Undo/Redo, if the Analysis tab is currently active. It is not necessary to repaint when other vertical tabs are active, as the entire set will be repainted when the Analysis-tab is clicked.

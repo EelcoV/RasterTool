@@ -491,7 +491,7 @@ input.inplace_field, textarea.inplace_field {
     -moz-outline-border: 4px;
     border: 0;
     z-index: 1100;
-    background: var(--highlt);
+    background: var(--lightbg);
 }
 .th_freq .inplace_form {position: relative; z-index:1100; left: -9px;}
 .th_impact .inplace_form {position: relative; z-index:1100; left: -9px;}
@@ -1099,10 +1099,6 @@ img.nodeW {
     cursor: pointer;
     z-index: 15;
 }
-/* Exception for notes: they don't have warnings. */
-.nodetNOT .nodeW {
-    visibility: hidden !important;
-}
 div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
     display: none;
     width: 8px;
@@ -1126,6 +1122,22 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 .M6 { background: rgb(255,0,0) }        /* 'V' */
 .M7 { background: rgb(153,204,255) }    /* 'X' */
 
+/* Styling sticky notes */
+.nodetNOT {
+	height: fit-content !important;
+	border: 1px solid grey;
+	box-shadow: 0px 0px 10px #999;
+	padding: 5px !important;
+	z-index: 15 !important;
+/*	transform: rotate(0deg);  is set in rasterNode.js */
+}
+.nodetNOT span {
+	font-family: serif;
+	font-size: 115%;
+}
+.nodetNOT .nodeheader {
+	position: unset;
+}
 #selectrect {
     position: absolute;
     display: none;

@@ -1565,31 +1565,6 @@ function _(s) {
 	return str;
 }
 
-/* mylang(obj): retrieve language specific element from obj.
- *  obj = {'EN': 'English', 'NL': 'Not English'}
- *  mylang('EN') --> 'English'
- *  mylang('NL') --> 'Not English'
- *  mylang('ES') --> undefined
- */
-function mylang(obj) {		// eslint-disable-line no-unused-vars
-#ifdef SERVER
-	var lang = $.localise.defaultLanguage.toLocaleUpperCase();
-#else
-	var lang = 'EN'; // default
-#ifdef LANG_NL
-	lang = 'NL';
-#endif
-#endif
-
-	if (obj[lang]) {
-		return obj[lang];
-	} else {
-		// Fallback from 'en-US' to 'EN'
-		lang = lang.replace(/([^_]+)-.+/, "$1");
-		return obj[lang];
-	}
-}
-
 /* testLocalStorage(): returns boolean
  * Checks whether the browser supports storing values in localStorage.
  */
@@ -3667,7 +3642,7 @@ function workspacedrophandler(event, ui) {		// eslint-disable-line no-unused-var
 		bugreport('object with unknown type','workspacedrophandler');
 	}
 
-	$('.tC').css('visibility','hidden');
+	$('.tC').hide();
 
 	let newid = createUUID();
 	let newtitle = Node.autotitle(typ);
@@ -3684,7 +3659,9 @@ function workspacedrophandler(event, ui) {		// eslint-disable-line no-unused-var
 				service: Service.cid,
 				title: newtitle,
 				x: newx,
-				y: newy
+				y: newy,
+				width: (typ=='tNOT'?100:null),
+				height: (typ=='tNOT'?50:null)
 				}], clusters: []},
 			_("New node")
 		);
