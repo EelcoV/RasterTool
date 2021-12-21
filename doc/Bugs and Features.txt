@@ -8,7 +8,6 @@ Must duplicate template projects on load.
 Must duplicate any remote project on load, if classroom==true
 Toolbar buttons should be greyed out when the analysis workspace is empty. Which requires that the analysis screen is repainted on Undo/Redo, if the Analysis tab is currently active. It is not necessary to repaint when other vertical tabs are active, as the entire set will be repainted when the Analysis-tab is clicked.
 Set title attributes on all checkboxradio options
-Fancy workspace, indicate right and bottom borders, for those with huge screens or large zoom factors?
 When renaming a service, the bottom tabs should be renamed and the right-hand side of the CCF tab should be repainted (title popup on nodes refers to the old service)
 Selectrect should have a popup menu indicator, just like nodes do.
 Title on undo/redo buttons should be made HTML-safe with the H()-function on display; the descriptions supplied in new Transaction() should not be HTML-escaped.
@@ -25,6 +24,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
+Fancy workspace, indicate right and bottom borders, for those with huge screens or large zoom factors?
 Change <ul> and <li> on #ccfs_details to <div>s, to enable "position: sticky".
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
 Make class definitions conform to ES6. Create modules with import/export.

@@ -1226,10 +1226,11 @@ var updateFind = function() {
 			.height(node.position.height+30)
 			.effect('shake',{distance:10, times:8},1000, function() {
 				$('#selectrect').offset({left: node.position.x-15+o.left+scrollp.left, top: node.position.y-15+o.top+scrollp.top});
-				$('#findpanel').one('mousemove', function() {
+				$('body').one('mousemove', function() {
 					// Immediately show when we wiggle the mouse
 					$('#findpanel').dialog('widget').stop().css('opacity',1);
 					$('#scroller_overview'+svc_id).stop().css('opacity', 1);
+					$('#selectrect').hide();
 				});
 			});
 		};
