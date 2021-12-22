@@ -185,23 +185,20 @@ body {
 	padding: 0;
 	background: var(--toolbarbg);
 }
-#toolbars li:first-child {
+#toolbars li.ui-tabs-tab:first-child {
 	margin-left: 10px;
 }
-#toolbars li {
+#toolbars li.ui-tabs-tab {
 	border: none;
 	border-bottom: 4px solid var(--toolbarbg);
 	background: var(--toolbarbg);
 	margin: 0px 10px 7px 10px;
 }
-#toolbars li:first-child {
-	margin-left: 10px;
-}
 #toolbars li.ui-state-active {
 	font-weight: bold;
 	border-bottom: 4px solid var(--highlt);
 }
-#toolbars li a {
+#toolbars li.ui-tabs-tab a {
 	padding: 2px 10px;
 	font-size: 110%;
 	width: auto;
