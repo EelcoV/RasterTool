@@ -427,7 +427,6 @@ function initAllAndSetup() {
 #ifdef SERVER
 	$(window).on('unload', (function() {
 		stopWatching(null);
-		$('#goodbye').show();
 		if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded==window.name) {
 			localStorage.removeItem('RasterToolIsLoaded');
 		}
@@ -4359,8 +4358,8 @@ function getSelectedNodes() {
 
 function PaintAllClusters() {
 	var snippet = '\
-		<h1 class="printonly underlay">_LCCF_</h1>\
-		<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\
+		<h1 class="printonly">_LCCF_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
 		<p id="noccf" class="firstp">_N1_\
 		_N2_\
 		_N3_</p>\
@@ -4368,7 +4367,6 @@ function PaintAllClusters() {
 		<div id="ccfacclist">\
 		</div>\
 	';
-	snippet = snippet.replace(/_LP_/g, _("Project"));
 	snippet = snippet.replace(/_LCCF_/g, _("Common Cause Failures"));
 	snippet = snippet.replace(/_N1_/g, _("This space will show all vulnerabilities domains for the components in this project."));
 	snippet = snippet.replace(/_N2_/g, _("Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet."));
@@ -5038,11 +5036,11 @@ function allowDrop(elem) {
 
 
 function initTabAnalysis() {
-	$("a[href^='#at1']").html(_("Failures and Vulnerabilities"));
-	$("a[href^='#at2']").html(_("Assessments by level"));
+	$("a[href^='#at1']").html(_("Vulnerability overview"));
+	$("a[href^='#at2']").html(_("Assessments overview"));
 	$("a[href^='#at3']").html(_("Node counts"));
 	$("a[href^='#at4']").html(_("Checklist reports"));
-	$("a[href^='#at5']").html(_("Longlist"));
+	$("a[href^='#at5']").html(_("Risk longlist"));
 
 	$('#tab_analysis').tabs({
 		classes: {
@@ -5082,8 +5080,8 @@ function SetAnalysisToolbar() {
 }
 
 function AddAllAnalysis() {
-	paintNodeThreatTables();
-	paintVulnsTable();
+	paintVulnerabilityOverview();
+	paintAssessmentOverview();
 	paintNodeTypeStats();
 	paintChecklistReports();
 	paintLonglist();
@@ -5091,19 +5089,19 @@ function AddAllAnalysis() {
 
 var FailureThreatSortOpt = {node: 'thrt', threat: 'type'};
 
-function paintNodeThreatTables() {
+function paintVulnerabilityOverview() {
 	ComponentExclusions = {};
 	ClusterExclusions = {};
 
 	$('#at1').empty();
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h1>\
-		<h2 class="printonly underlay projectname">_L1_</h2>\
+		<h1 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h1>\
+		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
+	snippet = snippet.replace(/_LD_/g, _("Vulnerability overview"));
 
 	snippet += '<div id="ana_nodethreattable" class="ana_nodeccfblock"></div>\n\
 		<div id="ana_ccftable" class="ana_nodeccfblock"></div>\n\
@@ -5112,7 +5110,6 @@ function paintNodeThreatTables() {
 
 	$('#ana_nodesort_'+FailureThreatSortOpt.node).prop('checked',true);
 	$('#ana_failsort_'+FailureThreatSortOpt.threat).prop('checked',true);
-	$('#ana_nodevuln fieldset').controlgroup();
 
 	paintSFTable();
 	paintCCFTable();
@@ -5243,12 +5240,13 @@ function paintSFTable() {
 
 	// Do the header
 	var snippet = '\n\
+		<h3>_SF_</h3>\n\
 		<table style="width:_TW_em">\n\
 		<colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
 		<colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
 		<thead>\n\
 		 <tr>\n\
-		  <td class="nodetitlecell largetitlecell">_SF_</td>\n\
+		  <td></td>\n\
 	';
 	// 20em = width of first column
 	// 1.7em = width of vulnerability columns
@@ -5361,12 +5359,12 @@ function paintCCFTable() {
 
 	// Do the header
 	var snippet = '\n\
+	<h3>_CCF_</h3>\n\
 	<table style="width:_TW_em">\n\
 	<colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
 	<colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
 	<thead>\n\
-	<tr>\n\
-	<td class="nodetitlecell largetitlecell">_CCF_</td>\n\
+	<tr><td></td>\n\
 	';
 	snippet = snippet.replace(/_CCF_/, _("Common cause failures"));
 	// 20em = width of first column
@@ -5472,18 +5470,17 @@ function ClusterMagnitudeWithExclusions(cl,list) {
 	return mag;
 }
 
-function paintVulnsTable() {
-	var freq_snippet = paintVulnsTableType(1);
+function paintAssessmentOverview() {
+	var freq_snippet = paintAssessmentOverviewType(1);
 	var impact_snippet;
 	var total_snippet;
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
-		<h2 class="printonly underlay projectname">_LD_</h2>\
+		<h1 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
+		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
-	snippet = snippet.replace(/_LD_/g, _("Vulnerability assessment details") );
+	snippet = snippet.replace(/_LD_/g, _("Assessments overview") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	$('#at2').html(snippet);
 
@@ -5498,8 +5495,8 @@ function paintVulnsTable() {
 		return;
 	}
 
-	impact_snippet = paintVulnsTableType(2);
-	total_snippet = paintVulnsTableType(0);
+	impact_snippet = paintAssessmentOverviewType(2);
+	total_snippet = paintAssessmentOverviewType(0);
 
 	snippet = '\
 		<div id="svulns_tabs">\
@@ -5530,7 +5527,7 @@ function paintVulnsTable() {
 	});
 }
 
-/* paintVulnsTableType(t): create HTML code for vulnerabilities tables
+/* paintAssessmentOverviewType(t): create HTML code for vulnerabilities tables
  *
  * t==0: vulnerability level
  * t==1: frequency
@@ -5538,7 +5535,7 @@ function paintVulnsTable() {
  *
  * Returns an HTML snippet for the table, or an empty string when there are no vulnerabilities to show.
  */
-function paintVulnsTableType(tabletype) {
+function paintAssessmentOverviewType(tabletype) {
 	var switchvar;
 	var v_total = {};
 	var v_U = {'__TOTAL__':0};
@@ -5565,7 +5562,7 @@ function paintVulnsTableType(tabletype) {
 		case 'A': v_A['__TOTAL__']++; if (v_A[t]>0) v_A[t]++; else v_A[t]=1; break;
 		case '-': v_N['__TOTAL__']++; if (v_N[t]>0) v_N[t]++; else v_N[t]=1; break;
 		default:
-			bugreport("Unknown threat-value","paintVulnsTable");
+			bugreport("Unknown threat-value","paintAssessmentOverview");
 		}
 	}
 
@@ -5700,7 +5697,7 @@ function paintVulnsTableType(tabletype) {
 	</tbody>\n\
 	</table>\n\
 	';
-	const MAXCOLH = 30;
+	const MAXCOLH = 40;
 	snippet = snippet.replace(/_2_/, 5 + MAXCOLH*v_U['__TOTAL__']/max);
 	snippet = snippet.replace(/_3_/, 5 + MAXCOLH*v_L['__TOTAL__']/max);
 	snippet = snippet.replace(/_4_/, 5 + MAXCOLH*v_M['__TOTAL__']/max);
@@ -5723,28 +5720,22 @@ function paintNodeTypeStats() {
 	$('#at3').empty();
 
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
-		<h2 class="printonly underlay projectname">_LD_</h2>\
+		<h1 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
+		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
-	snippet = snippet.replace(/_LD_/g, _("Node types counted by service") );
+	snippet = snippet.replace(/_LD_/g, _("Node counts") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
 	for (var typ in Rules.nodetypes) tStats[typ] = 0;
-	snippet +='\n\
-	<table><tr>\n\
-	';
 	for (const s of sit) {
 		var sStats = {};
 		var sTot = 0;
 		var nit = new NodeIterator({service: s.id});
 
 		for (typ in Rules.nodetypes) sStats[typ] = 0;
-		snippet += '\n\
-		<td>\n\
-		<div id="servicestats_SI_" class="servicestats">\n\
+		snippet += '<div id="servicestats_SI_" class="servicestats">\n\
 		<b>_SN_</b><br>\n\
 		<table class="statstable">\n\
 		<thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n\
@@ -5772,21 +5763,12 @@ function paintNodeTypeStats() {
 		snippet += '<tr><td class="statstype">('+Rules.nodetypes['tNOT']+'</td><td class="statsnum">'+sStats['tNOT']+')</td></tr>\n';
 		snippet += '\
 		</tbody></table></div>\n\
-		</td>\n\
 		';
 		snippet = snippet.replace(/_LT_/g, _("Total") );
 		numservice++;
-		if (numservice%6==0) {
-			snippet += '\n\
-			</tr>\n\
-			<tr>\n\
-			';
-		}
 	}
 	// Project total
-	snippet += '\n\
-	<td>\n\
-	<div id="servicestatsTotal" class="servicestats">\n\
+	snippet += '<div id="servicestatsTotal" class="servicestats">\n\
 	<b>_LP_</b><br>\n\
 	<table class="statstable">\n\
 	<thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n\
@@ -5803,13 +5785,8 @@ function paintNodeTypeStats() {
 	<tr><td class="statstype">_LT_</td><td class="statsnum">'+tTot+'</td></tr>\n\
 	<tr><td class="statstype">('+Rules.nodetypes['tNOT']+'</td><td class="statsnum">'+tStats['tNOT']+')</td></tr>\n\
 	</tbody></table></div>\n\
-	</td>\n\
 	';
 	snippet = snippet.replace(/_LT_/g, _("Total") );
-	// Finishing
-	snippet += '\n\
-	</tr></table>\n\
-	';
 	$('#at3').append(snippet);
 }
 
@@ -5818,19 +5795,20 @@ function paintChecklistReports() {
 
 
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
-		<h2 class="printonly underlay projectname">_LD_</h2>\
+		<h1 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
+		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
-	snippet = snippet.replace(/_LD_/g, _("Checklist usage") );
+	snippet = snippet.replace(/_LD_/g, _("Checklist reports") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
-	snippet += '<h3>' + _("Removed vulnerabilities") + '</h3>\n';
+	snippet += '<div class="checklistreport"><h3>' + _("Removed vulnerabilities") + '</h3>\n';
 	snippet += showremovedvulns();
-	snippet += '<h3>' + _("Custom vulnerabilities") + '</h3>\n';
+	snippet += '</div>';
+	snippet += '<div class="checklistreport"><h3>' + _("Custom vulnerabilities") + '</h3>\n';
 	snippet += showcustomvulns();
+	snippet += '</div>';
 
 	$('#at4').html(snippet);
 
@@ -5912,6 +5890,7 @@ function showremovedvulns() {
 	snippet += '\n\
 	</tbody>\n\
 	</table>\n\
+	<p>\n\
 	';
 
 	if (num==0) {
@@ -5927,7 +5906,7 @@ function showremovedvulns() {
 			plural(_("component"), _("components"), CompIDs.length)
 		);
 	}
-	snippet += '<br><br>\n';
+	snippet += '</p><br><br>\n';
 
 	return snippet;
 }
@@ -6013,6 +5992,7 @@ function showcustomvulns() {
 	snippet += '\n\
 	</tbody>\n\
 	</table>\n\
+	<p>\n\
 	';
 
 	if (num==0) {
@@ -6028,7 +6008,7 @@ function showcustomvulns() {
 				plural(_("component"), _("components"), CompIDs.length)
 			);
 	}
-	snippet += '<br><br>\n';
+	snippet += '</p><br><br>\n';
 
 	return snippet;
 }
@@ -6040,12 +6020,11 @@ function paintLonglist() {
 	$('#at5').empty();
 
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
-		<h2 class="printonly underlay projectname">_LD_</h2>\
+		<h1 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
+		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
 	snippet = snippet.replace(/_LD_/g, _("Risk longlist") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 

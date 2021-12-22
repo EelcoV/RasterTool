@@ -305,11 +305,10 @@ Service.prototype = {
 		snippet = snippet.replace(/_I_/g, this.id);
 		$('#tab_diagrams').append(snippet);
 		snippet = '\n\
-			<h1 class="printonly underlay servicename_I_">_SN_</h1>\n\
-			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
+			<h1 class="printonly servicename_I_">_SN_</h1>\n\
+			<h2 class="printonly projectname">_PN_</h2>\n\
 			<div id="diagrams_workspace_I_" class="fancyworkspace"></div>\n\
 		';
-		snippet = snippet.replace(/_LP_/g, _("Project"));
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_SN_/g, H(this.title));
 		snippet = snippet.replace(/_PN_/g, H(Project.get(this.project).title));
@@ -428,11 +427,10 @@ Service.prototype = {
 		snippet = snippet.replace(/_I_/g, this.id);
 		$('#tab_singlefs').append(snippet);
 		snippet = '\n\
-			<h1 class="printonly underlay servicename_I_">_LSF_: _SN_</h1>\n\
-			<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\n\
+			<h1 class="printonly servicename_I_">_LSF_: _SN_</h1>\n\
+			<h2 class="printonly projectname">_PN_</h2>\n\
 			<div id="singlefs_workspace_I_" class="workspace plainworkspace sfworkspace"></div>\n\
 		';
-		snippet = snippet.replace(/_LP_/g, _("Project"));
 		snippet = snippet.replace(/_LSF_/g, _("Single failures"));
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_SN_/g, H(this.title));

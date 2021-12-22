@@ -16,14 +16,13 @@ body {
 	background: white !important;
 }
 
-.printonly { display: block; }
-.printonlycell { display: table-cell; }
-.donotprint { display: none !important; }
-
-.underlay {
+.printonly {
+	display: block;
 	color: grey;
 	z-index: 0;
 }
+.printonlycell { display: table-cell; }
+.donotprint { display: none !important; }
 
 .workbody {
 	height: auto !important;
@@ -75,6 +74,7 @@ body {
 #tab_analysis h3 {
 	padding: 0 0 !important;
 	font-size: 16px;
+	color: grey;
 }
 
 .ui-tabs-nav {

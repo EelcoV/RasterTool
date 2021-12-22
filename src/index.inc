@@ -77,11 +77,6 @@ See LICENSE.md
  <p>Risk Assessment of Telecommunication Services</p>
  <p><small><span id="splashstatus">please wait . . .</span></small></p>
 </div>
-<div id="goodbye" class="fullscreen" style="display: none;">
- <p style="font-size: 28pt;">Raster</p>
- <p>&nbsp;</p>
- <p><small>goodbye</small></p>
-</div>
 
 <div id="toolbars" class="donotprint">
 	<ul>

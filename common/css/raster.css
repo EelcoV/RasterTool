@@ -1373,22 +1373,20 @@ for checklists and threat evaluations.
     margin-top: 2px;
     margin-bottom: 1em;
 }
-#tab_analysis input { margin-top: 0px; margin-bottom: 0.5em; margin-right: 1em; padding: 2px; }
-
 #bottomtabsana {
 	left: 0;	/* No correction for the width of the 'add a service' button is necessary, so remove the correction offset */
 }
 
-#ana_nodevuln {
-	width: 900px;
+/* * * * * * * Vulnerability overview * * * * * * */
+#at1 {
+	/* Make sure single failures and CCFs are side by side */
+	white-space: nowrap;
 }
-
-#ana_exclusions {width: 40em;}
-
 .ana_nodeccfblock {
 	display: inline-block;
 	vertical-align: top;
 	padding-top: 10px;
+	margin-right: 35px;
 }
 #ana_nodethreattable table {
     table-layout: fixed;
@@ -1405,25 +1403,6 @@ for checklists and threat evaluations.
     white-space: nowrap;
     text-align: center;
 }
-#at1 {
-	/* Make sure single failures and CCFs are side by side */
-	white-space: nowrap;
-}
-#at2 table {
-    table-layout: fixed;
-}
-#at2 td {
-    white-space: nowrap;
-    text-align: center;
-}
-#at4 table {
-    table-layout: fixed;
-}
-#at4 td {
-    white-space: nowrap;
-    text-align: center;
-}
-
 .headercell {
     vertical-align: bottom;
     transform: translatex(12px) rotate(-50deg);
@@ -1438,9 +1417,6 @@ for checklists and threat evaluations.
     -o-transform-origin: bottom left;
     overflow: visible;
     height: 10em;
-}
-.printonlyheadercell {
-    display: none;
 }
 .blankcell { background: var(--vlightbg); }
 .continuationcell { background: #faf8f8; }
@@ -1462,24 +1438,14 @@ for checklists and threat evaluations.
     margin-left: 0.6em;
 }
 
-.servicestats { margin: 25px 30px; }
-.servicestats th { font-style: italic; font-weight: normal; }
-
-.statstype { text-align: right !important; padding-left: 6px; }
-.statsnum {text-align: left !important; padding-left: 14px; }
-
-.statstable {
-    background: #faf8f8;
-    border-bottom: 1px solid black;
-    border-spacing: 0;
+/* * * * * * * Assessments overview * * * * * * */
+#at2 table {
+    table-layout: fixed;
 }
-
-#ana_nodetypestats th {
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
+#at2 td {
+    white-space: nowrap;
+    text-align: center;
 }
-
-.thinrow { height: 5px; vertical-align: bottom;}
 #svulns_tabs {
 	width: 75em;
 	margin-top: 15px;
@@ -1499,8 +1465,41 @@ for checklists and threat evaluations.
 #svulns_tabs .ui-tabs-panel {
 	height: auto;
 }
-#ana_reports { margin-left: 20px; }
+.thinrow { height: 5px; vertical-align: bottom;}
 
+/* * * * * * * Node counts * * * * * * */
+#at3 { width: 100vw }
+.servicestats {
+	display: inline-block;
+	margin: 15px;
+}
+.servicestats th { font-style: italic; font-weight: normal; }
+.statstype { text-align: right !important; padding-left: 6px; }
+.statsnum {text-align: left !important; padding-left: 14px; }
+.statstable {
+    background: #faf8f8;
+    border-bottom: 1px solid black;
+    border-spacing: 0;
+}
+
+/* * * * * * * Checklist reports * * * * * * */
+#at4 table {
+    table-layout: fixed;
+}
+#at4 td {
+    white-space: nowrap;
+    text-align: center;
+}
+.checklistreport {
+	display: inline-block;
+	vertical-align: top;
+}
+.checklistreport p {
+	width: 85%;
+	margin-left: 10%;
+}
+
+/* * * * * * * Risk longlist * * * * * * */
 #longlist {
 	margin-top: 10px;
     margin-bottom: 60px;
