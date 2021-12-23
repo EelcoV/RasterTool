@@ -17,8 +17,8 @@ _, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, crea
  *	withTitle(str): returns the id of the local project with title 'str', or 'null' otherwise.
  *	firstProject(): returns the an existing local Project object, or null otherwise.
  *  merge(target,source): merge source project into target project, deleting source project.
- *	asyncUpdateStubs(): retrieve list of projects from server and update the UI.
- *	retrieve(i): download the project with id 'i' from the server.
+ *	UpdateStubs(): retrieve list of projects from server and update the UI.
+ *	asyncRetrieveStub(i): download the stub project with id 'i' from the server.
  *	getProps(s): retrieve properties of remote project with name 's'.
  * Instance properties:
  *	id: UUID
@@ -258,7 +258,7 @@ Project.merge = function(intoproject,otherproject) {
 	otherproject.services = [];
 	otherproject.destroy();
 	// Now resurrect the other project
-	i = loadFromString(savedcopy,true,false,'Merge');
+	i = loadFromString(savedcopy,{strsource:'Merge'});
 	if (i==null) {
 		bugreport("Failed to resurrect merged project", "Project.Merge");
 	}
@@ -278,7 +278,9 @@ var updateStubsInProgress=false;
 /* Add all projects that can be found on the server, except those that share their name with a
  * project that is shared, as stub projects.
  */
-Project.asyncUpdateStubs = function() {
+Project.UpdateStubs = function(load_async,dorepaint) {
+	if (load_async==null) load_async=true;
+	if (dorepaint==null) dorepaint=true;
 	if (!Preferences.online)  return; // No actions when offline
 	// Ignore if we already have a request running.
 	if (updateStubsInProgress) {
@@ -289,6 +291,7 @@ Project.asyncUpdateStubs = function() {
 	// Fire off request to server
 	$.ajax({
 		url: 'share.php?op=list',
+		async: load_async,
 		dataType: 'json',
 		success: function(data) {
 			// Remove all current stub projects
@@ -305,7 +308,8 @@ Project.asyncUpdateStubs = function() {
 				p.date = rp.date;
 				p.description = unescapeNewlines(rp.description);
 			}
-			refreshStubList(true);
+			refreshStubList(dorepaint);
+			updateStubsInProgress=false;
 		},
 		error: function(jqXHR, textStatus) {
 			if (textStatus=="timeout") {
@@ -318,6 +322,7 @@ Project.asyncUpdateStubs = function() {
 					_("Could not retrieve the list of remote projects.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
 				);
 			}
+			updateStubsInProgress=false;
 		},
 		complete: function() {
 			updateStubsInProgress=false;
@@ -327,7 +332,7 @@ Project.asyncUpdateStubs = function() {
 
 var retrieveInProgress=false;
 
-Project.retrieve = function(pid,doWhenReady,doOnError) {
+Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError) {
 	if (!Preferences.online)  return; // No actions when offline
 	if (retrieveInProgress)  return;
 
@@ -344,7 +349,10 @@ Project.retrieve = function(pid,doWhenReady,doOnError) {
 			'&date=' + urlEncode(p.date),
 		dataType: 'text',
 		success: function (data) {
-			var newp = loadFromString(data,true,false,'Remote project');
+			var newp = loadFromString(data,{
+				strsource:'Remote project',
+				duplicate: isSameString(p.title,GroupSettings.template)
+			});
 			if (newp!=null) {
 				var np = Project.get(newp);
 				np.date = p.date;
@@ -370,6 +378,7 @@ Project.retrieve = function(pid,doWhenReady,doOnError) {
 					);
 				}
 			}
+			retrieveInProgress = false;
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
 			if (textStatus=="timeout") {
@@ -389,6 +398,7 @@ Project.retrieve = function(pid,doWhenReady,doOnError) {
 					);
 				}
 			}
+			retrieveInProgress = false;
 		},
 		complete: function() {
 			retrieveInProgress = false;
@@ -420,8 +430,6 @@ Project.getProps = function(pname,doWhenReady) {
 					_("Could not retrieve properties the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
 				);
 			}
-		},
-		complete: function() {
 		}
 	});
 };
@@ -1048,7 +1056,7 @@ Project.prototype = {
 					newp.creator = props.creator;
 					newp.date = props.date;
 					newp.description = props.description;
-					Project.retrieve(newp.id,
+					Project.asyncRetrieveStub(newp.id,
 						callbacks.onUpdate,
 						function(jqXHR /*, textStatus, errorThrown*/) {
 							p.setshared(false,false);
@@ -1280,7 +1288,7 @@ function askForConflictResolution(proj,details) {
 			newp.creator = details.creator;
 			newp.date = details.date;
 			newp.description = details.description;
-			Project.retrieve(newp.id,function(newpid){
+			Project.asyncRetrieveStub(newp.id,function(newpid){
 				switchToProject(newpid);
 				var t = proj.title;
 				proj.destroy();

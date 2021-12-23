@@ -11,6 +11,13 @@ AssessmentIterator, Component, ComponentIterator, NodeCluster, NodeClusterIterat
 const DEBUG = true;  // set to false for production version
 let Preferences;
 let ToolGroup;
+/* GroupSettings: an object with these properties:
+ * classroom: the classroom setting from group.json
+ * template: idem
+ * iconset: idem
+ * localonly: idem
+ * templatestring: the Raster details of the template project, as stored on the server at startup
+*/
 let GroupSettings;
 
 /* LS is prefixed to all keys of data entered into localStorage. The prefix
@@ -52,7 +59,7 @@ ipc.on('document-save-success', function(event,docname) {
 	Project.get(Project.cid).settitle(docname);
 });
 ipc.on('document-start-open', function(event,str) {
-	var newp = loadFromString(str,true,false,_("File"));
+	var newp = loadFromString(str,{strsource: _("File")});
 	if (newp!=null) {
 		switchToProject(newp);
 		checkForErrors(false);
@@ -120,16 +127,25 @@ function initAllAndSetup() {
 		timeout: 10000	// Cancel each AJAX request after 10 seconds
 	});
 
+	// Load preferences
+	Preferences = new PreferencesObject();
+	var remembertab = Preferences.tab;
+
 #ifdef SERVER
 	ToolGroup = $('meta[name="group"]').attr('content');
-	getGroupSettings();
+	geGroupSettingsAtInitialisation();
+	if (GroupSettings.localonly) {
+		$('#onlinesection').hide();
+	}
 #else
+	Preferences.online = false;
 	ToolGroup = '_%standalone%_';
 	GroupSettings = {
 		classroom: false,
-		template: null,
+		template: '',
 		iconset: 'default',
-		localonly: true
+		localonly: true,
+		templatestring: ''
 	};
 	// Prevent file drops
 	document.addEventListener('dragover', function(event) {event.preventDefault();} );
@@ -173,17 +189,6 @@ function initAllAndSetup() {
 	// Don't print the settings dialog. This means you can leave it open while saving a PDF. Convenient!
 	$('#pdfoptions').parent().addClass('donotprint');
 #endif
-
-	// Load preferences
-	Preferences = new PreferencesObject();
-	if (GroupSettings.localonly) {
-		$('#onlinesection').hide();
-		Preferences.online = false;
-	}
-#ifdef STANDALONE
-	Preferences.online = false;
-#endif
-	var remembertab = Preferences.tab;
 
 	// General UI
 	$('input[type=button]').button();
@@ -263,8 +268,7 @@ function initAllAndSetup() {
 		localStorage.removeItem(todelete[i]);
 	}
 	var str = strArr.join("");
-	if (
-		loadFromString(str,true,true,"Browser local storage")!=null) {
+	if (loadFromString(str,{allowempty: true, strsource: _("Browser local storage")})!=null) {
 		// Loading from localStorage succeeded. Try to active the project
 		// indicated by Preferences.currentproject, or take any one project
 		// if that one does not exist.
@@ -292,7 +296,7 @@ function initAllAndSetup() {
 	startAutoSave();
 #else
 	localStorage.clear();
-	loadDefaultProject();
+	loadEmptyProject();
 #endif
 
 	// Diagrams have already been painted on Project.load()
@@ -471,71 +475,7 @@ function initProjectsToolbar() {
 	$('#libimport').attr('title',_("Load a project from a file."));
 	$('#libexport').attr('title',_("Save the current project to a file."));
 	// Add --------------------
-	function addEmptyProject() {
-		var p = new Project();
-		var s = new Service(p.id);
-		p.adddefaultvulns();
-		p.addservice(s.id);
-		s.autosettitle();
-		p.autosettitle();
-		switchToProject(p.id);
-		transactionCompleted("Project add");
-	}
-
-	$('#libadd').on('click',  function(){
-		// Check for a template
-		let i, p, template;
-		let found=false;
-		for (var idobj of Project._all) {
-			template = idobj[1];
-			found=(isSameString(template.title,GroupSettings.template) && template.group==ToolGroup);
-		}
-
-		/* There are 4 possibilities:
-		   1. The template exists on the server (a stub locally): retrieve the template; when it fails create a blank project.
-		   2. The template exists on the server, and has been retrieved: duplicate the template.
-		   3. The template does exists as a private project: duplicate the template
-		   4. The template does not exists: create a blank project
-		 */
-		// Possibility 1
-		if (found && template.stub && Preferences.online) {
-			Project.retrieve(template.id, function(newpid) {
-				// Success
-				p = Project.get(newpid);
-				p.stub = false;
-				p.setshared(false,false);
-				p.autosettitle();
-				switchToProject(p.id);
-				transactionCompleted("Project add");
-			}, function() {
-				// Error
-				addEmptyProject();
-			});
-		// Possibility 2 and 3
-		} else if (found) {
-			// To duplicate the template, export it into a string, then read & load that string
-			var savedcopy = exportProject(template.id);
-			i = loadFromString(
-				savedcopy,	// the string to parse
-				true,		// show errors
-				false,		// allow empty
-				'Project from template'		// Source of the string, used in error messages
-			);
-			if (i==null) {
-				// Some kind of error occurred. This is not normal, so return without doing anything else.
-				return;
-			}
-			p = Project.get(i);
-			p.stub = false;
-			p.setshared(false,false);
-			p.autosettitle();
-			switchToProject(p.id);
-			transactionCompleted("Project add");
-		} else {
-			// Blank project
-			addEmptyProject();
-		}
-	});
+	$('#libadd').on('click',loadDefaultProject);
 	// Duplicate --------------------
 	$('#libduplicate').on('click',  function() {
 		let p = Project.get(Project.cid);
@@ -555,7 +495,7 @@ function initProjectsToolbar() {
 		if (files.length==null || files.length==0)  return;
 		var reader = new FileReader();
 		reader.onload = function(evt) {
-			var newp = loadFromString(evt.target.result,true,false,'File "'+files[0].name+'"');
+			var newp = loadFromString(evt.target.result,{strsource:`File "${files[0].name}"`});
 			if (newp!=null) {
 				// Make sure the newly imported project is indeed private
 				var p = Project.get(newp);
@@ -611,7 +551,7 @@ function initProjectsToolbar() {
 				);
 			} else {
 				// Do a retrieve operation, and switch to that new project, if successful.
-				Project.retrieve(p.id,function(newpid){
+				Project.asyncRetrieveStub(p.id,function(newpid){
 					switchToProject(newpid);
 					startAutoSave();
 				});
@@ -777,14 +717,14 @@ var ProjectListTimer = null;
 function startPeriodicStubListRefresh() {
 	if (ProjectListTimer!=null)  return;
 	// Update very 2 seconds. Updates in progress will not be interrupted
-	Project.asyncUpdateStubs();
+	Project.UpdateStubs();
 	ProjectListTimer = window.setInterval(function() {
 		if ($('#projlist-menu').parent().css('display')=='none') {
 			window.clearInterval(ProjectListTimer);
 			ProjectListTimer=null;
 			return;
 		}
-		Project.asyncUpdateStubs();
+		Project.UpdateStubs();
 	},2000);
 }
 
@@ -813,13 +753,14 @@ function refreshStubList(dorepaint) {
 }
 #endif
 
-function getGroupSettings() {
+function geGroupSettingsAtInitialisation() {
 	// Initialise default values, then attempt to retrieve settings from the server
 	GroupSettings = {
 		classroom: false,
 		template: 'Project Template',
 		iconset: 'default',
-		localonly: false
+		localonly: false,
+		templatestring: ''
 	};
 	$.ajax({
 		url: 'group.json',
@@ -840,6 +781,29 @@ function getGroupSettings() {
 				GroupSettings.localonly = true;
 				GroupSettings.classroom = true;
 			}
+		}
+	});
+	if (GroupSettings.template=='') return;
+	// Try to fetch the template.
+	Project.UpdateStubs(false,false); // async, and do not repaint
+	let stubproj=null;
+	// Check for a template
+	for (const idobj of Project._all) {
+		let p = idobj[1]; // idobj[0]=key, idobj[1]=value
+		if (p.group!=ToolGroup) continue;
+		if (p.stub && isSameString(p.title,GroupSettings.template)) stubproj = p;
+	}
+	if (!stubproj) return;
+	// Try to fetch it
+	$.ajax({
+		url: 'share.php?op=get'+
+			'&name=' + urlEncode(stubproj.title) +
+			'&creator=' + urlEncode(stubproj.creator) +
+			'&date=' + urlEncode(stubproj.date),
+		async: false,
+		dataType: 'text',
+		success: function (data) {
+			GroupSettings.templatestring = data;
 		}
 	});
 }
@@ -1592,36 +1556,6 @@ function testLocalStorage() {
 }
 #endif
 
-function loadDefaultProject() {
-	var p = new Project();
-	var s = new Service(p.id);
-	p.adddefaultvulns();
-	p.addservice(s.id);
-	s.autosettitle();
-	p.autosettitle();
-	p.load();
-	$(`#tab_diagramsservicetab${s.id} a`).trigger('click');
-}
-
-//function modifyCSS(selector,property,newvalue) {
-//	/* Find a CSS-rule for the given selector, then set the rule
-//	 * for property to newvalue.
-//	 */
-//	var css=document.getElementById('maincssfile').sheet;
-//	var rule=null;
-//	for (var i=0; i<css.cssRules.length; i++) {
-//		if (css.cssRules[i].selectorText==selector) {
-//			rule = css.cssRules[i];
-//			break;
-//		}
-//	}
-//	if (!rule) {
-//		bugreport('cannot locate css rule for '+selector,'modifyCSS');
-//	} else {
-//		rule.style[property] = newvalue;
-//	}
-//}
-
 /* SizeDOMElements()
  * Set the size of various containers, based on the size of the browser window.
  *  - the rotation of the vertical tabs
@@ -1656,6 +1590,58 @@ function SizeDOMElements() {
 		let t = wo.top+wh-scroller_h-30;
 		scroller.css('top', (t<wo.top+15 ? wo.top+15 : t) + 'px');
 	}
+}
+
+function loadEmptyProject() {
+//	var p = new Project();
+//	var s = new Service(p.id);
+//	p.adddefaultvulns();
+//	p.addservice(s.id);
+//	s.autosettitle();
+//	p.autosettitle();
+//	p.load();
+//	$(`#tab_diagramsservicetab${s.id} a`).trigger('click');
+//}
+//
+//function addEmptyProject() {
+	var p = new Project();
+	var s = new Service(p.id);
+	p.adddefaultvulns();
+	p.addservice(s.id);
+	s.autosettitle();
+	p.autosettitle();
+	switchToProject(p.id);
+	transactionCompleted("Project add");
+}
+
+/* Load a fresh default project. If a template is defined and exists, then start a new project based on
+ * that template. Otherwise, start an empty project with builtin default labels and vulnerabilities.
+ */
+function loadDefaultProject() {
+#ifdef SERVER
+	if (GroupSettings.templatestring) {
+		let pid = loadFromString(GroupSettings.templatestring, {
+			showerrors: false,
+			duplicate: true,
+			strsource: _("Template project '%%'", GroupSettings.teplate)
+		});
+		if (pid) {
+			let p = Project.get(pid);
+			p.autosettitle();
+			p.shared = false;
+			p.stub = false;
+			p.store();
+			switchToProject(pid);
+		} else {
+			loadEmptyProject();
+		}
+	} else {
+		// Blank project
+		loadEmptyProject();
+	}
+#else
+	loadEmptyProject();
+#endif
 }
 
 // Remove menus, but *not* the selectrect
@@ -1983,10 +1969,13 @@ function autoSaveFunction() {		// eslint-disable-line no-unused-vars
 }
 #endif
 
-/* loadFromString(str): with string 'str' containing an entire file, try to
+/* loadFromString(str,options): with string 'str' containing an entire file, try to
  *		read and create the objects in it.
- * Shows error messages, unless 'showerrors' is false.
- * Throws an error if the string does not contain any projects, unless 'allowempty' is true.
+ * options is an object containing these properties (all optional):
+ *	showerrors: (bool, default true) Show errors in a modal dialog.
+ *	allowempty: (bool, default false) Allow input with no projects without error.
+ *	strsource: (string, default "input") Name of the source, used in error messages.
+ *	duplicate: (bool, default false) Renumber all objects, create fresh UUIDs.
  *
  * Returns the id of one of the projects loaded, or null on failure.
  *
@@ -2009,7 +1998,7 @@ function autoSaveFunction() {		// eslint-disable-line no-unused-vars
 var Flag_Upgrade_Done = false;
 var Upgrade_Description = "";
 
-function loadFromString(str,showerrors,allowempty,strsource) {
+function loadFromString(str,options) {
 	var lProject = [];
 	var lService = [];
 	var lThreat = [];
@@ -2025,6 +2014,12 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	var upgrade_2_3 = false;
 	var upgrade_3_4 = false;
 
+	if (options==null) options={};
+	if (options.showerrors==null) options.showerrors=true;
+	if (options.allowempty==null) options.allowempty=false;
+	if (options.strsource==null) options.strsource="input";
+	if (options.duplicate==null) options.duplicate=false;
+
 	Flag_Upgrade_Done = false;
 	Upgrade_Description = "";
 	var patt = new RegExp(/^([^\t\n]+)\t([^\n]+)\n/);
@@ -2036,12 +2031,12 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			if (!key || key[0]!=LS_prefix) throw new Error('Invalid key');
 			if (key[1]!=LS_version) {
 				if (key[1]==1) {
-					// Can upgrade from version 1 to version 3
+					// Can upgrade from version 1 to version 4
 					upgrade_1_2 = true;
 					upgrade_2_3 = true;
 					upgrade_3_4 = true;
 				} else if (key[1]==2) {
-					// Can upgrade from version 2 to version 3
+					// Can upgrade from version 2 to version 4
 					upgrade_2_3 = true;
 					upgrade_3_4 = true;
 				} else if (key[1]==3) {
@@ -2093,20 +2088,20 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		}
 		str = str.trim();
 		if (str.length!=0) throw new Error("Invalid text");
-		if (lProject.length==0 && allowempty)  return null;
+		if (lProject.length==0 && options.allowempty)  return null;
 	}		// eslint-disable-line brace-style
 	catch(e) {
-		if (!showerrors)  return null;
+		if (!options.showerrors)  return null;
 		$('#splash').hide();
 		var errdialog = $('<div></div>');
 		var s = str.substr(0,40);
 		s = H(s).replace(/\s+/g," ");
-		errdialog.append('<p>' + strsource + ' contains an error:</p>\
+		errdialog.append('<p>' + options.strsource + ' contains an error:</p>\
 			<blockquote>' + e.message + '</blockquote>\
 			<p>The incorrect text is:</p>\
 			<blockquote>' + s + '...</blockquote>');
 		errdialog.dialog({
-			title: strsource + " contains an error",
+			title: options.strsource + " contains an error",
 			modal: true,
 			width: 500,
 			close: function(/*event, ui*/) { errdialog.remove(); }
@@ -2245,13 +2240,13 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	}		// eslint-disable-line brace-style
 	catch (e) {
 		if (DEBUG) console.log("Error: "+e.message);
-		if (!showerrors)  return null;
+		if (!options.showerrors)  return null;
 		$('#splash').hide();
 		errdialog = $('<div></div>');
-		errdialog.append('<p>' + strsource + ' contains an error:</p>\
+		errdialog.append('<p>' + options.strsource + ' contains an error:</p>\
 			<blockquote>' + H(e.message) + '</blockquote>');
 		errdialog.dialog({
-			title: strsource + " is not valid",
+			title: options.strsource + " is not valid",
 			modal: true,
 			width: 500,
 			close: function(/*event, ui*/) { errdialog.remove(); }
@@ -2267,8 +2262,9 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		A[ A.indexOf(oldval) ] = newval;
 	}
 
-	if (upgrade_2_3) {
+	if (upgrade_2_3 || options.duplicate) {
 		/* Before version 3, IDs were numerical instead of UUIDs, so replace those.
+		 * Also replace IDs when options.duplicate==true
 		 * We replace the id by a UUID, but do remember the old id because it is used in cross-references.
 		 * First correct all IDs, then fix the crossreferences.
 		 */
@@ -2300,10 +2296,23 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			lNodeCluster[i].oldid = lNodeCluster[i].id;
 			lNodeCluster[i].id = createUUID();
 		}
+		// These are not necessary for upgrade_2_3, but for options.duplicate
+		for (i=0; i<lVulnlen; i++) {
+			lVuln[i].oldid = lVuln[i].id;
+			lVuln[i].id = createUUID();
+		}
+		for (i=0; i<lAssmntlen; i++) {
+			lAssmnt[i].oldid = lAssmnt[i].id;
+			lAssmnt[i].id = createUUID();
+		}
 
 		for (i=0; i<lProjectlen; i++) {
-			// Replace service and Threat IDs
-			for (k=0; k<lThreatlen;  k++)  arrayReplace(lProject[i].t, lThreat[k].oldid, lThreat[k].id);
+			// Replace Service and Threat/Vulnerability ids
+			if (upgrade_2_3) {
+				for (k=0; k<lThreatlen;  k++)  arrayReplace(lProject[i].t, lThreat[k].oldid, lThreat[k].id);
+			} else {
+				for (k=0; k<lVulnlen;  k++)  arrayReplace(lProject[i].t, lVuln[k].oldid, lVuln[k].id);
+			}
 			for (k=0; k<lServicelen; k++)  arrayReplace(lProject[i].s, lService[k].oldid, lService[k].id);
 		}
 		for (i=0; i<lThreatlen; i++) {
@@ -2321,10 +2330,14 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			for (k=0; k<lServicelen;   k++)  lNode[i].s = (lNode[i].s==lService[k].oldid ? lService[k].id : lNode[i].s);
 		}
 		for (i=0; i<lComponentlen; i++) {
-			// Replace project, nodes, and treatassessment ids
+			// Replace project, nodes, and (threat)assessment ids
 			for (k=0; k<lProjectlen; k++)  lComponent[i].p = (lComponent[i].p==lProject[k].oldid ? lProject[k].id : lComponent[i].p);
 			for (k=0; k<lNodelen;    k++)  arrayReplace(lComponent[i].n, lNode[k].oldid, lNode[k].id);
-			for (k=0; k<lThrEvallen; k++)  arrayReplace(lComponent[i].e, lThrEval[k].oldid, lThrEval[k].id);
+			if (upgrade_2_3) {
+				for (k=0; k<lThrEvallen; k++)  arrayReplace(lComponent[i].e, lThrEval[k].oldid, lThrEval[k].id);
+			} else {
+				for (k=0; k<lAssmntlen; k++)  arrayReplace(lComponent[i].e, lAssmnt[k].oldid, lAssmnt[k].id);
+			}
 		}
 		for (i=0; i<lThrEvallen; i++) {
 			// Replace component, cluster ids
@@ -2332,12 +2345,26 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			for (k=0; k<lNodeClusterlen; k++)  lThrEval[i].u = (lThrEval[i].u==lNodeCluster[k].oldid ? lNodeCluster[k].id : lThrEval[i].u);
 		}
 		for (i=0; i<lNodeClusterlen; i++) {
-			// Replace project, threatassessment, parentcluster, childclusters, nodes
+			// Replace project, (threat)assessment, parentcluster, childclusters, nodes
 			for (k=0; k<lProjectlen;     k++)  lNodeCluster[i].p = (lNodeCluster[i].p==lProject[k].oldid ? lProject[k].id : lNodeCluster[i].p);
-			for (k=0; k<lThrEvallen;     k++)  lNodeCluster[i].e = (lNodeCluster[i].e==lThrEval[k].oldid ? lThrEval[k].id : lNodeCluster[i].e);
+			if (upgrade_2_3) {
+				for (k=0; k<lThrEvallen;     k++)  lNodeCluster[i].e = (lNodeCluster[i].e==lThrEval[k].oldid ? lThrEval[k].id : lNodeCluster[i].e);
+			} else {
+				for (k=0; k<lAssmntlen;     k++)  lNodeCluster[i].e = (lNodeCluster[i].e==lAssmnt[k].oldid ? lAssmnt[k].id : lNodeCluster[i].e);
+			}
 			for (k=0; k<lNodeClusterlen; k++)  lNodeCluster[i].u = (lNodeCluster[i].u==lNodeCluster[k].oldid ? lNodeCluster[k].id : lNodeCluster[i].u);
 			for (k=0; k<lNodeClusterlen; k++)  arrayReplace(lNodeCluster[i].c, lNodeCluster[k].oldid, lNodeCluster[k].id);
 			for (k=0; k<lNodelen;        k++)  arrayReplace(lNodeCluster[i].n, lNode[k].oldid, lNode[k].id);
+		}
+		for (i=0; i<lVulnlen; i++) {
+			// Replace project id
+			for (k=0; k<lProjectlen; k++)  lVuln[i].p = (lVuln[i].p==lProject[k].oldid ? lProject[k].id : lVuln[i].p);
+		}
+		for (i=0; i<lAssmntlen; i++) {
+			// Replace component, cluster ids
+			for (k=0; k<lVulnlen;        k++)  lAssmnt[i].v = (lAssmnt[i].v==lVuln[k].oldid ? lVuln[k].id : lAssmnt[i].v);
+			for (k=0; k<lComponentlen;   k++)  lAssmnt[i].m = (lAssmnt[i].m==lComponent[k].oldid ? lComponent[k].id : lAssmnt[i].m);
+			for (k=0; k<lNodeClusterlen; k++)  lAssmnt[i].u = (lAssmnt[i].u==lNodeCluster[k].oldid ? lNodeCluster[k].id : lAssmnt[i].u);
 		}
 	}
 

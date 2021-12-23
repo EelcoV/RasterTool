@@ -3,6 +3,8 @@ See LICENSE.md
 
 
 BUGS
+Do away with the online/offline setting?
+Check: should ProjectIterator always restrict itself to projects with p.group==ToolGroup?
 Bug/crash when changing type of an Actor to Wireless.
 Must duplicate template projects on load.
 Must duplicate any remote project on load, if classroom==true
