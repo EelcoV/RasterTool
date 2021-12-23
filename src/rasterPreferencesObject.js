@@ -94,7 +94,7 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 		if (!this.online) {
 			$('#networkactivity').removeClass('activityyes activityno').addClass('activityoff');
 			// Remove all current stub projects
-			var it = new ProjectIterator({stub: true});
+			var it = new ProjectIterator({group: ToolGroup, stub: true});
 			it.forEach(p => p.destroy());
 			refreshStubList();
 		}
