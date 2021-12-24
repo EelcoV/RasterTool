@@ -304,7 +304,9 @@ See LICENSE.md
 
 	<div id="tab_diagrams" class="workbody tabs-bottom">
 		<div id="mask-collection" class="donotprint"><!-- mask images to be inserted here --></div>
-		<div id="selectrect"></div>
+		<div id="selectrect">
+			<img id="selectrectC" class="nodeC" src="../img/dropdown.png">
+		</div>
 		<input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
 		<ul id="bottomtabsdiagrams">
 		</ul>

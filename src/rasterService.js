@@ -346,6 +346,7 @@ Service.prototype = {
 			if (evt.button!=0)  return; // only do left mousebutton
 			if (evt.eventPhase==Event.BUBBLING_PHASE)  return; // Only direct events
 			RectDragOrigin = {left: evt.pageX, top: evt.pageY};
+			$('#selectrectC').css({visibility: 'hidden'});
 			$('#selectrect').show().offset({left: evt.pageX, top: evt.pageY}).width(0).height(0);
 			$('#diagrams_workspace'+serviceid).on('mousemove', function(evt) {
 				// only do plain left mousebutton drags
@@ -378,13 +379,15 @@ Service.prototype = {
 			if (evt.target.id=="")  return; // Only direct events, or drag-stops
 			// Direct click on the workspace, steal the focus from wherever it was.
 			$( document.activeElement ).trigger('blur');
-			if (Node.nodesinselection().length==0) {
-				$('#selectrect').hide();
-			}
 			// If any text was selected (accidentally, most likely), then deselect it.
 			window.getSelection().removeAllRanges();
 			//console.debug("Stole the focus");
 			$('#diagrams_workspace'+serviceid).off('mousemove');
+			if ($('#selectrect').width()>20 && $('#selectrect').height()>20) {
+				$('#selectrectC').css({visibility: 'visible'});
+			} else {
+				$('#selectrect').hide();
+			}
 		});
 
 		$('#scroller_region'+this.id).draggable({

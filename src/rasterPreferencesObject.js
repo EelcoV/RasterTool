@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, _, ProjectIterator, refreshStubList, startAutoSave, LS */
+/* global bugreport, _, ProjectIterator, refreshStubList, startAutoSave, LS, ToolGroup */
 
 /*
  *

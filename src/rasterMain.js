@@ -470,7 +470,7 @@ function initAllAndSetup() {
 #ifdef SERVER
 function initProjectsToolbar() {
 	$("a[href^='#tb_projects']").html(_("Projects"));
-	$('#libadd').attr('title',_("Add a new, blank project to the library."));
+	$('#libadd').attr('title',_("Add a new default project to the library."));
 	$('#libduplicate').attr('title',_("Create a copy of this project."));
 	$('#libimport').attr('title',_("Load a project from a file."));
 	$('#libexport').attr('title',_("Save the current project to a file."));
@@ -2867,7 +2867,10 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 	var id = nid2id(ui.newPanel[0].id);
 	$('#selectrect').hide();
 	// Reattach the selectrect within this diagram
-	$('#selectrect').detach().appendTo('#tab_diagrams'+id);
+	// Attach to diagrams_workspace *not* to tab_diagrams, because then the mousup event is sometimes not fired,
+	// probably because it happens to occur *on* the selectrect. Mousemoves over the selectrect also do not register
+	// on diagrams_workspace then.
+	$('#selectrect').detach().appendTo('#diagrams_workspace'+id);
 	removetransientwindowsanddialogs();
 	Service.cid = id;
 //	$('.scroller_overview').hide();
@@ -2976,21 +2979,11 @@ function initTabDiagrams() {
 	$('#mi_scedit span').html( _("Edit labels ...") );
 	$('#selectmenu li.lcT span').html(_("Selection"));
 	$('#selectmenu').menu().hide();
-	$('#selectrect').on('contextmenu', function(e) {
-		e.preventDefault();
-		$('#selectmenu').menu('collapseAll');
-		$('#selectmenu').show();
-		$('#selectmenu').position({
-			my: "left top",
-			at: "left+" + e.pageX + "px top+" + e.pageY + "px",
-			of: "body",
-			collision: "fit"
-		});
-		return false;
-	});
+	$('#selectrect').on('contextmenu', showSelectMenu);
 	$('#selectrect').on('click', function(evt) {
 		if (evt.button==0)  $('#selectmenu').hide(); // left mousebutton
 	});
+	$('#selectrectC').on('click', showSelectMenu);
 
 	$('#nodereport').dialog({
 		autoOpen: false,
@@ -3502,6 +3495,26 @@ function initTabDiagrams() {
 	}
 }
 
+function showSelectMenu(e) {
+	e.preventDefault();
+	$('#selectmenu').menu('collapseAll');
+	if (Node.nodesinselection().length==0) {
+		$('#mi_sc').addClass('ui-state-disabled');
+		$('#mi_sd').addClass('ui-state-disabled');
+	} else {
+		$('#mi_sc').removeClass('ui-state-disabled');
+		$('#mi_sd').removeClass('ui-state-disabled');
+	}
+	$('#selectmenu').show();
+	$('#selectmenu').position({
+		my: "left top",
+		at: "left+" + e.pageX + "px top+" + e.pageY + "px",
+		of: "body",
+		collision: "fit"
+	});
+	return false;
+}
+	
 /* nodesDelete: create a transaction to delete multiple nodes
  * nodes: array of Node IDs
  * descr: description of the transaction

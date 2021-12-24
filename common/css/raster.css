@@ -1138,9 +1138,19 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
 #selectrect {
     position: absolute;
     display: none;
-    background: blue;
-    opacity: 0.2;
     z-index: 90;
+}
+#selectrect:after {
+	display: inline-block;
+	width: 100%;
+	height: 100%;
+	content: '';
+	background: #0050ff;
+	opacity: 0.2;
+}
+#selectrectC {
+	top: 2px;
+	right: 2px;
 }
 
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
