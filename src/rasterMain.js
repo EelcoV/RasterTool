@@ -298,6 +298,7 @@ function initAllAndSetup() {
 	localStorage.clear();
 	loadEmptyProject();
 #endif
+	populateProjectList();
 
 	// Diagrams have already been painted on Project.load()
 	p = Project.get(Project.cid);
@@ -518,7 +519,7 @@ function initProjectsToolbar() {
 
 	$('#projlistsection>div:first-child').html(_("Project library"));
 	$('#projlist').selectmenu({
-		open: populateProjectList,
+		open: showProjectList,
 		select: function(event,data) {
 			// data.item.value = id of selected project
 			// data.item.label = name of selected project
@@ -661,7 +662,7 @@ function initProjectsToolbar() {
 	});
 }
 
-/* populateProjectList: Show project list using current stubs, and do fire periodic updates
+/* populateProjectList: Fill the project list using current stubs
  */
 function populateProjectList() {
 	var snippet = "";
@@ -702,13 +703,20 @@ function populateProjectList() {
 #ifdef SERVER
 	// Finally all stubs projects
 	refreshStubList(false); // Add current stubs, possibly outdated wrt server status
+#endif
+	// Select the current project, and enable/disable the buttons
+	$('#projlist').val(Project.cid).selectmenu('refresh');
+}
+
+/* showProjectList: Show project list using current stubs, and do fire periodic updates
+ */
+function showProjectList() {
+	populateProjectList();
+#ifdef SERVER
 	if (!Preferences.localonly && Preferences.online) {
 		startPeriodicStubListRefresh(); // Update stubs from server and refresh
 	}
 #endif
-	// Select the current project, and enable/disable the buttons
-//	$('#projlist').val(Project.cid).focus().trigger('change');
-	$('#projlist').val(Project.cid).selectmenu('refresh');
 }
 
 #ifdef SERVER
@@ -1446,7 +1454,7 @@ function ShowDetails() {
 #endif
 					$(this).dialog('close');
 #ifdef SERVER
-					populateProjectList();
+					showProjectList();
 #endif
 					transactionCompleted("Project props change");
 			}
