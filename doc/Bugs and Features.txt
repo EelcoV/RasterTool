@@ -4,7 +4,6 @@ See LICENSE.md
 
 BUGS
 In NodeCluster.titleisused, include project in iterator?
-Feedback on toolbar titles on hover (using the underline?)
 Do away with the online/offline setting?
 Bug/crash when changing type of an Actor to Wireless.
 Must duplicate any remote project on load, if classroom==true

@@ -194,6 +194,9 @@ body {
 	background: var(--toolbarbg);
 	margin: 0px 10px 7px 10px;
 }
+#toolbars li.ui-state-hover {
+	border-bottom: 1px solid var(--highlt);
+}
 #toolbars li.ui-state-active {
 	font-weight: bold;
 	border-bottom: 4px solid var(--highlt);
