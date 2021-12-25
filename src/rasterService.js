@@ -116,8 +116,8 @@ Service.prototype = {
 			} while (Service.titleisused(this.project,targettitle,this.id));
 		}
 		this.title = targettitle;
-		$('.servicename'+this.id).html(H(this.title));
-		$('.tabtitle'+this.id).attr('title',H(this.title));
+		$('.servicename'+this.id).text(this.title);
+		$('.tabtitle'+this.id).attr('title',this.title);
 		$('#diagramstabtitle'+this.id).text(this.title);
 		$('#singlefstabtitle'+this.id).text(this.title);
 		this.store();

@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, _, AssessmentIterator, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id, toolbar_height
+bugreport, _, _H, AssessmentIterator, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id, toolbar_height
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -386,9 +386,9 @@ Assessment.prototype = {
 		if (interact==null) interact=true;
 
 		if (this.component!=null && Component.get(this.component).type=='tUNK') {
-			$('#dth_'+prefix+'name'+this.id).attr('title', _("For %%: ",Rules.nodetypes[this.type]) + H(this.description));
+			$('#dth_'+prefix+'name'+this.id).attr('title', _("For %%: ",Rules.nodetypes[this.type]) + this.description);
 		} else {
-			$('#dth_'+prefix+'name'+this.id).attr('title', H(this.description));
+			$('#dth_'+prefix+'name'+this.id).attr('title', this.description);
 		}
 		
 		var selectoptions = '';
@@ -502,7 +502,7 @@ Assessment.prototype = {
 				if ("MHV".indexOf(assmnt.minimpact)==-1)  return;
 
 				var str;
-				str  = _("The impact should be at least %%, because the following nodes have that impact for single failures.",
+				str  = _H("The impact should be at least %%, because the following nodes have that impact for single failures.",
 					Assessment.descr[Assessment.valueindex[assmnt.minimpact]] );
 				str += '<br><ul>\n';
 
@@ -611,9 +611,9 @@ Assessment.prototype = {
 					}
 				};
 				newRasterConfirm(_("Delete vulnerability?"),
-					_("Vulnerabilities should only be deleted when physically impossible.")+
+					_H("Vulnerabilities should only be deleted when physically impossible.")+
 					'<br>\n'+
-					_("Are you sure that '%%' for '%%' is nonsensical?", H(assmnt.title),H(cm.title)),
+					_H("Are you sure that '%%' for '%%' is nonsensical?", assmnt.title,cm.title),
 					_("It's impossible"),_("Cancel")
 				).done(dokill);
 			});

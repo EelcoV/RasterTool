@@ -3,7 +3,7 @@
  */
 
 /* global
-_, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
+_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -315,11 +315,11 @@ Project.UpdateStubs = function(load_async,dorepaint) {
 			if (textStatus=="timeout") {
 				Preferences.setonline(false);
 				rasterAlert(_("Server is offline"),
-					_("The server appears to be unreachable. The tool is switching to working offline.")
+					_H("The server appears to be unreachable. The tool is switching to working offline.")
 				); 
 			} else {
 				rasterAlert(_("A request to the server failed"),
-					_("Could not retrieve the list of remote projects.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
+					_("Could not retrieve the list of remote projects.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
 				);
 			}
 			updateStubsInProgress=false;
@@ -374,7 +374,7 @@ Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError) {
 					doOnError(jqXHR, jqXHR.responseText, jqXHR.responseText);
 				} else {
 					rasterAlert(_("Invalid project received from server"),
-						_("An invalid project was received from the server.")
+						_H("An invalid project was received from the server.")
 					);
 				}
 			}
@@ -384,7 +384,7 @@ Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError) {
 			if (textStatus=="timeout") {
 				Preferences.setonline(false);
 				rasterAlert(_("Server is offline"),
-					_("The server appears to be unreachable. The tool is switching to working offline.")
+					_H("The server appears to be unreachable. The tool is switching to working offline.")
 				);
 				if (doOnError) {
 					doOnError(jqXHR, textStatus, errorThrown);
@@ -394,7 +394,7 @@ Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError) {
 					doOnError(jqXHR, textStatus, errorThrown);
 				} else {
 					rasterAlert(_("A request to the server failed"),
-						_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
+						_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
 					);
 				}
 			}
@@ -423,11 +423,11 @@ Project.getProps = function(pname,doWhenReady) {
 			if (textStatus=="timeout") {
 				Preferences.setonline(false);
 				rasterAlert(_("Server is offline"),
-					_("The server appears to be unreachable. The tool is switching to working offline.")
+					_H("The server appears to be unreachable. The tool is switching to working offline.")
 				); 
 			} else {
 				rasterAlert(_("A request to the server failed"),
-					_("Could not retrieve properties the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
+					_("Could not retrieve properties the remote project.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
 				);
 			}
 		}
@@ -903,11 +903,11 @@ Project.prototype = {
 					if (textStatus=="timeout") {
 						Preferences.setonline(false);
 						rasterAlert(_("Server is offline"),
-							_("The server appears to be unreachable. The tool is switching to working offline.")
+							_H("The server appears to be unreachable. The tool is switching to working offline.")
 						); 
 					} else {
 						rasterAlert(_("A request to the server failed"),
-							_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
+							_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
 						);
 					}
 				}
@@ -945,11 +945,11 @@ Project.prototype = {
 					if (textStatus=="timeout") {
 						Preferences.setonline(false);
 						rasterAlert(_("Server is offline"),
-							_("The server appears to be unreachable. The tool is switching to working offline.")
+							_H("The server appears to be unreachable. The tool is switching to working offline.")
 						); 
 					} else {
 						rasterAlert(_("A request to the server failed"),
-							_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
+							_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
 						);
 					}
 				}
@@ -968,9 +968,9 @@ Project.prototype = {
 			}
 			if (thisp.date < details.date) {
 				rasterAlert(_("Cannot remove project from server"),
-					_("Project '%%' has been stored on the server by user '%%' on '%%'. ", H(thisp.title), H(details.creator), H(details.date))
-					+_("Your project will be made private, so that you can continue using it.\n")
-					+_("Beware: this project has not be saved on the server.")
+					_H("Project '%%' has been stored on the server by user '%%' on '%%'. ", thisp.title, details.creator, details.date)
+					+_H("Your project will be made private, so that you can continue using it.\n")
+					+_H("Beware: this project has not be saved on the server.")
 				);
 				thisp.setshared(false,false);
 				return;
@@ -986,11 +986,11 @@ Project.prototype = {
 					if (textStatus=="timeout") {
 						Preferences.setonline(false);
 						rasterAlert(_("Server is offline"),
-							_("The server appears to be unreachable. The tool is switching to working offline.")
+							_H("The server appears to be unreachable. The tool is switching to working offline.")
 						); 
 					} else {
 						rasterAlert(_("A request to the server failed"),
-							_("Could not delete the remote project.\nThe server reported:<pre>%%</pre>", jqXHR.responseText)
+							_("Could not delete the remote project.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
 						);
 					}
 				}
@@ -1068,9 +1068,9 @@ Project.prototype = {
 					doUpdate();
 				} else {
 					newRasterConfirm(_("Update project?"),
-						_("There is a more recent version of this project available. ")+
-						_("You should update your project. ")+
-						_("If you want to continue using this version, you must make it into a private project."),
+						_H("There is a more recent version of this project available. ")+
+						_H("You should update your project. ")+
+						_H("If you want to continue using this version, you must make it into a private project."),
 						_("Make private"),_("Update")
 					).done(function() {
 						// Make private
@@ -1096,11 +1096,11 @@ Project.prototype = {
 		this.refreshIfNecessary(auto, {
 			onNotfound: function() {
 				rasterAlert(_("Project has been made private"),
-					_("Project '%%' has been deleted from the server by someone. ", H(p.title))+
-					_("Your local version of the project will now be marked as private. ")+
-					_("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
+					_H("Project '%%' has been deleted from the server by someone. ", p.title)+
+					_H("Your local version of the project will now be marked as private. ")+
+					_H("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
 					"<br><p><i>"+
-					_("Your changes are not shared with others anymore.")+
+					_H("Your changes are not shared with others anymore.")+
 					"</i>"
 				);
 			},
@@ -1119,13 +1119,13 @@ Project.prototype = {
 			},
 			onError: function(str) {
 				rasterAlert(_("Project has been made private"),
-					_("Project '%%' could not be retrieved from the server. ", H(p.title))+
-					_("Your local version of the project will now be marked as private. ")+
-					_("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
+					_H("Project '%%' could not be retrieved from the server. ", p.title)+
+					_H("Your local version of the project will now be marked as private. ")+
+					_H("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
 					"<br><p><i>"+
-					_("Your changes are not shared with others anymore.")+
+					_H("Your changes are not shared with others anymore.")+
 					"</i><p>"+
-					_("The server reported:<pre>%%</pre>", str)
+					_("The server reported:<pre>%%</pre>", H(str))
 				);
 			}
 		});
@@ -1298,10 +1298,10 @@ function askForConflictResolution(proj,details) {
 	]);
 	$('#modaldialog').dialog( 'option', 'title', _("Conflict resulution"));
 	$('#modaldialog').html(
-		_("A newer version of project '%%' has been stored on the server by user '%%' on '%%'. ", H(proj.title), H(details.creator), H(prettyDate(details.date)))
-		+_("You can continue this version as a private project, overrule the other version so that everyone will use this version, or you can adopt the other version.")
+		_H("A newer version of project '%%' has been stored on the server by user '%%' on '%%'. ", H(proj.title), H(details.creator), H(prettyDate(details.date)))
+		+_H("You can continue this version as a private project, overrule the other version so that everyone will use this version, or you can adopt the other version.")
 		+"<p>"
-		+_("If you adopt the other version, you may lose some of your latest edits.")
+		+_H("If you adopt the other version, you may lose some of your latest edits.")
 	);
 	$('#modaldialog').dialog('open');
 	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');

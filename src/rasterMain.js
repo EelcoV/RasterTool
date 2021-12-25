@@ -55,7 +55,7 @@ ipc.on('document-save-success', function(event,docname) {
 	clearModified();
 	if (!docname)  return;
 	docname = docname.replace(/\.raster$/,"");
-	$('.projectname').html(H(docname));
+	$('.projectname').text(docname);
 	Project.get(Project.cid).settitle(docname);
 });
 ipc.on('document-start-open', function(event,str) {
@@ -158,11 +158,11 @@ function initAllAndSetup() {
 	$('#onlinesection').hide();
 	
 	// PDF print options dialog
-	$('#pdf_orientation span').html(_("Orientation:"));
-	$('#label_portrait').html(_("Portrait"));
-	$('#label_landscape').html(_("Landscape"));
-	$('#pdf_papersize span').html(_("Paper size:"));
-	$('#pdf_scale span').html(_("Scale:"));
+	$('#pdf_orientation span').text(_("Orientation:"));
+	$('#label_portrait').text(_("Portrait"));
+	$('#label_landscape').text(_("Landscape"));
+	$('#pdf_papersize span').text(_("Paper size:"));
+	$('#pdf_scale span').text(_("Scale:"));
 
 	$('[for=paperorientation_portrait]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdforientation',0); });
 	$('[for=paperorientation_landscape]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdforientation',1); });
@@ -225,10 +225,10 @@ function initAllAndSetup() {
 	$("a[href^='#tab_singlefs']").attr('title', _("Assess all single failures."));
 	$("a[href^='#tab_ccfs']").attr('title', _("Assess all common cause failures."));
 	$("a[href^='#tab_analysis']").attr('title', _("Reporting and analysis tools."));
-	$("a[href^='#tab_diagrams']").html(_("Diagrams"));
-	$("a[href^='#tab_singlefs']").html(_("Single failures"));
-	$("a[href^='#tab_ccfs']").html(_("Common cause failures"));
-	$("a[href^='#tab_analysis']").html(_("Analysis"));
+	$("a[href^='#tab_diagrams']").text(_("Diagrams"));
+	$("a[href^='#tab_singlefs']").text(_("Single failures"));
+	$("a[href^='#tab_ccfs']").text(_("Common cause failures"));
+	$("a[href^='#tab_analysis']").text(_("Analysis"));
 	
 	$('#tab_singlefs').on('click', removetransientwindows);
 	$('#tab_ccfs').on('click', removetransientwindows);
@@ -243,11 +243,11 @@ function initAllAndSetup() {
 #ifdef SERVER
 	if (!testLocalStorage()) {
 		// The splash screen is still visible, and will obscure any interaction.
-		$('#splashstatus').html( _("Error: no local storage available.<br>Adjust cookie or privacy settings?") );
+		$('#splashstatus').text( _("Error: no local storage available.<br>Adjust cookie or privacy settings?") );
 		rasterAlert(_("Cannot continue"),
-			_("HTML5 local storage is not supported by this browser or configuration. ")
-			+ _("This app will not work properly. ")
-			+ "<p>" + _("Try adjusting your cookie or privacy settings."));
+			_H("HTML5 local storage is not supported by this browser or configuration. ")
+			+ _H("This app will not work properly. ")
+			+ "<p>" + _H("Try adjusting your cookie or privacy settings."));
 	}
 
 	/* Loading data from localStorage. Tweaked for perfomance.
@@ -470,7 +470,7 @@ function initAllAndSetup() {
 
 #ifdef SERVER
 function initProjectsToolbar() {
-	$("a[href^='#tb_projects']").html(_("Projects"));
+	$("a[href^='#tb_projects']").text(_("Projects"));
 	$('#libadd').attr('title',_("Add a new default project to the library."));
 	$('#libduplicate').attr('title',_("Create a copy of this project."));
 	$('#libimport').attr('title',_("Load a project from a file."));
@@ -518,7 +518,7 @@ function initProjectsToolbar() {
 		singleProjectExport(Project.cid);
 	});
 
-	$('#projlistsection>div:first-child').html(_("Project library"));
+	$('#projlistsection>div:first-child').text(_("Project library"));
 	$('#projlist').selectmenu({
 		open: showProjectList,
 		select: function(event,data) {
@@ -551,7 +551,7 @@ function initProjectsToolbar() {
 			// Make sure that there is no local project with that name
 			if (Project.withTitle(p.title)!=null) {
 				rasterAlert(_('That project name is used already'),
-					_("There is already a project called '%%'. Please rename that project first.", H(p.title))
+					_H("There is already a project called '%%'. Please rename that project first.", p.title)
 				);
 			} else {
 				// Do a retrieve operation, and switch to that new project, if successful.
@@ -609,16 +609,16 @@ function initProjectsToolbar() {
 	$('#libmerge').on('click',  function() {
 		var otherproject = Project.get( $('#projlist').val() );
 		if (otherproject.stub) {
-			rasterAlert(_("Cannot merge a remote project"),_("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
+			rasterAlert(_("Cannot merge a remote project"),_H("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
 			return;
 		}
 		var currentproject = Project.get( Project.cid );
 		rasterConfirm(_("Merge '%%' into '%%'?",otherproject.title,currentproject.title),
-			_("Are you sure you want to fold project '%%' into the current project?",
-				H(otherproject.title))
+			_H("Are you sure you want to fold project '%%' into the current project?",
+				otherproject.title)
 			+'<br>\n'+
-			_("This will copy the diagrams of '%%' into '%%'.",
-				H(otherproject.title),H(currentproject.title)),
+			_H("This will copy the diagrams of '%%' into '%%'.",
+				otherproject.title,currentproject.title),
 			_("Merge"),_("Cancel"),
 			function() {
 				Project.merge(currentproject,otherproject);
@@ -626,10 +626,10 @@ function initProjectsToolbar() {
 		});
 	});
 
-	$('#projdebugsection>div:first-child').html(_("Debugging functions"));
-	$('#libcheck').html(_("Check"));
-	$('#libexportall').html(_("Export all"));
-	$('#libzap').html(_("Zap library"));
+	$('#projdebugsection>div:first-child').text(_("Debugging functions"));
+	$('#libcheck').text(_("Check"));
+	$('#libexportall').text(_("Export all"));
+	$('#libzap').text(_("Zap library"));
 	$('#libcheck').attr('title',_("Check the projects for internal consistency."));
 	$('#libexportall').attr('title',_("Save all projects into a single file."));
 	$('#libzap').attr('title',_("Permanently remove all projects."));
@@ -645,7 +645,7 @@ function initProjectsToolbar() {
 	// Zap! --------------------
 	$('#libzap').on('click',  function(){
 		rasterConfirm('Delete all?',
-			_("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
+			_H("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
 			_("Erase everything"),_("Cancel"),
 			function() {
 				rasterConfirm(_('Delete all?'),
@@ -693,7 +693,7 @@ function populateProjectList() {
 	for (const p of it) {
 		if (p.stub || p.shared) continue;
 		if (snippet=="") {
-			snippet = '<optgroup class="optgroup" label="'+_("Private projects")+'">\n';
+			snippet = '<optgroup class="optgroup" label="'+_H("Private projects")+'">\n';
 		}
 		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
 	}
@@ -708,7 +708,7 @@ function populateProjectList() {
 		for (const p of it) {
 			if (p.stub || !p.shared) continue;
 			if (snippet=="") {
-				snippet = '<optgroup class="optgroup" label="'+_("Shared projects")+'">\n';
+				snippet = '<optgroup class="optgroup" label="'+_H("Shared projects")+'">\n';
 			}
 			snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
 		}
@@ -796,7 +796,7 @@ function geGroupSettingsAtInitialisation() {
 		success: function(data) {
 			if (data.classroom===true) {
 				GroupSettings.classroom = true;
-				$("#classroom").html(_("Classroom version")).show();
+				$("#classroom").text(_("Classroom version")).show();
 			}
 			if (typeof data.template==='string') {
 				GroupSettings.template = data.template;
@@ -837,7 +837,7 @@ function geGroupSettingsAtInitialisation() {
 #endif
 
 function initHomeToolbar() {
-	$("a[href^='#tb_home']").html(_("Home"));
+	$("a[href^='#tb_home']").text(_("Home"));
 	$('#undobutton').attr('title', _("Undo"));
 	$('#redobutton').attr('title', _("Redo"));
 	$('#findbutton').attr('title', _("Locate nodes"));
@@ -874,10 +874,10 @@ function initHomeToolbar() {
 			}
 		}
 	});
-	$('#helptabs a').eq(0).html( _("Frequency") );
-	$('#helptabs a').eq(1).html( _("Impact") );
-	$('#helptabs a').eq(2).html( _("How to use") );
-	$('#helptabs a').eq(3).html( _("About") );
+	$('#helptabs a').eq(0).text( _("Frequency") );
+	$('#helptabs a').eq(1).text( _("Impact") );
+	$('#helptabs a').eq(2).text( _("How to use") );
+	$('#helptabs a').eq(3).text( _("About") );
 	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
 	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
 	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
@@ -887,9 +887,9 @@ function initHomeToolbar() {
 	// Home toolbar | Diagram items: templates are set up in Project.load()
 
 	// Home toolbar | SF items
-	$('#sffoldsection>div:first-child').html(_("Fold"));
-	$('#sfexpandall').html(_("Expand all"));
-	$('#sfcollapseall').html(_("Collapse all"));
+	$('#sffoldsection>div:first-child').text(_("Fold"));
+	$('#sfexpandall').text(_("Expand all"));
+	$('#sfcollapseall').text(_("Collapse all"));
 	$('#sfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
 	$('#sfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
 	$('#sfexpandall').on('click',  function(){
@@ -900,7 +900,7 @@ function initHomeToolbar() {
 		$('#singlefs_workspace'+Service.cid).scrollTop(0);
 		collapseAllSingleF(Service.cid);
 	});
-	$('#sfsortsection>div:first-child').html(_("Sort"));
+	$('#sfsortsection>div:first-child').text(_("Sort"));
 	$('#sfsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
 	$('#sfsort_type').checkboxradio('option', 'label', _("by Type"));
 	$('#sfsort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
@@ -911,9 +911,9 @@ function initHomeToolbar() {
 	});
 
 	// Home toolbar | CCF items
-	$('#ccffoldsection>div:first-child').html(_("Fold"));
-	$('#ccfexpandall').html(_("Expand all"));
-	$('#ccfcollapseall').html(_("Collapse all"));
+	$('#ccffoldsection>div:first-child').text(_("Fold"));
+	$('#ccfexpandall').text(_("Expand all"));
+	$('#ccfcollapseall').text(_("Collapse all"));
 	$('#ccfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
 	$('#ccfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
 	$('#ccfexpandall').on('click', function(){
@@ -924,7 +924,7 @@ function initHomeToolbar() {
 		$('#ccfs_body').scrollTop(0);
 		collapseAllCCF();
 	});
-	$('#ccfsortsection>div:first-child').html(_("Sort"));
+	$('#ccfsortsection>div:first-child').text(_("Sort"));
 	$('#ccfsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
 	$('#ccfsort_type').checkboxradio('option', 'label', _("by Type"));
 	$('#ccfsort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
@@ -935,8 +935,8 @@ function initHomeToolbar() {
 	});
 
 	// Home toolbar | Analysis items
-	$('#anavnsortsection>div:first-child').html(_("Sort nodes and clusters"));
-	$('#anavfsortsection>div:first-child').html(_("Sort vulnerabilities"));
+	$('#anavnsortsection>div:first-child').text(_("Sort nodes and clusters"));
+	$('#anavfsortsection>div:first-child').text(_("Sort vulnerabilities"));
 	$('#ana_nodesort_alph').checkboxradio('option', 'label', _("Alphabetically"));
 	$('#ana_nodesort_type').checkboxradio('option', 'label', _("by Type"));
 	$('#ana_nodesort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
@@ -946,9 +946,9 @@ function initHomeToolbar() {
 	$('#ana_failsort_type').prop('checked',true);
 	$('input[name=ana_nodesort]').checkboxradio('refresh');
 	$('input[name=ana_failsort]').checkboxradio('refresh');
-	$('#anavexcludesection>div:first-child').html(_("Click cells to include/exclude them"));
-	$('#quickwinslink').html(_("Quick wins"));
-	$('#clearexclusions').html(_("Clear exclusions"));
+	$('#anavexcludesection>div:first-child').text(_("Click cells to include/exclude them"));
+	$('#quickwinslink').text(_("Quick wins"));
+	$('#clearexclusions').text(_("Clear exclusions"));
 	var create_ananode_sortfunc = function(opt) {
 		return function() {
 			FailureThreatSortOpt.node = opt;
@@ -987,16 +987,16 @@ function initHomeToolbar() {
 		$('#clearexclusions').button('option','disabled',true);
 	});
 	
-	$('#anallincsection>div:first-child').html(_("Include"));
-	$('#anallminsection>div:first-child').html(_("Minimum value"));
-	$('#anallincsection label[for=incX]').html(_("Undetermined"));
-	$('#anallincsection label[for=incA]').html(_("Ambiguous"));
+	$('#anallincsection>div:first-child').text(_("Include"));
+	$('#anallminsection>div:first-child').text(_("Minimum value"));
+	$('#anallincsection label[for=incX]').text(_("Undetermined"));
+	$('#anallincsection label[for=incA]').text(_("Ambiguous"));
 }
 
 function initSettingsToolbar() {
-	$("a[href^='#tb_settings']").html(_("Settings"));
+	$("a[href^='#tb_settings']").text(_("Settings"));
 	// Options toolbar | diagrams options
-	$('#vulnlevelsection>div:first-child').html(_("Vulnerability levels"));
+	$('#vulnlevelsection>div:first-child').text(_("Vulnerability levels"));
 
 	$('#em_none').checkboxradio('option', 'label', _("None"));
 	$('#em_small').checkboxradio('option', 'label', _("Small"));
@@ -1006,7 +1006,7 @@ function initSettingsToolbar() {
 	$('#vulnlevelsection input').on('change', function() {
 		Preferences.setemblem($('input[name=emblem_size]:checked').val());
 	});
-	$('#labelsection>div:first-child').html(_("Label colors"));
+	$('#labelsection>div:first-child').text(_("Label colors"));
 	$('#label_off').checkboxradio('option', 'label', _("hide"));
 	$('#label_on').checkboxradio('option', 'label', _("show"));
 	$('#label_off').prop('checked',!Preferences.showmap);
@@ -1015,7 +1015,7 @@ function initSettingsToolbar() {
 	$('#labelsection input').on('change', function() {
 		Preferences.setlabel($('#label_on').prop('checked'));
 	});
-	$('#mapsection>div:first-child').html(_("Minimap"));
+	$('#mapsection>div:first-child').text(_("Minimap"));
 	$('#showmap_off').checkboxradio('option', 'label', _("off"));
 	$('#showmap_on').checkboxradio('option', 'label', _("on"));
 	$('#showmap_off').prop('checked',!Preferences.showmap);
@@ -1037,7 +1037,7 @@ function initSettingsToolbar() {
 #ifdef SERVER
 	// Creator name
 	if (!Preferences.creator) Preferences.creator = _("Anonymous");
-	$('#creatorlabel>div:first-child').html(_("Your name"));
+	$('#creatorlabel>div:first-child').text(_("Your name"));
 	$('#creatorf').prop('placeholder',Preferences.creator);
 	$('#creatorf').attr('title',_("The author's name projects that you share."));
 	$('#creatorf').on('click', function() {
@@ -1049,7 +1049,7 @@ function initSettingsToolbar() {
 		$('#creatorf').val("").prop('placeholder',Preferences.creator);
 	});
 	// Online / offline settings
-	$('#onlinelabel>div:first-child').html(_("Server synchronisation"));
+	$('#onlinelabel>div:first-child').text(_("Server synchronisation"));
 	$('#online_off').checkboxradio('option', 'label', _("offline"));
 	$('#online_on').checkboxradio('option', 'label', _("online"));
 	$('#online_off').prop('checked',!Preferences.online);
@@ -1070,8 +1070,8 @@ function toolbartabselected(evt,ui) {
 		break;
 	case 'tb_settings':		// Options toolbar
 		p = Project.get(Project.cid);
-		$('#projname').html(H(p.title));
-		$('#projdescr').html(H(p.description));
+		$('#projname').text(p.title);
+		$('#projdescr').text(p.description);
 		$('#sharing_off').prop('checked',!p.shared);
 		$('#sharing_on').prop('checked',p.shared);
 		break;
@@ -1441,7 +1441,7 @@ function ShowDetails() {
 		click: function() {
 					let fname = $('#field_projecttitle');
 					p.settitle(fname.val());
-					$('.projectname').html(H(p.title));
+					$('.projectname').text(p.title);
 					document.title = "Raster - " + p.title;
 					Preferences.setcurrentproject(p.title);
 					
@@ -1456,7 +1456,7 @@ function ShowDetails() {
 							let it = new ProjectIterator({title: p.title, group: ToolGroup, stub: true});
 							if (it.count()>0) {
 								rasterAlert(_("Cannot share this project yet"),
-									_("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
+									_H("There is already a project named '%%' on the server. You must rename this project before it can be shared.", p.title)
 								);
 							} else {
 								// transactionCompleted() will take care of the server, if project p is the current project.
@@ -1527,6 +1527,8 @@ function log10(x) { return Math.LOG10E * Math.log(x); }
  * _t["I have %1 %2."] = "Van %2 heb ik er %1.";	<-- not used yet
  *
  * If no translation is provided, the default is to show the unlocalised English version.
+ *
+ * Not that we trust the translation to be safe HTML. Still, we use H() on the translations as a good practice.
  */
 function _(s) {
 	var str;
@@ -1556,15 +1558,18 @@ function _(s) {
 	return str;
 }
 
+/* Return an HTML-escaped version of _(s)
+ */
+function _H(s) {
+	return H(_(s));
+}
+
 /* testLocalStorage(): returns boolean
  * Checks whether the browser supports storing values in localStorage.
  */
 #ifdef SERVER
 function testLocalStorage() {
 	try {
-		if (window.location.href.match(/^file/i)) {
-			rasterAlert('Warning',"Warning: Firefox discards your work on page reload.\nYou will lose your work unless you export your project.");
-		}
 		if (!localStorage) {
 			throw('noLocalStorage');
 		}
@@ -1719,6 +1724,12 @@ function nid2id(nid) {
 	return nid.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/)[1];
 }
 
+/* H: make a string safe to use inside HTML code */
+function H(str) {
+//	return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+	return $('<div></div>').text(str)[0].innerHTML;
+}
+
 /* Use singular or plural phrase, depending on an integer number.
  * This used to append a suffix (defaulting to "s"), which works fine for
  * English but is difficult to localise.
@@ -1769,8 +1780,8 @@ function prettyDate(d) {
 /* Replacement for the standard Javascript alert() function. Several differences:
  * - it won't block the browser (only this tab)
  * - it is themeable
- * - it will take HTML content
- * - you can set the title
+ * - the msg will take HTML content
+ * - you can set the title (text only, no need to HTML-escape)
  */
 function rasterAlert(title,msg) {
 	$('#modaldialog').dialog('option', 'buttons', [
@@ -1792,6 +1803,9 @@ function rasterAlert(title,msg) {
  * - themeable, you can set the title, the buttons and the HTML content
  * - does not return true/false, but takes a callback function as its last parameter
  *   (and optionally a function to call on Cancel/deny)
+ *
+ * Title and buttons are text-only and do not need to be HTML-escaped.
+ * The msg can contain HTML code; use H() whenever possible.
  */
 function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
 	$('#modaldialog').dialog('option', 'buttons', [
@@ -1832,7 +1846,7 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 function bugreport(mess,funcname) {
 	console.log('bugreport: "'+mess+'" in function "'+funcname+'".');
 	if (DEBUG) {
-		rasterAlert('Please report this bug','You found a bug in this program.\n("'+mess+'" in function "'+funcname+'").');
+		rasterAlert('Please report this bug',H(`You found a bug in this program.\n("${mess}" in function "${funcname}").`));
 	}
 }
 
@@ -1924,11 +1938,11 @@ function startWatching(p) {
 			pp.setshared(false,false);
 			removetransientwindows();
 			rasterAlert( _("Project has been made private"),
-				_("Project '%%' has been deleted from the server by someone. ", H(pp.title))+
-				_("Your local version of the project will now be marked as private. ")+
-				_("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
+				_H("Project '%%' has been deleted from the server by someone. ", pp.title)+
+				_H("Your local version of the project will now be marked as private. ")+
+				_H("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
 				"<br><p><i>"+
-				_("Your changes are not shared with others anymore.")+
+				_H("Your changes are not shared with others anymore.")+
 				"</i>"
 			);
 		} else {
@@ -1947,9 +1961,11 @@ function startWatching(p) {
 				switchToProject(newpid);
 			} else {
 				rasterAlert(_("Project has been made private"),
-					'The server version of project "'+H(pp.title)+'" is damaged. '+
-					'The project  will now be marked as private. '+
-					'<p><i>Your changes are not shared with others anymore.</i>'
+					_H("The server version of project '%%' is damaged. ", pp.title)+
+					_H("The project  will now be marked as private. ")+
+					'<p><i>'+
+					_H("Your changes are not shared with others anymore.")+
+					'</i>'
 				);
 				pp.setshared(false,false);
 			}
@@ -2655,8 +2671,8 @@ function checkUpgradeDone() {
 #endif
 	rasterAlert(
 		_("Your project was updated"),
-		_("Your project was updated to a newer version. Some names of components and other items have been altered.")
-		+ '<UL>' + Upgrade_Description + '</UL>'
+		_H("Your project was updated to a newer version. Some names of components and other items have been altered.")
+		+ '<UL>' + H(Upgrade_Description) + '</UL>'
 	);
 }
 
@@ -2786,13 +2802,13 @@ function initLibraryPanel() {
 
 	$('#libprops').val(_("Details"));
 
-	$('#onlineonoff span').first().html( _("Network connection:") );
+	$('#onlineonoff span').first().text( _("Network connection:") );
 	$('#online_off').checkboxradio('option', 'label', _("Offline"));
 	$('#online_on').checkboxradio('option', 'label', _("Online"));
 	$('[for=online_off]').on('click',  function() { Preferences.setonline(false); });
 	$('[for=online_on]').on('click',  function() { Preferences.setonline(true); });
 
-	$('#creator_name span').first().html( _("Your name:") );
+	$('#creator_name span').first().text( _("Your name:") );
 	$('#creator').on('change',  function(/*evt*/){
 		Preferences.setcreator($('#creator').val());
 		$('#creator').val(Preferences.creator);
@@ -2845,11 +2861,11 @@ function checkForErrors(verbose) {
 		}
 	}
 	if (verbose && errors=="") {
-		rasterAlert(_("Checked all projects"), _("There were no errors; all projects are OK.\n"));
+		rasterAlert(_("Checked all projects"), _H("There were no errors; all projects are OK.\n"));
 	}
 	if (errors!="") {
 		console.log(errors);
-		rasterAlert(_("Your projects contain errors:"), errors);
+		rasterAlert(_("Your projects contain errors:"), H(errors));
 	}
 }
 
@@ -2862,7 +2878,7 @@ function bottomTabsCloseHandler(event) {
 	$('#selectrect').hide();
 	var s = Service.get(nid2id(event.target.id));
 	rasterConfirm(_("Delete service?"),
-		_("Are you sure you want to remove service '%%' from project '%%'?", H(s.title), H(p.title)),
+		_H("Are you sure you want to remove service '%%' from project '%%'?", s.title, p.title),
 		_("Remove service"),_("Cancel"),
 		function() {
 			let nodes = [];
@@ -2967,35 +2983,35 @@ function initTabDiagrams() {
 		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 
-	$('.th_name.thr_header').html( _("Name") );
-	$('.th_descr.thr_header').html( _("Description") );
+	$('.th_name.thr_header').text( _("Name") );
+	$('.th_descr.thr_header').text( _("Description") );
 	$('.addthreatbutton').val( _("+ Add vulnerability"));
 	$('.copybutton').val( _("Copy"));
 	$('.pastebutton').val( _("Paste"));
 
-	$('#mi_th span').html( _("Vulnerabilities") );
-	$('#mi_ct span').html( _("Change type") );
-	$('#mi_cttWLS span').html( _("Wireless link") );
-	$('#mi_cttWRD span').html( _("Wired link") );
-	$('#mi_cttEQT span').html( _("Equipment") );
-	$('#mi_cttACT span').html( _("Actor") );
-	$('#mi_cttUNK span').html( _("Unknown link") );
-	$('#mi_cl span').html( _("Class") );
-	$('#mi_rc span').html( _("Rename class") );
-	$('#mi_sx span').html( _("Rename suffix") );
+	$('#mi_th span').text( _("Vulnerabilities") );
+	$('#mi_ct span').text( _("Change type") );
+	$('#mi_cttWLS span').text( _("Wireless link") );
+	$('#mi_cttWRD span').text( _("Wired link") );
+	$('#mi_cttEQT span').text( _("Equipment") );
+	$('#mi_cttACT span').text( _("Actor") );
+	$('#mi_cttUNK span').text( _("Unknown link") );
+	$('#mi_cl span').text( _("Class") );
+	$('#mi_rc span').text( _("Rename class") );
+	$('#mi_sx span').text( _("Rename suffix") );
 	// Menu item Similar/Identical is handled inside Nodecluster:_showpopupmenu()
-	$('#mi_du span').html( _("Duplicate") );
-	$('#mi_de span').html( _("Delete") );
-	$('#mi_ccnone span').html( _("No label") );
-	$('#mi_ccedit span').html( _("Edit labels ...") );
-	$('#nodemenu li.lcT span').html(_("Node"));
+	$('#mi_du span').text( _("Duplicate") );
+	$('#mi_de span').text( _("Delete") );
+	$('#mi_ccnone span').text( _("No label") );
+	$('#mi_ccedit span').text( _("Edit labels ...") );
+	$('#nodemenu li.lcT span').text(_("Node"));
 	$('#nodemenu').menu().hide();
 
-	$('#mi_sd span').html( _("Delete selection") );
-	$('#mi_sc span').html( _("Label") );
-	$('#mi_scnone span').html( _("No label") );
-	$('#mi_scedit span').html( _("Edit labels ...") );
-	$('#selectmenu li.lcT span').html(_("Selection"));
+	$('#mi_sd span').text( _("Delete selection") );
+	$('#mi_sc span').text( _("Label") );
+	$('#mi_scnone span').text( _("No label") );
+	$('#mi_scedit span').text( _("Edit labels ...") );
+	$('#selectmenu li.lcT span').text(_("Selection"));
 	$('#selectmenu').menu().hide();
 	$('#selectrect').on('contextmenu', showSelectMenu);
 	$('#selectrect').on('click', function(evt) {
@@ -3373,7 +3389,7 @@ function initTabDiagrams() {
 		// Start blinking
 		for (const n of nodes) $(Node.get(n).jnid).effect('pulsate', { times:10 }, 4000);
 		rasterConfirm(_("Delete %% %% in selection?", num, plural(_("node"),_("nodes"),num)),
-			_("Are you sure you want to delete all selected nodes?"),
+			_H("Are you sure you want to delete all selected nodes?"),
 			_("Delete %% %%", num, plural(_("node"),_("nodes"),num)),_("Cancel"),
 			function() {
 				// Stop any leftover pulsate effects
@@ -3608,23 +3624,23 @@ function initChecklistsDialog(type) {
 
 function populateLabelMenu() {
 	var p = Project.get(Project.cid);
-	$('#mi_ccred span').html( '"' + H(p.labels[0]) + '"' );
-	$('#mi_ccorange span').html( '"' + H(p.labels[1]) + '"' );
-	$('#mi_ccyellow span').html( '"' + H(p.labels[2]) + '"' );
-	$('#mi_ccgreen span').html( '"' + H(p.labels[3]) + '"' );
-	$('#mi_ccblue span').html( '"' + H(p.labels[4]) + '"' );
-	$('#mi_ccpink span').html( '"' + H(p.labels[5]) + '"' );
-	$('#mi_ccpurple span').html( '"' + H(p.labels[6]) + '"' );
-	$('#mi_ccgrey span').html( '"' + H(p.labels[7]) + '"' );
+	$('#mi_ccred span').text( '"' + H(p.labels[0]) + '"' );
+	$('#mi_ccorange span').text( '"' + H(p.labels[1]) + '"' );
+	$('#mi_ccyellow span').text( '"' + H(p.labels[2]) + '"' );
+	$('#mi_ccgreen span').text( '"' + H(p.labels[3]) + '"' );
+	$('#mi_ccblue span').text( '"' + H(p.labels[4]) + '"' );
+	$('#mi_ccpink span').text( '"' + H(p.labels[5]) + '"' );
+	$('#mi_ccpurple span').text( '"' + H(p.labels[6]) + '"' );
+	$('#mi_ccgrey span').text( '"' + H(p.labels[7]) + '"' );
 
-	$('#mi_scred span').html( '"' + H(p.labels[0]) + '"' );
-	$('#mi_scorange span').html( '"' + H(p.labels[1]) + '"' );
-	$('#mi_scyellow span').html( '"' + H(p.labels[2]) + '"' );
-	$('#mi_scgreen span').html( '"' + H(p.labels[3]) + '"' );
-	$('#mi_scblue span').html( '"' + H(p.labels[4]) + '"' );
-	$('#mi_scpink span').html( '"' + H(p.labels[5]) + '"' );
-	$('#mi_scpurple span').html( '"' + H(p.labels[6]) + '"' );
-	$('#mi_scgrey span').html( '"' + H(p.labels[7]) + '"' );
+	$('#mi_scred span').text( '"' + H(p.labels[0]) + '"' );
+	$('#mi_scorange span').text( '"' + H(p.labels[1]) + '"' );
+	$('#mi_scyellow span').text( '"' + H(p.labels[2]) + '"' );
+	$('#mi_scgreen span').text( '"' + H(p.labels[3]) + '"' );
+	$('#mi_scblue span').text( '"' + H(p.labels[4]) + '"' );
+	$('#mi_scpink span').text( '"' + H(p.labels[5]) + '"' );
+	$('#mi_scpurple span').text( '"' + H(p.labels[6]) + '"' );
+	$('#mi_scgrey span').text( '"' + H(p.labels[7]) + '"' );
 }
 
 function showLabelEditForm() {
@@ -3757,14 +3773,14 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		</div>\
 		<div id="threats_CI_" class="threats"></div>\
 		</div>';
-	snippet = snippet.replace(/_LN_/g, _("Name"));
-	snippet = snippet.replace(/_LF_/g, _("Freq."));
-	snippet = snippet.replace(/_LI_/g, _("Impact"));
-	snippet = snippet.replace(/_LT_/g, _("Total"));
-	snippet = snippet.replace(/_LR_/g, _("Remark"));
-	snippet = snippet.replace(/_BA_/g, _("+ Add vulnerability"));
-	snippet = snippet.replace(/_BC_/g, _("Copy"));
-	snippet = snippet.replace(/_BP_/g, _("Paste"));
+	snippet = snippet.replace(/_LN_/g, _H("Name"));
+	snippet = snippet.replace(/_LF_/g, _H("Freq."));
+	snippet = snippet.replace(/_LI_/g, _H("Impact"));
+	snippet = snippet.replace(/_LT_/g, _H("Total"));
+	snippet = snippet.replace(/_LR_/g, _H("Remark"));
+	snippet = snippet.replace(/_BA_/g, _H("+ Add vulnerability"));
+	snippet = snippet.replace(/_BC_/g, _H("Copy"));
+	snippet = snippet.replace(/_BP_/g, _H("Paste"));
 	snippet = snippet.replace(/_CI_/g, c.id);
 	$('#componentthreats').html(snippet);
 	c.setmarkeroid(null);
@@ -4120,9 +4136,9 @@ function initTabCCFs() {
 	CurrentCluster = null;
 
 	// Localise user interface
-	$('#mi_ccfc span').html( _("Create new cluster") );
-	$('#mi_ccfm span').html( _("Move to") );
-	$('#ccfmenu li.lcT span').html(_("Common failures"));
+	$('#mi_ccfc span').text( _("Create new cluster") );
+	$('#mi_ccfm span').text( _("Move to") );
+	$('#ccfmenu li.lcT span').text(_("Common failures"));
 	$('#ccfmenu').menu().hide();
 
 	// Event handlers for mouse actions
@@ -4273,14 +4289,14 @@ function contextMenuHandler(ev) {
 		// Cannot move to the parent (because that's where it is already), nor can it be
 		// moved into any of its own descendants. And it cannot be moved onto itself.
 		populateClusterSubmenu(cluster, cluster.allclusters().concat(cluster.parentcluster));
-		$('#mi_ccfc span').html( _("Remove cluster") );
+		$('#mi_ccfc span').text( _("Remove cluster") );
 		$('#mi_ccfc div').append('<span class="ui-icon ui-icon-trash"></span>');
 		$('#mi_ccfc').removeClass('ui-state-disabled');
 		LastSelectedNode = null;
 	} else {
 		// Popup menu called on node
 		populateClusterSubmenu(cluster,[]);
-		$('#mi_ccfc span').html( _("Create new cluster") );
+		$('#mi_ccfc span').text( _("Create new cluster") );
 		$('#mi_ccfc span.ui-icon').remove();
 		LastSelectedNode = this.id;
 		// Remove the selection unless the current node is also selected
@@ -4316,9 +4332,9 @@ function populateClusterSubmenu(cluster,exceptions) {
 		snippet = snippet.replace(/_CI_/, clid);
 		snippet = snippet.replace(/_DIS_/, (exceptions.indexOf(clid)==-1 ? '' : 'ui-state-disabled'));
 		if (cl.isroot()) {
-			snippet = snippet.replace(/_CN_/, cl.title + ' ' + _("(root)"));
+			snippet = snippet.replace(/_CN_/, H(cl.title) + ' ' + _("(root)"));
 		} else {
-			snippet = snippet.replace(/_CN_/, cl.title);
+			snippet = snippet.replace(/_CN_/, H(cl.title));
 		}
 	}
 	$('#mi_ccfmsm').html(snippet);
@@ -4425,10 +4441,10 @@ function PaintAllClusters() {
 		<div id="ccfacclist">\
 		</div>\
 	';
-	snippet = snippet.replace(/_LCCF_/g, _("Common Cause Failures"));
-	snippet = snippet.replace(/_N1_/g, _("This space will show all vulnerabilities domains for the components in this project."));
-	snippet = snippet.replace(/_N2_/g, _("Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet."));
-	snippet = snippet.replace(/_N3_/g, _("Add some nodes to the diagrams first."));
+	snippet = snippet.replace(/_LCCF_/g, _H("Common Cause Failures"));
+	snippet = snippet.replace(/_N1_/g, _H("This space will show all vulnerabilities domains for the components in this project."));
+	snippet = snippet.replace(/_N2_/g, _H("Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet."));
+	snippet = snippet.replace(/_N3_/g, _H("Add some nodes to the diagrams first."));
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	$('#ccfs_body').html(snippet);
 
@@ -4625,11 +4641,11 @@ function repaintCluster(elem) {
 		</div>\
 		<div id="ccftable_ID_" class="threats">\
 		</div></div>\n';
-	snippet = snippet.replace(/_LN_/g, _("Name"));
-	snippet = snippet.replace(/_LF_/g, _("Freq."));
-	snippet = snippet.replace(/_LI_/g, _("Impact"));
-	snippet = snippet.replace(/_LT_/g, _("Total"));
-	snippet = snippet.replace(/_LR_/g, _("Remark"));
+	snippet = snippet.replace(/_LN_/g, _H("Name"));
+	snippet = snippet.replace(/_LF_/g, _H("Freq."));
+	snippet = snippet.replace(/_LI_/g, _H("Impact"));
+	snippet = snippet.replace(/_LT_/g, _H("Total"));
+	snippet = snippet.replace(/_LR_/g, _H("Remark"));
 	snippet = snippet.replace(/_ID_/g, nc.id);
 	$('#ccfaccordionbody'+nc.id).html( snippet );
 	computeSpacesMakeup(nc,'#ccftable'+nc.id,'ccf'+nc.id);
@@ -5094,11 +5110,11 @@ function allowDrop(elem) {
 
 
 function initTabAnalysis() {
-	$("a[href^='#at1']").html(_("Vulnerability overview"));
-	$("a[href^='#at2']").html(_("Assessments overview"));
-	$("a[href^='#at3']").html(_("Node counts"));
-	$("a[href^='#at4']").html(_("Checklist reports"));
-	$("a[href^='#at5']").html(_("Risk longlist"));
+	$("a[href^='#at1']").text(_("Vulnerability overview"));
+	$("a[href^='#at2']").text(_("Assessments overview"));
+	$("a[href^='#at3']").text(_("Node counts"));
+	$("a[href^='#at4']").text(_("Checklist reports"));
+	$("a[href^='#at5']").text(_("Risk longlist"));
 
 	$('#tab_analysis').tabs({
 		classes: {
@@ -5157,9 +5173,9 @@ function paintVulnerabilityOverview() {
 		<h2 class="printonly projectname">_PN_</h1>\
 		<h2 class="printonly">_LD_</h2>\
 	';
-	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
-	snippet = snippet.replace(/_LD_/g, _("Vulnerability overview"));
+	snippet = snippet.replace(/_LD_/g, _H("Vulnerability overview"));
 
 	snippet += '<div id="ana_nodethreattable" class="ana_nodeccfblock"></div>\n\
 		<div id="ana_ccftable" class="ana_nodeccfblock"></div>\n\
@@ -5286,9 +5302,9 @@ function paintSFTable() {
 	// but show a message instead
 	if (numvulns==0) {
 		$('#ana_nodethreattable').html("<p style=\"margin-left:3em; width:50em;\">"
-			+ _("This space will show an overview of all diagram nodes and their vulnerabilities. ")
-			+ _("Since all service diagrams are empty, there is nothing to see here yet. ")
-			+ _("Add some nodes to the diagrams first.")
+			+ _H("This space will show an overview of all diagram nodes and their vulnerabilities. ")
+			+ _H("Since all service diagrams are empty, there is nothing to see here yet. ")
+			+ _H("Add some nodes to the diagrams first.")
 		);
 		return;
 	}
@@ -5309,7 +5325,7 @@ function paintSFTable() {
 	// 20em = width of first column
 	// 1.7em = width of vulnerability columns
 	// numvulns = number of vulnerability columns
-	snippet = snippet.replace(/_SF_/, _("Single failures"));
+	snippet = snippet.replace(/_SF_/, _H("Single failures"));
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
 	snippet = snippet.replace(/_TW_/, 20+1.7*(numvulns+1));
@@ -5487,7 +5503,7 @@ function addCCFTableRow(col,numvulns,ta,cl,indent) {
 			snippet += '<td class="clustercell _EX_ M_CL_" cluster="_CI_" title="_TI_">_TO_</td>';
 			snippet = snippet.replace(/_CL_/g, Assessment.valueindex[ta.total]);
 			snippet = snippet.replace(/_TO_/g, ta.total);
-			snippet = snippet.replace(/_TI_/g, "CCF for "+H(cl.title)+" ("+Rules.nodetypes[cl.type]+")");
+			snippet = snippet.replace(/_TI_/g, _("CCF for ")+cl.title+" ("+Rules.nodetypes[cl.type]+")");
 			snippet = snippet.replace(/_CI_/g, cl.id);
 			snippet = snippet.replace(/_EX_/g, exclusionsContains(ClusterExclusions,cl.id,0)?"excluded":"" );
 		} else {
@@ -5501,7 +5517,7 @@ function addCCFTableRow(col,numvulns,ta,cl,indent) {
 		var clustertotal = ClusterMagnitudeWithExclusions(cl,ClusterExclusions);
 		snippet = snippet.replace(/_CL_/g, Assessment.valueindex[clustertotal]);
 		snippet = snippet.replace(/_TO_/g, clustertotal);
-		snippet = snippet.replace(/_TI_/g, "Total for "+H(cl.title)+" ("+Rules.nodetypes[cl.type]+")");
+		snippet = snippet.replace(/_TI_/g, "Total for "+cl.title+" ("+Rules.nodetypes[cl.type]+")");
 		if (cl.magnitude==clustertotal) {
 			snippet = snippet.replace(/_ZZ_/g, '');
 		} else {
@@ -5537,8 +5553,8 @@ function paintAssessmentOverview() {
 		<h2 class="printonly projectname">_PN_</h2>\
 		<h2 class="printonly">_LD_</h2>\
 	';
-	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LD_/g, _("Assessments overview") );
+	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LD_/g, _H("Assessments overview") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	$('#at2').html(snippet);
 
@@ -5857,14 +5873,14 @@ function paintChecklistReports() {
 		<h2 class="printonly projectname">_PN_</h2>\
 		<h2 class="printonly">_LD_</h2>\
 	';
-	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LD_/g, _("Checklist reports") );
+	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LD_/g, _H("Checklist reports") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
-	snippet += '<div class="checklistreport"><h3>' + _("Removed vulnerabilities") + '</h3>\n';
+	snippet += '<div class="checklistreport"><h3>' + _H("Removed vulnerabilities") + '</h3>\n';
 	snippet += showremovedvulns();
 	snippet += '</div>';
-	snippet += '<div class="checklistreport"><h3>' + _("Custom vulnerabilities") + '</h3>\n';
+	snippet += '<div class="checklistreport"><h3>' + _H("Custom vulnerabilities") + '</h3>\n';
 	snippet += showcustomvulns();
 	snippet += '</div>';
 
@@ -5952,10 +5968,10 @@ function showremovedvulns() {
 	';
 
 	if (num==0) {
-		snippet += _("No checklist vulnerabilities have been discarded on components of this project.");
+		snippet += _H("No checklist vulnerabilities have been discarded on components of this project.");
 	} else {
 		snippet += '<br>'+
-			_("%% checklist %% (for %% unique %%) discarded on %% %% of this project.",
+			_H("%% checklist %% (for %% unique %%) discarded on %% %% of this project.",
 			num,
 			plural(_("vulnerability"), _("vulnerabilities"), num),
 			VulnIDs.length,
@@ -6054,10 +6070,10 @@ function showcustomvulns() {
 	';
 
 	if (num==0) {
-		snippet += _("No custom vulnerabilities have been added to any of the components in this project.");
+		snippet += _H("No custom vulnerabilities have been added to any of the components in this project.");
 	} else {
 		snippet += '<br>'+
-			_("%% custom %% (for %% unique %%) added to %% %% of this project.",
+			_H("%% custom %% (for %% unique %%) added to %% %% of this project.",
 				num,
 				plural(_("vulnerability"), _("vulnerabilities"), num),
 				VulnTitles.length,
@@ -6082,8 +6098,8 @@ function paintLonglist() {
 		<h2 class="printonly projectname">_PN_</h2>\
 		<h2 class="printonly">_LD_</h2>\
 	';
-	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LD_/g, _("Risk longlist") );
+	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LD_/g, _H("Risk longlist") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
 	snippet += '<div id="longlist"></div>';
@@ -6093,7 +6109,7 @@ function paintLonglist() {
 	for (var i=Assessment.valueindex['U']; i<=Assessment.valueindex['V']; i++) {
 		selectoptions += '<option value="_V_">_D_</option>\n';
 		selectoptions = selectoptions.replace(/_V_/g, Assessment.values[i]);
-		selectoptions = selectoptions.replace(/_D_/g, Assessment.descr[i]);
+		selectoptions = selectoptions.replace(/_D_/g, H(Assessment.descr[i]));
 	}
 	$('#minV').html(selectoptions);
 	$('#minV').val(MinValue).selectmenu('refresh');
@@ -6195,7 +6211,7 @@ function listSelectedRisks() {
 		if (m.v!=lastV || m.qw!=lastQW) {
 			if (snippet!='') snippet+='<br>\n';
 			snippet += '<b>' + H(Assessment.descr[m.v]) +
-				(m.qw ? ' ' + _("(quick wins)") : '')+
+				(m.qw ? ' ' + _H("(quick wins)") : '')+
 				'</b><br>\n';
 			lastV = m.v;
 			lastQW = m.qw;
@@ -6205,7 +6221,7 @@ function listSelectedRisks() {
 		snippet +=
 			H(m.cm) +
 			' <span style="color: grey;">' +
-			(m.ccf ? _("and common cause risk") : _("and risk")) +
+			(m.ccf ? _H("and common cause risk") : _H("and risk")) +
 			'</span> ' +
 			H(m.ta) +
 			'<br>\n';
@@ -6227,19 +6243,10 @@ function listSelectedRisks() {
 
 	var total = 0;
 	for (const c of count) total += (c ? c : 0);
-	head = _("Number of risks on longlist:") + ' ' + total + ' '+ head;
+	head = _H("Number of risks on longlist:") + ' ' + total + ' '+ head;
 	head += '<br>\n';
 
 	return head + '<br>' + snippet;
-}
-
-/* H: make a string safe to use inside HTML code
- *
- * This function should be further up in this source file, but XCode fails to properly parse the
- * complex regex properly. Therefore included as last.
- */
-function H(str) {
-	return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 

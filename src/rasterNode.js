@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog, ComponentIterator
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, _H, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog, ComponentIterator
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -383,7 +383,7 @@ Node.prototype = {
 				$('#nodetitle'+this.id).addClass( (cm.single?'marktitleS':'marktitleM') );
 			}
 		}
-		$('#titlemain'+this.id).html(H(this.title));
+		$('#titlemain'+this.id).text(this.title);
 		if (cm && cm.nodes.length>1 && !cm.single) {
 			$('#titlesuffix'+this.id).html('&thinsp;<sup>'+H(this.suffix)+'</sup>');
 		} else {
@@ -455,22 +455,22 @@ Node.prototype = {
 			var unlimited = (maxhave==99);
 			var conns = plural(_("connection"),_("connections"),minhave);
 			report.push( 
-				(unlimited ? _("Must have at least %% %% ", minhave,conns) : _("Must have %% %% ", minhave,conns))
-					+ (C['TOTAL']>0 ? _(" (you only have %%). ",C['TOTAL']) : _("(you have none)."))
+				(unlimited ? _H("Must have at least %% %% ", minhave,conns) : _H("Must have %% %% ", minhave,conns))
+					+ (C['TOTAL']>0 ? _H(" (you only have %%). ",C['TOTAL']) : _H("(you have none)."))
 					+ " "
-					+ _("Add %% %% to a %%.", toolittle, plural(_("connection"),_("connections"),toolittle), options)
+					+ _H("Add %% %% to a %%.", toolittle, plural(_("connection"),_("connections"),toolittle), options)
 			);
 		}
 		if (C['TOTAL']>Rules.totaledgeMax[this.type]) {
 			var toomany = C['TOTAL'] - Rules.totaledgeMax[this.type];
 			report.push( 
-				_("Can have at most %% %%", maxhave, plural(_("connection"),_("connections"),maxhave))
-				+ _(" (you have %%).", C['TOTAL'])
+				_H("Can have at most %% %%", maxhave, plural(_("connection"),_("connections"),maxhave))
+				+ _H(" (you have %%).", C['TOTAL'])
 			);
 			if (toomany==1) {
-				report.push(_("Remove one connection to a neighbouring node."));
+				report.push(_H("Remove one connection to a neighbouring node."));
 			} else {
-				report.push(_("Remove %% connections to neighbouring nodes.",toomany));
+				report.push(_H("Remove %% connections to neighbouring nodes.",toomany));
 			}
 		}
 		var mustadd = [];
@@ -486,13 +486,13 @@ Node.prototype = {
 		if (mustadd.length>0) {
 			var nds = (mustadd.length==1 ? mustadd[0] : arrayJoinAsString(mustadd,_("and")));
 			report.push(
-				(mustadd.length==1 ? _("A connection must be added to a node of type %%.",nds) : _("Connections must be added to nodes of type %%.", nds))
+				(mustadd.length==1 ? _H("A connection must be added to a node of type %%.",nds) : _H("Connections must be added to nodes of type %%.", nds))
 			);
 		}
 		if (mustremove.length>0) {
 			nds = (mustremove.length==1 ? mustremove[0] : arrayJoinAsString(mustremove,_("and")));
 			report.push(
-				(mustremove.length==1 ? _("A connection must be removed from a node of type %%.",nds) : _("Connections must be removed from nodes of type %%.",nds))
+				(mustremove.length==1 ? _H("A connection must be removed from a node of type %%.",nds) : _H("Connections must be removed from nodes of type %%.",nds))
 			);
 		}
 		
@@ -1145,7 +1145,7 @@ Node.prototype = {
 		if (cm!=null && cm.single) {
 			$('#mi_sx').addClass('ui-state-disabled');
 		}
-		$('#mi_sm span:first-child').html(cm!=null && cm.single ? _("Make class") : _("Make single"));
+		$('#mi_sm span:first-child').text(cm!=null && cm.single ? _("Make class") : _("Make single"));
 		if (cm!=null && cm.single) {
 			$('#mi_du').addClass('ui-state-disabled');
 		}
@@ -1158,7 +1158,7 @@ Node.prototype = {
 		} else {
 			s = '"' + s + '"';
 		}
-		$('#mi_cc span').eq(1).html(s);
+		$('#mi_cc span').eq(1).text(s);
 		$('#nodemenu')
 		.menu('collapseAll')
 		.show()
