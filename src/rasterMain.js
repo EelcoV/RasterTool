@@ -522,15 +522,17 @@ function initProjectsToolbar() {
 	$('#projlist').selectmenu({
 		open: showProjectList,
 		select: function(event,data) {
-			// data.item.value = id of selected project
-			// data.item.label = name of selected project
-			if (data.item.value==Project.cid) {
-				$('#libactivate').addClass('ui-state-disabled');
-				$('#libmerge').addClass('ui-state-disabled');
-			} else {
-				$('#libactivate').removeClass('ui-state-disabled');
-				$('#libmerge').removeClass('ui-state-disabled');
-			}
+			refreshProjectToolbar(data.item.value);
+			$('#projlist-button').blur();
+//			// data.item.value = id of selected project
+//			// data.item.label = name of selected project
+//			if (data.item.value==Project.cid) {
+//				$('#libactivate').addClass('ui-state-disabled');
+//				$('#libmerge').addClass('ui-state-disabled');
+//			} else {
+//				$('#libactivate').removeClass('ui-state-disabled');
+//				$('#libmerge').removeClass('ui-state-disabled');
+//			}
 		}
 	});
 	$('#selector').attr('title',_("Library of all projects."));
@@ -559,7 +561,7 @@ function initProjectsToolbar() {
 				});
 			}
 		}
-		$('#projlist').val(Project.cid).selectmenu('refresh');
+		refreshProjectToolbar(Project.cid);
 	});
 	// Delete --------------------
 	$('#libdel').on('click',  function(/*evt*/){
@@ -585,7 +587,7 @@ function initProjectsToolbar() {
 				}
 			} else {
 				p.destroy();
-				$('#projlist').val(Project.cid).selectmenu('refresh');
+				refreshProjectToolbar(Project.cid);
 			}
 		};
 		newRasterConfirm(_("Delete project?"),
@@ -668,6 +670,17 @@ function initProjectsToolbar() {
 	});
 }
 
+function refreshProjectToolbar(pid) {
+	$('#projlist').val(pid).selectmenu('refresh');
+	if (pid==Project.cid) {
+		$('#libactivate').addClass('ui-state-disabled');
+		$('#libmerge').addClass('ui-state-disabled');
+	} else {
+		$('#libactivate').removeClass('ui-state-disabled');
+		$('#libmerge').removeClass('ui-state-disabled');
+	}
+}
+
 /* populateProjectList: Fill the project list using current stubs
  */
 function populateProjectList() {
@@ -711,7 +724,7 @@ function populateProjectList() {
 	refreshStubList(false); // Add current stubs, possibly outdated wrt server status
 #endif
 	// Select the current project, and enable/disable the buttons
-	$('#projlist').val(Project.cid).selectmenu('refresh');
+	refreshProjectToolbar(Project.cid);
 }
 
 /* showProjectList: Show project list using current stubs, and do fire periodic updates
@@ -759,7 +772,7 @@ function refreshStubList(dorepaint) {
 	$('#stubgroup').remove();
 	$('#projlist').append(snippet);
 	if (dorepaint) {
-		$('#projlist').val(Project.cid).selectmenu('refresh');
+		refreshProjectToolbar(Project.cid);
 	}
 	// This hack will ensure that the item under the pointer, that is currently highlighted,
 	// will not change its color after the menu has been refreshed.
@@ -1672,7 +1685,7 @@ function switchToProject(pid,dorefresh) {
 	}
 	var p = Project.get(pid);
 	p.load();
-	$('#projlist').val(Project.cid).selectmenu('refresh');
+	refreshProjectToolbar(Project.cid);
 	p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
 	PaintAllClusters();
 	// AddAllAnalysis(); Is redone each time the Analysis tab is activated
