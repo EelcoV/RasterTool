@@ -396,9 +396,8 @@ img.tC {
     right: -2px;
     width: 16px;
     height: 16px;
-	border: 1px solid var(--highlt);
 	border-radius: 6px;
-	box-shadow: 2px 2px 3px gray;
+	box-shadow: 0px 0px 3px gray;
     cursor: context-menu;
     z-index: 100;
 }
@@ -1084,6 +1083,7 @@ img.nodeC {
     right: -5px;
     width: 16px;
     height: 16px;
+    box-shadow: 0px 0px 3px #999;
     z-index: 15;
     cursor: context-menu;
     visibility: hidden;
@@ -1111,7 +1111,7 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
     top: -9px;
     left: 0px;
     z-index: 15;
-    box-shadow: 2px 2px 3px #999;
+    box-shadow: 0px 0px 3px #999;
 }
 .M0 { background: rgb(255,255,255) }    /* '-' */
 .M1 { background: rgb(255,0,255) }      /* 'A' */

@@ -3,7 +3,6 @@ See LICENSE.md
 
 
 BUGS
-In NodeCluster.titleisused, include project in iterator?
 Do away with the online/offline setting?
 Bug/crash when changing type of an Actor to Wireless.
 Must duplicate any remote project on load, if classroom==true
@@ -23,7 +22,6 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
-Remove animation on nodeW click handler.
 Use show()/hide() iso using css('visibility',...)
 Create a dark color scheme?
 Fancy workspace, indicate right and bottom borders, for those with huge screens or large zoom factors?
