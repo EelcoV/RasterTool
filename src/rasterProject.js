@@ -444,6 +444,7 @@ Project.prototype = {
 		for (const vid of this.vulns) Vulnerability.get(vid).destroy();
 		localStorage.removeItem(LS+'P:'+this.id);
 		Project._all.delete(this.id);
+		if (Project.cid==this.id) Project.cid=null;
 	},
 	
 	duplicate: function() {
@@ -566,10 +567,7 @@ Project.prototype = {
 	},
 
 	totalnodes: function() {
-//		var total=0;
 		let it = new NodeIterator({project: this.id});
-//		for (const rn of it) total++;		// eslint-disable-line no-unused-vars
-//		return total;
 		return it.count();
 	},
 	
@@ -715,6 +713,7 @@ Project.prototype = {
 	},
 
 	unload: function() {
+		if (Project.cid!=this.id) return;
 		// Save the selectrect
 		$('#selectrect').hide().detach().appendTo('body');
 		for (const sid of this.services) Service.get(sid).unload();
@@ -835,7 +834,6 @@ Project.prototype = {
 		SizeDOMElements();  // Correct the scroller regions
 		$('.projectname').text(this.title);
 #ifdef SERVER
-		$('#projlist-button span:last-child').html( H(this.title) );
 		document.title = "Raster - " + this.title;
 #endif
 	},
@@ -1181,13 +1179,13 @@ Project.prototype = {
 		if (this.stub && it.count()>0) {
 			errors += "Project "+this.id+" is marked as a stub, but does have node clusters.\n";
 		}
-//		for (const nc of it) {
-//			if (!nc) {
-//				errors += "Node cluster "+nc.id+" does not exist.\n";
-//				continue;
-//			}
-//			errors += nc.internalCheck();
-//		}
+		for (const nc of it) {
+			if (!nc) {
+				errors += "Node cluster "+nc.id+" does not exist.\n";
+				continue;
+			}
+			errors += nc.internalCheck();
+		}
 		// Check all components
 		it = new ComponentIterator({project: this.id});
 		if (this.stub && it.count()>0) {

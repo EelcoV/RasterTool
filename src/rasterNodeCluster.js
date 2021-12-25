@@ -485,6 +485,9 @@ NodeCluster.prototype = {
 				errors += offender+" contains a non-existing child cluster "+this.childclusters[i]+".\n";
 				continue;
 			}
+			if (cc.project != this.project) {
+				errors += offender+" contains a child cluster "+this.childclusters[i]+" that belongs to a different project.\n";
+			}
 			if (cc.parentcluster != this.id) {
 				errors += offender+" contains a child cluster "+this.childclusters[i]+" that does not refer back to it.\n";
 			}
@@ -509,15 +512,17 @@ NodeCluster.prototype = {
 			if (ta.type!=this.type)		errors += offender+" has a member assessment "+ta.id+" with a non-matching type.\n";
 			if (!isSameString(ta.title,this.title))	errors += offender+"has a member assessment "+ta.id+" with a different title.\n";
 		}
-		let vid = ta.vulnerability;
-		if (vid==null && !this.isroot()) {
-			errors += offender+" has an assessment that lacks a corresponding vulnerability.\n";
-		} else {
-			let v = Vulnerability.get(vid);
-			if (v==null) {
-				errors += offender+" has an assessment with a non-existing vulnerability.\n";
+		if (this.isroot()) {
+			let vid = ta.vulnerability;
+			if (vid==null) {
+				errors += offender+" has an assessment that lacks a corresponding vulnerability.\n";
 			} else {
-				if (!isSameString(v.title,this.title)) errors += offender+" has an assessment with a vulnerability that has a different title.\n";
+				let v = Vulnerability.get(vid);
+				if (v==null) {
+					errors += offender+" has an assessment with a non-existing vulnerability.\n";
+				} else {
+					if (!isSameString(v.title,this.title)) errors += offender+" has an assessment with a vulnerability that has a different title.\n";
+				}
 			}
 		}
 
@@ -525,6 +530,10 @@ NodeCluster.prototype = {
 			var rn = Node.get(this.childnodes[i]);
 			if (!rn) {
 				errors += offender+" contains a non-existing child node "+this.childnodes[i]+".\n";
+				continue;
+			}
+			if (rn.project!=this.project) {
+				errors += offender+" contains child node belonging to another project "+this.childnodes[i]+".\n";
 				continue;
 			}
 			for (j=0; j<i; j++) {

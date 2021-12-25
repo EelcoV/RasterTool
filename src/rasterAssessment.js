@@ -306,7 +306,11 @@ Assessment.prototype = {
 		var highnodes = [];
 		for (const cid of nc.childnodes) {
 			// Find the impact for this cluster's vulnerability in the component of the node
-			var cm = Component.get( Node.get(cid).component );
+			let cn = Node.get(cid);
+			if (cn==null) {
+				bugreport('cluster node does not exist','Assessment.computeminimpact');
+			}
+			var cm = Component.get( cn.component );
 			var t;
 			for (var j=0; j<cm.assmnt.length; j++) {
 				t = Assessment.get(cm.assmnt[j]);

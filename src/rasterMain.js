@@ -482,6 +482,7 @@ function initProjectsToolbar() {
 		let p = Project.get(Project.cid);
 		let clone = p.duplicate();
 		clone.settitle(p.title+_(" (copy)"));
+		populateProjectList();
 		switchToProject(clone.id,true);
 	});
 	// Import --------------------
@@ -558,10 +559,14 @@ function initProjectsToolbar() {
 				});
 			}
 		}
+		$('#projlist').val(Project.cid).selectmenu('refresh');
 	});
 	// Delete --------------------
 	$('#libdel').on('click',  function(/*evt*/){
 		let p = Project.get( $('#projlist').val() );
+		if (p==null) {
+			bugreport('No project selected','libdel click handler');
+		}
 		let dokill = function() {
 			if (p.shared || p.stub) {
 				// Disable the project watch. Otherwise a notification would be triggered.
@@ -580,6 +585,7 @@ function initProjectsToolbar() {
 				}
 			} else {
 				p.destroy();
+				$('#projlist').val(Project.cid).selectmenu('refresh');
 			}
 		};
 		newRasterConfirm(_("Delete project?"),
@@ -1601,17 +1607,6 @@ function SizeDOMElements() {
 }
 
 function loadEmptyProject() {
-//	var p = new Project();
-//	var s = new Service(p.id);
-//	p.adddefaultvulns();
-//	p.addservice(s.id);
-//	s.autosettitle();
-//	p.autosettitle();
-//	p.load();
-//	$(`#tab_diagramsservicetab${s.id} a`).trigger('click');
-//}
-//
-//function addEmptyProject() {
 	var p = new Project();
 	var s = new Service(p.id);
 	p.adddefaultvulns();
@@ -1647,6 +1642,7 @@ function loadDefaultProject() {
 		// Blank project
 		loadEmptyProject();
 	}
+	populateProjectList();
 #else
 	loadEmptyProject();
 #endif
@@ -1676,6 +1672,7 @@ function switchToProject(pid,dorefresh) {
 	}
 	var p = Project.get(pid);
 	p.load();
+	$('#projlist').val(Project.cid).selectmenu('refresh');
 	p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
 	PaintAllClusters();
 	// AddAllAnalysis(); Is redone each time the Analysis tab is activated

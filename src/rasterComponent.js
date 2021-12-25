@@ -551,6 +551,10 @@ console.log("Check Component.absorbe()");
 				errors += offender+"has a member node "+rn.id+" that doesn't refer back.\n";
 				continue;
 			}
+			if (rn.project!=this.project) {
+				errors += offender+"has a member node "+rn.id+" that belongs to a different project.\n";
+				continue;
+			}
 			if (!isSameString(rn.title,this.title)) {
 				errors += offender+"has a member node "+rn.id+" that has a different title.\n";
 				continue;

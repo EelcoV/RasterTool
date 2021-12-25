@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog, ComponentIterator
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -660,7 +660,7 @@ Node.prototype = {
 		}
 		for (const thid of Component.get(this.component).assmnt) {
 			var ta = Assessment.get(thid);
-			NodeCluster.addnode_threat(Project.cid,this.id,ta.title,ta.type);
+			NodeCluster.addnode_threat(this.project,this.id,ta.title,ta.type);
 		}
 	},
 	
@@ -1263,7 +1263,14 @@ Node.prototype = {
 					errors += offender+" is member of a singular class, yet appears in cluster '"+nc.title+"'.\n";
 				}
 			}
-		} 
+		}
+		// Nodes should belong to a single component
+		let numc = 0;
+		it = new ComponentIterator();
+		it.forEach(cm => {if (cm.nodes.indexOf(this.id)!=-1) numc++;});
+		if (numc>1) {
+			errors += offender+" belongs to more than one component.\n";
+		}
 		return errors;
 	}
 };
