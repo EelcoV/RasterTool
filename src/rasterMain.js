@@ -522,17 +522,9 @@ function initProjectsToolbar() {
 	$('#projlist').selectmenu({
 		open: showProjectList,
 		select: function(event,data) {
-			refreshProjectToolbar(data.item.value);
-			$('#projlist-button').blur();
-//			// data.item.value = id of selected project
-//			// data.item.label = name of selected project
-//			if (data.item.value==Project.cid) {
-//				$('#libactivate').addClass('ui-state-disabled');
-//				$('#libmerge').addClass('ui-state-disabled');
-//			} else {
-//				$('#libactivate').removeClass('ui-state-disabled');
-//				$('#libmerge').removeClass('ui-state-disabled');
-//			}
+			// data.item.value = id of selected project
+			// data.item.label = name of selected project
+			refreshSelProjectButtons(data.item.value);
 		}
 	});
 	$('#selector').attr('title',_("Library of all projects."));
@@ -672,6 +664,10 @@ function initProjectsToolbar() {
 
 function refreshProjectToolbar(pid) {
 	$('#projlist').val(pid).selectmenu('refresh');
+	refreshSelProjectButtons(pid);
+}
+
+function refreshSelProjectButtons(pid) {
 	if (pid==Project.cid) {
 		$('#libactivate').addClass('ui-state-disabled');
 		$('#libmerge').addClass('ui-state-disabled');
