@@ -1560,8 +1560,8 @@ function _(s) {
 
 /* Return an HTML-escaped version of _(s)
  */
-function _H(s) {
-	return H(_(s));
+function _H() {
+	return H(_(...arguments));
 }
 
 /* testLocalStorage(): returns boolean

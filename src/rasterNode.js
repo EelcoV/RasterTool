@@ -387,7 +387,7 @@ Node.prototype = {
 		if (cm && cm.nodes.length>1 && !cm.single) {
 			$('#titlesuffix'+this.id).html('&thinsp;<sup>'+H(this.suffix)+'</sup>');
 		} else {
-			$('#titlesuffix'+this.id).html('');
+			$('#titlesuffix'+this.id).text('');
 		}
 		if ($('#nodereport').data('DialogNode')==this.id)  RefreshNodeReportDialog();
 		this.store();

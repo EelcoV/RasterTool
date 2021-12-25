@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+Uncaught InternalError: too much recursion. Caused by a trigger()??
 In NodeCluster.titleisused, include project in iterator?
 Do away with the online/offline setting?
 Bug/crash when changing type of an Actor to Wireless.
