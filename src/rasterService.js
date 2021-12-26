@@ -133,6 +133,8 @@ Service.prototype = {
 	},
 
 	unload: function() {
+		// Save the selectrect, if it is attached to this diagram. And if it isn't, it will be reattached automatically.
+		$('#selectrect').hide().detach().appendTo('body');
 		$('#scroller_overview'+this.id).hide();
 		if (this.id==Service.cid) {
 			$('#nodereport').hide();

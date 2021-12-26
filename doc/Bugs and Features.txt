@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+Minimap "on" should move it into sight; or fix what we had: fix minimap at top-right corner.
 Do away with the online/offline setting?
 Bug/crash when changing type of an Actor to Wireless.
 Must duplicate any remote project on load, if classroom==true

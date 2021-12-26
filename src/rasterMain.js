@@ -1205,13 +1205,13 @@ var updateFind = function() {
 		var draw_and_wiggle = function() {
 			let o = $('#tab_diagrams'+svc_id).offset();
 			let scrollp = $('#diagrams_workspace'+svc_id).position();
+			$('#selectrectC').hide();
 			$('#selectrect')
 			.show()
-			.offset({left: node.position.x-15+o.left, top: node.position.y-15+o.top})
+			.offset({left: node.position.x-15+o.left+scrollp.left, top: node.position.y-15+o.top+scrollp.top})
 			.width(node.position.width+30)
 			.height(node.position.height+30)
 			.effect('shake',{distance:10, times:8},1000, function() {
-				$('#selectrect').offset({left: node.position.x-15+o.left+scrollp.left, top: node.position.y-15+o.top+scrollp.top});
 				$('body').one('mousemove', function() {
 					// Immediately show when we wiggle the mouse
 					$('#findpanel').dialog('widget').stop().css('opacity',1);
