@@ -351,7 +351,7 @@ Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError) {
 		success: function (data) {
 			var newp = loadFromString(data,{
 				strsource:'Remote project',
-				duplicate: isSameString(p.title,GroupSettings.template)
+				duplicate: GroupSettings.classroom || isSameString(p.title,GroupSettings.template)
 			});
 			if (newp!=null) {
 				var np = Project.get(newp);

@@ -133,7 +133,7 @@ function initAllAndSetup() {
 
 #ifdef SERVER
 	ToolGroup = $('meta[name="group"]').attr('content');
-	geGroupSettingsAtInitialisation();
+	getGroupSettingsAtInitialisation();
 	if (GroupSettings.localonly) {
 		$('#onlinesection').hide();
 	}
@@ -528,7 +528,7 @@ function initProjectsToolbar() {
 		}
 	});
 	$('#selector').attr('title',_("Library of all projects."));
-	$('#libactivate').attr('title',_("Continue working with the selected project."));
+	$('#libactivate').attr('title',_("Switch to the selected project."));
 	$('#libdel').attr('title',_("Permanently remove the selected project."));
 	$('#libmerge').attr('title',_("Join the selected project into the current one."));
 	// Project list
@@ -548,6 +548,7 @@ function initProjectsToolbar() {
 			} else {
 				// Do a retrieve operation, and switch to that new project, if successful.
 				Project.asyncRetrieveStub(p.id,function(newpid){
+					populateProjectList();
 					switchToProject(newpid);
 					startAutoSave();
 				});
@@ -699,7 +700,7 @@ function populateProjectList() {
 	newoptions += snippet;
 #ifdef SERVER
 	//	 Then all shared projects, if they belong to group ToolGroup
-	if (!Preferences.localonly) {
+	if (!GroupSettings.localonly) {
 		snippet = "";
 		for (const p of it) {
 			if (p.stub || !p.shared) continue;
@@ -728,7 +729,7 @@ function populateProjectList() {
 function showProjectList() {
 	populateProjectList();
 #ifdef SERVER
-	if (!Preferences.localonly && Preferences.online) {
+	if (!GroupSettings.localonly && Preferences.online) {
 		startPeriodicStubListRefresh(); // Update stubs from server and refresh
 	}
 #endif
@@ -753,12 +754,14 @@ function startPeriodicStubListRefresh() {
 
 
 function refreshStubList(dorepaint) {
+	if (GroupSettings.localonly) return;
 	let snippet = '';
 	let it = new ProjectIterator({group: ToolGroup, stub: true});
 	it.sortByTitle();
+	let str = (GroupSettings.classroom ? _("Exercises") : _("Other projects on the server"));
 	for (const p of it) {
 		if (snippet=='') {
-			snippet = `<optgroup id="stubgroup" class="optgroup" label="${_("Other projects on the server")}">\n`;
+			snippet = `<optgroup id="stubgroup" class="optgroup" label="${str}">\n`;
 		}
 		snippet += `<option value="${p.id}" title="${H(p.description)}">${H(p.title)}, by ${H(p.creator)} on ${prettyDate(p.date)}</option>\n`;
 	}
@@ -776,7 +779,7 @@ function refreshStubList(dorepaint) {
 }
 #endif
 
-function geGroupSettingsAtInitialisation() {
+function getGroupSettingsAtInitialisation() {
 	// Initialise default values, then attempt to retrieve settings from the server
 	GroupSettings = {
 		classroom: false,
@@ -1751,17 +1754,6 @@ function prependIfMissing(a,b) {		// eslint-disable-line no-unused-vars
 function isSameString(a,b) {
 	return a.toLocaleUpperCase().localeCompare(b.toLocaleUpperCase())==0;
 }
-
-///* nextUnusedIndex: return first index that doesn't exist or is null
-// */
-//function nextUnusedIndex(arr) {
-//	for (var i=0,alen=arr.length; i<alen && arr[i]!=null; i++) { /* Do nothing */ }
-//	return i;
-//}
-
-/* H: make a string safe to use inside HTML code
- * MOVED TO BOTTOM OF THIS FILE.
- */
 
 /* prettyDate: reformat the timestamp string for server projects.
  * prettyDate("20210516 1435 22") = "16-05-2021 14:35"
@@ -2779,56 +2771,6 @@ function vertTabSelected(/*event, ui*/) {
 		bugreport('unknown tab encountered','vertTabSelected');
 	}
 }
-
-#ifdef SERVER
-function initLibraryPanel() {
-	$('#librarypanel').dialog({
-		title: _("Library"),
-		position: {my: 'left+50 top+50', at: 'bottom right', of: '#libraryactivator'},
-		modal: true,
-		width: 490,
-		resizable: false,
-		autoOpen: false,
-		close: function() {
-			$('#libraryactivator').removeClass('ui-state-hover');
-		}
-	});
-
-	$('#libprops').attr('title',_("Change the name, description, and sharing status of the selected project."));
-
-	$('#libprops').val(_("Details"));
-
-	$('#onlineonoff span').first().text( _("Network connection:") );
-	$('#online_off').checkboxradio('option', 'label', _("Offline"));
-	$('#online_on').checkboxradio('option', 'label', _("Online"));
-	$('[for=online_off]').on('click',  function() { Preferences.setonline(false); });
-	$('[for=online_on]').on('click',  function() { Preferences.setonline(true); });
-
-	$('#creator_name span').first().text( _("Your name:") );
-	$('#creator').on('change',  function(/*evt*/){
-		Preferences.setcreator($('#creator').val());
-		$('#creator').val(Preferences.creator);
-	});
-
-	$(Preferences.online?'#online_on':'#online_off').prop('checked',true);
-	$(Preferences.label?'#label_on':'#label_off').prop('checked',true);
-	$('#optionspanel fieldset').controlgroup('refresh');
-	$('#creator').val(Preferences.creator);
-
-
-	// select --------------------
-	$('#libselect').on('change', function(){
-		var p = Project.get( $('#libselect option:selected').val() );
-		$('#libactivate').button('option','disabled',p.id==Project.cid);
-		$('#libmerge').button('option','disabled',p.id==Project.cid);
-		$('#libselect option').css('background-image','');
-		$('#libselect option[value='+Project.cid+']').css('background-image','url(../img/selected.png)');
-	});
-	$('#libselect').on('dblclick',  function(){
-		$('#libactivate').trigger('click');
-	});
-}
-#endif
 
 /* Reset the tool. Useful from the CLI when debugging */
 function Zap() {
