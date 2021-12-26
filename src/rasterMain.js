@@ -2491,7 +2491,7 @@ function loadFromString(str,options) {
 				if (ls.p==lService[j].p && isSameString(ls.l,lService[j].l)) {
 					lService[j].l = titleincrement(lService[j].l);
 					Flag_Upgrade_Done = true;
-					Upgrade_Description += '<LI>' + _("Services '%%' and '%%'.", ls.l, lService[j].l);
+					Upgrade_Description += '<LI>' + _H("Services '%%' and '%%'.", ls.l, lService[j].l);
 				}
 			}
 		}
@@ -2517,7 +2517,7 @@ function loadFromString(str,options) {
 					}
 
 					Flag_Upgrade_Done = true;
-					Upgrade_Description += '<LI>' + _("Vulnerabilities '%%' and '%%'.", oldtitle, newtitle);
+					Upgrade_Description += '<LI>' + _H("Vulnerabilities '%%' and '%%'.", oldtitle, newtitle);
 				}
 			}
 		}
@@ -2580,7 +2580,7 @@ function loadFromString(str,options) {
 					newtitle = titleincrement(oldtitle);
 					lComponent[j].l = newtitle;
 					Flag_Upgrade_Done = true;
-					Upgrade_Description += '<LI>' + _("Components '%%' and '%%'.", lc.l, lComponent[j].l);
+					Upgrade_Description += '<LI>' + _H("Components '%%' and '%%'.", lc.l, lComponent[j].l);
 				}
 			}
 		}
@@ -2662,7 +2662,7 @@ function checkUpgradeDone() {
 	rasterAlert(
 		_("Your project was updated"),
 		_H("Your project was updated to a newer version. Some names of components and other items have been altered.")
-		+ '<UL>' + H(Upgrade_Description) + '</UL>'
+		+ '<UL>' + Upgrade_Description + '</UL>'
 	);
 }
 
