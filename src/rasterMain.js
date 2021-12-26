@@ -294,11 +294,11 @@ function initAllAndSetup() {
 		loadDefaultProject();
 	}
 	startAutoSave();
+	populateProjectList();
 #else
 	localStorage.clear();
 	loadEmptyProject();
 #endif
-	populateProjectList();
 
 	// Diagrams have already been painted on Project.load()
 	p = Project.get(Project.cid);
@@ -1689,7 +1689,9 @@ function switchToProject(pid,dorefresh) {
 	}
 	var p = Project.get(pid);
 	p.load();
+#ifdef SERVER
 	refreshProjectToolbar(Project.cid);
+#endif
 	p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
 	PaintAllClusters();
 	// AddAllAnalysis(); Is redone each time the Analysis tab is activated

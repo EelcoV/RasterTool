@@ -429,8 +429,9 @@ ipc.on('pdfoption-modified', function(event,id,opt,val) {
 });
 
 ipc.on('document-modified', function(event,id) {
-	var win = BrowserWindow.fromId(id);
-	if (!win)  return;
+	if (!id) return;
+	let win = BrowserWindow.fromId(id);
+	if (!win) return;
 
 	win.documentIsModified = true;
 	win.setDocumentEdited(true);
