@@ -1,6 +1,6 @@
 #  Project Groups
 A *group* is a separate area in which projects can be stored on the web server.
-The group`s directory can be protected using the web server`s access authorization; a sample `htaccess` file is provided as an example.
+The group's directory can be protected using the web server's access authorization; a sample `htaccess` file is provided as an example.
 Although groups are mainly useful for Shared projects, all Private projects belong to a specific group as well.
 
 The default group is called `public_group` and has no access control; the web server administrator can override this if required.
@@ -15,7 +15,7 @@ To create a new project group (called `samplegroup` in these instructions):
 The settings for a group are stored in a JSON configuration file. Currently the file may contain these fields:
 * *classroom:* (boolean, default is `false`) If true, classroom functionality is enabled on this group. See below.
 * *template:* (string, default is "Project Template") The name of the project that will be used as the starting point when a new project is created, instead of a blank project. Set to "" to disable the template. 
-* *iconset:* (string, default is "default") The name of the iconset for new projects. If both `template` and `iconset` are specified, the iconset in the template project has precedence. See the `README.md` in the directory `img/iconset` for details.
+* *iconsets:* (array of strings, default is ["default"]) The names of the available iconsets; the first set will be used for new projects. If a `template` is specified, the iconset in the template project takes precedence for new projects. See the `README.md` in the directory `img/iconset` for details.
 * *localonly:* (boolean, default is `false`) If true, projects cannot be retrieved nor stored on the server. The template will still be used, if present.
 
 A template is most useful to define default vulnerabilities and labels, instead of the builtin defaults. If no shared project with the template name exists, an empty project (with builtin defaults) will be used instead.

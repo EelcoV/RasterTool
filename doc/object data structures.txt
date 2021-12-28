@@ -21,6 +21,7 @@ Version 4:	Replaced Threat and ThreatAssessment by Vulnerability and Assessment.
 			corresponding Vulnerability (whereas custom vulnerabilities had ThreatAssessments but no Threat).
 			Previously, Project.threats[] contained the full list of all Threats; as of version 4 Project.vulns[]
 			contains only vulnerabilities with Vulnerability.common==true.
+			Added iconset to Project, index to Node.
 
 In the table below, types are one of 'tWLS', 'tWRD', 'tEQT', 'tUNK', 'tACT', 'tNOT'.
 Standing for respectively wireless links, wired links, equipment, unknown links, actors, notes.
@@ -39,6 +40,7 @@ P: Project
 .threats[i]		(internal)				.t  	[Threat]		version<=3, careful: 't' is also used for 'type'
 .vulns[i]		(internal)				.t  	[Vulnerability]	version>=4, careful: 't' is also used for 'type'
 .labels[i]		(internal)				.c						extra label for version>=2
+.iconset		seticonset(str)			.i						version>=4
 
 T: Threat 														version<=3, removed in version 4
 .id				creator(p.id,type,th.id)						changed in version 3
@@ -75,6 +77,7 @@ N: Node
 ._normh			(internal)				.g						letter just before h
 .connect[]		(internal)				.c		[Node]
 .color			setlabel(c)				.o
+.index			iconinit(idx)			.i						version>=4
 
 C: Component
 .id				creator(type,ct.id)								changed in version 3

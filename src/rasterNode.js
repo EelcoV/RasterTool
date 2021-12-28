@@ -40,7 +40,7 @@
  *	destroy(): destructor.
  *	setposition(x,y,snap): set the position of the HTML document object to (x,y).
  *		If snap==false then do not restrict to 20x20 pixel grid positions.
- *	iconinit: choose an icon and set the width/height of the node.
+ *	iconinit(idx): set the icon (or choose a default) and set the width/height of the node.
  *	setcomponent(cm): set the id of the component object to cm.
  *	changetitle(str): post a transaction to change the header text to 'str' if allowed.
  *	settitle(str,suff): sets the header text to 'str' and suffix 'suff', and update DOM.
@@ -690,7 +690,11 @@ Node.prototype = {
 		return $('#titlemain'+this.id).hasClass('editInPlace-active');
 	},
 
-	iconinit: function() {
+	/* Set the geometry of the node according to the specified icon-index (or the default icon).
+	 * Because the preferred iconset of the project may not exist on this installation, the index may have to be corrected.
+	 * If the indicated index is of the correct type we assume that all is as intended.
+	 */
+	iconinit: function(idx) {
 		if (this.type=='tNOT') return;
 		// Try to preserve the center-position of the node
 		let oldcx, oldcy;
@@ -703,9 +707,13 @@ Node.prototype = {
 		}
 
 		let p = Project.get(this.project);
-		// Locate the first possible index
-		for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
-			// empty
+		if (idx) {
+			this.index = idx;
+		} else {
+			// Locate the first possible index
+			for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
+				// empty
+			}
 		}
 		if (!this.position.width)  this.position.width = p.icondata.icons[this.index].width;
 		if (!this.position.height)  this.position.height = p.icondata.icons[this.index].height;
@@ -1129,6 +1137,17 @@ Node.prototype = {
 			$('#mi_th').addClass('ui-state-disabled');
 			$('#mi_cl').addClass('ui-state-disabled');
 		}
+		let icns = Project.get(this.project).iconsoftype(this.type);
+		if (icns.length>1) {
+			// Populate menu
+			$('#mi_cism').empty();
+			icns.forEach(ic => {
+				$('#mi_cism').append(`<li class="iconli" foricon="${ic.image}"><div><img class="menuimage" src="../img/iconset/${p.iconset}/${ic.image}"></div></li>`);
+			});
+			$('#nodemenu').menu('refresh');
+		} else {
+			$('#mi_ci').addClass('ui-state-disabled');
+		}
 		if (cm==null || cm.nodes.length<2) {
 			$('#mi_cl').addClass('ui-state-disabled');
 		}
@@ -1182,6 +1201,7 @@ Node.prototype = {
 		data.c=this.connect;
 		data.m=this.component;
 		data.o=this.color;
+		data.i=this.index;
 		return JSON.stringify(data);
 	},
 

@@ -331,7 +331,21 @@ body {
 #creatorf {
 	width: 15em;
 }
-
+.floatright {
+	float: right;
+}
+.iconli {
+	height: 50px !important;
+	background: var(--lightbg);
+	border: none;
+	text-align: center;
+}
+.iconli:hover {
+	background: var(--highlt);
+}
+.menuimage {
+	height: 50px;
+}
 
 /* LAYOUT =
  template

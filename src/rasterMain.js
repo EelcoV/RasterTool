@@ -143,7 +143,7 @@ function initAllAndSetup() {
 	GroupSettings = {
 		classroom: false,
 		template: '',
-		iconset: 'default',
+		iconsets: ['default'],
 		localonly: true,
 		templatestring: ''
 	};
@@ -784,7 +784,7 @@ function getGroupSettingsAtInitialisation() {
 	GroupSettings = {
 		classroom: false,
 		template: 'Project Template',
-		iconset: 'default',
+		iconsets: ['default'],
 		localonly: false,
 		templatestring: ''
 	};
@@ -800,8 +800,8 @@ function getGroupSettingsAtInitialisation() {
 			if (typeof data.template==='string') {
 				GroupSettings.template = data.template;
 			}
-			if (typeof data.iconset==='string') {
-				GroupSettings.iconset = data.iconset;
+			if (typeof data.iconsets==='object' && Array.isArray(data.iconsets) && data.iconsets.every(s => typeof s==='string') ) {
+				GroupSettings.iconsets = data.iconsets;
 			}
 			if (data.localonly===true) {
 				GroupSettings.localonly = true;
@@ -1409,25 +1409,33 @@ function freqIndicatorUpdate(anim) {
 function ShowDetails() {
 	let p = Project.get(Project.cid);
 	let snippet =`<form id="form_projectprops">
-		${_("Title:")}<br><input id="field_projecttitle" name="fld" type="text" value="${H(p.title)}"><br>
+		${_H("Title:")}<br><input id="field_projecttitle" name="fld" type="text" value="${H(p.title)}"><br>
 		`;
 	if (!GroupSettings.localonly && p.shared) { //For standalone .localonly==true
-		snippet += `<div>${_("Creator:")} ${p.stub ? H(p.creator) : H(Preferences.creator)}, ${_("last stored on")} ${H(prettyDate(p.date))}.<br><br></div>
+		snippet += `<div>${_H("Creator:")} ${p.stub ? p.creator : Preferences.creator}, ${_("last stored on")} ${H(prettyDate(p.date))}.<br><br></div>
 			`;
 	}
-	snippet +=`${_("Description:")}<br><textarea id="field_projectdescription" rows="3">${H(p.description)}</textarea><br>
+	snippet +=`${_H("Description:")}<br><textarea id="field_projectdescription" rows="3">${H(p.description)}</textarea><br>
 		`;
 	if (!GroupSettings.localonly) { //For standalone .localonly==false
 		snippet += `<fieldset>
-		<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">${_("Private")}</label>
-		<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">${_("Shared")}</label>
+		<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">${_H("Private")}</label>
+		<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">${_H("Shared")}</label>
 		</fieldset>
 		`;
 	}
+	if (GroupSettings.iconsets.length>1) { //For standalone .localonly==false
+		snippet += `<div class="floatright">${_H("Iconset: ")}
+			<select name="iconsetlist" id="iconsetlist">`;
+		GroupSettings.iconsets.forEach(is => snippet += `<option value="${H(is)}">${H(is)}</option>` );
+		snippet += '</select></div>';
+	}
+	
 	snippet += '</form>';
-
 	let dialog = $('<div></div>');
 	dialog.append(snippet);
+	$('#iconsetlist').selectmenu();
+
 	let dbuttons = [];
 	dbuttons.push({
 		text: _("Cancel"),
@@ -1469,6 +1477,7 @@ function ShowDetails() {
 							p.storeOnServer(false,exportProject(p.id),{});
 						}
 					}
+					p.seticonset($('#iconsetlist').val());
 #endif
 					$(this).dialog('close');
 #ifdef SERVER
@@ -2532,6 +2541,7 @@ function loadFromString(str,options) {
 		if (lp.g) p.group = lp.g;
 		if (lp.d) p.description = lp.d;
 		if (lp.w) p.date = lp.w;
+		if (lp.i) p.seticonset(lp.i);
 		for (k=0; k<lp.s.length; k++) {
 			p.addservice(lp.s[k]);
 		}
@@ -2558,9 +2568,8 @@ function loadFromString(str,options) {
 //		rn._normh = lrn.g;
 		rn.component = lrn.m;
 		rn.connect = lrn.c.slice(0);
-		if (lrn.o) {
-			rn.color = lrn.o;
-		}
+		if (lrn.o) rn.color = lrn.o;
+		if (lrn.i) rn.index = lrn.i;
 		rn.store();
 	}
 	for (i=0; i<lComponentlen; i++) {
@@ -2805,7 +2814,7 @@ function checkForErrors(verbose) {
 	}
 	if (errors!="") {
 		console.log(errors);
-		rasterAlert(_("Your projects contain errors:"), H(errors));
+		rasterAlert(_("Your projects contain errors:"), errors);
 	}
 }
 
@@ -2930,6 +2939,7 @@ function initTabDiagrams() {
 	$('.pastebutton').val( _("Paste"));
 
 	$('#mi_th span').text( _("Vulnerabilities") );
+	$('#mi_ci span').text( _("Change icon") );
 	$('#mi_ct span').text( _("Change type") );
 	$('#mi_cttWLS span').text( _("Wireless link") );
 	$('#mi_cttWRD span').text( _("Wired link") );
@@ -2994,6 +3004,17 @@ function initTabDiagrams() {
 			return;
 		}
 		displayComponentThreatAssessmentsDialog(rn.component,e);
+	});
+	$('#mi_ci').on('click', 'li', function(evt) {
+		let icn = $(evt.currentTarget).attr('foricon');
+		let rn = Node.get( $('#nodemenu').data('menunode') );
+		$('#nodemenu').hide();
+		// Find the index based on the icon name
+		let p = Project.get(rn.project);
+		let ni = null;
+		p.icondata.icons.forEach((ic,i) => {if (ic.image==icn) ni=i;});
+		if (!ni) bugreport('icon not found','mi_ci click handler');
+		new Transaction('nodeIconChange',[{id: rn.id, icon: rn.index}],[{id: rn.id, icon: ni}], _("Change icon for %%",rn.title));
 	});
 
 	function ctfunction(t) {

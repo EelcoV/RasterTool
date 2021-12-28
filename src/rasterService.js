@@ -224,7 +224,7 @@ Service.prototype = {
 					bugreport('inconsistency in connections between nodes','Service.paintall');
 				}
 				if (rn.id<dst.id) {
-					rn.attach_center(dst,true);
+					rn.attach_center(dst);
 				}
 			});
 		});

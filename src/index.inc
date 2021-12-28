@@ -390,6 +390,9 @@ See LICENSE.md
 <ul id="nodemenu">
     <li class="lcT"><div><span>xyz</span></div></li>
     <li id="mi_th"><div><span>xyz</span></div></li>
+	<li id="mi_ci"><div><span>xyz</span></div>
+	 <ul id="mi_cism"></ul>
+	</li>
     <li id="mi_ct"><div><span>xyz</span></div>
      <ul id="mi_ctsm">
       <li id="mi_cttWLS"><div><span>xyz</span></div></li>

@@ -57,6 +57,7 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *		id of the assessment of that cluster, and the index of the vulnerability within vulns[].
  *	removevulnerability(id): remove acommon vulnerability from the project.
  *  defaultassessmentdata(t): returns do/undo data for common vulnerabilities of type t.
+ *	seticonset(s): change the iconset
  *	unload(): remove all DOM elements for this project.
  *	load(): create and set all DOM elements for this project.
  *	adddefaultvulns: add the predefined checklist vulnerabilities to this project.
@@ -95,58 +96,9 @@ var Project = function(id,asstub) {
 	this.stub = false;
 #endif
 
-	this.iconset = GroupSettings.iconset;
+	this.iconset = GroupSettings.iconsets[0];
 	this.icondata = {};
-	var p = this;
-	// Load the current iconset
-	$.ajax({
-		url: '../img/iconset/'+this.iconset+'/iconset.json',
-		async: false,
-		dataType: 'json',
-		success: function(data) {
-			p.icondata.setName = data.setName;
-			p.icondata.setDescription = mylang(data.setDescription);
-			p.icondata.icons = [];
-			for (const r of data.icons) {
-				var i;
-				// set somewhat sane default values for each attribute
-				i = {
-					width: 100,
-					height: 30,
-					title: 'inside',
-					margin: 0,
-					offsetConnector: 0.5, // center
-					maintainAspect: true
-				};
-				if (r.type==null) return; // mandatory
-				if (r.image==null) return; // mandatory
-				if (Rules.nodetypes[r.type]==null) return; // invalid type
-				i.type = r.type;
-				i.image = r.image;
-				if (r.name!=null) {
-					i.name = mylang(r.name);
-				} else {
-					i.name = r.image;
-				}
-				if (r.width!=null) i.width = r.width;
-				if (r.height!=null) i.height = r.height;
-				if (r.title!=null) i.title = r.title;
-				if (r.margin!=null) i.margin = r.margin;
-				if (r.offsetConnector!=null) i.offsetConnector = r.offsetConnector;
-				if (r.maintainAspect!=null) i.maintainAspect = r.maintainAspect;
-				if (r.template!=null) {
-					i.template = r.template;
-				} else {
-					i.template = i.image.replace(/(.+)\.(\w+)$/, '$1-template.$2');
-				}
-				// Precompute the id and name of the mask image
-				i.mask = i.image.replace(/(.+)\.(\w+)$/, '$1-mask.$2');
-				i.maskid = i.mask.replace(/(.+)\.(\w+)$/, '$1-$2');
-				i.iconset = data.setName;
-				p.icondata.icons.push(i);
-			}
-		}
-	});
+	this.retrieveiconset();
 
 	this.TransactionBase = new Transaction(null,null,null);
 	this.TransactionCurrent = this.TransactionBase;
@@ -707,9 +659,63 @@ Project.prototype = {
 		return arr;
 	},
 
+	retrieveiconset: function() {
+		let p = this;
+		$.ajax({
+			url: `../img/iconset/${p.iconset}/iconset.json`,
+			async: false,
+			dataType: 'json',
+			success: function(data) {
+				p.icondata.setDescription = mylang(data.setDescription);
+				p.icondata.icons = [];
+				for (const r of data.icons) {
+					var i;
+					// set somewhat sane default values for each attribute
+					i = {
+						width: 100,
+						height: 30,
+						title: 'inside',
+						margin: 0,
+						offsetConnector: 0.5, // center
+						maintainAspect: true
+					};
+					if (r.type==null) return; // mandatory
+					if (r.image==null) return; // mandatory
+					if (Rules.nodetypes[r.type]==null) return; // invalid type
+					i.type = r.type;
+					i.image = r.image;
+					if (r.name!=null) {
+						i.name = mylang(r.name);
+					} else {
+						i.name = r.image;
+					}
+					if (r.width!=null) i.width = r.width;
+					if (r.height!=null) i.height = r.height;
+					if (r.title!=null) i.title = r.title;
+					if (r.margin!=null) i.margin = r.margin;
+					if (r.offsetConnector!=null) i.offsetConnector = r.offsetConnector;
+					if (r.maintainAspect!=null) i.maintainAspect = r.maintainAspect;
+					if (r.template!=null) {
+						i.template = r.template;
+					} else {
+						i.template = i.image.replace(/(.+)\.(\w+)$/, '$1-template.$2');
+					}
+					// Precompute the id and name of the mask image
+					i.mask = i.image.replace(/(.+)\.(\w+)$/, '$1-mask.$2');
+					i.maskid = i.mask.replace(/(.+)\.(\w+)$/, '$1-$2');
+					p.icondata.icons.push(i);
+				}
+			}
+		});
+	},
+	
 	seticonset: function(iconset) {
 		this.iconset = iconset;
 		this.store();
+		this.retrieveiconset();
+		if (this.id==Project.cid) {
+			this.loadiconset();
+		}
 	},
 
 	unload: function() {
@@ -780,9 +786,19 @@ Project.prototype = {
 			deactivate: sortfunc
 		});
 
+		this.loadiconset();
+
+		SizeDOMElements();  // Correct the scroller regions
+		$('.projectname').text(this.title);
+#ifdef SERVER
+		document.title = "Raster - " + this.title;
+#endif
+	},
+
+	loadiconset: function() {
 		// Mask images
 		$('#mask-collection').empty();
-		for (const r of this.icondata.icons) $('#mask-collection').append('<img class="mask" id="'+r.maskid+'" src="../img/iconset/'+r.iconset+'/'+r.mask+'">');
+		for (const r of this.icondata.icons) $('#mask-collection').append(`<img class="mask" id="${r.maskid}" src="../img/iconset/${this.iconset}/${r.mask}">`);
 
 		// Template images. The first image of each type will be the default image.
 		$('#templates').empty();
@@ -795,13 +811,13 @@ Project.prototype = {
 					<div class="template">
 						<div class="ui-widget templatelabel">${Rules.nodetypes[icn.type]}</div>
 						<div id="${icn.type}" class="templatebg">
-							<img class="templateicon" src="../img/iconset/${icn.iconset}/${icn.template}">
+							<img class="templateicon" src="../img/iconset/${this.iconset}/${icn.template}">
 						</div>
 						<img id="tC_${icn.type}" class="tC" src="../img/dropedit.png">
 					<div>
 				`);
 				// See comments in raster.css at nodecolorbackground
-				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `url(../img/iconset/${icn.iconset}/${icn.mask})`);
+				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `url(../img/iconset/${this.iconset}/${icn.mask})`);
 				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
 				break;
 			}
@@ -828,14 +844,14 @@ Project.prototype = {
 			cursor: 'move',
 			helper: 'clone'
 		});
-
-		SizeDOMElements();  // Correct the scroller regions
-		$('.projectname').text(this.title);
-#ifdef SERVER
-		document.title = "Raster - " + this.title;
-#endif
 	},
-
+	
+	iconsoftype: function(typ) {
+		let icns = [];
+		this.icondata.icons.forEach(ic => {if (ic.type==typ) icns.push(ic);});
+		return icns;
+	},
+	
 	strToLabel: function(str) {
 		var i = Project.colors.indexOf(str);
 		if (i==-1) {
@@ -856,6 +872,7 @@ Project.prototype = {
 		data.w=this.date;
 		data.t=this.vulns;
 		data.c=this.labels;
+		data.i=this.iconset;
 		return JSON.stringify(data);
 	},
 
