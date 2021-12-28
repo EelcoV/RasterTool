@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, setModified, randomrot
+/* globals _, paintSingleFailures, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, setModified, randomrot, CurrentCluster, repaintClusterDetails
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -664,6 +664,7 @@ Transaction.prototype = {
 				let s = Service.get(d.id);
 				s.settitle(d.title);
 			}
+			repaintClusterDetails(NodeCluster.get(CurrentCluster));
 			break;
 		}
 

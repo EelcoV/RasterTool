@@ -118,8 +118,8 @@ Service.prototype = {
 		this.title = targettitle;
 		$('.servicename'+this.id).text(this.title);
 		$('.tabtitle'+this.id).attr('title',this.title);
-		$('#diagramstabtitle'+this.id).text(this.title);
-		$('#singlefstabtitle'+this.id).text(this.title);
+		$('#tab_diagramstabtitle'+this.id).text(this.title);
+		$('#tab_singlefstabtitle'+this.id).text(this.title);
 		this.store();
 	},
 
