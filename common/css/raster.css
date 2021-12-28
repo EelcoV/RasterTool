@@ -567,6 +567,16 @@ input.inplace_field, textarea.inplace_field {
 .tdaright {
 	text-align: right;
 }
+.shortcuttable {
+	display: inline-block;
+	vertical-align: top;
+}
+.shortcuttable:last-child {
+	margin-left: 30px;
+}
+.shortcuttable table {
+	margin: 10px 0px;
+}
 
 .box {
 	border: 1px solid grey;

@@ -437,7 +437,10 @@ function initAllAndSetup() {
 		}
 	}));
 #endif
-	$(window).on('resize', SizeDOMElements);
+	$(window).on('resize', function(evt) {
+		if ($(evt.target).hasClass('ui-dialog')) return;
+		SizeDOMElements();
+	});
 
 	// The onbeforeprint handler is supported by IE and Firefox only.
 	window.onbeforeprint = function() {
@@ -853,7 +856,7 @@ function initHomeToolbar() {
 		autoOpen: false,
 		height: 450,
 		minHeight: 120,
-		width: 600,
+		width: 680,
 		minWidth: 470,
 		maxWidth: 800,
 		open: function(/*event*/) {
@@ -865,6 +868,18 @@ function initHomeToolbar() {
 		}
 	});
 	$('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
+
+	$('#helptabs a').eq(0).text( _("Frequency") );
+	$('#helptabs a').eq(1).text( _("Impact") );
+	$('#helptabs a').eq(2).text( _("Shortcuts") );
+	$('#helptabs a').eq(3).text( _("How to use") );
+	$('#helptabs a').eq(4).text( _("About") );
+	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
+	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
+	$('#helptabs a').eq(2).attr('href', _("../help/Shortcuts.html") );
+	$('#helptabs a').eq(3).attr('href', _("../help/Process.html") );
+	$('#helptabs a').eq(4).attr('href', _("../help/About.html") );
+	$('#helptabs li:last-of-type').css("margin-left","10px");
 	$('#helptabs').tabs({
 		heightStyle: 'content',
 		load: function(/*event,ui*/) {
@@ -873,15 +888,6 @@ function initHomeToolbar() {
 			}
 		}
 	});
-	$('#helptabs a').eq(0).text( _("Frequency") );
-	$('#helptabs a').eq(1).text( _("Impact") );
-	$('#helptabs a').eq(2).text( _("How to use") );
-	$('#helptabs a').eq(3).text( _("About") );
-	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
-	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
-	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
-	$('#helptabs a').eq(3).attr('href', _("../help/About.html") );
-	$('#helptabs li:last-of-type').css("margin-left","10px");
 
 	// Home toolbar | Diagram items: templates are set up in Project.load()
 

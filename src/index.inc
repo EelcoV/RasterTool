@@ -379,10 +379,11 @@ See LICENSE.md
 <div id="helppanel">
     <div id="helptabs">
         <ul>
-            <li><a href="../help/Frequency.html">xyz</a></li>
-            <li><a href="../help/Impact.html">xyz</a></li>
-            <li><a href="../help/Process.html">xyz</a></li>
-            <li><a href="../help/About.html">xyz</a></li>
+            <li><a href="xyz">xyz</a></li>
+            <li><a href="xyz">xyz</a></li>
+            <li><a href="xyz">xyz</a></li>
+            <li><a href="xyz">xyz</a></li>
+            <li><a href="xyz">xyz</a></li>
         </ul>
     </div>
 </div>

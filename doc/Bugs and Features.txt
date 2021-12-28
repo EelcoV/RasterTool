@@ -10,7 +10,7 @@ Toolbar buttons should be greyed out when the analysis workspace is empty. Which
 Set title attributes on all checkboxradio options
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
 Sometimes when moving a node localStorage is not up to date with the node's properties.
-The How to use help-panel is useless. Either improve or remove. A help-panel on keyboard shortcuts might be useful instead.
+The How to use help-panel is useless. Either improve or remove.
 On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
@@ -28,9 +28,6 @@ Change <ul> and <li> on #ccfs_details to <div>s, to enable "position: sticky".
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
 Make class definitions conform to ES6. Create modules with import/export.
 Change variables from var to let/const.
-Replace #modaldialog by an anonymous <div></div>.
-Change node shapes from image to SVG, helps for cleaner resizes. Obsoleted by iconsets?
-Try IndexDB instead of localStorage. This will benefit concurrent use in multiple tabs, and may ease the implementation of Undo and concurrent use across computers.
 When renaming a node, split at the ^ sign and treat the latter part as the suffix?
 New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable.
 Add functionality for graph expansion? Expand a cloud into subcomponents? Perhaps using the new Area object?
