@@ -709,7 +709,10 @@ Node.prototype = {
 		let p = Project.get(this.project);
 		if (idx) {
 			this.index = idx;
-		} else {
+			// Check that the index is sane
+			if (p.icondata.icons[this.index].type!=this.type) idx=null;
+		}
+		if (!idx) {
 			// Locate the first possible index
 			for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
 				// empty

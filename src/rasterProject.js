@@ -710,11 +710,19 @@ Project.prototype = {
 	},
 	
 	seticonset: function(iconset) {
+		if (GroupSettings.iconsets.indexOf(iconset)==-1) return;
 		this.iconset = iconset;
 		this.store();
 		this.retrieveiconset();
 		if (this.id==Project.cid) {
 			this.loadiconset();
+			this.services.forEach(sid => {
+				let it = new NodeIterator({service: sid});
+				it.forEach(rn => rn.iconinit(rn.index));
+				let svc = Service.get(sid);
+				svc.unload();
+				svc.load();
+			});
 		}
 	},
 
