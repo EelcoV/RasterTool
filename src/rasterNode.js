@@ -1112,15 +1112,13 @@ Node.prototype = {
 	
 	unpaint: function() {
 		var jsP = Service.get(this.service)._jsPlumb;
-		if (this.centerpoint) jsP.deleteEndpoint(this.centerpoint);
-		if (this.dragpoint) jsP.deleteEndpoint(this.dragpoint);
+		jsP.remove(this.nid);
 		this.centerpoint=null;
 		this.dragpoint=null;
 
 		if (this.id==$('#nodereport').data('DialogNode')) {
 			$('#nodereport').dialog('close');
 		}
-		$(this.jnid).remove();
 		$('#tinynode'+this.id).remove();
 	},
 

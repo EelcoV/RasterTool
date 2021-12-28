@@ -498,14 +498,14 @@ Transaction.prototype = {
 			//  icon: index of the icon within the project's icondata.icons[]
 			for (const d of data) {
 				let rn = Node.get(d.id);
-				let jsP = Service.get(rn.service)._jsPlumb;
-				jsP.remove(rn.nid);
+				rn.unpaint();
 				rn.iconinit(d.icon);
 				rn.paint();
 				rn.connect.forEach(on =>  {
 					let dst = Node.get(on);
 					rn.attach_center(dst);
 				});
+				rn.setmarker();
 			}
 			break;
 		}
