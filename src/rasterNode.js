@@ -18,7 +18,7 @@
  *	autotitle(type,str): create a unique title based on 'str' for a node of type 'typ' IN THE CURRENT PROJECT AND SERVICE.
  * Instance properties:
  *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK', 'tNOT'
- *  icon: name of the preferred icon from any iconset (or null for the default icon)
+ *  icon: name of the preferred icon from any iconset (or "" for the default icon)
  *	_idx: index of the currently used icon from the current iconset
  *	title: name of the node
  *	suffix: letter a,b,c... or user-set string to distiguish nodes with the same title. The suffix is retained
@@ -82,7 +82,7 @@ var Node = function(type, serv, id) {
 	}
 	this.id = (id==null ? createUUID() : id);
 	this.type = type;
-	this.icon = null;
+	this.icon = '';
 	this._idx = null;
 	this.service = serv;
 	this.position = {x: 0, y: 0, width: 0, height: 0};
@@ -234,6 +234,7 @@ Node.prototype = {
 			snaptogrid = true;
 		}
 		
+console.log(`setting x: ${px}, y: ${py}`);
 		if (px<0) px=0;
 		if (py<10) py=10;
 		if (px+this.position.width>fw) px=fw-this.position.width;
@@ -710,20 +711,26 @@ Node.prototype = {
 		let iconfromset=null;
 		let idxfromset=null;
 		if (iname!=null) {
-			// Try to find an icon with this name in the current iconset
-			for (let i=0; i<p.icondata.icons.length; i++) {
-				let icn = p.icondata.icons[i];
-				if (icn.image==iname) {
-					iconfromset = icn;
-					idxfromset = i;
-					break;
-				}
-			}
-			if (iconfromset==null) {
-				// Not found. Remember this node's preferred icon, but load a generic icon for now
+			if (iname=='') {
+				// reset to default icon
+				this.icon = '';
 				iname = null;
 			} else {
-				this.icon = iname;
+				// Try to find an icon with this name in the current iconset
+				for (let i=0; i<p.icondata.icons.length; i++) {
+					let icn = p.icondata.icons[i];
+					if (icn.image==iname) {
+						iconfromset = icn;
+						idxfromset = i;
+						break;
+					}
+				}
+				if (iconfromset==null) {
+					// Not found. Remember this node's preferred icon, but load a generic icon for now
+					iname = null;
+				} else {
+					this.icon = iname;
+				}
 			}
 		}
 		if (iname==null) {
@@ -854,6 +861,7 @@ Node.prototype = {
 					ni.forEach(n => rn.undo_data.push({id: n.id, x: n.position.x, y: n.position.y}));
 				} else {
 					rn.undo_data = [{id: rn.id, x: rn.position.x, y: rn.position.y}];
+console.log(`saving x: ${rn.position.x}, y: ${rn.position.y}`);
 				}
 			},
 			stop: function(event) {
@@ -876,6 +884,7 @@ Node.prototype = {
 						let n = Node.get(d.id);
 						n.position.x = d.x;
 						n.position.y = d.y;
+console.log(`restoring x: ${n.position.x}, y: ${n.position.y}`);
 						n.store();
 					}
 					new Transaction('nodeGeometry', rn.undo_data, do_data, _("Move node"));
