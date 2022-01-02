@@ -1191,7 +1191,7 @@ Node.prototype = {
 			s = '"' + s + '"';
 		}
 		$('#mi_cc span').eq(1).text(s);
-		$('.ui-menu').hide();
+		$('#nodemenu .ui-menu').hide();
 		$('#nodemenu')
 		.menu('collapseAll')
 		.show()
