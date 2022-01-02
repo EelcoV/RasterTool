@@ -234,7 +234,6 @@ Node.prototype = {
 			snaptogrid = true;
 		}
 		
-console.log(`setting x: ${px}, y: ${py}`);
 		if (px<0) px=0;
 		if (py<10) py=10;
 		if (px+this.position.width>fw) px=fw-this.position.width;
@@ -861,7 +860,6 @@ console.log(`setting x: ${px}, y: ${py}`);
 					ni.forEach(n => rn.undo_data.push({id: n.id, x: n.position.x, y: n.position.y}));
 				} else {
 					rn.undo_data = [{id: rn.id, x: rn.position.x, y: rn.position.y}];
-console.log(`saving x: ${rn.position.x}, y: ${rn.position.y}`);
 				}
 			},
 			stop: function(event) {
@@ -884,7 +882,6 @@ console.log(`saving x: ${rn.position.x}, y: ${rn.position.y}`);
 						let n = Node.get(d.id);
 						n.position.x = d.x;
 						n.position.y = d.y;
-console.log(`restoring x: ${n.position.x}, y: ${n.position.y}`);
 						n.store();
 					}
 					new Transaction('nodeGeometry', rn.undo_data, do_data, _("Move node"));

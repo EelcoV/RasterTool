@@ -53,10 +53,10 @@ NodeCluster:
 Any change could cause clusters to be deleted and nodes to be moved, because of normalisation.
 
 Project:
-x- create(id)				[initLibraryPanel: $('#libadd').click]
-x- create(id)				[initLibraryPanel: $('#libimport').click]
+x- create(id)				[initLibraryPanel: $('#buttadd').click]
+x- create(id)				[initLibraryPanel: $('#buttimport').click]
 x- rename					[initLibraryPanel: $('#libprops').click "Change properties" button callback]
-- destroy()					[initLibraryPanel: $('#libdel').click]
+- destroy()					[initLibraryPanel: $('#buttdel').click]
 x- share/make private		[initLibraryPanel: $('#libprops').click "Change properties" button callback]
 x- edit labels				[showLabelEditForm]
 

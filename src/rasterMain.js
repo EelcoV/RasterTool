@@ -487,14 +487,14 @@ function initAllAndSetup() {
 #ifdef SERVER
 function initProjectsToolbar() {
 	$("a[href^='#tb_projects']").text(_("Projects"));
-	$('#libadd').attr('title',_("Add a new default project to the library."));
-	$('#libduplicate').attr('title',_("Create a copy of this project."));
-	$('#libimport').attr('title',_("Load a project from a file."));
-	$('#libexport').attr('title',_("Save the current project to a file."));
+	$('#buttadd').attr('title',_("Add a new default project to the library."));
+	$('#buttduplicate').attr('title',_("Create a copy of this project."));
+	$('#buttimport').attr('title',_("Load a project from a file."));
+	$('#buttexport').attr('title',_("Save the current project to a file."));
 	// Add --------------------
-	$('#libadd').on('click',loadDefaultProject);
+	$('#buttadd').on('click',loadDefaultProject);
 	// Duplicate --------------------
-	$('#libduplicate').on('click',  function() {
+	$('#buttduplicate').on('click',  function() {
 		let p = Project.get(Project.cid);
 		let clone = p.duplicate();
 		clone.settitle(p.title+_(" (copy)"));
@@ -502,8 +502,8 @@ function initProjectsToolbar() {
 		switchToProject(clone.id,true);
 	});
 	// Import --------------------
-	$('#libimport').on('click',  function() {
-		$('#libimport').removeClass('ui-state-hover');
+	$('#buttimport').on('click',  function() {
+		$('#buttimport').removeClass('ui-state-hover');
 		$('#body').off('click');
 		$('#fileElem').trigger('click');
 		$('#body').on('click',  function(){ return false; });
@@ -530,7 +530,7 @@ function initProjectsToolbar() {
 		reader.readAsText(files[0]);
 	});
 	// Export --------------------
-	$('#libexport').on('click',  function() {
+	$('#buttexport').on('click',  function() {
 		singleProjectExport(Project.cid);
 	});
 
@@ -544,12 +544,12 @@ function initProjectsToolbar() {
 		}
 	});
 	$('#selector').attr('title',_("Library of all projects."));
-	$('#libactivate').attr('title',_("Switch to the selected project."));
-	$('#libdel').attr('title',_("Permanently remove the selected project."));
-	$('#libmerge').attr('title',_("Join the selected project into the current one."));
+	$('#buttactivate').attr('title',_("Switch to the selected project."));
+	$('#buttdel').attr('title',_("Permanently remove the selected project."));
+	$('#buttmerge').attr('title',_("Join the selected project into the current one."));
 	// Project list
 	// Activate --------------------
-	$('#libactivate').on('click',  function() {
+	$('#buttactivate').on('click',  function() {
 		let p = Project.get( $('#projlist').val() );
 		if (!p) return;
 		if (!p.stub) {
@@ -573,10 +573,10 @@ function initProjectsToolbar() {
 		refreshProjectToolbar(Project.cid);
 	});
 	// Delete --------------------
-	$('#libdel').on('click',  function(/*evt*/){
+	$('#buttdel').on('click',  function(/*evt*/){
 		let p = Project.get( $('#projlist').val() );
 		if (p==null) {
-			bugreport('No project selected','libdel click handler');
+			bugreport('No project selected','buttdel click handler');
 		}
 		let dokill = function() {
 			if (p.shared || p.stub) {
@@ -615,7 +615,7 @@ function initProjectsToolbar() {
 		});
 	});
 	// Merge --------------------
-	$('#libmerge').on('click',  function() {
+	$('#buttmerge').on('click',  function() {
 		var otherproject = Project.get( $('#projlist').val() );
 		if (otherproject.stub) {
 			rasterAlert(_("Cannot merge a remote project"),_H("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
@@ -636,23 +636,23 @@ function initProjectsToolbar() {
 	});
 
 	$('#projdebugsection>div:first-child').text(_("Debugging functions"));
-	$('#libcheck').text(_("Check"));
-	$('#libexportall').text(_("Export all"));
-	$('#libzap').text(_("Zap library"));
-	$('#libcheck').attr('title',_("Check the projects for internal consistency."));
-	$('#libexportall').attr('title',_("Save all projects into a single file."));
-	$('#libzap').attr('title',_("Permanently remove all projects."));
+	$('#buttcheck').text(_("Check"));
+	$('#buttexportall').text(_("Export all"));
+	$('#buttzap').text(_("Zap library"));
+	$('#buttcheck').attr('title',_("Check the projects for internal consistency."));
+	$('#buttexportall').attr('title',_("Save all projects into a single file."));
+	$('#buttzap').attr('title',_("Permanently remove all projects."));
 	$('#networkactivity').attr('title',_("Flashes on network activity."));
 	// Check --------------------
-	$('#libcheck').on('click',  function() {
+	$('#buttcheck').on('click',  function() {
 		checkForErrors(true);
 	});
 	// Export all --------------------
-	$('#libexportall').on('click',  function() {
+	$('#buttexportall').on('click',  function() {
 		exportAll();
 	});
 	// Zap! --------------------
-	$('#libzap').on('click',  function(){
+	$('#buttzap').on('click',  function(){
 		rasterConfirm('Delete all?',
 			_H("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
 			_("Erase everything"),_("Cancel"),
@@ -686,11 +686,11 @@ function refreshProjectToolbar(pid) {
 
 function refreshSelProjectButtons(pid) {
 	if (pid==Project.cid) {
-		$('#libactivate').addClass('ui-state-disabled');
-		$('#libmerge').addClass('ui-state-disabled');
+		$('#buttactivate').addClass('ui-state-disabled');
+		$('#buttmerge').addClass('ui-state-disabled');
 	} else {
-		$('#libactivate').removeClass('ui-state-disabled');
-		$('#libmerge').removeClass('ui-state-disabled');
+		$('#buttactivate').removeClass('ui-state-disabled');
+		$('#buttmerge').removeClass('ui-state-disabled');
 	}
 }
 
@@ -1705,7 +1705,7 @@ function switchToProject(pid,dorefresh) {
 	CurrentCluster = null;
 
 	if (Project.get(Project.cid)!=null) {
-		// Project might have been deleted by libdel button
+		// Project might have been deleted by buttdel button
 		Project.get(Project.cid).unload();
 	}
 	var p = Project.get(pid);

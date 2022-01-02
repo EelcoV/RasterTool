@@ -159,7 +159,7 @@ Project.firstProject = function() {
  *  - transfer the services of the newly created project into 'intoproject'
  *  - cleanly destroy the remnants of the created project
  * This will leave 'otherproject' completely untouched.
- * We can then get rid of s.load() below, and move that functionality into $('#libmerge').on('click',  function() {...})
+ * We can then get rid of s.load() below, and move that functionality into $('#buttmerge').on('click',  function() {...})
  */
 Project.merge = function(intoproject,otherproject) {
 	// Save a copy of the file that is merged

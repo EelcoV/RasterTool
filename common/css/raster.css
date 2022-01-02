@@ -308,15 +308,15 @@ body {
 
 #fileElem {visibility: hidden; width: 0; height: 0; }
 
-#libadd {background-image: url(../img/new_p.png);}
-#libduplicate {background-image: url(../img/duplicate_p.png);}
-#libimport {background-image: url(../img/import_p.png);}
-#libexport {background-image: url(../img/export_p.png);}
+#buttadd {background-image: url(../img/new_p.png);}
+#buttduplicate {background-image: url(../img/duplicate_p.png);}
+#buttimport {background-image: url(../img/import_p.png);}
+#buttexport {background-image: url(../img/export_p.png);}
 
 #projlist-menu {width: 350px; height: 250px}
-#libactivate {background-image: url(../img/activate_p.png);}
-#libdel {background-image: url(../img/del_p.png);}
-#libmerge {background-image: url(../img/merge_p.png);}
+#buttactivate {background-image: url(../img/activate_p.png);}
+#buttdel {background-image: url(../img/del_p.png);}
+#buttmerge {background-image: url(../img/merge_p.png);}
 
 #undobutton {background-image: url(../img/undo.png);}
 #redobutton {background-image: url(../img/redo.png);}
