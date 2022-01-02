@@ -1,6 +1,6 @@
 {
 "classroom": false,
 "template": "Project Template",
-"iconsets": ["default","newicons"],
+"iconsets": ["default"],
 "localonly": false
 }
