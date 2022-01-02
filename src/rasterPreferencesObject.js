@@ -46,15 +46,15 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 			rule.style.visibility='visible';
 			rule.style.width='8px';
 			rule.style.height='8px';
-			rule.style.top='-3px';
-			rule.style.left='1px';
+			rule.style.top='-4px';
+			rule.style.left='-4px';
 			rule.style.color='transparent';
 		} else if (this.emsize=='em_large') {
 			rule.style.visibility='visible';
 			rule.style.width='20px';
 			rule.style.height='15px';
-			rule.style.top='-9px';
-			rule.style.left='0px';
+			rule.style.top='-10px';
+			rule.style.left='-15px';
 			rule.style.color='black';
 		} else if (this.emsize=='em_none') {
 			rule.style.visibility='hidden';

@@ -3,7 +3,10 @@ See LICENSE.md
 
 
 BUGS
+Hide the mouse pointer when dragging a connector?
+Standalone: changing preferences from the toolbar doesn't change the preferences file.
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
+NL translations must be updated.
 Minimap "on" should move it into sight; or fix what we had: fix minimap at top-right corner.
 Do away with the online/offline setting?
 Toolbar buttons should be greyed out when the analysis workspace is empty. Which requires that the analysis screen is repainted on Undo/Redo, if the Analysis tab is currently active. It is not necessary to repaint when other vertical tabs are active, as the entire set will be repainted when the Analysis-tab is clicked.
@@ -15,7 +18,6 @@ On standalone: offer Save as an option when closing with unsaved changes.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
 When removing the last vulnerability on a component, the overall vulnerability level should be set to Extremely Low.
-Be consistent: cloud, unknown link, unexplored link. Decision: use "unknown link" as the official term, with "cloud" as a possible informal nickname.
 When printing CCF, the accordions are not always all expanded.
 Change details of a project on the server but not active: function not implemented.
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.

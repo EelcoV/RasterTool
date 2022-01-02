@@ -334,11 +334,18 @@ body {
 .floatright {
 	float: right;
 }
+#mi_cism {
+	display: flex;
+	flex-wrap: wrap;
+	width: 350px;
+}
 .iconli {
+	flex: 50px;
 	height: 50px !important;
 	background: var(--lightbg);
 	border: none;
 	text-align: center;
+	padding: 0 3px;
 }
 .iconli:hover {
 	background: var(--highlt);
@@ -1037,6 +1044,7 @@ div.nodeheader {
     -webkit-user-select: none;
 }
 div.headerinside {
+    word-break: break-all;
     top: 0px;
     left: var(--margin);
     width: calc(100% - 2 * var(--margin));
@@ -1123,7 +1131,15 @@ img.nodeW {
     cursor: pointer;
     z-index: 15;
 }
-div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
+/* The selector 'div.nodeMagnitude' is magic. See PreferencesObject.setemblem()
+ * rule.style.visibility='visible';
+ * rule.style.width='8px';
+ * rule.style.height='8px';
+ * rule.style.top='-4px';
+ * rule.style.left='-4px';
+ * rule.style.color='black';
+*/
+div.nodeMagnitude {
     display: none;
     width: 8px;
     height: 8px;
@@ -1132,8 +1148,8 @@ div.nodeMagnitude { /* This name is magic. See PreferencesObject.setemblem() */
     text-align: center;
     position: absolute;
     color: transparent;
-    top: -9px;
-    left: 0px;
+    top: -4px;
+    left: -4px;
     z-index: 15;
     box-shadow: 0px 0px 3px #999;
 }

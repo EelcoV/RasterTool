@@ -102,6 +102,7 @@ function createWindow(filename) {
 
 	win.once('ready-to-show', function()  {
 		win.webContents.send('window-id',win.id);
+		win.webContents.send('prefs-dir',prefsDir);
 		if (filename) {
 			ReadFileAndLoad(win,filename);
 		} else {
@@ -350,7 +351,7 @@ function AllWindowsSetVulnlevel(val) {
 
 function SavePreferences(/*win*/) {
 	try {
-		fs.writeFileSync(prefsFile, JSON.stringify(app.rasteroptions));
+		fs.writeFileSync(prefsFile, JSON.stringify(app.rasteroptions,null,'\t'));
 	} catch (e) {
 		// ignore silently
 	}

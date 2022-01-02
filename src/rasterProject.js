@@ -3,7 +3,7 @@
  */
 
 /* global
-_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
+_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator, prefsDir
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -57,7 +57,9 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *		id of the assessment of that cluster, and the index of the vulnerability within vulns[].
  *	removevulnerability(id): remove acommon vulnerability from the project.
  *  defaultassessmentdata(t): returns do/undo data for common vulnerabilities of type t.
- *	seticonset(s): change the iconset
+ *	seticonset(s): change the iconset, and repaint all services
+ *	retrieveicondata(s): try to assign .icondata based on the ${s}/icondata.json on the server. Return true iff succesful.
+ *	prepTemplatesAndMasks: set DOM (templates and masks for the current icons)
  *	unload(): remove all DOM elements for this project.
  *	load(): create and set all DOM elements for this project.
  *	adddefaultvulns: add the predefined checklist vulnerabilities to this project.
@@ -98,7 +100,7 @@ var Project = function(id,asstub) {
 
 	this.iconset = GroupSettings.iconsets[0];
 	this.icondata = {};
-	this.retrieveiconset();
+	// Do not fetch the iconset yet, delay this until Project.load()
 
 	this.TransactionBase = new Transaction(null,null,null);
 	this.TransactionCurrent = this.TransactionBase;
@@ -659,70 +661,90 @@ Project.prototype = {
 		return arr;
 	},
 
-	retrieveiconset: function() {
-		let p = this;
-		$.ajax({
-			url: `../img/iconset/${p.iconset}/iconset.json`,
-			async: false,
-			dataType: 'json',
-			success: function(data) {
-				p.icondata.setDescription = mylang(data.setDescription);
-				p.icondata.icons = [];
-				for (const r of data.icons) {
-					var i;
-					// set somewhat sane default values for each attribute
-					i = {
-						width: 100,
-						height: 30,
-						title: 'inside',
-						margin: 0,
-						offsetConnector: 0.5, // center
-						maintainAspect: true
-					};
-					if (r.type==null) return; // mandatory
-					if (r.image==null) return; // mandatory
-					if (Rules.nodetypes[r.type]==null) return; // invalid type
-					i.type = r.type;
-					i.image = r.image;
-					if (r.name!=null) {
-						i.name = mylang(r.name);
-					} else {
-						i.name = r.image;
+	retrieveicondata: function(setname) {
+		function trydir(dir,p) {
+			let iurl = `${dir}/iconset/${setname}/iconset.json`;
+			let trydirres = true;
+			$.ajax({
+				url: iurl,
+				async: false,
+				dataType: 'json',
+				error: function(jqXHR, textStatus) {
+					if (textStatus=='parsererror') console.log(`Incorrect JSON syntax in ${iurl}`);
+					trydirres = false;
+				},
+				success: function(data) {
+					p.icondata.setDescription = mylang(data.setDescription);
+					p.icondata.icons = [];
+					for (const r of data.icons) {
+						var i;
+						// set somewhat sane default values for each attribute
+						i = {
+							width: 100,
+							height: 30,
+							title: 'inside',
+							margin: 0,
+							offsetConnector: 0.5, // center
+							maintainAspect: true
+						};
+						if (r.type==null) return; // mandatory
+						if (r.image==null) return; // mandatory
+						if (Rules.nodetypes[r.type]==null) return; // invalid type
+						if (r.title!=null && ['inside','below','topleft'].indexOf(r.title)==-1) return; // invalid title specification
+						
+						i.type = r.type;
+						i.image = r.image;
+						i.mask = (r.mask!=null ? r.mask : i.image.replace(/(.+)\.(\w+)$/, '$1-mask.$2'));
+						i.template = (r.template!=null ? r.template : i.image.replace(/(.+)\.(\w+)$/, '$1-template.$2'));
+						i.name = (r.name!=null ? mylang(r.name) : r.image);
+						if (r.width!=null) i.width = r.width;
+						if (r.height!=null) i.height = r.height;
+						if (r.title!=null) i.title = r.title;
+						if (r.margin!=null) i.margin = r.margin;
+						if (r.offsetConnector!=null) i.offsetConnector = r.offsetConnector;
+						if (r.maintainAspect!=null) i.maintainAspect = r.maintainAspect;
+						// Precompute maskid
+						i.maskid = i.mask.replace(/(.+)\.(\w+)$/, '$1-$2');
+						p.icondata.icons.push(i);
 					}
-					if (r.width!=null) i.width = r.width;
-					if (r.height!=null) i.height = r.height;
-					if (r.title!=null) i.title = r.title;
-					if (r.margin!=null) i.margin = r.margin;
-					if (r.offsetConnector!=null) i.offsetConnector = r.offsetConnector;
-					if (r.maintainAspect!=null) i.maintainAspect = r.maintainAspect;
-					if (r.template!=null) {
-						i.template = r.template;
-					} else {
-						i.template = i.image.replace(/(.+)\.(\w+)$/, '$1-template.$2');
-					}
-					// Precompute the id and name of the mask image
-					i.mask = i.image.replace(/(.+)\.(\w+)$/, '$1-mask.$2');
-					i.maskid = i.mask.replace(/(.+)\.(\w+)$/, '$1-$2');
-					p.icondata.icons.push(i);
 				}
-			}
-		});
+			});
+			return trydirres;
+		}
+
+		let res;
+#ifdef SERVER
+		res = trydir('../img',this);
+#else
+		res = trydir( (setname=='default' ? '../img' : prefsDir), this);
+#endif
+		if (!res) {
+			console.log(`Failed to load iconset ${setname}`);
+		}
+		return res;
 	},
 	
 	seticonset: function(iconset) {
 		if (GroupSettings.iconsets.indexOf(iconset)==-1) return;
-		this.iconset = iconset;
-		this.store();
-		this.retrieveiconset();
 		if (this.id==Project.cid) {
-			this.loadiconset();
+			let res = this.retrieveicondata(iconset);
+			if (!res) return;
+			this.iconset = iconset;
+			this.store();
+			this.prepTemplatesAndMasks();
 			this.services.forEach(sid => {
-				let it = new NodeIterator({service: sid});
-				it.forEach(rn => rn.iconinit(rn.index));
+//				let it = new NodeIterator({service: sid});
+//				it.forEach(rn => rn.iconinit(rn.index));
 				let svc = Service.get(sid);
 				svc.unload();
 				svc.load();
 			});
+			if (Preferences.tab==0) {
+				$('#tab_diagramstabtitle'+Service.cid).trigger('click');
+			}
+		} else {
+			this.iconset = iconset;
+			this.store();
 		}
 	},
 
@@ -739,8 +761,15 @@ Project.prototype = {
 		Project.cid = this.id;
 		Service.cid = this.services[0];
 		Preferences.setcurrentproject(this.title);
+
 		this.updateUndoRedoUI();
-		
+		// Fetch and load the icons and templates. Fall back to 'default' if the iconset cannot be found
+		if (!this.retrieveicondata(this.iconset)) {
+			this.iconset = 'default';
+			this.store();
+			this.retrieveicondata(this.iconset);
+		}
+		this.prepTemplatesAndMasks();
 		this.services.forEach(sid => Service.get(sid).load());
 		for (const vid of this.vulns) {
 			let vln = Vulnerability.get(vid);
@@ -794,8 +823,6 @@ Project.prototype = {
 			deactivate: sortfunc
 		});
 
-		this.loadiconset();
-
 		SizeDOMElements();  // Correct the scroller regions
 		$('.projectname').text(this.title);
 #ifdef SERVER
@@ -803,10 +830,19 @@ Project.prototype = {
 #endif
 	},
 
-	loadiconset: function() {
-		// Mask images
+	prepTemplatesAndMasks: function() {
+		let idir = '../img';
+#ifdef STANDALONE
+		if (this.iconset!='default') idir = prefsDir;
+#endif
+		// Mask images. Some images icons share their mask, so first determine the unique collection of masks
+		let ma = [];
+		for (const r of this.icondata.icons) {
+			// Add r to ma iff ma does not yet contain an icn the the same .mask
+			if (ma.findIndex(icn => icn.mask==r.mask)==-1) ma.push(r);
+		}
 		$('#mask-collection').empty();
-		for (const r of this.icondata.icons) $('#mask-collection').append(`<img class="mask" id="${r.maskid}" src="../img/iconset/${this.iconset}/${r.mask}">`);
+		for (const r of ma) $('#mask-collection').append(`<img class="mask" id="${r.maskid}" src="${idir}/iconset/${this.iconset}/${r.mask}">`);
 
 		// Template images. The first image of each type will be the default image.
 		$('#templates').empty();
@@ -819,13 +855,13 @@ Project.prototype = {
 					<div class="template">
 						<div class="ui-widget templatelabel">${Rules.nodetypes[icn.type]}</div>
 						<div id="${icn.type}" class="templatebg">
-							<img class="templateicon" src="../img/iconset/${this.iconset}/${icn.template}">
+							<img class="templateicon" src="${idir}/iconset/${this.iconset}/${icn.template}">
 						</div>
 						<img id="tC_${icn.type}" class="tC" src="../img/dropedit.png">
 					<div>
 				`);
 				// See comments in raster.css at nodecolorbackground
-				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `url(../img/iconset/${this.iconset}/${icn.mask})`);
+				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `url("${idir}/iconset/${this.iconset}/${icn.mask}")`);
 				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
 				break;
 			}

@@ -93,8 +93,8 @@ CreateMacOSVersion()
 		mkdir -p $BASEDIR
 		( cd $BASEDIR && unzip -q ../../cache/electron-v$ELECTRONVERSION-darwin-$ARCH.zip )
 		mv $BASEDIR/Electron.app $BASEDIR/Raster.app
-		mkdir $BASEDIR/Licenses
-		mv $BASEDIR/LICENSE* $BASEDIR/Licenses
+		mkdir -p $BASEDIR/Documentation/Electron
+		mv $BASEDIR/LICENSE* $BASEDIR/Documentation/Electron
 		rm -f $BASEDIR/version
 		xattr -d com.apple.quarantine $BASEDIR/Raster.app || true
 	fi
@@ -105,6 +105,10 @@ CreateMacOSVersion()
 	mkdir $APPDIR/img
 	mkdir $APPDIR/help
 	mkdir $APPDIR/app
+	
+	echo copying files
+	cp -p standalone/README.md $BASEDIR/Documentation
+	cp -p common/img/iconset/README.md $BASEDIR/Documentation/Iconsets.md
 
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR

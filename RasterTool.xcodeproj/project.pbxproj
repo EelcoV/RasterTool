@@ -119,6 +119,7 @@
 		49E402BF1F99381700978B5C /* icon_128x128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_128x128@2x.png"; sourceTree = "<group>"; };
 		49E9F769277BAF1E0010889C /* Shortcuts.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Shortcuts.html; sourceTree = "<group>"; };
 		49E9F76A277BAF1E0010889C /* Shortcuts-nl.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "Shortcuts-nl.html"; sourceTree = "<group>"; };
+		49E9F76B277C57EF0010889C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		49F29A2620420DEC002A2E1E /* hint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hint.png; sourceTree = "<group>"; };
 		49F827AA2351B37A00EAE982 /* eslintrc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = eslintrc; sourceTree = "<group>"; };
 		49F827AB2351CF7600EAE982 /* eslint-xcode-format.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "eslint-xcode-format.js"; sourceTree = "<group>"; };
@@ -252,6 +253,7 @@
 			children = (
 				4999EB6B1F900AA9009BBF18 /* standalone.html */,
 				4999EB6D1F900C07009BBF18 /* main.js */,
+				49E9F76B277C57EF0010889C /* README.md */,
 			);
 			path = standalone;
 			sourceTree = "<group>";

@@ -155,7 +155,7 @@ class ComponentIterator extends rasterIterator {		// eslint-disable-line no-unus
  * opt: object with options to restrict the iteration to specified items only.
  *		Specify project (ID), service (ID), type (string), and/or match (string).
  * Option 'match' is similar to 'type'; 'type' looks for equality, but 'match'
- * looks for either equality or a cloud-type.
+ * looks for either equality or a unknown link-type.
  *
  *	project: project id equals value
  *	type: type equals value

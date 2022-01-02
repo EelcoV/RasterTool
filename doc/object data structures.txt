@@ -2,7 +2,7 @@ Raster File and LocalStorage Description
 ========================================
 
 Raster project files (and LocalStorage) consist of lines with a key and a value. Both are strings.
-In project files, there is a tab between key and value, and a newline after the value.
+In project files there is a tab between key and value, and a newline after the value.
 
 The key looks like "raster:«num»:«char»:«id»"
 «num»	Version number. Version 0 is not in use anymore. Versions 1, 2, 3, 4 can be read (4 is the latest).
@@ -12,6 +12,7 @@ The preferences always has «id»=="0"
 
 The value is a JSON object with properties that are single lowercase letters. Properties differ for each object type.
 The table shows the correspondence between properties in data files and object properties in the ECMAScript code.
+Unknown properties are silently discarded.
 
 Version 0:	pre-bèta, unsupported.
 Version 1:	Oldest supported version.
@@ -73,11 +74,11 @@ N: Node
 .position.y		setposition(x,y)		.y
 .position.width	   (internal)			.w
 .position.height   (internal)			.h
-._normw			(internal)				.v						letter just before w
-._normh			(internal)				.g						letter just before h
+._normw			(internal)				.v						version<4, from 4 onwards value is derived from iconset
+._normh			(internal)				.g						version<4, from 4 onwards value is derived from iconset
 .connect[]		(internal)				.c		[Node]
 .color			setlabel(c)				.o
-.index			iconinit(idx)			.i						version>=4
+.icon			iconinit(idx)			.i						version>=4
 
 C: Component
 .id				creator(type,ct.id)								changed in version 3
@@ -90,7 +91,7 @@ C: Component
 .single			setsingle				.s
 .accordionopened setaccordionopened(b)	.o
 
-L: NodeCluster		creator(type,cl.id)
+L: NodeCluster	creator(type,cl.id)
 .id																changed in version 3
 .type									.t
 .title									.l						case-insensitive for version>1

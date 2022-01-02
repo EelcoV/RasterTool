@@ -31,7 +31,7 @@ on run (volumeName)
 			-- Positioning
 			set position of item "Raster.app" to {0, 130}
 			set position of item "Applications" to {360, 130}
-			set position of item "Licenses" to {360, 290}
+			set position of item "Documentation" to {360, 290}
 			
 			-- Hiding
 			set extension hidden of item "Raster.app" to true

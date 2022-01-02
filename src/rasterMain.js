@@ -37,11 +37,16 @@ const toolbar_height = 94;	// See CSS definition of <body>
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 let WindowID = null;
+let prefsDir = null;
 let ipc = require('electron').ipcRenderer;
 let Modified = false;
 
 ipc.on('window-id', function(event,id) {
 	WindowID = id;
+});
+ipc.on('prefs-dir', function(event,dir) {
+	prefsDir = dir;
+	getGroupSettingsAtInitialisation();
 });
 ipc.on('document-start-save', function() {
 	var s = CurrentProjectAsString();
@@ -133,6 +138,14 @@ function initAllAndSetup() {
 
 #ifdef SERVER
 	ToolGroup = $('meta[name="group"]').attr('content');
+	// Initialise default values, then attempt to retrieve settings from the server
+	GroupSettings = {
+		classroom: false,
+		template: 'Project Template',
+		iconsets: ['default'],
+		localonly: false,
+		templatestring: ''
+	};
 	getGroupSettingsAtInitialisation();
 	if (GroupSettings.localonly) {
 		$('#onlinesection').hide();
@@ -701,7 +714,6 @@ function populateProjectList() {
 		snippet += '</optgroup>\n';
 	}
 	newoptions += snippet;
-#ifdef SERVER
 	//	 Then all shared projects, if they belong to group ToolGroup
 	if (!GroupSettings.localonly) {
 		snippet = "";
@@ -717,12 +729,9 @@ function populateProjectList() {
 		}
 		newoptions += snippet;
 	}
-#endif
 	$('#projlist').html(newoptions);
-#ifdef SERVER
 	// Finally all stubs projects
 	refreshStubList(false); // Add current stubs, possibly outdated wrt server status
-#endif
 	// Select the current project, and enable/disable the buttons
 	refreshProjectToolbar(Project.cid);
 }
@@ -731,14 +740,11 @@ function populateProjectList() {
  */
 function showProjectList() {
 	populateProjectList();
-#ifdef SERVER
 	if (!GroupSettings.localonly && Preferences.online) {
 		startPeriodicStubListRefresh(); // Update stubs from server and refresh
 	}
-#endif
 }
 
-#ifdef SERVER
 var ProjectListTimer = null;
 
 function startPeriodicStubListRefresh() {
@@ -783,19 +789,16 @@ function refreshStubList(dorepaint) {
 #endif
 
 function getGroupSettingsAtInitialisation() {
-	// Initialise default values, then attempt to retrieve settings from the server
-	GroupSettings = {
-		classroom: false,
-		template: 'Project Template',
-		iconsets: ['default'],
-		localonly: false,
-		templatestring: ''
-	};
 	$.ajax({
+#ifdef SERVER
 		url: 'group.json',
+#else
+		url: prefsDir+'/group.json',
+#endif
 		async: false,
 		dataType: 'json',
 		success: function(data) {
+#ifdef SERVER
 			if (data.classroom===true) {
 				GroupSettings.classroom = true;
 				$("#classroom").text(_("Classroom version")).show();
@@ -803,15 +806,17 @@ function getGroupSettingsAtInitialisation() {
 			if (typeof data.template==='string') {
 				GroupSettings.template = data.template;
 			}
-			if (typeof data.iconsets==='object' && Array.isArray(data.iconsets) && data.iconsets.every(s => typeof s==='string') ) {
-				GroupSettings.iconsets = data.iconsets;
-			}
 			if (data.localonly===true) {
 				GroupSettings.localonly = true;
 				GroupSettings.classroom = true;
 			}
+#endif
+			if (typeof data.iconsets==='object' && Array.isArray(data.iconsets) && data.iconsets.every(s => typeof s==='string') ) {
+				GroupSettings.iconsets = data.iconsets;
+			}
 		}
 	});
+#ifdef SERVER
 	if (GroupSettings.template=='') return;
 	// Try to fetch the template.
 	Project.UpdateStubs(false,false); // async, and do not repaint
@@ -835,8 +840,8 @@ function getGroupSettingsAtInitialisation() {
 			GroupSettings.templatestring = data;
 		}
 	});
-}
 #endif
+}
 
 function initHomeToolbar() {
 	$("a[href^='#tb_home']").text(_("Home"));
@@ -1452,17 +1457,21 @@ function ShowDetails() {
 	dbuttons.push({
 		text: _("Change properties"),
 		click: function() {
-					let fname = $('#field_projecttitle');
-					p.settitle(fname.val());
+					let fname = $('#field_projecttitle').val();
+					let fdescr = $('#field_projectdescription').val();
+					let becomesShared = $('#sh_on').prop('checked');
+					let fset = $('#iconsetlist').val();
+					$(this).dialog('close');
+					
+					p.settitle(fname);
 					$('.projectname').text(p.title);
 					document.title = "Raster - " + p.title;
 					Preferences.setcurrentproject(p.title);
 					
-					fname = $('#field_projectdescription');
-					p.setdescription(fname.val());
+					p.setdescription(fdescr);
+					p.seticonset(fset);
 #ifdef SERVER
 					if (!GroupSettings.localonly) {
-						let becomesShared = $('#sh_on').prop('checked');
 						if (!p.shared && becomesShared) {
 							// Before changing the sharing status from 'private' to 'shared', first
 							// check if there already is a project with this name. If so, refuse to rename.
@@ -1483,10 +1492,6 @@ function ShowDetails() {
 							p.storeOnServer(false,exportProject(p.id),{});
 						}
 					}
-					p.seticonset($('#iconsetlist').val());
-#endif
-					$(this).dialog('close');
-#ifdef SERVER
 					showProjectList();
 #endif
 					transactionCompleted("Project props change");
@@ -1510,6 +1515,7 @@ function ShowDetails() {
 				$('input[name="sh_onoff"]').checkboxradio('option','disabled',true);
 			}
 #endif
+			$('#iconsetlist').val(p.iconset);
 			$('#field_projecttitle').focus().select();
 			$('#form_projectprops').submit(function() {
 				// Ignore, must close with dialog widgets
@@ -1801,6 +1807,7 @@ function rasterAlert(title,msg) {
 	});
 	$('#modaldialog').html( String(msg) );
 	$('#modaldialog').dialog('open');
+	console.log(String(msg));
 }
 
 /* Replacement for the standard Javascript confirm() function. Several differences:
@@ -2016,6 +2023,9 @@ function autoSaveFunction() {		// eslint-disable-line no-unused-vars
  *	strsource: (string, default "input") Name of the source, used in error messages.
  *	duplicate: (bool, default false) Renumber all objects, create fresh UUIDs.
  *
+ * Side effects:
+ *	- creates new objects
+ *	- sets Flag_Upgrade_Done and Upgrade_Description
  * Returns the id of one of the projects loaded, or null on failure.
  *
  * Version 0 is ancient, and is not supported anymore.
@@ -2547,7 +2557,7 @@ function loadFromString(str,options) {
 		if (lp.g) p.group = lp.g;
 		if (lp.d) p.description = lp.d;
 		if (lp.w) p.date = lp.w;
-		if (lp.i) p.seticonset(lp.i);
+		if (lp.i) p.iconset = lp.i;
 		for (k=0; k<lp.s.length; k++) {
 			p.addservice(lp.s[k]);
 		}
@@ -2569,13 +2579,10 @@ function loadFromString(str,options) {
 		rn.title = lrn.l.trim();
 		if (lrn.f) rn.suffix = lrn.f.trim();
 		rn.position = {x: lrn.x, y: lrn.y, width: lrn.w, height: lrn.h};
-		rn.iconinit();
-//		rn._normw = lrn.v;
-//		rn._normh = lrn.g;
 		rn.component = lrn.m;
 		rn.connect = lrn.c.slice(0);
 		if (lrn.o) rn.color = lrn.o;
-		if (lrn.i) rn.index = lrn.i;
+		if (lrn.i) rn.icon = lrn.i;
 		rn.store();
 	}
 	for (i=0; i<lComponentlen; i++) {
@@ -2960,7 +2967,7 @@ function initTabDiagrams() {
 	$('#mi_de span').text( _("Delete") );
 	$('#mi_ccnone span').text( _("No label") );
 	$('#mi_ccedit span').text( _("Edit labels ...") );
-	$('#nodemenu li.lcT span').text(_("Node"));
+//	$('#nodemenu li.lcT span').text(_("Node"));
 	$('#nodemenu').menu().hide();
 
 	$('#mi_sd span').text( _("Delete selection") );
@@ -3015,12 +3022,12 @@ function initTabDiagrams() {
 		let icn = $(evt.currentTarget).attr('foricon');
 		let rn = Node.get( $('#nodemenu').data('menunode') );
 		$('#nodemenu').hide();
-		// Find the index based on the icon name
-		let p = Project.get(rn.project);
-		let ni = null;
-		p.icondata.icons.forEach((ic,i) => {if (ic.image==icn) ni=i;});
-		if (!ni) bugreport('icon not found','mi_ci click handler');
-		new Transaction('nodeIconChange',[{id: rn.id, icon: rn.index}],[{id: rn.id, icon: ni}], _("Change icon for %%",rn.title));
+//		// Find the index based on the icon name
+//		let p = Project.get(rn.project);
+//		let ni = null;
+//		p.icondata.icons.forEach((ic,i) => {if (ic.image==icn) ni=i;});
+//		if (ni==null) bugreport('icon not found','mi_ci click handler');
+		new Transaction('nodeIconChange',[{id: rn.id, icon: rn.icon}],[{id: rn.id, icon: icn}], _("Change icon for %%",rn.title));
 	});
 
 	function ctfunction(t) {

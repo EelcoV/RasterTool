@@ -495,7 +495,7 @@ Transaction.prototype = {
 			// Change the icon for a node (but not the type)
 			// data: array of objects; each object has these properties
 			//  id: id of the node
-			//  icon: index of the icon within the project's icondata.icons[]
+			//  icon: name of the icon within the project's icondata.icons[]
 			for (const d of data) {
 				let rn = Node.get(d.id);
 				rn.unpaint();
@@ -649,7 +649,7 @@ Transaction.prototype = {
 				if (d.project==Project.cid) {
 					s.load();
 					paintSingleFailures(s);
-					$('#diagramstabtitle'+s.id).trigger('click');
+					$('#tab_diagramstabtitle'+s.id).trigger('click');
 				}
 			}
 			break;

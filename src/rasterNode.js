@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, _H, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog, ComponentIterator
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, _H, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog, ComponentIterator, prefsDir
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -18,7 +18,8 @@
  *	autotitle(type,str): create a unique title based on 'str' for a node of type 'typ' IN THE CURRENT PROJECT AND SERVICE.
  * Instance properties:
  *	type: one of 'tWLS','tWRD','tEQT','tACT','tUNK', 'tNOT'
- *  index: index of the icon in the current iconset
+ *  icon: name of the preferred icon from any iconset (or null for the default icon)
+ *	_idx: index of the currently used icon from the current iconset
  *	title: name of the node
  *	suffix: letter a,b,c... or user-set string to distiguish nodes with the same title. The suffix is retained
  *		even when the node is the only remember member of its class.
@@ -34,8 +35,8 @@
  *	color: node label
  *	connect[]: array over Node id's of booleans, indicating whether this
  *		Node is connected to each other Node.
- *	_normw: normal width (default width)
- *	_normh: normal height (default height)
+ *	_normw: normal width (default width, derived from iconset)
+ *	_normh: normal height (default height, derived from iconset)
  * Methods:
  *	destroy(): destructor.
  *	setposition(x,y,snap): set the position of the HTML document object to (x,y).
@@ -81,7 +82,8 @@ var Node = function(type, serv, id) {
 	}
 	this.id = (id==null ? createUUID() : id);
 	this.type = type;
-	this.index = null;
+	this.icon = null;
+	this._idx = null;
 	this.service = serv;
 	this.position = {x: 0, y: 0, width: 0, height: 0};
 	this.connect = [];
@@ -694,48 +696,56 @@ Node.prototype = {
 	 * Because the preferred iconset of the project may not exist on this installation, the index may have to be corrected.
 	 * If the indicated index is of the correct type we assume that all is as intended.
 	 */
-	iconinit: function(idx) {
+	iconinit: function(iname) {
 		if (this.type=='tNOT') return;
 		// Try to preserve the center-position of the node
 		let oldcx, oldcy;
 		if (this.position.width>10 && this.position.height>10 ) {
-			// Make sure we have sane size of the node
+			// Made sure we have sane size of the node
 			oldcx = this.position.x+this.position.width/2;
 			oldcy = this.position.y+this.position.height/2;
-			oldcx = 20*Math.round(oldcx/20);
-			oldcy = 20*Math.round(oldcy/20);
 		}
 
 		let p = Project.get(this.project);
-		if (idx) {
-			this.index = idx;
-			// Check that the index is sane
-			if (p.icondata.icons[this.index].type!=this.type) idx=null;
-		}
-		if (!idx) {
-			// Locate the first possible index
-			for (this.index=0; this.index<p.icondata.icons.length && p.icondata.icons[this.index].type!=this.type; this.index++) {
-				// empty
+		let iconfromset=null;
+		let idxfromset=null;
+		if (iname!=null) {
+			// Try to find an icon with this name in the current iconset
+			for (let i=0; i<p.icondata.icons.length; i++) {
+				let icn = p.icondata.icons[i];
+				if (icn.image==iname) {
+					iconfromset = icn;
+					idxfromset = i;
+					break;
+				}
 			}
-		}
-		if (!this.position.width)  this.position.width = p.icondata.icons[this.index].width;
-		if (!this.position.height)  this.position.height = p.icondata.icons[this.index].height;
-		this._normw = this.position.width;
-		this._normh = this.position.height;
-
-		// Under a different iconset the aspect ratio may be off. Enlarge it, if necessary
-		let icn = p.icondata.icons[this.index];
-		if (icn.maintainAspect) {
-			var newh = this.position.width * icn.height/icn.width;
-			if (newh > this.position.height) {
-				this.position.height = newh;
+			if (iconfromset==null) {
+				// Not found. Remember this node's preferred icon, but load a generic icon for now
+				iname = null;
 			} else {
-				this.position.width = this.position.height * icn.width/icn.height;
+				this.icon = iname;
 			}
-			this.store();
 		}
-		$(this.jnid).width(this.position.width);
-		$(this.jnid).height(this.position.height);
+		if (iname==null) {
+			// Locate the first possible index
+			for (let i=0; i<p.icondata.icons.length; i++) {
+				let icn = p.icondata.icons[i];
+				if (icn.type==this.type) {
+					iconfromset = icn;
+					idxfromset = i;
+					break;
+				}
+			}
+		}
+		if (iconfromset==null) {
+			bugreport(`No suitable icon found for type ${this.type}`,'Node.iconinit');
+			return;
+		}
+		this._idx = idxfromset;
+		this._normw = iconfromset.width;
+		this._normh = iconfromset.height;
+		this.position.width = this._normw;
+		this.position.height = this._normh;
 
 		let cx, cy;
 		if (oldcx && oldcy) {
@@ -744,16 +754,21 @@ Node.prototype = {
 		} else {
 			cx = this.position.x+this.position.width/2;
 			cy = this.position.y+this.position.height/2;
-			cx = 20*Math.round(cx/20);
-			cy = 20*Math.round(cy/20);
 		}
 		this.position.x = cx - this.position.width/2;
 		this.position.y = cy - this.position.height/2;
+		this.position.x = 20*Math.round(this.position.x/20);
+		this.position.y = 20*Math.round(this.position.y/20);
 
 		this.store();
 	},
 
 	paint: function(effect) {
+		let idir = '../img';
+#ifdef STANDALONE
+		let p = Project.get(this.project);
+		if (p.iconset!='default') idir = prefsDir;
+#endif
 		if (this.type=='tNOT') {
 			$('#diagrams_workspace'+this.service).append(`
 				<div id="node${this.id}" class="node node${this.type}" tabindex="2">
@@ -767,24 +782,21 @@ Node.prototype = {
 			// Random rotation between -1 and 1 degree
 			$(this.jnid).css('transform', `rotate(${randomrot()}deg)`);
 		} else {
-			var p = Project.get(this.project);
-			if (this.index==null) {
-				bugreport("Node index is null","Node.paint");
-				this.iconinit();
-			}
+			let p = Project.get(this.project);
 
-			var icn = p.icondata.icons[this.index];
+			this.iconinit(this.icon);
+			let icn = p.icondata.icons[this._idx];
 			if (this.position.x<0 || this.position.y<0
 				|| this.position.x>3000 || this.position.y>3000) {
-				bugreport("extreme values of node '"+H(this.title)+"' corrected", "Node.paint");
-				this.position.x = 100;
-				this.position.y = 100;
+				if (this.position.x<-20 || this.position.y<-20) bugreport("extreme values of node '"+H(this.title)+"' corrected", "Node.paint");
+				this.position.x = 100 + 100*Math.random();
+				this.position.y = 100 + 100*Math.random();
 				this.store();
 			}
 			var str = `
 				<div id="node${this.id}" class="node node${this.type}" tabindex="2">
 					<div id="nodecolorbackground${this.id}" class="nodecolorbackground B${(Preferences.label?this.color:'none')}"></div>
-					<img id="nodeimg${this.id}" src="../img/iconset/${p.iconset}/${icn.image}" class="contentimg I${(Preferences.label?this.color:'none')}">
+					<img id="nodeimg${this.id}" src="${idir}/iconset/${p.iconset}/${icn.image}" class="contentimg I${(Preferences.label?this.color:'none')}">
 					<div id="nodeheader${this.id}" class="nodeheader _HB_ H${(Preferences.label?this.color:'none')}">
 					  <div id="nodetitle${this.id}" class="_TB_"><span id="titlemain${this.id}"></span><span id="titlesuffix${this.id}"></span></div>
 					</div>
@@ -807,7 +819,7 @@ Node.prototype = {
 			this.setmarker();
 			$('#nodeheader'+this.id).css('--margin', icn.margin+'%');
 			// See comments in raster.css at nodecolorbackground
-			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url(../img/iconset/${p.iconset}/${icn.mask})`);
+			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url(${idir}/iconset/${p.iconset}/${icn.mask})`);
 			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
 		}
 		
@@ -888,7 +900,7 @@ Node.prototype = {
 		});
 		if (this.type!='tNOT') {
 			this.dragpoint = jsP.addEndpoint(this.nid, {
-				// For clouds, the dragpoint is slightly off-center.
+				// For unknown links, the dragpoint is slightly off-center.
 				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : 'TopCenter'),
 				isSource: true,
 				isTarget: false,
@@ -1072,8 +1084,6 @@ Node.prototype = {
 		 * though aspectRatio=true. Obtain the current values, and allow double
 		 * for maximum
 		 */
-		if (this._normw==0) this._normw = $(this.jnid).width();
-		if (this._normh==0) this._normh = $(this.jnid).height();
 		$(this.jnid).resizable({
 			handles: 'se',
 			autoHide: true,
@@ -1128,6 +1138,7 @@ Node.prototype = {
 	_showpopupmenu: function(evt) {
 		var p = Project.get(Project.cid);
 		var cm = Component.get(this.component);
+		$('#nodemenu li.lcT span').text(Rules.nodetypes[this.type]);
 		$('#nodemenu .ui-menu-item').removeClass('ui-state-disabled');
 		if (this.type=='tNOT') {
 			$('#mi_th').addClass('ui-state-disabled');
@@ -1141,9 +1152,14 @@ Node.prototype = {
 		let icns = Project.get(this.project).iconsoftype(this.type);
 		if (icns.length>1) {
 			// Populate menu
+			let idir = '../img';
+#ifdef STANDALONE
+			let p = Project.get(this.project);
+			if (p.iconset!='default') idir = prefsDir;
+#endif
 			$('#mi_cism').empty();
 			icns.forEach(ic => {
-				$('#mi_cism').append(`<li class="iconli" foricon="${ic.image}"><div><img class="menuimage" src="../img/iconset/${p.iconset}/${ic.image}"></div></li>`);
+				$('#mi_cism').append(`<li class="iconli" foricon="${ic.image}" title="${ic.name}"><div><img class="menuimage" src="${idir}/iconset/${p.iconset}/${ic.image}"></div></li>`);
 			});
 			$('#nodemenu').menu('refresh');
 		} else {
@@ -1169,6 +1185,7 @@ Node.prototype = {
 			s = '"' + s + '"';
 		}
 		$('#mi_cc span').eq(1).text(s);
+		$('.ui-menu').hide();
 		$('#nodemenu')
 		.menu('collapseAll')
 		.show()
@@ -1196,13 +1213,11 @@ Node.prototype = {
 		data.y=Math.round(this.position.y);
 		data.w=Math.round(this.position.width);
 		data.h=Math.round(this.position.height);
-//		data.v=Math.round(this._normw);
-//		data.g=Math.round(this._normh);
 		data.s=this.service;
 		data.c=this.connect;
 		data.m=this.component;
 		data.o=this.color;
-		data.i=this.index;
+		data.i=this.icon;
 		return JSON.stringify(data);
 	},
 
@@ -1314,7 +1329,7 @@ var Rules = {
 	/* English translations of node types.
 	 * Can also be used as enumerator:   for (var t in Rules.nodetypes) { ... }
 	 */
-	nodetypes: {'tWLS': _("wireless link"),'tWRD': _("wired link"), 'tEQT': _("equipment"),'tACT': _("actor"), 'tUNK': _("cloud"), 'tNOT': _("note")},
+	nodetypes: {'tWLS': _("wireless link"),'tWRD': _("wired link"), 'tEQT': _("equipment"),'tACT': _("actor"), 'tUNK': _("unknown link"), 'tNOT': _("note")},
 	/* per nodetype, minimum number of that type to appear in a diagram.
 	 * There is no maximum.
 	 */
