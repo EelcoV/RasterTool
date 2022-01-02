@@ -5,15 +5,15 @@ XXXX 2022
 =========
 * Release as 4.0.0 - XXX
 * Undo and Redo are now implemented on all actions.
+* Support for different iconsets.
 * A refresh of the entire user interface.
 * A new file format is used. Raster files created with version 3 or earlier will
-  automatically be upgraded.
+  automatically be upgraded, but cannot be downgraded.
 * The Find panel now searches remarks, vulnerabilities and labels as well.
 * Build scripts now always create the classroom variant and the normal intranet variant.
 * Support for Internet Explorer has been dropped.
 * Intranet version is now compatible with PHP 7.4 and up.
 * Upgrade to jQueryUI 1.3.0, jQuery 3.6.0.
-* Groundwork for different iconsets.
 
 October 2019
 ============

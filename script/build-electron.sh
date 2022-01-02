@@ -257,8 +257,8 @@ CreateWin32Version()
 		 cd build
 		 ln -s electron-v$ELECTRONVERSION-win32-$ARCH-$RLANG Raster-$ARCH-$RLANG
 
-		 rm -f raster-win32-v$RASTERNUMVERSION-$ARCH-$RLANG.zip
-		 zip -q -r raster-win32-v$RASTERNUMVERSION-$ARCH-$RLANG.zip Raster-$ARCH-$RLANG
+		 rm -f raster-v$RASTERNUMVERSION-$ARCH-$RLANG.zip
+		 zip -q -r raster-v$RASTERNUMVERSION-$ARCH-$RLANG.zip Raster-$ARCH-$RLANG
 
 		 rm -f raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe
 		 # Filenames containing "instal" require admin privileges!?
@@ -279,7 +279,7 @@ CreateAll()
 	CreateMacOSVersion $RLANG arm64	&
 #	CreateMacOSVersion $RLANG x64	&
 #	CreateWin32Version $RLANG x64	&
-#	CreateWin32Version $RLANG ia32	&
+	CreateWin32Version $RLANG ia32	&
 	wait
 #	rm -fr $BUILDDIR
 }
