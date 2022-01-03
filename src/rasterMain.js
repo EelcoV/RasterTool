@@ -4728,30 +4728,27 @@ function repaintClusterDetails(nc,force) {
 	});
 }
 
-function listFromCluster(nc) {
+function listFromCluster(nc,indent) {
+	if (indent==null) indent=0;
 	var str;
 	// Cluster heading
 	if (nc.isroot()) {
-		str = '\n\
-			<ul id="tlist_ID_" class="tlist" style="padding-left: 0px;">\n\
-			<li id="linode_ID_" class="tlistroot clusternode ui-state-default ui-state-selected">\n\
-			_TI_ (_TY_)\n\
-			</li>\n\
-		';
+		str = `
+			<ul id="tlist${nc.id}" class="tlist" style="padding-left: 0px;">
+			 <li id="linode${nc.id}" class="clusternode tlistroot ui-state-default ui-state-selected">
+			   ${H(nc.title)} (${Rules.nodetypes[nc.type]})
+			 </li>
+		`;
 	} else {
-		str = '\n\
-			<ul id="tlist_ID_" class="tlist">\n\
-			<li id="linode_ID_" class="tlistitem clusternode ui-state-default ui-state-selected">\n\
-			<span id="cltrgl_ID_" class="ui-icon ui-icon-triangle-1-_LT_ clustericon"></span>\
-			<span id="litext_ID_" class="litext">_TI_</span>\
-			<span id="ccfamark_ID_"></span></a>\n\
-			</li>\n\
-		';
+		str = `
+			<ul id="tlist${nc.id}" class="tlist">
+			 <li id="linode${nc.id}" style="top: ${4+17*indent}px" class="clusternode tlistitem ui-state-default ui-state-selected">
+			   <span id="cltrgl${nc.id}" class="ui-icon ui-icon-triangle-1-${nc.accordionopened?'s':'e'} clustericon"></span>
+			   <span id="litext${nc.id}" class="litext">${H(nc.title)}</span>
+			   <span id="ccfamark${nc.id}"></span></a>
+			 </li>
+		`;
 	}
-	str = str.replace(/_ID_/g, nc.id);
-	str = str.replace(/_LT_/g, (nc.accordionopened ? 's' : 'e'));
-	str = str.replace(/_TI_/g, H(nc.title));
-	str = str.replace(/_TY_/g, Rules.nodetypes[nc.type]);
 
 	// Insert all child clusters, recursively
 	for (const clid of nc.childclusters) {
@@ -4761,7 +4758,7 @@ function listFromCluster(nc) {
 			str += ' style="display: none;"';
 		}
 		str += '>\n';
-		str += listFromCluster(cc);
+		str += listFromCluster(cc,indent+1);
 		str += '</li>\n';
 	}
 	if (nc.isroot()) {

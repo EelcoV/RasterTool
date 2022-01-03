@@ -1368,6 +1368,11 @@ for checklists and threat evaluations.
     font-size: 120%;
     border-radius: 3px;
 }
+.clusternode {
+	position: sticky !important;
+	top: 0;  /* Is incremented for each indent level; see listFromCluster() */
+	z-index: 1;
+}
 
 #ccfs_body .ui-draggable-dragging {
     background-color: white;
