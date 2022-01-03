@@ -265,7 +265,7 @@ function tryClose(win) {
 	}
 }
 
-function doPrint(win) {
+function doSaveAsPDF(win) {
 	var filename = dialog.showSaveDialogSync(win, {
 		title: _("Save as PDF"),
 		filters: [{
@@ -276,25 +276,31 @@ function doPrint(win) {
 	});
 	if (!filename) return;
 
-	win.webContents.setZoomFactor(app.rasteroptions.pdfscale/100.0);
-	setTimeout(function() {
-		win.webContents.printToPDF({
-			pageSize: (app.rasteroptions.pdfsize==3 ? 'A3' : 'A4'),
-			landscape: (app.rasteroptions.pdforientation==1),
-			printBackground: true
-		}, function(error, data) {
-			win.webContents.setZoomFactor(1.0);
-			if (error) {
-				dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
-				return;
-			}
-			try {
-				fs.writeFileSync(filename, data);
-			} catch (e) {
-				dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
-			}
-		});
-	}, 200);
+	win.webContents.printToPDF({
+		pageSize: (app.rasteroptions.pdfsize==3 ? 'A3' : 'A4'),
+		landscape: (app.rasteroptions.pdforientation==1),
+		scaleFactor: app.rasteroptions.pdfscale,
+		marginsType: 2, // minimum margins
+		printBackground: true
+	})
+	.then(data => {
+		try {
+			fs.writeFileSync(filename, data);
+		} catch (error) {
+			dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
+		}
+	})
+	.catch(error => {
+		dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
+	});
+}
+
+function doPrint(win) {
+	win.webContents.print({
+		printBackground: true
+	}, (success, errorType) => {
+		if (!success && errorType!='cancelled') dialog.showErrorBox(_("An error occurred while printing"), _("System notification:") +"\n"+errorType);
+	});
 }
 
 /***************************************************************************************************/
@@ -452,6 +458,13 @@ ipc.on('document-saveas', function(event,id,str) {
 	doSaveAs(win,str);
 });
 
+ipc.on('do-saveaspdf', function(event,id) {
+	var win = BrowserWindow.fromId(id);
+	if (!win)  return;
+	
+	doSaveAsPDF(win);
+});
+
 // This method will be called when Electron has finished initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function() {
@@ -571,12 +584,13 @@ MenuTemplate = [{
 	}, {
 		type: 'separator'
 	}, {
-		label: _("PDF settings..."),
+		label: _("Save as PDF..."),
+		accelerator: 'Shift+CmdOrCtrl+P',
 		click: function (item, focusedWindow) {
 			if (focusedWindow) focusedWindow.webContents.send('pdf-settings-show',app.rasteroptions);
 		}
 	}, {
-		label: _("Save as PDF"),
+		label: _("Print"),
 		accelerator: 'CmdOrCtrl+P',
 		click: function (item, focusedWindow) {
 			if (focusedWindow) doPrint(focusedWindow);

@@ -190,14 +190,22 @@ function initAllAndSetup() {
 	$('[for=pdfscale_100]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',100); });
 
 	$('#pdfoptions').dialog({
-		title: _("Settings for PDF"),
+		title: _("Save as PDF"),
 		autoOpen: false,
 		modal: false,
 		width: 420,
 		resizable: false,
-		buttons: [{ text: _("Done"),
-			click: function() {$('#pdfoptions').dialog('close');}
-		}]
+		buttons: [
+			{ text: _("Cancel"),
+				click: function() {$('#pdfoptions').dialog('close');}
+			},
+			{ text: _("Save as PDF"),
+				click: function() {
+					$('#pdfoptions').dialog('close');
+					ipc.send('do-saveaspdf',WindowID);
+				}
+			}
+		]
 	});
 	// Don't print the settings dialog. This means you can leave it open while saving a PDF. Convenient!
 	$('#pdfoptions').parent().addClass('donotprint');

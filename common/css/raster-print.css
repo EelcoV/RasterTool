@@ -53,6 +53,12 @@ body {
 .connbutton { display: none !important; }
 .jtk-endpoint { visibility: hidden !important; }
 
+.nodetNOT {
+	transform: none !important;
+	box-shadow: none !important;
+	height: auto !important;
+}
+
 .sfaccordion { page-break-inside: avoid; }
 /*.ccfaccordion { page-break-inside: avoid; }*/
 .ccfaccordion { page-break-after: always; }
