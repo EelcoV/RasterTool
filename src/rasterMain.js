@@ -119,6 +119,15 @@ ipc.on('pdf-settings-show', function(event,pdfoptions) {
 	$('#pdfoptions fieldset').controlgroup('refresh');
 	$('#pdfoptions').dialog('open');
 });
+ipc.on('edit-undo', function() {
+	// When we are editing text, emit a keyboard event. Otherwise perform an undo
+	if ($(':focus').length>0) return;
+	simulateClick('#undobutton');
+});
+ipc.on('edit-redo', function() {
+	if ($(':focus').length>0) return;
+	simulateClick('#redobutton');
+});
 
 function setModified() {
 	Modified = true;
@@ -357,17 +366,6 @@ function initAllAndSetup() {
 			}
 		}
 
-		// Make a button appear active, wait 50ms, click, wait 100ms, make inactive
-		function simulateClick(elem) {
-			$(elem).addClass('ui-state-active');
-			window.setTimeout(function() {
-				$(elem).trigger('click');
-				window.setTimeout(function() {
-					$(elem).removeClass('ui-state-active');
-				}, 100);
-			}, 50);
-		}
-
 #ifdef SERVER
 		// F1 (mostly for Windows): to trigger the Help panel
 		if (evt.key=='F1') {
@@ -409,6 +407,8 @@ function initAllAndSetup() {
 
 		// Cmd-Z for MacOS or Ctrl-Z for Windows: to trigger Undo
 		if ((evt.ctrlKey || evt.metaKey) && !evt.shiftKey && evt.key=='z') {
+			// Make sure no element has focus, to not interfere with text editing
+			if ($(':focus').length>0) return;
 			simulateClick('#undobutton');
 			evt.preventDefault();
 			return;
@@ -416,6 +416,8 @@ function initAllAndSetup() {
 		// Shift-Cmd-Z for MacOS or Ctrl-Y for Windows: to trigger Redo
 		if ((evt.metaKey && evt.shiftKey && evt.key=='z')
 		 || (evt.ctrlKey && evt.key=='y')) {
+			// Make sure no element has focus, to not interfere with text editing
+			if ($(':focus').length>0) return;
 			simulateClick('#redobutton');
 			evt.preventDefault();
 			return;	// eslint-disable-line no-useless-return
@@ -502,6 +504,17 @@ function initAllAndSetup() {
 	window.setTimeout(function () {
 		$(window).trigger('load');
 	}, 500);
+}
+
+// Make a button appear active, wait 50ms, click, wait 100ms, make inactive
+function simulateClick(elem) {
+	$(elem).addClass('ui-state-active');
+	window.setTimeout(function() {
+		$(elem).trigger('click');
+		window.setTimeout(function() {
+			$(elem).removeClass('ui-state-active');
+		}, 100);
+	}, 50);
 }
 
 #ifdef SERVER

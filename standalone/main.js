@@ -628,10 +628,14 @@ MenuTemplate = [{
 	label: _("Edit"),
 	submenu: [{
 		label: _("Undo"),
-		role: 'undo'
+//		role: 'undo',
+		accelerator: 'CmdOrCtrl+Z',
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('edit-undo'); }
 	}, {
 		label: _("Redo"),
-		role: 'redo'
+//		role: 'redo',
+		accelerator: 'Shift+CmdOrCtrl+Z',
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('edit-redo'); }
 	}, {
 		type: 'separator'
 	}, {
