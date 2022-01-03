@@ -13,7 +13,7 @@ XXXX 2022
 * Build scripts now always create the classroom variant and the normal intranet variant.
 * Support for Internet Explorer has been dropped.
 * Intranet version is now compatible with PHP 7.4 and up.
-* Upgrade to jQueryUI 1.3.0, jQuery 3.6.0.
+* Upgrade to jQueryUI 1.3.0, jQuery 3.6.0, Electron 16.0.5.
 
 October 2019
 ============

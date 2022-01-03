@@ -823,10 +823,13 @@ Node.prototype = {
 			}
 			$('#diagrams_workspace'+this.service).append(str);
 			this.setmarker();
+			// Set a variable, to be used or not in the styles that define the placement of the title
 			$('#nodeheader'+this.id).css('--margin', icn.margin+'%');
 			// See comments in raster.css at nodecolorbackground
-			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url(${idir}/iconset/${p.iconset}/${icn.mask})`);
-			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
+//			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url(${idir}/iconset/${p.iconset}/${icn.mask})`);
+//			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
+			$(`#nodecolorbackground${this.id}`).css('mask-image', `url("${idir}/iconset/${p.iconset}/${icn.mask}")`);
+			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url("${idir}/iconset/${p.iconset}/${icn.mask}")`);
 		}
 		
 		str = '<div id="tinynode_ID_" class="tinynode"></div>\n';

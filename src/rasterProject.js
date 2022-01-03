@@ -703,8 +703,8 @@ Project.prototype = {
 						if (r.margin!=null) i.margin = r.margin;
 						if (r.offsetConnector!=null) i.offsetConnector = r.offsetConnector;
 						if (r.maintainAspect!=null) i.maintainAspect = r.maintainAspect;
-						// Precompute maskid
-						i.maskid = i.mask.replace(/(.+)\.(\w+)$/, '$1-$2');
+						// Precompute maskid from the mask filename; replace periods by hyphens, and slashes by underscores
+//						i.maskid = i.mask.replace(/\./g,'-').replace(/\//g,'_');
 						p.icondata.icons.push(i);
 					}
 				}
@@ -835,14 +835,14 @@ Project.prototype = {
 #ifdef STANDALONE
 		if (this.iconset!='default') idir = prefsDir;
 #endif
-		// Mask images. Some images icons share their mask, so first determine the unique collection of masks
-		let ma = [];
-		for (const r of this.icondata.icons) {
-			// Add r to ma iff ma does not yet contain an icn the the same .mask
-			if (ma.findIndex(icn => icn.mask==r.mask)==-1) ma.push(r);
-		}
-		$('#mask-collection').empty();
-		for (const r of ma) $('#mask-collection').append(`<img class="mask" id="${r.maskid}" src="${idir}/iconset/${this.iconset}/${r.mask}">`);
+//		// Mask images. Some images icons share their mask, so first determine the unique collection of masks
+//		let ma = [];
+//		for (const r of this.icondata.icons) {
+//			// Add r to ma iff ma does not yet contain an icn the the same .mask
+//			if (ma.findIndex(icn => icn.mask==r.mask)==-1) ma.push(r);
+//		}
+//		$('#mask-collection').empty();
+//		for (const r of ma) $('#mask-collection').append(`<img class="mask" id="${r.maskid}" src="${idir}/iconset/${this.iconset}/${r.mask}">`);
 
 		// Template images. The first image of each type will be the default image.
 		$('#templates').empty();
@@ -860,9 +860,9 @@ Project.prototype = {
 						<img id="tC_${icn.type}" class="tC" src="../img/dropedit.png">
 					<div>
 				`);
-				// See comments in raster.css at nodecolorbackground
-				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `url("${idir}/iconset/${this.iconset}/${icn.mask}")`);
-				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
+//				// See comments in raster.css at nodecolorbackground
+//				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `url("${idir}/iconset/${this.iconset}/${icn.mask}")`);
+//				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
 				break;
 			}
 		}

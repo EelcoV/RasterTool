@@ -976,27 +976,24 @@ div.node {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	/* See bug https://bugzilla.mozilla.org/show_bug.cgi?id=1605976
+	/* See bug https://bugzilla.mozilla.org/show_bug.cgi?id=1605976 
 	 *
-	 * Firefox will use the -webkit- prefixed properties in preference over unprefixed versions. We therefore
-	 * do not bother with unprefixed variants.
-	 * Firefox will use the second mask-image instead of the first mask-image.
-	 * Chrome and Safari will use the first mask-image, as they do not recognize the -moz-element expressen.
-	 * Firefox has to use -moz-element, not the url(), as the bug will sometimes make the background disappear.
+	 * We used to use a workaround with hidden masks somewhere on the page, so that we could refer to
+	 * them by id:
 	 *
-	 * The disadvantage of thie workaround is that we now need to embed the image somewhere on the page, and
-	 * reference is through its #id. That image must be visible (display=none or visibility=hidden will not work).
-	 * It can however be small (1px by 1px is fine) and hidden behind another div.
+	 *	-webkit-mask-image: -moz-element(#tACT-mask);
 	 *
-	 * The mask-image is included here to show how it would work; the actual mask-image is set in Node.paint().
+	 * As this is no longer necessary (any Firefox bugs appear to have been fixed), we just provide the
+	 * masks by url().
 
-	-webkit-mask-image: url(tACT-mask.png);
-	-webkit-mask-image: -moz-element(#tACT-mask);
+	mask-image: url("../img/tACT-mask.png");
+	-webkit-mask-image: url("../img/tACT-mask.png");
 
 	 */
 	-webkit-mask-size: 100% 100%;
 	z-index: -1;
 }
+/*
 #mask-collection {
 	height: 0;
 }
@@ -1004,6 +1001,7 @@ div.node {
 	width: 1px;
 	height: 1px;
 }
+*/
 .Hnone {color: black !important;}
 .Hred {color: darkred !important;}
 .Horange {color: brown !important;}
