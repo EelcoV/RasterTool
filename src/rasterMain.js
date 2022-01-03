@@ -3301,6 +3301,7 @@ function initTabDiagrams() {
 					width: rn.position.width,
 					height: rn.position.height,
 					label: rn.color,
+					icon: rn.icon,
 					connect: []
 				}],
 				clusters: []

@@ -361,6 +361,7 @@ Transaction.prototype = {
 			//   suffix: suffix of the node
 			//   service: service to which the node belongs
 			//   label: color of the node
+			//   icon: preferred icon of the node
 			//   x, y: position of the node
 			//   width, height: size of the node (optional)
 			//   connect: array of node IDs to connect to
@@ -395,6 +396,7 @@ Transaction.prototype = {
 				rn.title = d.title;
 				if (d.suffix!=null)  rn.suffix = d.suffix;
 				if (d.label!=null)  rn.color = d.label;
+				if (d.icon!=null)  rn.icon = d.icon;
 				if (d.width!=null)  rn.position.width = d.width;
 				if (d.height!=null)  rn.position.height = d.height;
 				rn.setposition(d.x,d.y);
