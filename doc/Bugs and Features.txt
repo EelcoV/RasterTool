@@ -3,7 +3,6 @@ See LICENSE.md
 
 
 BUGS
-Hide the mouse pointer when dragging a connector?
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
 NL translations must be updated.
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.
@@ -21,6 +20,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 TODO
+Emit a Ctrl-Z or Cmd-Z when using the Undo/Redo menuitems in the standalone app while a textfield has focus.
 Use show()/hide() iso using css('visibility',...)
 Create a dark color scheme?
 Fancy workspace, indicate right and bottom borders, for those with huge screens or large zoom factors?
@@ -48,8 +48,6 @@ Sort vulns for a component on name/freq/impact/total/remark
 Better handling of redundancy in telecom services.
 Set description on added threats.
 Consistency report for the entire diagram, plus UI.
-Allow comments to be set on a project. Include versioning info?
-Allow for icons to be added to nodes (from a fixed library?)
 
 CANNOT REPRODUCE
 (no recent bugs)

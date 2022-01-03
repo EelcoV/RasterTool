@@ -935,6 +935,9 @@ div.th_remark {
     /* Dragging connections should be on top */
     z-index: 200;
 }
+body.jtk-drag-select * {
+	cursor: none !important;
+}
 .draggedEndpoint circle {
 	fill: #666;
 }
