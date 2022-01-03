@@ -166,14 +166,17 @@ function checkSaveModifiedDocument(win) {
 
 	var buttonval = dialog.showMessageBoxSync(win, {
 		type: 'warning',
-		buttons: [_("Cancel"), _("Discard changes")],
+		buttons: [_("Cancel"), _("Discard changes"), _("Save changes")],
 		cancelID: 0,
-		defaultId: 0,
+		defaultId: 2,
 		title: _("Discard all changes?"),
 		message: _("There are unsaved changes. If you continue those will be lost."),
 		detail: _("Cancel to save changes.")
 	});
-	return (buttonval != 0);
+	if (buttonval==2) {
+		win.webContents.send('document-finalsave');
+	}
+	return (buttonval==1);
 }
 
 function doSaveAs(win,str) {
@@ -461,6 +464,14 @@ ipc.on('document-save', function(event,id,str) {
 	if (!win)  return;
 
 	doSave(win,str);
+});
+
+ipc.on('document-save-then-close', function(event,id,str) {
+	var win = BrowserWindow.fromId(id);
+	if (!win)  return;
+
+	doSave(win,str);
+	win.close();
 });
 
 ipc.on('document-saveas', function(event,id,str) {

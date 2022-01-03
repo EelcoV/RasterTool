@@ -52,6 +52,10 @@ ipc.on('document-start-save', function() {
 	var s = CurrentProjectAsString();
 	ipc.send('document-save',WindowID,s);
 });
+ipc.on('document-finalsave', function() {
+	var s = CurrentProjectAsString();
+	ipc.send('document-save-then-close',WindowID,s);
+});
 ipc.on('document-start-saveas', function() {
 	var s = CurrentProjectAsString();
 	ipc.send('document-saveas',WindowID,s);
@@ -1047,7 +1051,7 @@ function initSettingsToolbar() {
 		ipc.send('option-modified',WindowID,'labels',Preferences.label);
 #endif
 	});
-	$('#mapsection>div:first-child').text(_("Minimap"));
+	$('#mapsection>div:first-child').text(_("Mini-map"));
 	$('#showmap_off').checkboxradio('option', 'label', _("off"));
 	$('#showmap_on').checkboxradio('option', 'label', _("on"));
 	$('#showmap_off').prop('checked',!Preferences.showmap);
