@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, _, ProjectIterator, refreshStubList, startAutoSave, LS, ToolGroup */
+/* global bugreport, _, ProjectIterator, refreshStubList, startAutoSave, LS, ToolGroup, Service */
 
 /*
  *
@@ -19,12 +19,28 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 			$('.nodecolorbackground').addClass('Bhide');
 			$('.ncontentimg').addClass('Ihide');
 		}
+		$('#label_off').prop('checked',!this.label);
+		$('#label_on').prop('checked',this.label);
+		$('input[name=labelonoff]').checkboxradio('refresh');
 //		let p = Project.get(Project.cid);
 //		p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
 //		PaintAllClusters();
 		this.store();
 	};
 	
+	this.setmap = function(maponoff) {
+		this.showmap = (maponoff===true);
+		if (this.showmap) {
+			$('#scroller_overview'+Service.cid).show();
+		} else {
+			$('.scroller_overview').hide();
+		}
+		$('#showmap_off').prop('checked',!this.showmap);
+		$('#showmap_on').prop('checked',this.showmap);
+		$('input[name=showmap]').checkboxradio('refresh');
+		this.store();
+	};
+
 	this.setemblem = function(emsize) {
 		this.emsize = emsize;
 		/* Find a CSS-rule with the exact name 'div.nodeMagnitude', then
@@ -59,6 +75,8 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 		} else if (this.emsize=='em_none') {
 			rule.style.visibility='hidden';
 		}
+		$('#'+this.emsize).prop('checked',true);
+		$('input[name=emblem_size]').checkboxradio('refresh');
 		this.store();
 	};
 

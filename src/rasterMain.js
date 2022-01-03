@@ -73,10 +73,11 @@ ipc.on('document-start-open', function(event,str) {
 	clearModified();
 });
 ipc.on('options', function(event,option,val) {
-	if (option=='labels') {
+	switch (option) {
+	case 'labels':
 		Preferences.setlabel(val);
-	}
-	if (option=='vulnlevel') {
+		break;
+	case 'vulnlevel':
 		if (val==0) {
 			Preferences.setemblem('em_none');
 		} else if (val==1) {
@@ -84,7 +85,14 @@ ipc.on('options', function(event,option,val) {
 		} else {
 			Preferences.setemblem('em_large');
 		}
+		break;
+	case 'minimap':
+		Preferences.setmap(val);
+		break;
 	}
+});
+ipc.on('props-show', function() {
+	ShowDetails();
 });
 ipc.on('help-show', function() {
 	$('#helppanel').dialog('open');
@@ -177,17 +185,17 @@ function initAllAndSetup() {
 	$('#pdf_papersize span').text(_("Paper size:"));
 	$('#pdf_scale span').text(_("Scale:"));
 
-	$('[for=paperorientation_portrait]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdforientation',0); });
-	$('[for=paperorientation_landscape]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdforientation',1); });
-	$('[for=papersize_a3]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfsize',3); });
-	$('[for=papersize_a4]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfsize',4); });
-	$('[for=pdfscale_40]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',40); });
-	$('[for=pdfscale_50]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',50); });
-	$('[for=pdfscale_60]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',60); });
-	$('[for=pdfscale_70]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',70); });
-	$('[for=pdfscale_80]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',80); });
-	$('[for=pdfscale_90]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',90); });
-	$('[for=pdfscale_100]').on('click',  function() { ipc.send('pdfoption-modified',WindowID,'pdfscale',100); });
+	$('[for=paperorientation_portrait]').on('click',  function() { ipc.send('option-modified',WindowID,'pdforientation',0); });
+	$('[for=paperorientation_landscape]').on('click',  function() { ipc.send('option-modified',WindowID,'pdforientation',1); });
+	$('[for=papersize_a3]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfsize',3); });
+	$('[for=papersize_a4]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfsize',4); });
+	$('[for=pdfscale_40]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',40); });
+	$('[for=pdfscale_50]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',50); });
+	$('[for=pdfscale_60]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',60); });
+	$('[for=pdfscale_70]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',70); });
+	$('[for=pdfscale_80]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',80); });
+	$('[for=pdfscale_90]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',90); });
+	$('[for=pdfscale_100]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',100); });
 
 	$('#pdfoptions').dialog({
 		title: _("Save as PDF"),
@@ -1023,15 +1031,21 @@ function initSettingsToolbar() {
 	$('input[name=emblem_size]').checkboxradio('refresh');
 	$('#vulnlevelsection input').on('change', function() {
 		Preferences.setemblem($('input[name=emblem_size]:checked').val());
+#ifdef STANDALONE
+		ipc.send('option-modified',WindowID,'vulnlevel',(Preferences.emsize=='em_none' ? 0 : (Preferences.emsize=='em_small' ? 1 : 2 )));
+#endif
 	});
 	$('#labelsection>div:first-child').text(_("Label colors"));
 	$('#label_off').checkboxradio('option', 'label', _("hide"));
 	$('#label_on').checkboxradio('option', 'label', _("show"));
-	$('#label_off').prop('checked',!Preferences.showmap);
-	$('#label_on').prop('checked',Preferences.showmap);
+	$('#label_off').prop('checked',!Preferences.label);
+	$('#label_on').prop('checked',Preferences.label);
 	$('input[name=labelonoff]').checkboxradio('refresh');
 	$('#labelsection input').on('change', function() {
 		Preferences.setlabel($('#label_on').prop('checked'));
+#ifdef STANDALONE
+		ipc.send('option-modified',WindowID,'labels',Preferences.label);
+#endif
 	});
 	$('#mapsection>div:first-child').text(_("Minimap"));
 	$('#showmap_off').checkboxradio('option', 'label', _("off"));
@@ -1040,12 +1054,10 @@ function initSettingsToolbar() {
 	$('#showmap_on').prop('checked',Preferences.showmap);
 	$('input[name=showmap]').checkboxradio('refresh');
 	$('#mapsection input').on('change', function() {
-		Preferences.showmap = $('#showmap_on').prop('checked');
-		if (Preferences.showmap) {
-			$('#scroller_overview'+Service.cid).show();
-		} else {
-			$('.scroller_overview').hide();
-		}
+		Preferences.setmap($('#showmap_on').prop('checked'));
+#ifdef STANDALONE
+		ipc.send('option-modified',WindowID,'minimap',Preferences.showmap);
+#endif
 	});
 
 	// Options toolbar | project options

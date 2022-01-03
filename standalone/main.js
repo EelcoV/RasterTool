@@ -24,7 +24,7 @@ var appMenu;
 /* Labels and Vulnlevels are set in the main process, and sent to the Renderer using
  *   win.webContents.send('options', kind, value)
  * PDF options are set in the Renderer, and sent to the main process using
- *   ipc.on('pdfoption-modified', handler)
+ *   ipc.on('option-modified', handler)
  * Updates are checked in CheckForUpdate()
  */
 const DefaultRasterOptions = {
@@ -32,6 +32,8 @@ const DefaultRasterOptions = {
 	labels: true,
 	// 0 = none, 1 = small, 2 = large
 	vulnlevel: 2,
+	// true = show, false = hide
+	minimap: true,
 	// 0 = portrait, 1 = landscape
 	pdforientation: 1,
 	// 3 = A3, 4 = A4
@@ -124,31 +126,6 @@ function createWindow(filename) {
 		}
 	});
 }
-/* This workaround was made unnecessary in August 2018.
- * See https://github.com/electron/libchromiumcontent/pull/503
-
-function ForceWindowRepaint() {
-	// At least on "plain" Windows (e.g. without Aero desktop effects enabled), the window is not
-	// always repainted. For example, when saving a new project the project name is not painted
-	// in the title bar until the window is obscured and brought forward again.
-	// This stupid hack seems to force a refresh.
-	// See https://github.com/electron/electron/issues/1821
-
-	if (process.platform!="win32") return;
-
-	var win = BrowserWindow.getFocusedWindow();
-	if (!win) return;
-	var wasMaximized = win.isMaximized();
-	var bounds = win.getBounds();
-
-	win.setSize(bounds.width - 1, bounds.height - 1);
-	if (wasMaximized) {
-		win.maximize();
-	} else {
-		win.setSize(bounds.width, bounds.height);
-	}
-}
-*/
 
 function ReadFileAndLoad(win,filename) {
 	try {
@@ -310,6 +287,28 @@ function doPrint(win) {
 //	dialog.showErrorBox("Debug information", msg);
 //}
 
+function EnableViewRadio(menu,val)  {
+	var menuitems = Menu.getApplicationMenu().items;
+	let viewm = menuitems[(process.platform=='darwin' ? 3 : 2)].submenu.items;
+	let subm = viewm[menu].submenu.items;
+	let i;
+
+	switch (menu) {
+	case 0:		// Labels
+		subm[val?0:1].checked = true;
+		break;
+	case 1:		// Vulnerability levels
+		if (val==1) i=0;
+		if (val==2) i=1;
+		if (val==0) i=2;
+		subm[i].checked = true;
+		break;
+	case 2:		// Mini-map
+		subm[val?0:1].checked = true;
+		break;
+	}
+}
+
 function EnableMenuItems(val)  {
 	if (process.platform !== 'darwin')  return;
 	// MacOS. Grey out the several menu items when no windows are open
@@ -321,18 +320,10 @@ function EnableMenuItems(val)  {
 	fileMenu[5].enabled = val;
 	fileMenu[6].enabled = val;
 	var viewMenu = menuitems[3].submenu.items;
-	viewMenu[0].enabled = val;
-	viewMenu[1].enabled = val;
-	viewMenu[3].enabled = val;
 	viewMenu[4].enabled = val;
 	viewMenu[5].enabled = val;
 	viewMenu[7].enabled = val;
 	viewMenu[8].enabled = val;
-	viewMenu[9].submenu.items[0].enabled = val;
-	viewMenu[9].submenu.items[1].enabled = val;
-	viewMenu[9].submenu.items[2].enabled = val;
-	viewMenu[10].enabled = val;
-	viewMenu[12].enabled = val;
 	var helpMenu = menuitems[5].submenu.items;
 	helpMenu[0].enabled = val;
 }
@@ -351,6 +342,15 @@ function AllWindowsSetVulnlevel(val) {
 	var allwins = BrowserWindow.getAllWindows();
 	for (const win of allwins) {
 		win.webContents.send('options', 'vulnlevel', val);
+	}
+	SavePreferences();
+}
+
+function AllWindowsSetMinimap(val) {
+	app.rasteroptions.minimap = val;
+	var allwins = BrowserWindow.getAllWindows();
+	for (const win of allwins) {
+		win.webContents.send('options', 'minimap', val);
 	}
 	SavePreferences();
 }
@@ -415,11 +415,23 @@ function CheckForUpdates(win) {
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-ipc.on('pdfoption-modified', function(event,id,opt,val) {
+ipc.on('option-modified', function(event,id,opt,val) {
 	var win = BrowserWindow.fromId(id);
 	if (!win)  return;
 
 	switch (opt) {
+	case 'labels':
+		app.rasteroptions.labels = val;
+		EnableViewRadio(0,val);
+		break;
+	case 'vulnlevel':
+		app.rasteroptions.vulnlevel = val;
+		EnableViewRadio(1,val);
+		break;
+	case 'minimap':
+		app.rasteroptions.minimap = val;
+		EnableViewRadio(2,val);
+		break;
 	case 'pdforientation':
 		app.rasteroptions.pdforientation = val;
 		break;
@@ -627,48 +639,78 @@ MenuTemplate = [{
 }, {
 	label: _("View"),
 	submenu: [{
-		label: _("Show labels"),
-		type: 'radio',
-		checked: (app.rasteroptions.labels==true),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetLabels(true);
-		}
+		label: _("Labels"),
+		submenu: [
+			{
+				label: _("Show labels"),
+				type: 'radio',
+				checked: (app.rasteroptions.labels==true),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetLabels(true);
+				}
+			}, {
+				label: _("Hide labels"),
+				type: 'radio',
+				checked: (app.rasteroptions.labels==false),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetLabels(false);
+				}
+			}
+		]
+	},{
+		label: _("Vulnerability levels"),
+		submenu: [
+			{
+				label: _("Small vulnerability levels"),
+				type: 'radio',
+				checked: (app.rasteroptions.vulnlevel==1),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetVulnlevel(1);
+				}
+			}, {
+				label: _("Large vulnerability levels"),
+				type: 'radio',
+				checked: (app.rasteroptions.vulnlevel==2),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetVulnlevel(2);
+				}
+			}, {
+				label: _("No vulnerability levels"),
+				type: 'radio',
+				checked: (app.rasteroptions.vulnlevel==0),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetVulnlevel(0);
+				}
+			}
+		]
 	}, {
-		label: _("Hide labels"),
-		type: 'radio',
-		checked: (app.rasteroptions.labels==false),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetLabels(false);
-		}
-	}, {
-		type: 'separator'
-	}, {
-		label: _("Small vulnerability levels"),
-		type: 'radio',
-		checked: (app.rasteroptions.vulnlevel==1),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetVulnlevel(1);
-		}
-	}, {
-		label: _("Large vulnerability levels"),
-		type: 'radio',
-		checked: (app.rasteroptions.vulnlevel==2),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetVulnlevel(2);
-		}
-	}, {
-		label: _("No vulnerability levels"),
-		type: 'radio',
-		checked: (app.rasteroptions.vulnlevel==0),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetVulnlevel(0);
-		}
-	}, {
+		label: _("Mini-map"),
+		submenu: [
+			{
+				label: _("Show mini-map"),
+				type: 'radio',
+				checked: (app.rasteroptions.labels==true),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetMinimap(true);
+				}
+			}, {
+				label: _("Hide mini-map"),
+				type: 'radio',
+				checked: (app.rasteroptions.labels==false),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetMinimap(false);
+				}
+			}
+		]
+	},{
 		type: 'separator'
 	}, {
 		label: _("Find nodes..."),
 		accelerator: 'CmdOrCtrl+F',
 		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('find-show'); }
+	}, {
+		label: _("Project details..."),
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('props-show'); }
 	}, {
 		type: 'separator'
 	}, {
