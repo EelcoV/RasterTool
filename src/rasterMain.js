@@ -2903,7 +2903,6 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 	/* ui.newPanel.selector is the DOM object with id #tabtitle<nn> */
 	if (!ui.newPanel)  return;
 	var id = nid2id(ui.newPanel[0].id);
-console.log(`Showing service ${id}`);
 	$('#selectrect').hide();
 	// Reattach the selectrect within this diagram
 	// Attach to diagrams_workspace *not* to tab_diagrams, because then the mousup event is sometimes not fired,

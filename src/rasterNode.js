@@ -802,10 +802,12 @@ Node.prototype = {
 
 	paint: function(effect) {
 		let idir = '../img';
-#ifdef STANDALONE
+		let icn;
 		let p = Project.get(this.project);
+#ifdef STANDALONE
 		if (p.iconset!='default') idir = prefsDir;		// eslint-disable-line no-undef
 #endif
+		
 		if (this.type=='tNOT') {
 			$('#diagrams_workspace'+this.service).append(`
 				<div id="node${this.id}" class="node node${this.type}" tabindex="2">
@@ -819,10 +821,8 @@ Node.prototype = {
 			// Random rotation between -1 and 1 degree
 			$(this.jnid).css('transform', `rotate(${randomrot()}deg)`);
 		} else {
-			let p = Project.get(this.project);
-
 			this.iconinit(this.icon);
-			let icn = p.icondata.icons[this._idx];
+			icn = p.icondata.icons[this._idx];
 			if (this.position.x<0 || this.position.y<0
 				|| this.position.x>3000 || this.position.y>3000) {
 				if (this.position.x<-20 || this.position.y<-20) bugreport("extreme values of node '"+H(this.title)+"' corrected", "Node.paint");
@@ -940,8 +940,7 @@ Node.prototype = {
 		});
 		if (this.type!='tNOT') {
 			this.dragpoint = jsP.addEndpoint(this.nid, {
-				// For unknown links, the dragpoint is slightly off-center.
-				anchor: (this.type=='tUNK' ? [0.66,0,0,-1] : 'TopCenter'),
+				anchor: [icn.offsetConnector,0,0,-1],
 				isSource: true,
 				isTarget: false,
 				connector: ['Bezier', { curviness: 100 } ], // When dragging
