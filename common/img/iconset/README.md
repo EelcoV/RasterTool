@@ -37,8 +37,8 @@ The first five icons in the array *must* be of types tEQT, tWRD, tWLS, tUNK, tAC
 3. `mask`: String (optional), the name of the mask file. Default = derived from the image filename.
 4. `template`: String (optional), the name of an image file that can be used as the template image. Default = derived from the image filename.
 5. `name`: Multi-language string (optional), description of this icon. Default = image filename.
-6. `width`: integer (optional), the default width of the icon in pixels. Default = 100. Allowed range is 30..200
-7. `height`: integer (optional), the default height of the icon in pixels. Default = 30. Allowed range is 15..100
+6. `width`: integer (optional), the default width of the icon in pixels. Default = 100. Allowed range is 20..200
+7. `height`: integer (optional), the default height of the icon in pixels. Default = 30. Allowed range is 10..100
 8. `title`: String (optional), location of the title, one of `inside`, `below`, `topleft`. Inside: the title is centered horizontally and vertically within the icon. Below: the title is drawn centered and below the icon. Topleft: the title is aligned to the left margin, and vertically aligned at the top. Default = `inside`.
 9. `margin`: String (optional), left and right margin of the title as a percentage of the icon width. Does not apply when title = below. Increase the margin to fit the title inside the icon. Default = 0.
 10. `offsetConnector`: real number between 0.00 and 1.00 (optional). The connector is always drawn at the top of the icon; this offset specifies its horizontal location: 0.00 means at the extreme left, 0.5 means centered, 1,0 means at the extreme right. Default = 0.5.

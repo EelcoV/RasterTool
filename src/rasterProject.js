@@ -703,16 +703,16 @@ Project.prototype = {
 						if (r.margin!=null) i.margin = r.margin;
 						if (r.offsetConnector!=null) i.offsetConnector = r.offsetConnector;
 						if (r.maintainAspect!=null) i.maintainAspect = r.maintainAspect;
-						if (i.offsetConnector<0 || i.offsetConnector>1) {
-							console.log(`Correcting invalid offsetConnector value for icon ${r.image}`);
+						if (i.offsetConnector<0.0 || i.offsetConnector>1.0) {
+							console.log(`Correcting invalid offsetConnector value (${i.offsetConnector}) for icon ${r.image}`);
 							i.offsetConnector = 0.5;
 						}
-						if (i.width<30 || i.width>200) {
-							console.log(`Correcting invalid width value for icon ${r.image}`);
+						if (i.width<20 || i.width>200) {
+							console.log(`Correcting invalid width value (${i.width}) for icon ${r.image}`);
 							i.width = 100;
 						}
-						if (i.height<15 || i.height>100) {
-							console.log(`Correcting invalid height value for icon ${r.image}`);
+						if (i.height<10 || i.height>100) {
+							console.log(`Correcting invalid height value (${i.height}) for icon ${r.image}`);
 							i.height = 30;
 						}
 						// Precompute maskid from the mask filename; replace periods by hyphens, and slashes by underscores

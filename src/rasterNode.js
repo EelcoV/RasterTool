@@ -792,10 +792,10 @@ Node.prototype = {
 			cx = this.position.x+this.position.width/2;
 			cy = this.position.y+this.position.height/2;
 		}
+		cx = 20*Math.round(cx/20);
+		cy = 20*Math.round(cy/20);
 		this.position.x = cx - this.position.width/2;
 		this.position.y = cy - this.position.height/2;
-		this.position.x = 20*Math.round(this.position.x/20);
-		this.position.y = 20*Math.round(this.position.y/20);
 
 		this.store();
 	},
