@@ -2816,6 +2816,8 @@ function vertTabSelected(/*event, ui*/) {
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
 		$('#tab_diagramstabtitle'+Service.cid).trigger('click');
+		// The click won't do anything if that service was already selected, so make sure the repaint occurs.
+		Service.get(Service.cid)._jsPlumb.repaintEverything();
 		Preferences.settab(0);
 		break;
 	case TabWorkSF:
@@ -2901,6 +2903,7 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 	/* ui.newPanel.selector is the DOM object with id #tabtitle<nn> */
 	if (!ui.newPanel)  return;
 	var id = nid2id(ui.newPanel[0].id);
+console.log(`Showing service ${id}`);
 	$('#selectrect').hide();
 	// Reattach the selectrect within this diagram
 	// Attach to diagrams_workspace *not* to tab_diagrams, because then the mousup event is sometimes not fired,
