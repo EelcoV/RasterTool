@@ -433,7 +433,6 @@ Transaction.prototype = {
 
 				repaintservices.add(d.service);
 				let rn = new Node(d.type, d.service, d.id);
-				rn.iconinit();
 				rn.title = d.title;
 				if (d.suffix!=null)  rn.suffix = d.suffix;
 				if (d.label!=null)  rn.color = d.label;
@@ -543,7 +542,6 @@ Transaction.prototype = {
 			for (const d of data) {
 				let rn = Node.get(d.id);
 				rn.unpaint();
-				rn.iconinit(d.icon);
 				rn.paint();
 				rn.connect.forEach(on =>  {
 					let dst = Node.get(on);

@@ -3,10 +3,8 @@ See LICENSE.md
 
 
 BUGS
-Start editing subcluster, cancel with Esc: line drawings are not restored.
 Delete a lot of nodes, go to analysis tab, undo, go to diagrams tab: the connectors are all wrong. Switch to another tab and back again: connectors are OK.
 offsetConnector is ignored on icons
-Resize an icon, then reload: size is not preserved.
 Remove "person with tie" by "person wearing official hat"
 Change menuitem 'Make single' to 'Make one component'.
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??

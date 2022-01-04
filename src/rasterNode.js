@@ -712,7 +712,12 @@ Node.prototype = {
 		if (iname!=null) {
 			if (iname=='') {
 				// reset to default icon
-				this.icon = '';
+				if (this.icon!='') {
+					// We do lose the preferred size, as the remembered size may make no sense for the new icon.
+					this.position.width = 0;
+					this.position.height = 0;
+					this.icon = '';
+				}
 				iname = null;
 			} else {
 				// Try to find an icon with this name in the current iconset
@@ -727,6 +732,9 @@ Node.prototype = {
 				if (iconfromset==null) {
 					// Not found. Remember this node's preferred icon, but load a generic icon for now
 					iname = null;
+					// and pick a new default size
+					this.position.width = 0;
+					this.position.height = 0;
 				} else {
 					this.icon = iname;
 				}
@@ -750,8 +758,9 @@ Node.prototype = {
 		this._idx = idxfromset;
 		this._normw = iconfromset.width;
 		this._normh = iconfromset.height;
-		this.position.width = this._normw;
-		this.position.height = this._normh;
+		// Size is preserved, except for the specific cases above where set to 0
+		if (this.position.width==0) this.position.width = this._normw;
+		if (this.position.height==0) this.position.height = this._normh;
 
 		let cx, cy;
 		if (oldcx && oldcy) {

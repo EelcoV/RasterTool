@@ -474,6 +474,9 @@ Assessment.prototype = {
 				},
 				delegate: {
 					didCloseEditInPlace: function(aDOMNode) {
+						// When closing the editor without changing anything, the linedrawing images in front of the subcluster need to be repainted.
+						// We simply repaint the entire rootcluster.
+						// This is only necessary for assessments of subclusters, therefore .vulnerability must be null.
 						if (assmnt.vulnerability!=null) return;
 						let id = internalID(aDOMNode[0].id);
 						let nc = NodeCluster.get(id);
