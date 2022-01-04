@@ -266,6 +266,8 @@ See LICENSE.md
 		<div id="projectpropsection" class="toolbarsection">
 			<div class="toolbarspacer"></div>
 			<div id="projectprops" class="toolbarlargeiconbutton"></div>
+			<div class="toolbarspacer"></div>
+			<div id="buttlabels" class="toolbariconbutton"></div>
 		</div>
 
 		<div id="onlinesection" class="toolbarsection">

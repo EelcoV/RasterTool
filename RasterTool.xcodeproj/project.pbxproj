@@ -118,6 +118,7 @@
 		49E402BE1F99381700978B5C /* icon_512x512@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_512x512@2x.png"; sourceTree = "<group>"; };
 		49E402BF1F99381700978B5C /* icon_128x128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_128x128@2x.png"; sourceTree = "<group>"; };
 		49E78B47278457350030B0D7 /* styleguide.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = styleguide.md; sourceTree = "<group>"; };
+		49E78B48278510130030B0D7 /* editlabels.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = editlabels.png; sourceTree = "<group>"; };
 		49E9F769277BAF1E0010889C /* Shortcuts.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Shortcuts.html; sourceTree = "<group>"; };
 		49E9F76A277BAF1E0010889C /* Shortcuts-nl.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "Shortcuts-nl.html"; sourceTree = "<group>"; };
 		49E9F76B277C57EF0010889C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -218,6 +219,7 @@
 		494B6FEB18796E9D00400328 /* img */ = {
 			isa = PBXGroup;
 			children = (
+				49E78B48278510130030B0D7 /* editlabels.png */,
 				496AB70C2773561300DEB5A2 /* tNOTicon.png */,
 				49ADB67B276E7BFB00A99B47 /* props_p.png */,
 				49ADB675276A8CB300A99B47 /* duplicate_p.png */,

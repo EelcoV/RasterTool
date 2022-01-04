@@ -325,6 +325,8 @@ body {
 #helpbutton {background-image: url(../img/qm.png);}
 
 #projectprops {background-image: url(../img/props_p.png);}
+#buttlabels {background-image: url(../img/editlabels.png);}
+
 #field_projectdescription {
 	resize: none;
 }

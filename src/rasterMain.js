@@ -1081,6 +1081,10 @@ function initSettingsToolbar() {
 	$('#projectprops').attr('title',_("Inspect and modify this project."));
 	$('#projectprops').on('click',  ShowDetails);
 
+	$('#buttlabels').attr('title', _("Edit labels"));
+	$('#buttlabels').on('click', showLabelEditForm);
+
+
 #ifdef SERVER
 	// Creator name
 	if (!Preferences.creator) Preferences.creator = _("Anonymous");
