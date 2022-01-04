@@ -47,6 +47,7 @@
  *	settitle(str,suff): sets the header text to 'str' and suffix 'suff', and update DOM.
  *	changesuffix(str): post a transaction to change the suffix to 'str' if allowed
  *	setsuffix(str): set the suffix to 'str' and update DOM.
+ *	texttitle(): returns this title, properly formatted when the node has a suffix
  *	htmltitle(): returns this title, properly html formatted when the node has a suffix (except for css classes)
  *	setmarker(): sets or hides the rule violation marker.
  *	hidemarker(): hides the rule violation marker.
@@ -421,6 +422,16 @@ Node.prototype = {
 		}
 	},
 	
+	texttitle: function() {
+		// Node may have a suffix even when the only member of its "class"
+		let cm = Component.get(this.component);
+		if (cm && cm.nodes.length>1 && !cm.single) {
+			return `${this.title} (${this.suffix})`;
+		} else {
+			return this.title;
+		}
+	},
+	
 	_edgecount: function () {
 		var jsP = Service.get(this.service)._jsPlumb;
 		var C = {'tWLS':0, 'tWRD':0, 'tEQT':0, 'tACT':0, 'tUNK':0, 'TOTAL':0};
@@ -761,6 +772,17 @@ Node.prototype = {
 		// Size is preserved, except for the specific cases above where set to 0
 		if (this.position.width==0) this.position.width = this._normw;
 		if (this.position.height==0) this.position.height = this._normh;
+		// Aspect ration MUST always be preserved, even when switching iconsets.
+		if (iconfromset.maintainAspect) {
+			// Preserve the smaller of the two relative dimensions
+			let wfactor = this.position.width/iconfromset.width;
+			let hfactor = this.position.height/iconfromset.height;
+			let scale = (wfactor<hfactor ? wfactor : hfactor);
+			if (scale<1) scale = 1;
+			if (scale>2) scale = 2;
+			this.position.width = scale*iconfromset.width;
+			this.position.height = scale*iconfromset.height;
+		}
 
 		let cx, cy;
 		if (oldcx && oldcy) {
@@ -1059,7 +1081,7 @@ Node.prototype = {
 			}
 			$('#nodereport').html( s );
 			$('#nodereport').dialog({
-				title: _("Warning report on %%", rn.title+' '+rn.suffix),
+				title: _("Warning report on %%", rn.texttitle()),
 				position: {my: 'left top', at: 'center', of: e, collision: 'fit'}
 			});
 			$('#nodereport').dialog('open');

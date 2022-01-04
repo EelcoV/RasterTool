@@ -542,6 +542,7 @@ Transaction.prototype = {
 			for (const d of data) {
 				let rn = Node.get(d.id);
 				rn.unpaint();
+				rn.iconinit(d.icon);
 				rn.paint();
 				rn.connect.forEach(on =>  {
 					let dst = Node.get(on);
@@ -560,7 +561,7 @@ Transaction.prototype = {
 			for (const d of data) {
 				let rn = Node.get(d.id);
 				rn.setlabel(d.label);
-				Component.get(rn.component).updateLabelGroup(rn.service);
+				if (rn.component!=null) Component.get(rn.component).updateLabelGroup(rn.service);
 			}
 			repaintCCFDetailsIfVisible();
 			break;
