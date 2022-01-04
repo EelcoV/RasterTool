@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals bugreport, createUUID, prependIfMissing, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, VulnerabilityIterator, refreshComponentThreatAssessmentsDialog, H */
+/* globals bugreport, createUUID, prependIfMissing, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, VulnerabilityIterator, refreshComponentThreatAssessmentsDialog, H, Project */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -46,6 +46,7 @@
  *	setmarkeroid(oid): change _markeroid and set status.
  *	setmarker: show/hide/set the status marker.
  *  repaint: refresh the UI on the SF tab and the vulnerabilities dialogue
+ *	updateLabelGroup(sid): repaint the labels on the indicated SF tab
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
@@ -493,6 +494,26 @@ console.log("Check Component.absorbe()");
 		}
 	},
 
+	updateLabelGroup(sid) {
+		let labelset = new Set();
+		for (const n of this.nodes) labelset.add(Node.get(n).color);
+		let labelgroup = $(`#sfaccordion${sid}_${this.id} div.sflabelgroup`);
+		labelgroup.empty();
+		if (labelset.size==1) {
+			let col = labelset.values().next().value;
+			let idx = Project.colors.indexOf(col);
+			let label = Project.get(this.project).labels[idx-1];
+			labelgroup.append(`<div class="smallblock B${col}"></div><span class="labelind">${label}</span>`);
+		} else if (labelset.size>1) {
+			for (const col of labelset) {
+				if (col=='none') continue;
+				let idx = Project.colors.indexOf(col);
+				let label = Project.get(this.project).labels[idx-1];
+				labelgroup.append(`<div class="smallblock B${col}" title="${label}"></div>`);
+			}
+		}
+	},
+	
 	_stringify: function() {
 		var data = {};
 		// When comparing projects (e.g. for debugging) it is useful if the order of

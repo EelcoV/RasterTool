@@ -29,7 +29,7 @@ const LS_version = 4;
 const LS = LS_prefix+':'+LS_version+':';
 
 const tab_height = 31;		// See CSS definition of <body>
-const toolbar_height = 94;	// See CSS definition of <body>
+//const toolbar_height = 94;	// See CSS definition of <body>
 
 #ifdef STANDALONE
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -346,7 +346,7 @@ function initAllAndSetup() {
 	p = Project.get(Project.cid);
 	p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
 	PaintAllClusters();
-	// AddAllAnalysis(); Is redone each time the Analysis tab is activated
+	repaintCurrentAnalysis();
 	SizeDOMElements();
 
 	// Set/perform all preferences with side effects
@@ -1108,14 +1108,18 @@ function initSettingsToolbar() {
 #endif
 }
 
-function toolbartabselected(evt,ui) {
+const TabTBProjects = 0;
+const TabTBHome = 1;
+const TabTBSettings = 2;
+
+function toolbartabselected(/*evt,ui*/) {
 	let p;
-	switch (ui.newPanel[0].id) {
-	case 'tb_projects':		// Projects toolbar
+	switch ($('#toolbars').tabs('option','active')) {
+	case TabTBProjects:
 		break;
-	case 'tb_home':		// Home toolbar
+	case TabTBHome:
 		break;
-	case 'tb_settings':		// Options toolbar
+	case TabTBSettings:
 		p = Project.get(Project.cid);
 		$('#projname').text(p.title);
 		$('#projdescr').text(p.description);
@@ -1229,7 +1233,7 @@ var updateFind = function() {
 		}
 		FindScrollPos = $('#field_found').scrollTop();
 		// Activate the Diagrams tab
-		$('#workspace').tabs('option','active',0);
+		$('#workspace').tabs('option','active',TabWorkDia);
 		// Activate the right service. Since this will remove dialogs, including the Find window, restore the Find window after activation.
 		if (svc_id != Service.cid) {
 			$('#tab_diagramstabtitle'+svc_id).trigger('click');
@@ -1752,7 +1756,7 @@ function switchToProject(pid,dorefresh) {
 #endif
 	p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
 	PaintAllClusters();
-	// AddAllAnalysis(); Is redone each time the Analysis tab is activated
+	repaintCurrentAnalysis();
 
 	var it = new ServiceIterator({project: pid, title: Preferences.service});
 	if (!it.isEmpty()) {
@@ -2739,10 +2743,6 @@ function checkUpgradeDone() {
 
 /* singleProjectExport(p): save all data into a local file.
  */
-var NodeExported = [];
-var ComponentExported = [];
-//var ClusterExported = [];
-
 function singleProjectExport(p) {
 	var proj = Project.get(p);
 	var s = exportProject(p);
@@ -2793,6 +2793,11 @@ function exportAll() {
 	document.location.assign(url);
 }
 
+const TabWorkDia = 0;
+const TabWorkSF  = 1;
+const TabWorkCCF = 2;
+const TabWorkAna = 3;
+
 function forceSelectVerticalTab(n) {
 	$('#workspace').tabs('option','active',n);
 	vertTabSelected();
@@ -2804,28 +2809,26 @@ function forceSelectVerticalTab(n) {
 function vertTabSelected(/*event, ui*/) {
 	removetransientwindowsanddialogs();
 	$('#tb_home .toolbarsection').hide();
-	$('#toolbars').tabs('option','active',1);
+	$('#toolbars').tabs('option','active',TabTBHome);
 	switch ($('#workspace').tabs('option','active')) {
-	case 0:		// tab Services
+	case TabWorkDia:
 		$('#diaopts').show();
-		$('#toolbars').tabs('option','active',1);
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
 		$('#tab_diagramstabtitle'+Service.cid).trigger('click');
 		Preferences.settab(0);
 		break;
-	case 1:		// tab Single Failures
+	case TabWorkSF:
 		$('#sfopts').show();
 		$('#tab_singlefstabtitle'+Service.cid).trigger('click');
 		Preferences.settab(1);
 		break;
-	case 2:		// tab Common Cause Failures
+	case TabWorkCCF:
 		$('#ccfopts').show();
 		Preferences.settab(2);
 		break;
-	case 3:		// tab Analysis
-		AddAllAnalysis();
-		SetAnalysisToolbar();
+	case TabWorkAna:
+		repaintCurrentAnalysis();
 		Preferences.settab(3);
 		break;
 	default:
@@ -3926,6 +3929,9 @@ function initTabSingleFs() {
 
 }
 
+/* paintSingleFailures(s): paint the contents of a single SF tab
+ * s: the Service to be painted.
+ */
 function paintSingleFailures(s) {
 	var snippet, appendstring = "";
 	$('#singlefs_workspace'+s.id).empty();
@@ -4172,6 +4178,18 @@ function initTabCCFs() {
 	// Event handlers for menu items
 	$('#mi_ccfc').on('click', createClusterHandler);
 	$('#mi_ccfmsm').on('click', '.ui-menu-item', moveToClusterHandler);
+}
+
+/* repaintCCFDetailsIfVisible(nc): repaint cluster details, if currently visible on-screen.
+ * nc: optional; id of NodeCluster that must be visible; default is to repaint any visible NodeCluster.
+ */
+function repaintCCFDetailsIfVisible(nc) {		// eslint-disable-line no-unused-vars
+	if (CurrentCluster==null) return;
+//	if ($('#workspace').tabs('option','active') != TabWorkCCF) return;
+	if (nc!=null && nc!=CurrentCluster) return;
+	let keepscrollpos = $('#ccfs_details').scrollTop();
+	repaintClusterDetails(NodeCluster.get(CurrentCluster));
+	$('#ccfs_details').scrollTop(keepscrollpos);
 }
 
 // To be able to extend the selection.
@@ -5117,12 +5135,17 @@ function allowDrop(elem) {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+const TabAnaVulnOverview = 0;
+const TabAnaAssOverview = 1;
+const TabAnaNodeCounts = 2;
+const TabAnaVulReports = 3;
+const TabAnaLonglist = 4;
 
 function initTabAnalysis() {
 	$("a[href^='#at1']").text(_("Vulnerability overview"));
 	$("a[href^='#at2']").text(_("Assessments overview"));
 	$("a[href^='#at3']").text(_("Node counts"));
-	$("a[href^='#at4']").text(_("Checklist reports"));
+	$("a[href^='#at4']").text(_("Vulnerability reports"));
 	$("a[href^='#at5']").text(_("Risk longlist"));
 
 	$('#tab_analysis').tabs({
@@ -5132,7 +5155,7 @@ function initTabAnalysis() {
 			"ui-tabs-tab": "ui-corner-bottom",
 			"ui-tabs-panel": "ui-corner-tl"
 		},
-		activate: SetAnalysisToolbar
+		activate: repaintCurrentAnalysis
 	});
 
 	$('#minV').selectmenu({
@@ -5144,30 +5167,35 @@ function initTabAnalysis() {
 	}).val(MinValue);
 }
 
-function SetAnalysisToolbar() {
+function repaintCurrentAnalysis() {
 	$('#tb_home .toolbarsection').hide();
 	switch ($('#tab_analysis').tabs('option','active')) {
-	case 0:		// tab Failures and Vulnerabilities
+	case TabAnaVulnOverview:
 		$('#anavulnopts').show();
+		paintVulnerabilityOverview();
 		break;
-	case 1:
-	case 2:
-	case 3:
+	case TabAnaAssOverview:
+		paintAssessmentOverview();
 		break;
-	case 4:		// tab Longlist
+	case TabAnaNodeCounts:
+		paintNodeTypeStats();
+		break;
+	case TabAnaVulReports:
+		paintChecklistReports();
+		break;
+	case TabAnaLonglist:
 		$('#anallopts').show();
+		paintLonglist();
 		break;
 	default:
 		bugreport('unknown tab encountered','vertTabSelected');
 	}
 }
 
-function AddAllAnalysis() {
-	paintVulnerabilityOverview();
-	paintAssessmentOverview();
-	paintNodeTypeStats();
-	paintChecklistReports();
-	paintLonglist();
+function repaintAnalysisIfVisible(anatab) {		// eslint-disable-line no-unused-vars
+	if ($('#workspace').tabs('option','active') != TabWorkAna) return;
+	if (anatab!=null && anatab!=$('#tab_analysis').tabs('option','active')) return;
+	repaintCurrentAnalysis();
 }
 
 var FailureThreatSortOpt = {node: 'thrt', threat: 'type'};
@@ -5315,9 +5343,15 @@ function paintSFTable() {
 			+ _H("Since all service diagrams are empty, there is nothing to see here yet. ")
 			+ _H("Add some nodes to the diagrams first.")
 		);
+		$('input[name=ana_nodesort]').checkboxradio('option','disabled',true);
+		$('input[name=ana_failsort]').checkboxradio('option','disabled',true);
+		$('#quickwinslink').button('option','disabled',true);
 		return;
 	}
-
+	$('input[name=ana_nodesort]').checkboxradio('option','disabled',false);
+	$('input[name=ana_failsort]').checkboxradio('option','disabled',false);
+	$('#quickwinslink').button('option','disabled',false);
+	
 	// Initialise to '-'
 	cit.forEach(cm => Nodesum[cm.id] = '-');
 
@@ -5796,7 +5830,6 @@ function paintAssessmentOverviewType(tabletype) {
 function paintNodeTypeStats() {
 	var tStats = {};
 	var tTot = 0;
-	var numservice = 0;
 	var sit = new ServiceIterator({project: Project.cid});
 	sit.sortByTitle();
 
@@ -5848,7 +5881,6 @@ function paintNodeTypeStats() {
 		</tbody></table></div>\n\
 		';
 		snippet = snippet.replace(/_LT_/g, _("Total") );
-		numservice++;
 	}
 	// Project total
 	snippet += '<div id="servicestatsTotal" class="servicestats">\n\

@@ -117,6 +117,7 @@
 		49E402BD1F99381700978B5C /* icon_512x512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_512x512.png; sourceTree = "<group>"; };
 		49E402BE1F99381700978B5C /* icon_512x512@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_512x512@2x.png"; sourceTree = "<group>"; };
 		49E402BF1F99381700978B5C /* icon_128x128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_128x128@2x.png"; sourceTree = "<group>"; };
+		49E78B47278457350030B0D7 /* styleguide.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = styleguide.md; sourceTree = "<group>"; };
 		49E9F769277BAF1E0010889C /* Shortcuts.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Shortcuts.html; sourceTree = "<group>"; };
 		49E9F76A277BAF1E0010889C /* Shortcuts-nl.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "Shortcuts-nl.html"; sourceTree = "<group>"; };
 		49E9F76B277C57EF0010889C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -359,6 +360,7 @@
 				4918F0BE1FBEBF13008A6208 /* build and Install.md */,
 				494B6F8818796E9D00400328 /* testcase.txt */,
 				49FD71BD2776562A00041524 /* object data structures.txt */,
+				49E78B47278457350030B0D7 /* styleguide.md */,
 			);
 			path = doc;
 			sourceTree = "<group>";

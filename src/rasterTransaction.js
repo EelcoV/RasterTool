@@ -2,8 +2,10 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, DEBUG, H, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, autoSaveFunction, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, setModified, randomrot, CurrentCluster, repaintClusterDetails
+/* globals _, paintSingleFailures, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts
 */
+
+const DebugTransactions = false;
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -57,32 +59,38 @@ var Transaction = function(knd,undo_data,do_data,descr,chain) {
 	}
 	p.TransactionCurrent.next = this;
 	this.prev = p.TransactionCurrent;
-/* Test!
- *
- * This block, and undo and redo below, contain a lot of debugging code. The transaction
- * is rolled back, to check that there are no unaccounted side-effects. When this new
- * structure is working, the code can be commented out, or removed.
- */
-checkForErrors();
-let S1 = exportProject(Project.cid);
-	this.perform();
-	transactionCompleted("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
+	
+	/* Test!
+	 *
+	 * This block, and undo and redo below, contain a lot of debugging code. The transaction
+	 * is rolled back, to check that there are no unaccounted side-effects. When this new
+	 * structure is working, the DebugTransactions can be set to false.
+	 */
+	let S1, S2, S3, S4;
+	if (DebugTransactions) {
+		checkForErrors();
+		S1 = exportProject(Project.cid);
+	}
 
-checkForErrors();
-let S2 = exportProject(Project.cid);
-this.rollback();
-checkForErrors();
-let S3 = exportProject(Project.cid);
-this.perform();
-checkForErrors();
-let S4 = exportProject(Project.cid);
-if (S1!=S3) {
-	logdiff(S1,S3,"in new: perform + undo != initial situation");
-}
-if (S2!=S4) {
-	logdiff(S2,S4,"in new: perform != perform + undo + redo");
-}
-/* ^^ end test */
+	this.perform();
+
+	if (DebugTransactions) {
+		transactionCompleted("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
+		checkForErrors();
+		S2 = exportProject(Project.cid);
+		this.rollback();
+		checkForErrors();
+		S3 = exportProject(Project.cid);
+		this.perform();
+		checkForErrors();
+		S4 = exportProject(Project.cid);
+		if (S1!=S3) {
+			logdiff(S1,S3,"in new: perform + undo != initial situation");
+		}
+		if (S2!=S4) {
+			logdiff(S2,S4,"in new: perform != perform + undo + redo");
+		}
+	}
 	
 	p.TransactionCurrent = this;
 	p.TransactionHead = this;
@@ -98,23 +106,29 @@ Transaction.undo = function() {
 	if (p.TransactionCurrent==p.TransactionBase)  return;
 
 	do {
-// Test!
-checkForErrors();
-let S1 = exportProject(Project.cid);
+		let S1, S2, S3, S4;
+		if (DebugTransactions) {
+			checkForErrors();
+			S1 = exportProject(Project.cid);
+		}
+
 		p.TransactionCurrent.rollback();
-checkForErrors();
-let S2 = exportProject(Project.cid);
-p.TransactionCurrent.perform();
-checkForErrors();
-let S3 = exportProject(Project.cid);
-p.TransactionCurrent.rollback();
-checkForErrors();
-let S4 = exportProject(Project.cid);
-if (S1!=S3) {
-	logdiff(S1,S3,"in undo: undo,redo != nil");
-} else if (S2!=S4) {
-	logdiff(S2,S4,"in undo: redo,undo != nil");
-}
+
+		if (DebugTransactions) {
+			checkForErrors();
+			S2 = exportProject(Project.cid);
+			p.TransactionCurrent.perform();
+			checkForErrors();
+			S3 = exportProject(Project.cid);
+			p.TransactionCurrent.rollback();
+			checkForErrors();
+			S4 = exportProject(Project.cid);
+			if (S1!=S3) {
+				logdiff(S1,S3,"in undo: undo,redo != nil");
+			} else if (S2!=S4) {
+				logdiff(S2,S4,"in undo: redo,undo != nil");
+			}
+		}
 		transactionCompleted("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
 		p.TransactionCurrent = p.TransactionCurrent.prev;
 	} while (p.TransactionCurrent.chain==true);
@@ -130,24 +144,31 @@ Transaction.redo = function() {
 	if (p.TransactionCurrent==p.TransactionHead)  return;
 
 	do {
-// Test!
-checkForErrors();
-let S1 = exportProject(Project.cid);
+		let S1, S2, S3, S4;
+		if (DebugTransactions) {
+			checkForErrors();
+			S1 = exportProject(Project.cid);
+		}
+		
 		p.TransactionCurrent = p.TransactionCurrent.next;
 		p.TransactionCurrent.perform();
-checkForErrors();
-let S2 = exportProject(Project.cid);
-p.TransactionCurrent.rollback();
-checkForErrors();
-let S3 = exportProject(Project.cid);
-p.TransactionCurrent.perform();
-checkForErrors();
-let S4 = exportProject(Project.cid);
-if (S1!=S3) {
-	logdiff(S1,S3,"in redo: redo,undo != nil");
-} else if (S2!=S4) {
-	logdiff(S2,S4,"in redo: undo,redo != nil");
-}
+		
+		if (DebugTransactions) {
+			checkForErrors();
+			S2 = exportProject(Project.cid);
+			p.TransactionCurrent.rollback();
+			checkForErrors();
+			S3 = exportProject(Project.cid);
+			p.TransactionCurrent.perform();
+			checkForErrors();
+			S4 = exportProject(Project.cid);
+			if (S1!=S3) {
+				logdiff(S1,S3,"in redo: redo,undo != nil");
+			} else if (S2!=S4) {
+				logdiff(S2,S4,"in redo: undo,redo != nil");
+			}
+		}
+		
 		transactionCompleted(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
 	} while(p.TransactionCurrent.chain==true);
 	p.updateUndoRedoUI();
@@ -172,6 +193,8 @@ Transaction.prototype = {
 				let cm = Component.get(d.id);
 				cm.setsingle(d.singular);
 			}
+			repaintCCFDetailsIfVisible();
+			repaintAnalysisIfVisible();
 			break;
 		}
 
@@ -180,10 +203,15 @@ Transaction.prototype = {
 			// data: array of objects; each object has these properties
 			//  id: id of the component of the class
 			//  title: title of the node class
+			let repaintServices = new Set();
 			for (const d of data) {
 				let cm = Component.get(d.id);
 				cm.setclasstitle(d.title);
+				for (const nid of cm.nodes) repaintServices.add(Node.get(nid).service);
 			}
+			for (const sid of repaintServices) paintSingleFailures(Service.get(sid));
+			repaintCCFDetailsIfVisible();
+			repaintAnalysisIfVisible();
 			break;
 		}
 
@@ -260,6 +288,7 @@ Transaction.prototype = {
 					bugreport('unknown action', 'Transaction.clusterStructure');
 				}
 			}
+			repaintAnalysisIfVisible(TabAnaVulnOverview);
 			break;
 		}
 		
@@ -280,6 +309,7 @@ Transaction.prototype = {
 				}
 				$('#litext'+nc.id).text(nc.title);
 			}
+			repaintAnalysisIfVisible(TabAnaVulnOverview);
 			break;
 		}
 
@@ -304,8 +334,19 @@ Transaction.prototype = {
 			//  labels: array of the labels of the project
 			for (const d of data) {
 				let p = Project.get(d.id);
-				p.labels = d.labels.slice();
+				let prevlabels = p.labels;
+				p.labels = d.labels;
 				p.store();
+				if (Project.cid==p.id) {
+					// Repaint occurences of changed labels in SF and CCF tabs. We do not repaint the entire tabs,
+					// but selectively modify the DOM.
+					Project.colors.forEach((col,i) => {
+						if (i==0) return;
+						if (prevlabels[i-1]==p.labels[i-1]) return;
+						$(`div.smallblock.B${col} + span.labelind`).text(p.labels[i-1]);
+						$(`div.smallblock.B${col}[title]`).attr('title',p.labels[i-1]);
+					});
+				}
 			}
 			break;
 		}
@@ -472,6 +513,7 @@ Transaction.prototype = {
 			data.clusters.forEach(d => rebuildCluster(d));
 			let it = new NodeClusterIterator({project: Project.cid, isroot: true});
 			it.forEach(cl => repaintCluster(cl.id));
+			repaintAnalysisIfVisible();
 			break;
 		}
 
@@ -520,7 +562,9 @@ Transaction.prototype = {
 			for (const d of data) {
 				let rn = Node.get(d.id);
 				rn.setlabel(d.label);
+				Component.get(rn.component).updateLabelGroup(rn.service);
 			}
+			repaintCCFDetailsIfVisible();
 			break;
 		}
 
@@ -541,6 +585,7 @@ Transaction.prototype = {
 				}
 				rn.settitle(rn.title,d.suffix);
 			}
+			repaintCCFDetailsIfVisible();
 			break;
 		}
 
@@ -654,6 +699,7 @@ Transaction.prototype = {
 					$('#tab_diagramstabtitle'+s.id).trigger('click');
 				}
 			}
+			repaintAnalysisIfVisible(TabAnaNodeCounts);
 			break;
 		}
 
@@ -667,6 +713,7 @@ Transaction.prototype = {
 				s.settitle(d.title);
 			}
 			repaintClusterDetails(NodeCluster.get(CurrentCluster));
+			repaintAnalysisIfVisible(TabAnaNodeCounts);
 			break;
 		}
 
@@ -769,6 +816,7 @@ Transaction.prototype = {
 					repaintCluster(nc.id);
 				}
 			}
+			repaintAnalysisIfVisible();
 			break;
 		}
 
@@ -808,6 +856,7 @@ Transaction.prototype = {
 					}
 				}
 			}
+			repaintAnalysisIfVisible(TabAnaNodeCounts);
 			break;
 		}
 
@@ -866,13 +915,14 @@ Transaction.prototype = {
 				}
 				refreshChecklistsDialog(d.type);
 			}
+			repaintAnalysisIfVisible(TabAnaNodeCounts);
 			break;
 		}
 
 		case 'vulnDetails': {
 			// Global edit of title and description of vulnerabilities and node templates
 			// data: array of objects; each object has these properties
-			//	vuln: ID of the Vulnerability to chage
+			//	vuln: ID of the Vulnerability to change
 			//	title: new title (may be null, indicating no change)
 			//	description: new description (may be null, indicating no change)
 			for (const d of data) {
@@ -896,6 +946,7 @@ Transaction.prototype = {
 					Component.get(a.component).repaint();
 				}
 			}
+			repaintAnalysisIfVisible(TabAnaNodeCounts);
 			break;
 		}
 
@@ -1020,11 +1071,11 @@ function rebuildCluster(c) {
 
 
 function transactionCompleted(str) {
-	if (DEBUG)  console.log(str);
+	if (DebugTransactions)  console.log(str);
 #ifdef SERVER
-	autoSaveFunction();
+	autoSaveFunction();			// eslint-disable-line no-undef
 #else
-	setModified();
+	setModified();				// eslint-disable-line no-undef
 #endif
 }
 
