@@ -1874,7 +1874,7 @@ function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
 	$('#modaldialog').dialog( 'option', 'title', String(title) );
 	$('#modaldialog').html( String(msg) );
 	$('#modaldialog').dialog('open');
-	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
+	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 }
 
 function newRasterConfirm(title,msg,buttok,buttcancel) {
@@ -1892,7 +1892,7 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 	$('#modaldialog').dialog( 'option', 'title', String(title) );
 	$('#modaldialog').html( String(msg) );
 	$('#modaldialog').dialog('open');
-	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
+	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 	return dfd.promise();
 }
 
@@ -4206,12 +4206,12 @@ var MenuCluster;
  */
 
 /* internalID(str)
- * If str ends in XXX_YYY, where XXX and YYY are UUIDs, then return XXX.
+ * If str ends in XXXabcdYYY, where XXX and YYY are UUIDs, then return XXX.
  * Else return null.
  */
 function internalID(str) {
 	str = str.replace(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/, '');
-	var m = str.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_$/);
+	var m = str.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/);
 	if (m) {
 		return m[1];
 	} else {

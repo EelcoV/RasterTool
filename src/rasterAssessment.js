@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, _, _H, AssessmentIterator, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id, toolbar_height
+bugreport, _, _H, AssessmentIterator, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id, internalID, repaintCluster
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -400,6 +400,7 @@ Assessment.prototype = {
 		}
 		var assmnt = this;
 		var c;
+		var prevtitle = null;
 
 		if (this.component==null && this.cluster==null) {
 			bugreport('neither .component nor .cluster is set','this.addtablerow');
@@ -410,6 +411,7 @@ Assessment.prototype = {
 		var nc_isroot = false;
 		if (this.cluster!=null) {
 			c = NodeCluster.get(this.cluster);
+			prevtitle = c.title;
 			nc_isroot = c.isroot();
 		}
 		
@@ -469,6 +471,14 @@ Assessment.prototype = {
 						}
 					}
 					return H(vln.title);
+				},
+				delegate: {
+					didCloseEditInPlace: function(aDOMNode) {
+						if (assmnt.vulnerability!=null) return;
+						let id = internalID(aDOMNode[0].id);
+						let nc = NodeCluster.get(id);
+						repaintCluster(nc.root());
+					}
 				}
 			});
 		}

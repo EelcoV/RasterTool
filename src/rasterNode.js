@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, _H, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog, ComponentIterator, prefsDir
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, _H, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog, ComponentIterator
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -773,7 +773,7 @@ Node.prototype = {
 		let idir = '../img';
 #ifdef STANDALONE
 		let p = Project.get(this.project);
-		if (p.iconset!='default') idir = prefsDir;
+		if (p.iconset!='default') idir = prefsDir;		// eslint-disable-line no-undef
 #endif
 		if (this.type=='tNOT') {
 			$('#diagrams_workspace'+this.service).append(`
