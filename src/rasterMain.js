@@ -3068,12 +3068,20 @@ function initTabDiagrams() {
 		let icn = $(evt.currentTarget).attr('foricon');
 		let rn = Node.get( $('#nodemenu').data('menunode') );
 		$('#nodemenu').hide();
-//		// Find the index based on the icon name
-//		let p = Project.get(rn.project);
-//		let ni = null;
-//		p.icondata.icons.forEach((ic,i) => {if (ic.image==icn) ni=i;});
-//		if (ni==null) bugreport('icon not found','mi_ci click handler');
-		new Transaction('nodeIconChange',[{id: rn.id, icon: rn.icon}],[{id: rn.id, icon: icn}], _("Change icon for %%",rn.title));
+		if (rn.component==null) {
+			new Transaction('nodeIconChange',[{id: rn.id, icon: rn.icon}],[{id: rn.id, icon: icn}], _("Change icon for %%",rn.title));
+		} else {
+			// Change all nodes for this component
+			let undo_data = [];
+			let do_data = [];
+			let cm = Component.get(rn.component);
+			cm.nodes.forEach(nid => {
+				let nd = Node.get(nid);
+				undo_data.push({id: nd.id, icon: nd.icon});
+				do_data.push({id: nd.id, icon: icn});
+			});
+			new Transaction('nodeIconChange',undo_data,do_data, _("Change icons for %%",rn.title));
+		}
 	});
 
 	function ctfunction(t) {

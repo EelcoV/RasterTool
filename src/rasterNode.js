@@ -1193,8 +1193,7 @@ Node.prototype = {
 			// Populate menu
 			let idir = '../img';
 #ifdef STANDALONE
-			let p = Project.get(this.project);
-			if (p.iconset!='default') idir = prefsDir;
+			if (p.iconset!='default') idir = prefsDir;		// eslint-disable-line no-undef
 #endif
 			$('#mi_cism').empty();
 			icns.forEach(ic => {

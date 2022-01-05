@@ -400,7 +400,6 @@ Assessment.prototype = {
 		}
 		var assmnt = this;
 		var c;
-		var prevtitle = null;
 
 		if (this.component==null && this.cluster==null) {
 			bugreport('neither .component nor .cluster is set','this.addtablerow');
@@ -411,7 +410,6 @@ Assessment.prototype = {
 		var nc_isroot = false;
 		if (this.cluster!=null) {
 			c = NodeCluster.get(this.cluster);
-			prevtitle = c.title;
 			nc_isroot = c.isroot();
 		}
 		

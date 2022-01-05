@@ -845,7 +845,7 @@ Project.prototype = {
 	prepTemplatesAndMasks: function() {
 		let idir = '../img';
 #ifdef STANDALONE
-		if (this.iconset!='default') idir = prefsDir;
+		if (this.iconset!='default') idir = prefsDir;		// eslint-disable-line no-undef
 #endif
 //		// Mask images. Some images icons share their mask, so first determine the unique collection of masks
 //		let ma = [];
