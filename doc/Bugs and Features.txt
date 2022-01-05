@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+No menu item to edit labels on Electron version.
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
 NL translations must be updated.
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.

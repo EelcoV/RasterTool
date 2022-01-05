@@ -888,36 +888,34 @@ Node.prototype = {
 			start: function(event/*,ui*/) {
 				// Remember the original positions in the (scratchpad) undo_data property of the node
 				let rn = Node.get( nid2id(event.el.id) );
+				rn.undo_data = [];
 				if (event.e.shiftKey) {
-					rn.undo_data = [];
 					var ni = new NodeIterator({service: rn.service});
 					ni.forEach(n => rn.undo_data.push({id: n.id, x: n.position.x, y: n.position.y}));
 				} else {
-					rn.undo_data = [{id: rn.id, x: rn.position.x, y: rn.position.y}];
+					rn.undo_data.push({id: rn.id, x: rn.position.x, y: rn.position.y});
 				}
 			},
 			stop: function(event) {
 				let rn = Node.get( nid2id(event.el.id) );
-				let do_data;
+				let do_data = [];
 				if (event.e.shiftKey) {
-					do_data = [];
 					var ni = new NodeIterator({service: rn.service});
 					ni.forEach(n => do_data.push({id: n.id, x: n.position.x, y: n.position.y}));
 				} else {
-					do_data = [{id: rn.id, x: rn.position.x, y: rn.position.y}];
+					do_data.push({id: rn.id, x: rn.position.x, y: rn.position.y});
 				}
 				// A filter on insignificant position changes, to prevent 'pollution' of the undo stack
 				// Since all nodes in the (un)do_data move by the same delta, we only need to inspect the first.
-				if (Math.abs(do_data[0].x-rn.undo_data[0].x) > 10
-				 || Math.abs(do_data[0].y-rn.undo_data[0].y) > 10
-				) {
-					// Restore previous geometry, necessary for testing only
-					for (const d of rn.undo_data) {
-						let n = Node.get(d.id);
-						n.position.x = d.x;
-						n.position.y = d.y;
-						n.store();
-					}
+				let significant = (Math.abs(do_data[0].x-rn.undo_data[0].x) > 10 || Math.abs(do_data[0].y-rn.undo_data[0].y) > 10);
+				// Restore previous geometry, necessary for testing code in Transaction with DebugTransaction==true
+				for (const d of rn.undo_data) {
+					let n = Node.get(d.id);
+					n.position.x = d.x;
+					n.position.y = d.y;
+					n.store();
+				}
+				if (significant) {
 					new Transaction('nodeGeometry', rn.undo_data, do_data, _("Move node"));
 				}
 				delete rn.undo_data;
