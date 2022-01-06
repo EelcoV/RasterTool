@@ -18,7 +18,7 @@ if [ ! -d $BUILDDIR ]; then
 	mkdir -p $BUILDDIR/doc
 fi
 
-./script/checktranslation.sh  > $BUILDDIR/../translation-errors.txt
+./script/checktranslation.sh
 
 # Fixed sources
 cp -R -p README.md $BUILDDIR

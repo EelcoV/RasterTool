@@ -1577,9 +1577,9 @@ function ShowDetails() {
 function log10(x) { return Math.LOG10E * Math.log(x); }
 
 
-/* In the code, use _("blue sky") instead of "blue sky"
+/* In the code, use ⎽("blue sky") instead of "blue sky"
  * Use
- *		_("I have %% potatoes!", num)
+ *		⎽("I have %% potatoes!", num)
  * to get (in EN)
  *		"I have 15 potatoes!"
  * and (in NL)

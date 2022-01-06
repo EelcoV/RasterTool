@@ -1,22 +1,18 @@
 #!/bin/sh
 
-BUILDDIR=build/server
+CheckLanguage()
+{
+	CHECKLANG_U=$1
+	CHECKLANG_L=$2
 
-if [ ! -d $BUILDDIR ]; then
-	mkdir -p $BUILDDIR
-fi
+	perl -ne 'print "$1\n" while (/_\("([^"]*)"/g)' src/raster*.js | sort | uniq > build/server-translations-needed.txt
+	perl script/create-translations.pl build/server-translations-needed.txt src/translation-$CHECKLANG_L.js > build/server-suggestions.js
 
-CHECKLANG_U="NL"
-CHECKLANG_L="nl"
+	perl -ne 'print "$1\n" while (/_\("([^"]*)"/g)' standalone/main.js | sort | uniq > build/standalone-translations-needed.txt
+	perl script/create-translations.pl build/standalone-translations-needed.txt src/standalone/e-translation-$CHECKLANG_U.js > build/standalone-suggestions.js
 
-SRCFILES="src/raster*.js standalone/main.js"
-TRANSFILES="src/translation-$CHECKLANG_L.js src/standalone/e-translation-$CHECKLANG_U.js"
+	rm build/server-translations-needed.txt build/standalone-translations-needed.txt
+}
 
-perl -ne 'print "_t[\"$1\"]\n" while (/_\("([^"]*)"/g)' $SRCFILES | sort | uniq > $BUILDDIR/translations-used.txt
 
-# See  https://stackoverflow.com/questions/1250079/how-to-escape-single-quotes-within-single-quoted-strings
-perl -ne 'print "_t[\"$1\"]\n" if (/^_t\["([^"]*)"\]/);print "_t[\"$1\"]\n" if (/^_t\['"'"'([^'"'"']*)'"'"'\]/)' $TRANSFILES | sort | uniq > $BUILDDIR/translations-provided.txt
-
-echo Checking translations...
-diff $BUILDDIR/translations-used.txt $BUILDDIR/translations-provided.txt
-rm $BUILDDIR/translations-used.txt $BUILDDIR/translations-provided.txt
+CheckLanguage "NL" "nl"

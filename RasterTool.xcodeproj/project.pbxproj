@@ -119,6 +119,7 @@
 		49E402BF1F99381700978B5C /* icon_128x128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_128x128@2x.png"; sourceTree = "<group>"; };
 		49E78B47278457350030B0D7 /* styleguide.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = styleguide.md; sourceTree = "<group>"; };
 		49E78B48278510130030B0D7 /* editlabels.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = editlabels.png; sourceTree = "<group>"; };
+		49E78B492786E4F80030B0D7 /* create-translations.pl */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; path = "create-translations.pl"; sourceTree = "<group>"; };
 		49E9F769277BAF1E0010889C /* Shortcuts.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Shortcuts.html; sourceTree = "<group>"; };
 		49E9F76A277BAF1E0010889C /* Shortcuts-nl.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "Shortcuts-nl.html"; sourceTree = "<group>"; };
 		49E9F76B277C57EF0010889C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -329,6 +330,7 @@
 				4999EB4B1F8FEAAB009BBF18 /* build-server.sh */,
 				4999EB651F9007CE009BBF18 /* build-electron.sh */,
 				49ADB676276BE41000A99B47 /* checktranslation.sh */,
+				49E78B492786E4F80030B0D7 /* create-translations.pl */,
 				49ADB679276D30E700A99B47 /* fix-the-disk-image.applescript */,
 				4915A6311FA049DD00B4B205 /* Raster.EN.nsis */,
 				4915A6331FA113D900B4B205 /* Raster.NL.nsis */,
