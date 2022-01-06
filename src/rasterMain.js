@@ -1090,7 +1090,7 @@ function initSettingsToolbar() {
 	if (!Preferences.creator) Preferences.creator = _("Anonymous");
 	$('#creatorlabel>div:first-child').text(_("Your name"));
 	$('#creatorf').prop('placeholder',Preferences.creator);
-	$('#creatorf').attr('title',_("The author's name projects that you share."));
+	$('#creatorf').attr('title',_("The author's name on projects that you share."));
 	$('#creatorf').on('click', function() {
 		$(this).val(Preferences.creator);
 	});
@@ -1593,6 +1593,12 @@ function log10(x) { return Math.LOG10E * Math.log(x); }
  *
  * If no translation is provided, the default is to show the unlocalised English version.
  *
+ * Note: any label |...| at the start will be deleted. This is necessary for rare cases where
+ * the same English string used in different contexts requires a different translation.
+ * For example, "wired link" is normally translated as "kabelverbinding", but can be translated as "kabel"
+ * when space is limited. Use "wired link" -> "kabelverbinding", and "|short|wired link" -> "kabel"
+ * The label 'short' indicates the type of translation requested.
+ *
  * Not that we trust the translation to be safe HTML. Still, we use H() on the translations as a good practice.
  */
 function _(s) {
@@ -1607,7 +1613,7 @@ function _(s) {
 			console.log("_t[\"" + s + "\"] = \"" + s + "\";");
 		}
 #endif
-		str=s;
+		str=s.replace(/^\|[^|]+\|/,'');	// strip leading |...|
 	} else {
 		str=_t[s];
 	}
@@ -5220,9 +5226,9 @@ function paintVulnerabilityOverview() {
 
 	$('#at1').empty();
 	var snippet = '\
-		<h1 class="printonly">_LTT_</h1>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
 		<h2 class="printonly projectname">_PN_</h1>\
-		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
@@ -5606,9 +5612,9 @@ function paintAssessmentOverview() {
 	var impact_snippet;
 	var total_snippet;
 	var snippet = '\
-		<h1 class="printonly">_LTT_</h1>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
 		<h2 class="printonly projectname">_PN_</h2>\
-		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
 	snippet = snippet.replace(/_LD_/g, _H("Assessments overview") );
@@ -5850,9 +5856,9 @@ function paintNodeTypeStats() {
 	$('#at3').empty();
 
 	var snippet = '\
-		<h1 class="printonly">_LTT_</h1>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
 		<h2 class="printonly projectname">_PN_</h2>\
-		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
 	snippet = snippet.replace(/_LD_/g, _("Node counts") );
@@ -5924,9 +5930,9 @@ function paintChecklistReports() {
 
 
 	var snippet = '\
-		<h1 class="printonly">_LTT_</h1>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
 		<h2 class="printonly projectname">_PN_</h2>\
-		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
 	snippet = snippet.replace(/_LD_/g, _H("Checklist reports") );
@@ -6149,9 +6155,9 @@ function paintLonglist() {
 	$('#at5').empty();
 
 	var snippet = '\
-		<h1 class="printonly">_LTT_</h1>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
 		<h2 class="printonly projectname">_PN_</h2>\
-		<h2 class="printonly">_LD_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
 	snippet = snippet.replace(/_LD_/g, _H("Risk longlist") );

@@ -1366,6 +1366,8 @@ var Rules = {
 	 * Can also be used as enumerator:   for (var t in Rules.nodetypes) { ... }
 	 */
 	nodetypes: {'tWLS': _("wireless link"),'tWRD': _("wired link"), 'tEQT': _("equipment"),'tACT': _("actor"), 'tUNK': _("unknown link"), 'tNOT': _("note")},
+	// short translations, if available
+	shortnodetypes: {'tWLS': _("|short|wireless link"),'tWRD': _("|short|wired link"), 'tEQT': _("|short|equipment"),'tACT': _("|short|actor"), 'tUNK': _("|short|unknown link"), 'tNOT': _("|short|note")},
 	/* per nodetype, minimum number of that type to appear in a diagram.
 	 * There is no maximum.
 	 */

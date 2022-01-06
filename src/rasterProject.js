@@ -865,7 +865,7 @@ Project.prototype = {
 				if (icn.type!=t)  continue;
 				$('#templates').append(`
 					<div class="template">
-						<div class="ui-widget templatelabel">${Rules.nodetypes[icn.type]}</div>
+						<div class="ui-widget templatelabel">${Rules.shortnodetypes[icn.type]}</div>
 						<div id="${icn.type}" class="templatebg">
 							<img class="templateicon" src="${idir}/iconset/${this.iconset}/${icn.template}">
 						</div>

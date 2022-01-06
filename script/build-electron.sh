@@ -285,7 +285,7 @@ CreateAll()
 }
 
 CreateAll "EN"
-#CreateAll "NL"
+CreateAll "NL"
 
 if [ ! -x "$WINE" ]; then
 	# If Parallels Desktop is running, then the following may trigger it to run the winbuild.bat batch file.

@@ -14,6 +14,7 @@ body {
 	margin: 0;
 	-webkit-print-color-adjust: exact;
 	background: white !important;
+	display: block; /* Do away with grid layout */
 }
 
 .printonly {
@@ -59,21 +60,47 @@ body {
 	height: auto !important;
 }
 
-.sfaccordion { page-break-inside: avoid; }
-/*.ccfaccordion { page-break-inside: avoid; }*/
-.ccfaccordion { page-break-after: always; }
-.tlist .tlist { page-break-inside: avoid; }
-.sfaccordion h3 { page-break-after: avoid; }
-.ccfaccordion h3 { page-break-after: avoid; }
-.threat { page-break-after: avoid; }
+#tab_ccfs {
+	display: block;
+}
+.sfaccordion {
+	break-inside: avoid;
+	width: auto !important;
+}
+.ccfaccordion { break-inside: avoid; }
+.ccfaccordionbody { break-inside: avoid; }
+.tlist .tlist { break-inside: avoid; }
+.sfaccordion h3 { break-after: avoid; }
+.ccfaccordion h3 { break-after: avoid; }
+.threat { break-after: avoid; }
 
 .ui-accordion-content {
 	margin-bottom: 2px !important;
 }
 
-#ana_ccftable { page-break-inside: avoid; }
-#ana_nodethreattable { page-break-inside: avoid; }
-.SFvulnstable { page-break-inside: avoid; }
+#tab_analysis h1 {
+	break-before: avoid;
+	break-after: avoid;
+}
+#tab_analysis h2 {
+	break-before: avoid;
+	break-after: avoid;
+}
+#tab_analysis h3 {
+	break-before: avoid;
+	break-after: avoid;
+}
+#tab_analysis tr {
+	break-inside: avoid;
+	break-after: auto;
+	break-before: auto;
+}
+.ana_nodeccfblock {
+	display: block;
+	break-after: page;
+}
+
+.SFvulnstable { break-inside: avoid; }
 #ccfs_details { display: none !important; }
 .ccfhighlight .ui-accordion-header { background: transparent !important; }
 
@@ -83,8 +110,22 @@ body {
 	color: grey;
 }
 
+#freq_acc, #impact_acc, #total_acc {
+	display: block !important;
+	margin-bottom: 2em;
+}
+
+#at3 {
+	width: 100vw !important;
+}
+
+.checklistreport {
+	display: block;
+	break-after: page;
+}
+
 .ui-tabs-nav {
-	visibility: hidden;
+	display: none;
 }
 
 .ui-tabs {
