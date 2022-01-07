@@ -27,7 +27,6 @@ _t["All files"] = "Alle bestanden";
 _t["An error occurred while printing"] = "Er was een probleem bij het afdrukken";
 _t["An update of this tool is available."] = "Er is een bijgewerkte versie van deze applicatie beschikbaar.";
 _t["Cancel"] = "Annuleer";
-_t["Cancel to save changes."] = "Annuleer om wijzigingen op te slaan.";
 _t["Cannot read the file"] = "Kan het bestand niet inlezen";
 _t["Close"] = "Sluiten";
 _t["Copy"] = "Kopiëren";

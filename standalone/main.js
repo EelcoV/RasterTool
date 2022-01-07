@@ -170,8 +170,7 @@ function checkSaveModifiedDocument(win) {
 		cancelID: 0,
 		defaultId: 2,
 		title: _("Discard all changes?"),
-		message: _("There are unsaved changes. If you continue those will be lost."),
-		detail: _("Cancel to save changes.")
+		message: _("There are unsaved changes. If you continue those will be lost.")
 	});
 	if (buttonval==2) {
 		win.webContents.send('document-finalsave');

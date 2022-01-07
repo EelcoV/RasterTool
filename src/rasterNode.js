@@ -634,6 +634,7 @@ Node.prototype = {
 				}
 			]]
 		});
+		$('.connbutton:not([title])').attr('title',_("Disconnect nodes"));
 		// attach_center is also used to repaint connectors (e.g. on page load), so it is
 		// not necessarily a bug if the nodes are already connected.
 		if (this.connect.indexOf(dst.id)==-1) {

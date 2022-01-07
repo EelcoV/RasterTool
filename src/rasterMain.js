@@ -152,7 +152,13 @@ function initAllAndSetup() {
 	$.ajaxSetup({
 		timeout: 10000	// Cancel each AJAX request after 10 seconds
 	});
-
+#ifdef SERVER
+	if (!testLocalStorage()) {
+		// The splash screen is still visible, and will obscure any interaction.
+		$('#splashstatus').html( _("Error: no local storage available.<br>Adjust cookie or privacy settings?") );
+		return;
+	}
+#endif
 	// Load preferences
 	Preferences = new PreferencesObject();
 	var remembertab = Preferences.tab;
@@ -283,15 +289,6 @@ function initAllAndSetup() {
 
 	var p;
 #ifdef SERVER
-	if (!testLocalStorage()) {
-		// The splash screen is still visible, and will obscure any interaction.
-		$('#splashstatus').text( _("Error: no local storage available.<br>Adjust cookie or privacy settings?") );
-		rasterAlert(_("Cannot continue"),
-			_H("HTML5 local storage is not supported by this browser or configuration. ")
-			+ _H("This app will not work properly. ")
-			+ "<p>" + _H("Try adjusting your cookie or privacy settings."));
-	}
-
 	/* Loading data from localStorage. Tweaked for perfomance.
 	 */
 	var todelete = [];
@@ -5751,7 +5748,6 @@ function paintAssessmentOverviewType(tabletype) {
 	</tr>\n\
 	';
 
-	snippet = snippet.replace(/_LJ_/g, _("Jump to:"));
 	snippet = snippet.replace(/_LF_/g, _("Frequencies"));
 	snippet = snippet.replace(/_LI_/g, _("Impacts"));
 	snippet = snippet.replace(/_LO_/g, _("Overall levels"));

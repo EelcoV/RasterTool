@@ -15,6 +15,7 @@ $provided = shift;
 %trans = ();
 open(PROVIDED,$provided) || die "Cannot read $provided";
 while (<PROVIDED>) {
+	next if /TRANSLATION NEEDED/;
 	$trans{$1} = $2 if (/^_t\["([^"]*)"\]\s*=\s*"(.*)";/);
 }
 
