@@ -9,6 +9,10 @@ PREPROCESS="filepp -pb"
 ESLINT="/Users/eelco/node_modules/.bin/eslint"
 #ESLINT=""
 
+# Set $STYLELINT to blank to skip the verification
+STYLELINT="/Users/eelco/node_modules/.bin/stylelint"
+#STYLELINT=""
+
 FLAGS=-DSERVER
 BUILDDIR=build/server
 
@@ -27,6 +31,14 @@ cp -R -p server/* $BUILDDIR
 cp -R -p common/* $BUILDDIR
 cp -R -p public_group $BUILDDIR
 chmod a+rwX $BUILDDIR/public_group/SharedProjects
+
+for srcfile in common/css/*.css
+do
+	if [ -n "$STYLELINT" ]; then
+		# Check the css files with stylelint
+		$STYLELINT --config script/stylelintrc --custom-formatter script/stylelint-xcode-format.js "$srcfile"
+	fi
+done
 
 for srcfile in src/*.js
 do

@@ -8,164 +8,168 @@ See LICENSE.md
 */
 
 @media print {
+	body {
+		overflow: auto;
+		margin: 0;
+		-webkit-print-color-adjust: exact;
+		background: white !important;
+		display: block; /* Do away with grid layout */
+	}
 
-body {
-	overflow: auto;
-	margin: 0;
-	-webkit-print-color-adjust: exact;
-	background: white !important;
-	display: block; /* Do away with grid layout */
-}
+	.printonly {
+		display: block;
+		color: grey;
+		z-index: 0;
+	}
+	.printonlycell { display: table-cell; }
+	.donotprint { display: none !important; }
 
-.printonly {
-	display: block;
-	color: grey;
-	z-index: 0;
-}
-.printonlycell { display: table-cell; }
-.donotprint { display: none !important; }
+	.workbody {
+		height: auto !important;
+		width: auto !important;
+		border: 0 none !important;
+	}
 
-.workbody {
-	height: auto !important;
-	width: auto !important;
-	border: 0 none !important;
-}
+	.workspace {
+		position: static;
+		background: white !important;
+	}
 
-.workspace {
-	position: static;
-	background: white !important;
-}
+	.plainworkspace {
+		height: auto !important;
+		width: auto !important;
+		margin: 0 !important;
+	}
 
-.plainworkspace {
-	height: auto !important;
-	width: auto !important;
-	margin: 0 !important;
-}
+	.fancyworkspace {
+		position: relative;
+		background: transparent !important;
+	}
 
-.fancyworkspace {
-	position: relative;
-	background: transparent !important;
-}
+	.ui-state-default {
+		background: transparent !important;
+	}
 
-.ui-state-default {
-	background: transparent !important;
-}
+	.connbutton { display: none !important; }
+	.jtk-endpoint { visibility: hidden !important; }
 
-.connbutton { display: none !important; }
-.jtk-endpoint { visibility: hidden !important; }
+	.nodetNOT {
+		transform: none !important;
+		box-shadow: none !important;
+		height: auto !important;
+	}
 
-.nodetNOT {
-	transform: none !important;
-	box-shadow: none !important;
-	height: auto !important;
-}
+	h3 { background: transparent !important; }
 
-#tab_ccfs {
-	display: block;
-}
-.sfaccordion {
-	break-inside: avoid;
-	width: auto !important;
-}
-.ccfaccordion { break-inside: avoid; }
-.ccfaccordionbody { break-inside: avoid; }
-.tlist .tlist { break-inside: avoid; }
-.sfaccordion h3 { break-after: avoid; }
-.ccfaccordion h3 { break-after: avoid; }
-.threat { break-after: avoid; }
+	#tab_ccfs {
+		display: block;
+	}
+	.sfaccordion {
+		break-inside: avoid;
+		width: auto !important;
+	}
+	.ccfaccordion { break-inside: avoid; }
+	.ccfaccordionbody { break-inside: avoid; }
+	.tlist .tlist { break-inside: avoid; }
+	.sfaccordion h3 { break-after: avoid; }
+	.ccfaccordion h3 { break-after: avoid; }
+	.threat { break-after: avoid; }
 
-.ui-accordion-content {
-	margin-bottom: 2px !important;
-}
+	.ui-accordion-content {
+		margin-bottom: 2px !important;
+	}
 
-#tab_analysis h1 {
-	break-before: avoid;
-	break-after: avoid;
-}
-#tab_analysis h2 {
-	break-before: avoid;
-	break-after: avoid;
-}
-#tab_analysis h3 {
-	break-before: avoid;
-	break-after: avoid;
-}
-#tab_analysis tr {
-	break-inside: avoid;
-	break-after: auto;
-	break-before: auto;
-}
-.ana_nodeccfblock {
-	display: block;
-	break-after: page;
-}
+	#tab_analysis h1 {
+		break-before: avoid;
+		break-after: avoid;
+	}
+	#tab_analysis h2 {
+		break-before: avoid;
+		break-after: avoid;
+	}
+	#tab_analysis tr {
+		break-inside: avoid;
+		break-after: auto;
+		break-before: auto;
+	}
+	.ana_nodeccfblock {
+		display: block;
+		break-after: page;
+	}
 
-.SFvulnstable { break-inside: avoid; }
-#ccfs_details { display: none !important; }
-.ccfhighlight .ui-accordion-header { background: transparent !important; }
+	.SFvulnstable { break-inside: avoid; }
+	#ccfs_details { display: none !important; }
+	.ccfhighlight .ui-accordion-header { background: transparent !important; }
 
-#tab_analysis h3 {
-	padding: 0 0 !important;
-	font-size: 16px;
-	color: grey;
-}
+	#tab_analysis h3 {
+		break-before: avoid;
+		break-after: avoid;
+		padding: 0 !important;
+		font-size: 16px;
+		color: grey;
+	}
 
-#freq_acc, #impact_acc, #total_acc {
-	display: block !important;
-	margin-bottom: 2em;
-}
+	#freq_acc,
+	#impact_acc,
+	#total_acc {
+		display: block !important;
+		margin-bottom: 2em;
+	}
 
-#at3 {
-	width: 100vw !important;
-}
+	#at3 {
+		width: 100vw !important;
+	}
 
-.checklistreport {
-	display: block;
-	break-after: page;
-}
+	.checklistreport {
+		display: block;
+		break-after: page;
+	}
 
-.ui-tabs-nav {
-	display: none;
-}
+	.ui-tabs-nav {
+		display: none;
+	}
 
-.ui-tabs {
-	height: auto !important;
-	width: auto !important;
-	border: 0 none !important;
-	padding: 0 !important;
-}
+	.ui-tabs {
+		height: auto !important;
+		width: auto !important;
+		border: 0 none !important;
+		padding: 0 !important;
+	}
 
-.ui-tabs-panel {
-	height: auto !important;
-	width: auto !important;
-	padding: 0 !important;
-}
+	.ui-tabs-panel {
+		height: auto !important;
+		width: auto !important;
+		padding: 0 !important;
+	}
 
-.ui-button {
-	display: none !important;
-}
+	.ui-button {
+		display: none !important;
+	}
 
-.nodeMagnitude { box-shadow: 0 0 !important; }
+	.nodeMagnitude { box-shadow: 0 0 !important; }
 
-div.ui-widget { background: transparent !important; }
-div.ui-widget-content { background: transparent !important; }
-div.th_name { background: transparent !important; }
-div.th_descr { background: transparent !important; }
-div.th_freq { background: transparent !important; }
-div.th_impact { background: transparent !important; }
-div.th_total { background: transparent !important; }
-div.th_remark { background: transparent !important; }
-h3 { background: transparent !important; }
-div.tACTheader { background: white !important; border: 0; }
+	div.ui-widget { background: transparent !important; }
+	div.ui-widget-content { background: transparent !important; }
+	div.th_name { background: transparent !important; }
+	div.th_descr { background: transparent !important; }
+	div.th_freq { background: transparent !important; }
+	div.th_impact { background: transparent !important; }
+	div.th_total { background: transparent !important; }
+	div.th_remark { background: transparent !important; }
 
-.servplusbutton { visibility: hidden; }
-#templates { display: none !important; }
-#selectrect { display: none !important; }
-.checklist { display: none !important; }
-.scroller_overview { display: none !important; }
-.nodeC { display: none !important; }
-.ui-resizable-handle { display: none !important; }
-.ui-widget-overlay { display: none !important; }
-.ui-dialog.ui-draggable { display: none !important; }
+	div.tACTheader {
+		background: white !important;
+		border: 0;
+	}
+
+	.servplusbutton { visibility: hidden; }
+	#templates { display: none !important; }
+	#selectrect { display: none !important; }
+	.checklist { display: none !important; }
+	.scroller_overview { display: none !important; }
+	.nodeC { display: none !important; }
+	.ui-resizable-handle { display: none !important; }
+	.ui-widget-overlay { display: none !important; }
+	.ui-dialog.ui-draggable { display: none !important; }
 
 }

@@ -57,8 +57,8 @@
 		494B6F8818796E9D00400328 /* testcase.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testcase.txt; sourceTree = "<group>"; };
 		494B6F8A18796E9D00400328 /* index.inc */ = {isa = PBXFileReference; explicitFileType = text.html.documentation; path = index.inc; sourceTree = "<group>"; };
 		494B6FA118796E9D00400328 /* sse_projmon.inc */ = {isa = PBXFileReference; explicitFileType = text.script.php; path = sse_projmon.inc; sourceTree = "<group>"; };
-		494B6FB518796E9D00400328 /* raster-print.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "raster-print.css"; sourceTree = "<group>"; };
-		494B6FB618796E9D00400328 /* raster.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = raster.css; sourceTree = "<group>"; };
+		494B6FB518796E9D00400328 /* raster-print.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "raster-print.css"; sourceTree = "<group>"; };
+		494B6FB618796E9D00400328 /* raster.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = raster.css; sourceTree = "<group>"; };
 		494B6FDB18796E9D00400328 /* htaccess */ = {isa = PBXFileReference; lastKnownFileType = text; path = htaccess; sourceTree = "<group>"; };
 		494B6FDC18796E9D00400328 /* index.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = index.php; sourceTree = "<group>"; };
 		494B6FDD18796E9D00400328 /* share.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = share.php; sourceTree = "<group>"; };
@@ -123,6 +123,9 @@
 		49E9F769277BAF1E0010889C /* Shortcuts.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Shortcuts.html; sourceTree = "<group>"; };
 		49E9F76A277BAF1E0010889C /* Shortcuts-nl.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "Shortcuts-nl.html"; sourceTree = "<group>"; };
 		49E9F76B277C57EF0010889C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		49EE093027888DD200A9735C /* installbg.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = installbg.odg; sourceTree = "<group>"; };
+		49EE093127888DD200A9735C /* stylelintrc */ = {isa = PBXFileReference; lastKnownFileType = text; path = stylelintrc; sourceTree = "<group>"; };
+		49EE0932278899BF00A9735C /* stylelint-xcode-format.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "stylelint-xcode-format.js"; sourceTree = "<group>"; };
 		49F29A2620420DEC002A2E1E /* hint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hint.png; sourceTree = "<group>"; };
 		49F827AA2351B37A00EAE982 /* eslintrc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = eslintrc; sourceTree = "<group>"; };
 		49F827AB2351CF7600EAE982 /* eslint-xcode-format.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "eslint-xcode-format.js"; sourceTree = "<group>"; };
@@ -338,9 +341,12 @@
 				4938942D239C0FA300C3E2A5 /* _lang.bat */,
 				49F827AB2351CF7600EAE982 /* eslint-xcode-format.js */,
 				49F827AA2351B37A00EAE982 /* eslintrc */,
+				49EE0932278899BF00A9735C /* stylelint-xcode-format.js */,
+				49EE093127888DD200A9735C /* stylelintrc */,
 				49E402C11F99383100978B5C /* electron.iconset */,
 				49E402A91F99378B00978B5C /* RasterIcon.odg */,
 				49ADB67C277066D400A99B47 /* icons.odg */,
+				49EE093027888DD200A9735C /* installbg.odg */,
 				4915A6301FA0482800B4B205 /* raster.ico */,
 				494AF84E1FA48AA100356A28 /* installraster.ico */,
 				49ADB677276CF02300A99B47 /* installbg_EN.png */,
