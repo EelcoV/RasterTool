@@ -4738,9 +4738,13 @@ function repaintClusterDetails(nc,force) {
 		start: function(/*event,ui*/) {
 			$('.li_selected').addClass('ui-draggable-dragging');
 			$(this).addClass('li_selected');
+			$('.tlistitem,.ui-accordion-header').addClass('hidepointer');
+			$('body').css('cursor','none');
 		},
 		stop: function(/*event,ui*/) {
 			$('.li_selected').removeClass('ui-draggable-dragging li_selected');
+			$('.tlistitem,.ui-accordion-header').removeClass('hidepointer');
+			$('body').css('cursor','');
 		}
 	});
 	$('.tlistitem,.tlistroot').droppable({

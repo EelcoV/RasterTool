@@ -1359,9 +1359,13 @@ for checklists and threat evaluations.
     cursor: ns-resize;
     background: var(--vlightbg);
 }
+.hidepointer {
+	cursor: none !important;
+}
 .li_selected {
     border: 1px solid #5080ff;
     background: #80c0ff;
+    z-index: 2;
 }
 .tlistroot {
     margin: 0 5px 5px 0px;
@@ -1374,6 +1378,9 @@ for checklists and threat evaluations.
 	position: sticky !important;
 	top: 0;  /* Is incremented for each indent level; see listFromCluster() */
 	z-index: 1;
+}
+.clusternode.ui-draggable-dragging {
+	position: relative !important;
 }
 
 #ccfs_body .ui-draggable-dragging {
