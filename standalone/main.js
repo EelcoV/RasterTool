@@ -723,7 +723,12 @@ MenuTemplate = [{
 		accelerator: 'CmdOrCtrl+F',
 		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('find-show'); }
 	}, {
+		label: _("Edit labels..."),
+		accelerator: 'CmdOrCtrl+L',
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('labeledit-show'); }
+	}, {
 		label: _("Project details..."),
+		accelerator: 'Shift+CmdOrCtrl+D',
 		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('props-show'); }
 	}, {
 		type: 'separator'

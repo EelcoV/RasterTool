@@ -98,6 +98,9 @@ ipc.on('options', function(event,option,val) {
 ipc.on('props-show', function() {
 	ShowDetails();
 });
+ipc.on('labeledit-show', function() {
+	showLabelEditForm();
+});
 ipc.on('help-show', function() {
 	$('#helppanel').dialog('open');
 });
