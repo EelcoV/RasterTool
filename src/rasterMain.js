@@ -3003,9 +3003,9 @@ function initTabDiagrams() {
 	$('.copybutton').val( _("Copy"));
 	$('.pastebutton').val( _("Paste"));
 
-	$('#mi_th span').text( _("Vulnerabilities") );
-	$('#mi_ci span').text( _("Change icon") );
-	$('#mi_ct span').text( _("Change type") );
+	$('#mi_th span').text( _("Vulnerabilities...") );
+	$('#mi_ci span').text( _("Icon") );
+	$('#mi_ct span').text( _("Type") );
 	$('#mi_cttWLS span').text( _("Wireless link") );
 	$('#mi_cttWRD span').text( _("Wired link") );
 	$('#mi_cttEQT span').text( _("Equipment") );
@@ -3018,14 +3018,14 @@ function initTabDiagrams() {
 	$('#mi_du span').text( _("Duplicate") );
 	$('#mi_de span').text( _("Delete") );
 	$('#mi_ccnone span').text( _("No label") );
-	$('#mi_ccedit span').text( _("Edit labels ...") );
+	$('#mi_ccedit span').text( _("Edit labels...") );
 //	$('#nodemenu li.lcT span').text(_("Node"));
 	$('#nodemenu').menu().hide();
 
 	$('#mi_sd span').text( _("Delete selection") );
 	$('#mi_sc span').text( _("Label") );
 	$('#mi_scnone span').text( _("No label") );
-	$('#mi_scedit span').text( _("Edit labels ...") );
+	$('#mi_scedit span').text( _("Edit labels...") );
 	$('#selectmenu li.lcT span').text(_("Selection"));
 	$('#selectmenu').menu().hide();
 	$('#selectrect').on('contextmenu', showSelectMenu);

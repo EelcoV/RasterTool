@@ -391,43 +391,44 @@ See LICENSE.md
 </div>
 
 <ul id="nodemenu">
-    <li class="lcT"><div><span>xyz</span></div></li>
-    <li id="mi_th"><div><span>xyz</span></div></li>
-	<li id="mi_ci"><div><span>xyz</span></div>
-	 <ul id="mi_cism"></ul>
-	</li>
-    <li id="mi_ct"><div><span>xyz</span></div>
-     <ul id="mi_ctsm">
-      <li id="mi_cttWLS"><div><span>xyz</span></div></li>
-      <li id="mi_cttWRD"><div><span>xyz</span></div></li>
-      <li id="mi_cttEQT"><div><span>xyz</span></div></li>
-      <li id="mi_cttACT"><div><span>xyz</span></div></li>
-      <li id="mi_cttUNK"><div><span>xyz</span></div></li>
-     </ul>
-	</li>
-    <li id="mi_cl"><div><span>xyz</span></div>
-     <ul id="mi_clsm">
-      <li id="mi_rc"><div><span>xyz</span></div></li>
-      <li id="mi_sx"><div><span>xyz</span></div></li>
-      <li id="mi_sm"><div><span>xyz</span></div></li>
-     </ul>
-	</li>
-    <li id="mi_du"><div><span>xyz</span></div></li>
-    <li id="mi_cc"><div><span>xyz</span></div>
-     <ul id="mi_ccsm">
-      <li id="mi_ccnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span>xyz</span></div></li>
-      <li id="mi_ccred"><div><div class="smallblock Bred"></div><span>xyz</span></div></li>
-      <li id="mi_ccorange"><div><div class="smallblock Borange"></div><span>xyz</span></div></li>
-      <li id="mi_ccyellow"><div><div class="smallblock Byellow"></div><span>xyz</span></div></li>
-      <li id="mi_ccgreen"><div><div class="smallblock Bgreen"></div><span>xyz</span></div></li>
-      <li id="mi_ccblue"><div><div class="smallblock Bblue"></div><span>xyz</span></div></li>
-      <li id="mi_ccpink"><div><div class="smallblock Bpink"></div><span>xyz</span></div></li>
-      <li id="mi_ccpurple"><div><div class="smallblock Bpurple"></div><span>xyz</span></div></li>
-      <li id="mi_ccgrey"><div><div class="smallblock Bgrey"></div><span>xyz</span></div></li>
-      <li id="mi_ccedit"><div><span>xyz</span></div></li>
-     </ul>
-	</li>
-    <li id="mi_de"><div><span>xyz</span><span class="ui-icon ui-icon-trash"></div></li>
+	<li class="lcT"><div><span>xyz</span></div></li>
+	<li id="mi_th"><div><span>xyz</span></div></li>
+	<li id="mi_cc"><div><span>xyz</span><span class="ui-icon ui-icon-tag"></div>
+		<ul id="mi_ccsm">
+			<li id="mi_ccnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span>xyz</span></div></li>
+			<li id="mi_ccred"><div><div class="smallblock Bred"></div><span>xyz</span></div></li>
+			<li id="mi_ccorange"><div><div class="smallblock Borange"></div><span>xyz</span></div></li>
+			<li id="mi_ccyellow"><div><div class="smallblock Byellow"></div><span>xyz</span></div></li>
+			<li id="mi_ccgreen"><div><div class="smallblock Bgreen"></div><span>xyz</span></div></li>
+			<li id="mi_ccblue"><div><div class="smallblock Bblue"></div><span>xyz</span></div></li>
+			<li id="mi_ccpink"><div><div class="smallblock Bpink"></div><span>xyz</span></div></li>
+			<li id="mi_ccpurple"><div><div class="smallblock Bpurple"></div><span>xyz</span></div></li>
+			<li id="mi_ccgrey"><div><div class="smallblock Bgrey"></div><span>xyz</span></div></li>
+			<li id="mi_ccedit"><div><span>xyz</span></div></li>
+		</ul>
+		</li>
+	<li id="mi_ci"><div><span>xyz</span><span class="ui-icon ui-icon-image"></div>
+		<ul id="mi_cism"></ul>
+		</li>
+	<li id="mi_cl"><div><span>xyz</span></div>
+		<ul id="mi_clsm">
+			<li id="mi_rc"><div><span>xyz</span></div></li>
+			<li id="mi_sx"><div><span>xyz</span></div></li>
+			<li id="mi_sm"><div><span>xyz</span></div></li>
+		</ul>
+		</li>
+	<li id="mi_ct"><div><span>xyz</span><span class="ui-icon ui-icon-transfer-e-w"></div>
+		<ul id="mi_ctsm">
+			<li id="mi_cttWLS"><div><span>xyz</span></div></li>
+			<li id="mi_cttWRD"><div><span>xyz</span></div></li>
+			<li id="mi_cttEQT"><div><span>xyz</span></div></li>
+			<li id="mi_cttACT"><div><span>xyz</span></div></li>
+			<li id="mi_cttUNK"><div><span>xyz</span></div></li>
+		</ul>
+		</li>
+	<li>-</li>
+	<li id="mi_du"><div><span>xyz</span><span class="ui-icon ui-icon-newwin"></div></li>
+	<li id="mi_de"><div><span>xyz</span><span class="ui-icon ui-icon-trash"></div></li>
 </ul>
 <ul id="selectmenu">
     <li class="lcT"><div><span>xyz</span></div></li>
