@@ -70,7 +70,7 @@ var Component = function(type, pid, id) {
 	this.nodes = [];
 	this.title = _("Component ") + Rules.nodetypes[this.type] + " " + this.id;
 	this.assmnt = [];
-	this.magnitude = '-';
+	this.magnitude = 'U';
 	this.single = false;
 	this._markeroid = null;
 	this.accordionopened = false;
@@ -420,15 +420,15 @@ console.log("Check Component.absorbe()");
 	calculatemagnitude: function() {
 		if (this.assmnt.length==0) {
 			// Must be the same as default for new nodes, which also have no thrass[].
-			this.magnitude='-';
-			return;
-		}
-		this.magnitude = Assessment.get(this.assmnt[0]).total;
-		for (const thid of this.assmnt) {
-			this.magnitude = Assessment.sum(
-				this.magnitude,
-				Assessment.get(thid).total
-			);
+			this.magnitude='U';
+		} else {
+			this.magnitude = Assessment.get(this.assmnt[0]).total;
+			for (const thid of this.assmnt) {
+				this.magnitude = Assessment.sum(
+					this.magnitude,
+					Assessment.get(thid).total
+				);
+			}
 		}
 		for (const nid of this.nodes) Node.get(nid).setmarker();
 	},

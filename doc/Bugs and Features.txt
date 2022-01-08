@@ -3,7 +3,6 @@ See LICENSE.md
 
 
 BUGS
-Weird z-index when dragging nodes on the CCF details; check functions now that titles are sticky.
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.
 Do away with the online/offline setting?
@@ -13,7 +12,6 @@ Fixed? Sometimes when moving a node localStorage is not up to date with the node
 The How to use help-panel is useless. Either improve or remove.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
-When removing the last vulnerability on a component, the overall vulnerability level should be set to Extremely Low.
 When printing CCF, the accordions are not always all expanded.
 Change details of a project on the server but not active: function not implemented.
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
@@ -28,6 +26,7 @@ Select multiple nodes using Ctrl/Cmd-click (and have multiple selectrects)
 Hide the URL mouseover popup in the bottom left corner of the window. They are in the way of bottom tabs.
 
 OTHER TODO
+Make use of the bind() function when useful (a number of functions use a local variable to store the 'this' value).
 Simplify the UI for menuitem 'Make single'. Renamiong to 'Make one component' is not clear either, as the thing is still presented as a class.
 Change cursor to hourglass during rollback/redo.
 Remove all uses of for..in, so that we can add an eslint rule preventing its use (to detect accidental typing for..in instead of for..of).
