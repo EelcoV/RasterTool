@@ -27,7 +27,7 @@ Not sure about modules yet. First check whether they impede debugging in the Dev
 
 * Local variables, local constants and function names start with a lowercase letter. Use camelCase, e.g. `myVariableName` or `doSomeActions`.
 * Global variables and global constants start with an uppercase letter, and also use camelCase, e.g. `ThisGlobalConstant`.
-* Do not use underscores in variable names.
+* Do not use underscores in variable names, except for class properties/methods that are supposed to be private. Marking private properties with an underscore has no special meaning, but is useful as a reminder nonetheless.
 
 ##  Formatting
 

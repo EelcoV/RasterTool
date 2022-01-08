@@ -11,14 +11,16 @@
  * Service: object representing one service.
  *
  * Class variables (those prefixed with underscore should not be accessed from outside)
- *	cid: integer ID of the currently active service
- *	_all[]: Map of all services, indexed on service ID
+ *	cid: UUID of the currently active (loaded) service; must be a service of Project with id==Project.cid
+ *	_all: Map of all services, indexed on service ID
+ *	_rectDragOrigin: ({top, left}) support variable when dragging a selection rectangle on the diagrams tab
+ *	_scrollerDragging: (bool) support variable when dragging the minimap
+ *	_nodesBeingDragged: (bool) support variable when dragging the selection rectangle on the diagrams tab
  *	get(i): returns the object with id 'i'.
- *	titleisused(p,str,e): checks whether there is a service in project p, other than
- *		service e, having title str.
+ *	titleisused(p,str,e): checks whether there is a service in project p, other than service e, having title str.
  * Instance properties:
  *	id: (string) UUID
- *	project: (object-id) project to which this service belongs
+ *	project: (UUID) project to which this service belongs
  *	title: (string) short name of the service (max 50 chars).
  *	_loaded: boolean, indicates whether all DOM elements have been created;
  *		necessary to avoid painting on non-existing DIVs.
@@ -27,75 +29,75 @@
  * Methods:
  *	destroy(): destructor for this object.
  *	settitle(t): change the title to 't' (50 chars max). The actual title may receive
- *		a numerical suffix to make it unique. This.project must be set first!
- *	autosettitle: choose a unique standard name. The project must be set first!
+ *		a numerical suffix to make it unique.
+ *	autosettitle: choose a unique standard name.
  *		Either settitle() or autosettitle() must be called.
  *	setproject(p): change the project to which this service belongs to the one with id p.
  *	unload(): remove all DOM elements for this service and its nodes.
+ *	load(): create and set all DOM elements for this service and its nodes.
  *  removetab(prefix): remove non-content DOM elements for diagrams or single failures
  *	insertab(prefix,idx): insert the non-content DOM elements for diagrams or single failures (the prefix) at position idx.
- *	load(): create and set all DOM elements for this service and its nodes.
  *  _addtabdiagrams(idx): insert the content DOM elements for this service's diagram, at position idx
  *  _addtabsinglefs(idx): insert the content DOM elements for this service's single failures, at position idx
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
  */
-var Service = function(pid, id) {
-	if (id!=null && Service._all.has(id)) {
-		bugreport("Service with id "+id+" already exists","Service.constructor");
+class Service {
+	constructor(pid, id = createUUID()) {
+		if (Service._all.has(id)) {
+			bugreport("Service with id "+id+" already exists","Service.constructor");
+		}
+		this.id = id;
+		this.project = pid;
+		this.title = "";
+		this._loaded=false;
+		this._jsPlumb = jsPlumb.getInstance({
+			PaintStyle: {
+				strokeWidth: 3,
+				stroke: '#666'
+			},
+			EndpointStyle: {
+				strokeWidth: 10,
+				fill: '#aaa'
+			},
+			EndpointHoverStyle: {
+				fill: '#666',
+				stroke: '#000'
+			},
+			DragOptions: { cursor: 'move' },
+			Endpoint: [ 'Dot', { radius: 6 } ]
+		});
+		this.sfsortorder = 'alph';
+		
+		this.store();
+		Service._all.set(this.id,this);
 	}
-	this.id = (id==null ? createUUID() : id);
-	this.project = pid;
-	this.title = "";
-	this._loaded=false;
-	this._jsPlumb = jsPlumb.getInstance({
-		PaintStyle: {
-			strokeWidth: 3,
-			stroke: '#666'
-		},
-		EndpointStyle: {
-			strokeWidth: 10,
-			fill: '#aaa'
-		},
-		EndpointHoverStyle: {
-			fill: '#666',
-			stroke: '#000'
-		},
-		DragOptions: { cursor: 'move' },
-		Endpoint: [ 'Dot', { radius: 6 } ]
-	});
-	this.sfsortorder = 'alph';
 	
-	this.store();
-	Service._all.set(this.id,this);
-};
-Service.get = function(id) { return Service._all.get(id); };
-Service.cid = 0;
-Service._all = new Map();
-Service.titleisused = function(projectid,str,except) {
-	for (const idserv of Service._all) {
-		// idserv = [id,Service object]
-		if (idserv[0]==except) continue;
-		if (idserv[1].project!=projectid)  continue;
-		if (isSameString(idserv[1].title,str))  return true;
+	static get(id) { return Service._all.get(id); }
+	
+	static titleisused(projectid,str,except) {
+		for (const idserv of Service._all) {
+			// idserv = [id,Service object]
+			if (idserv[0]==except) continue;
+			if (idserv[1].project!=projectid)  continue;
+			if (isSameString(idserv[1].title,str))  return true;
+		}
+		return false;
 	}
-	return false;
-};
-Service.autotitle = function(pid,str) {
-	if (!str)  str = _("New service");
-	let targettitle = str;
-	if (Service.titleisused(pid,targettitle,null)) {
-		var n=0;
-		do {
-			targettitle = str + " (" + (++n) + ")";
-		} while (Service.titleisused(pid,targettitle,null));
+	
+	static autotitle(pid,str = _("New service")) {
+		let targettitle = str;
+		if (Service.titleisused(pid,targettitle,null)) {
+			var n=0;
+			do {
+				targettitle = str + " (" + (++n) + ")";
+			} while (Service.titleisused(pid,targettitle,null));
+		}
+		return targettitle;
 	}
-	return targettitle;
-};
 
-Service.prototype = {
-	destroy: function() {
+	destroy() {
 		if (Project.cid==this.project) {
 			this.unload();
 		}
@@ -103,9 +105,9 @@ Service.prototype = {
 		it.forEach(rn => rn.destroy(false));
 		localStorage.removeItem(LS+'S:'+this.id);
 		Service._all.delete(this.id);
-	},
+	}
 	
-	settitle: function(newtitle) {
+	settitle(newtitle) {
 		newtitle = String(newtitle).trim().substr(0,50);
 		if (newtitle=='')  return;
 		var targettitle = newtitle;
@@ -121,18 +123,18 @@ Service.prototype = {
 		$('#tab_diagramstabtitle'+this.id).text(this.title);
 		$('#tab_singlefstabtitle'+this.id).text(this.title);
 		this.store();
-	},
+	}
 
-	autosettitle: function() {
-		this.settitle( Service.autotitle() );
-	},
+	autosettitle() {
+		this.settitle( Service.autotitle(this.project) );
+	}
 
-	setproject: function(p) {
+	setproject(p) {
 		this.project = p;
 		this.store();
-	},
+	}
 
-	unload: function() {
+	unload() {
 		// Save the selectrect, if it is attached to this diagram. And if it isn't, it will be reattached automatically.
 		$('#selectrect').hide().detach().appendTo('body');
 		$('#scroller_overview'+this.id).hide();
@@ -146,9 +148,9 @@ Service.prototype = {
 		this.removetab('tab_diagrams');
 		this.removetab('tab_singlefs');
 		this._loaded=false;
-	},
+	}
 
-	load: function() {
+	load() {
 		let p = Project.get(this.project);
 		let idx = p.services.indexOf(this.id);
 		let jsp = this._jsPlumb;
@@ -157,17 +159,14 @@ Service.prototype = {
 		this._addtabdiagrams();
 		this._addtabsinglefs();
 		
-//		$('.scroller_overview').hide();
-//		$('#scroller_overview'+this.id).show();
-		
 		var origpos;
 		$('#selectrect').draggable({
 			start: function(event,ui) {
 				origpos = ui.position;
-				NodesBeingDragged = Node.nodesinselection();
+				Service._nodesBeingDragged = Node.nodesinselection();
 				// Remember the original positions in the (scratchpad) undo_data data-property of #selectrect
 				let undo_data = [];
-				for (const nid of NodesBeingDragged) {
+				for (const nid of Service._nodesBeingDragged) {
 					let n = Node.get(nid);
 					undo_data.push({id: n.id, x: n.position.x, y: n.position.y});
 				}
@@ -178,15 +177,15 @@ Service.prototype = {
 				var dx = (ui.position.left-origpos.left);
 				var dy = (ui.position.top-origpos.top);
 				origpos = ui.position;
-				for (const nid of NodesBeingDragged) {
+				for (const nid of Service._nodesBeingDragged) {
 					var n = Node.get(nid);
 					n.setposition(n.position.x+dx,n.position.y+dy,false);
 				}
 			},
 			stop: function(/*event,ui*/) {
-				NodesBeingDragged = Node.nodesinselection();
+				Service._nodesBeingDragged = Node.nodesinselection();
 				let do_data = [];
-				for (const nid of NodesBeingDragged) {
+				for (const nid of Service._nodesBeingDragged) {
 					let n = Node.get(nid);
 					do_data.push({id: n.id, x: n.position.x, y: n.position.y});
 				}
@@ -233,9 +232,9 @@ Service.prototype = {
 		RefreshNodeReportDialog();
 		Service.cid = this.id;
 		this._loaded=true;
-	},
+	}
 	
-	removetab: function(tabprefix) {
+	removetab(tabprefix) {
 		// Remove the tab contents
 		$('#'+tabprefix+this.id).remove();
 		// Remove the bottom tab (the one that controls div#tabprefix+sid)
@@ -244,9 +243,9 @@ Service.prototype = {
 		if (tabprefix=='tab_diagrams') {
 			$('#scroller_overview'+this.id).remove();
 		}
-	},
+	}
 
-	inserttab: function(tabprefix,idx) {
+	inserttab(tabprefix,idx) {
 		let p = Project.get(this.project);
 		var snippet = '<li id="_PF_servicetab_I_">\
 			<a href="#_PF__I_">\
@@ -292,9 +291,9 @@ Service.prototype = {
 			scroll: false,
 			stop: bottomdabshandler('#bottomtabs'+tabprefix)
 		});
-	},
+	}
 	
-	_addtabdiagrams: function() {
+	_addtabdiagrams() {
 		var serviceid = this.id; // For use in event handler functions
 		
 		/* Add content to the new tab */
@@ -317,7 +316,6 @@ Service.prototype = {
 		snippet = snippet.replace(/_PJ_/g, this.project);
 		$('#tab_diagrams'+this.id).append(snippet);
 		$('#tab_diagrams').tabs('refresh');
-//		$('#tab_diagrams ul li').removeClass('ui-corner-top');
 
 		/* Note: Firefox warns about scroll-linked positioning effects in combination with asynchronous
 		 * scrolling. It may be better to implement this event handler asynchronously, although the
@@ -325,7 +323,7 @@ Service.prototype = {
 		 */
 		// Update the scroll_region when the workspace is scrolled.
 		$('#tab_diagrams'+this.id).on('scroll', function(/*event*/){
-			if (ScrollerDragging)  return;
+			if (Service._scrollerDragging)  return;
 			var wst = $('#tab_diagrams'+serviceid).scrollTop();
 			var wsl = $('#tab_diagrams'+serviceid).scrollLeft();
 			var fh = $('.fancyworkspace').height();
@@ -347,7 +345,8 @@ Service.prototype = {
 		$('#diagrams_workspace'+this.id).on('mousedown', function(evt) {
 			if (evt.button!=0)  return; // only do left mousebutton
 			if (evt.eventPhase==Event.BUBBLING_PHASE)  return; // Only direct events
-			RectDragOrigin = {left: evt.pageX, top: evt.pageY};
+			Service._rectDragOrigin.left = evt.pageX;
+			Service._rectDragOrigin.top = evt.pageY;
 			$('#selectrectC').css({visibility: 'hidden'});
 			$('#selectrect').show().offset({left: evt.pageX, top: evt.pageY}).width(0).height(0);
 			$('#diagrams_workspace'+serviceid).on('mousemove', function(evt) {
@@ -356,16 +355,16 @@ Service.prototype = {
 
 				// If any text was selected (accidentally, most likely), then deselect it.
 				window.getSelection().removeAllRanges();
-				var w = evt.pageX-RectDragOrigin.left;
-				var h = evt.pageY-RectDragOrigin.top;
+				var w = evt.pageX-Service._rectDragOrigin.left;
+				var h = evt.pageY-Service._rectDragOrigin.top;
 				if (w<0 || h<0) {
 					var o = $('#selectrect').offset();
 					if (w<0) {
-						o.left = RectDragOrigin.left + w;
+						o.left = Service._rectDragOrigin.left + w;
 						w = -w;
 					}
 					if (h<0) {
-						o.top = RectDragOrigin.top + h;
+						o.top = Service._rectDragOrigin.top + h;
 						h = -h;
 					}
 					$('#selectrect').offset({left: o.left, top: o.top}).width(w).height(h);
@@ -411,10 +410,10 @@ Service.prototype = {
 				$('#tab_diagrams'+serviceid).scrollLeft(dleft);
 			},
 			start: function() {
-				ScrollerDragging = true;
+				Service._scrollerDragging = true;
 			},
 			stop: function() {
-				ScrollerDragging = false;
+				Service._scrollerDragging = false;
 			}
 		});
 
@@ -422,9 +421,9 @@ Service.prototype = {
 			accept: '.templatebg',
 			drop: workspacedrophandler
 		});
-	},
+	}
 
-	_addtabsinglefs: function() {
+	_addtabsinglefs() {
 		/* Add content to the new tab */
 		var snippet = '\n\
 			<div id="tab_singlefs_I_" class="ui-tabs-panel ui-widget-content ui-corner-tl workspace"></div>\n\
@@ -449,25 +448,31 @@ Service.prototype = {
 			let id = $(this).parent().parent().attr('id');
 			$('#'+id).accordion('option','active',false);
 		});
-	},
+	}
 
-	_stringify: function() {
+	_stringify() {
 		var data = {};
 		data.l=this.title;
 		data.p=this.project;
 		return JSON.stringify(data);
-	},
+	}
 
-	exportstring: function() {
+	exportstring() {
 		var key = LS+'S:'+this.id;
 		return key + '\t' + this._stringify() + '\n';
-	},
+	}
 
-	store: function() {
+	store() {
 		var key = LS+'S:'+this.id;
 		localStorage[key] = this._stringify();
 	}
-};
+}
+
+Service.cid = 0;
+Service._all = new Map();
+Service._rectDragOrigin = {left:0, top:0};
+Service._scrollerDragging = false;
+Service._nodesBeingDragged = [];
 
 
 /* This function is called before a connection is made when dragging
@@ -489,11 +494,6 @@ function dropfunction(data) {
     src.try_attach_center(dst);
 	Service.get(src.service)._jsPlumb.deleteEndpoint(data.dropEndpoint);
 }
-
-var RectDragOrigin = {left:0, top:0};
-var ScrollerDragging = false;
-var NodesBeingDragged = [];
-
 
 function diagramTabEditStart(/*event*/) {
 	var s = Service.get(nid2id(this.hash));
@@ -535,14 +535,6 @@ function diagramTabEditStart(/*event*/) {
 		buttons: dbuttons,
 		open: function() {
 			$('#field_servicerename').focus().select();
-//			$('#form_servicerename').submit(function() {
-//				let name = $('#field_servicerename');
-//				new Transaction('serviceRename',
-//					[{id: s.id, title: s.title}],
-//					[{id: s.id, title: name.val()}]
-//				);
-//				$(this).dialog('close');
-//			});
 		},
 		close: function(/*event, ui*/) {
 			dialog.remove();
