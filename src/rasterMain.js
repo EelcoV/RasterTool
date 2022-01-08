@@ -4785,7 +4785,7 @@ function listFromCluster(nc,indent) {
 	} else {
 		str = `
 			<ul id="tlist${nc.id}" class="tlist">
-			 <li id="linode${nc.id}" style="top: ${4+17*indent}px" class="clusternode tlistitem ui-state-default ui-state-selected">
+			 <li id="linode${nc.id}" style="top: ${4+17*indent}px; z-index: ${100-indent}" class="clusternode tlistitem ui-state-default ui-state-selected">
 			   <span id="cltrgl${nc.id}" class="ui-icon ui-icon-triangle-1-${nc.accordionopened?'s':'e'} clustericon"></span>
 			   <span id="litext${nc.id}" class="litext">${H(nc.title)}</span>
 			   <span id="ccfamark${nc.id}"></span></a>

@@ -1,22 +1,28 @@
 #  Style guide
 
 ##  Use ES6 features
-Do not use features from later ECMAScript versions.
+ES6 is also known as ECMAScript 2015. Do not use features from later ECMAScript versions.
 
 Specifically, do use:
-* let and const (the `no-var` rule for `eslint` is not set for now, but will be set after a code review)
-* arrow functions
-* class definitions
+* let and const (the `no-var` rule for `eslint` is not set for now, but will be set after a code review). Use const instead of let whenever possible.
+* arrow functions.
+* class definitions.
+* default parameters in function calls.
+* new String and Array methods.
 
 Not sure about modules yet. First check whether they impede debugging in the Developer Tools of Firefox.
 
 *Do not use:*
-* ...
+* Array.includes (which is part of ECMAScript 2016).
+* async function (ECMAScript 2017).
+* creating new strings, arrays as objects (`new String('literal here)` etc).
+
 
 ##  Naming
 
 * Local variables, local constants and function names start with a lowercase letter. Use camelCase, e.g. `myVariableName` or `doSomeActions`.
 * Global variables and global constants start with an uppercase letter, and also use camelCase, e.g. `ThisGlobalConstant`.
+* Do not use underscores in variable names.
 
 ##  Formatting
 
@@ -25,8 +31,9 @@ Not sure about modules yet. First check whether they impede debugging in the Dev
 	When using functions only inside `#ifdef ... #endif`, then mark that line with `// eslint-disable-line no-undef`. Otherwise, enumerate functions in the `/* globals ... */` section at the top of the file.
 * Indent using tabs. Tab size is 4.
 * A single space before and after `=` in assignments.
-* Use single quotes for all strings, except for English/translated strings that will be visible to the user (e.g. any strings inside `_("...")`).
 * No space around comparison operators or other operators, except to make the structure of very long expressions clear.
+* No space before colons, and a single space after a colon.
+* Use single quotes for all strings, except for English/translated strings that will be visible to the user (e.g. any strings inside `_("...")`).
 * Opening brace on the same line as the statement that starts the block. Closing brace at the same indent as that statement.
 * Avoid use of falsy/thruthy conditions, as it leads to bugs. Do not use `if (!id) ...` but use `if (id==null) ...` instead. There is no `eslint` rule for this, unfortunately. We have seen many bugs where the variable was not an object reference but an integer with zero as a legitimate value. 
 * There is no need for braces inside case-blocks of switch-statements.
