@@ -1256,6 +1256,14 @@ Project.prototype = {
 				continue;
 			}
 			errors += nc.internalCheck();
+			if (nc.isempty()) {
+				let a = Assessment.get(nc.assmnt);
+				if (a!=null) {
+					let v = Vulnerability.get(a.vulnerability);
+					if (v==null) errors += `Node cluster ${nc.id} has no valid vulnerability.\n`;
+					if (v!=null && !v.common) errors += `Node cluster ${nc.id} is root, but does not have a common vulnerability.\n`;
+				}
+			}
 		}
 		// Check all components
 		it = new ComponentIterator({project: this.id});

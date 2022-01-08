@@ -2862,22 +2862,59 @@ function Zap() {
  * Therefore, it is a good idea to checkForErrors after importing a project.
  */
 function checkForErrors(verbose) {
-	var errors = "";
-	var it = new ProjectIterator();
+	let errors = '';
+	let projects = new Set();
+	let it = new ProjectIterator();
 	it.sortByTitle();
 	for (const p of it) {
-		var err = p.internalCheck();
-		if (err!="") {
+		projects.add(p.id);
+		let err = p.internalCheck();
+		if (err!='') {
 			var e = err.split('\n');
-			e.sort();
-			if (errors!="") errors += "<p>";
+			//e.sort();
+			if (errors!='') errors += '<p>';
 			errors += _("Project <i>%%</i>:\n", H(p.title)) + e.join('<br>\n');
 		}
 	}
-	if (verbose && errors=="") {
+	// Add checks for stuff outside projects
+	let err = '';
+	it = new VulnerabilityIterator();
+	for (const v of it) {
+		if (!projects.has(v.project)) {
+			err += _H("Vulnerability %% does not belong to any known project.", v.id);
+			err += '<br>';
+		}
+	}
+	it = new ComponentIterator();
+	for (const cm of it) {
+		if (!projects.has(cm.project)) {
+			err += _H("Component %% does not belong to any known project.", cm.id);
+			err += '<br>';
+		}
+	}
+	it = new ServiceIterator();
+	for (const s of it) {
+		if (!projects.has(s.project)) {
+			err += _H("Service %% does not belong to any known project.", s.id);
+			err += '<br>';
+		}
+	}
+	it = new NodeClusterIterator();
+	for (const cl of it) {
+		if (!projects.has(cl.project)) {
+			err += _H("Cluster %% does not belong to any known project.", cl.id);
+			err += '<br>';
+		}
+	}
+	if (err!='') {
+		if (errors!="") errors += '<p>';
+		errors += err;
+	}
+
+	if (verbose && errors=='') {
 		rasterAlert(_("Checked all projects"), _H("There were no errors; all projects are OK.\n"));
 	}
-	if (errors!="") {
+	if (errors!='') {
 		console.log(errors);
 		rasterAlert(_("Your projects contain errors:"), errors);
 	}
