@@ -13,10 +13,15 @@ Specifically, do use:
 Not sure about modules yet. First check whether they impede debugging in the Developer Tools of Firefox.
 
 *Do not use:*
+* (static) class fields. Instead, declare instance properties on this, in the constructor; declare static properties on the class name, after the class definition.
+* private class methods and fields (declard with #). These have been supported only from Firefox 90 onwards.
+* static initialization blocks. This is supported only from Firefox 93 onwards.
 * Array.includes (which is part of ECMAScript 2016).
 * async function (ECMAScript 2017).
-* creating new strings, arrays as objects (`new String('literal here)` etc).
 
+##  Other style issues
+* Do *not* create new strings, arrays as objects (`new String('literal here)` etc).
+* Avoid use of falsy/thruthy conditions, as it leads to bugs. Do not use `if (!id) ...` but use `if (id==null) ...` instead. There is no `eslint` rule for this, unfortunately. We have seen many bugs where the variable was not an object reference but an integer with zero as a legitimate value. 
 
 ##  Naming
 
@@ -35,7 +40,6 @@ Not sure about modules yet. First check whether they impede debugging in the Dev
 * No space before colons, and a single space after a colon.
 * Use single quotes for all strings, except for English/translated strings that will be visible to the user (e.g. any strings inside `_("...")`).
 * Opening brace on the same line as the statement that starts the block. Closing brace at the same indent as that statement.
-* Avoid use of falsy/thruthy conditions, as it leads to bugs. Do not use `if (!id) ...` but use `if (id==null) ...` instead. There is no `eslint` rule for this, unfortunately. We have seen many bugs where the variable was not an object reference but an integer with zero as a legitimate value. 
 * There is no need for braces inside case-blocks of switch-statements.
 
 For example, place braces like this:

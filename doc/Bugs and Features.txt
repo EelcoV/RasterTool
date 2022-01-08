@@ -8,7 +8,6 @@ Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-
 Do away with the online/offline setting?
 Set title attributes on all checkboxradio options
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
-Fixed? Sometimes when moving a node localStorage is not up to date with the node's properties.
 The How to use help-panel is useless. Either improve or remove.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
@@ -23,9 +22,11 @@ New object: area. Like a selection, but fixed. Like a label, but visually less o
 Create a dark color scheme?
 Exclude entire vulnerabilities in Analysis|Failures and Vulnerabilities tab.
 Select multiple nodes using Ctrl/Cmd-click (and have multiple selectrects)
-Hide the URL mouseover popup in the bottom left corner of the window. They are in the way of bottom tabs.
+Filter on Single Failures, including on overall threat score.
+Sort vulns for a component on name/freq/impact/total/remark
 
 OTHER TODO
+Hide the URL mouseover popup in the bottom left corner of the window. They are in the way of bottom tabs.
 Make use of the bind() function when useful (a number of functions use a local variable to store the 'this' value).
 Simplify the UI for menuitem 'Make single'. Renamiong to 'Make one component' is not clear either, as the thing is still presented as a class.
 Change cursor to hourglass during rollback/redo.
@@ -46,14 +47,12 @@ Clean up the code so that UI stuff is more clearly separated from the objects th
 When adding a threat to a Unknown node, the type of the new threat is always tEQT. It should be possible to change the type to tWRD or tWLS. Have 3 typed add buttons?
 Have separate Paste functions for merging and overwriting?
 Change from accordion widget to the Collapser plugin?
-Filter on Single Failures, including on overall threat score.
-Sort vulns for a component on name/freq/impact/total/remark
 Better handling of redundancy in telecom services.
 Set description on added threats.
 Consistency report for the entire diagram, plus UI.
 
 CANNOT REPRODUCE
-(no recent bugs)
+Fixed? Sometimes when moving a node localStorage is not up to date with the node's properties.
 
 OTHER / WON'T FIX
 The Find textfield has a placeholder attribute; set this also on Remarks. Cannot, because remarks are not an input textfield.
