@@ -254,17 +254,19 @@ CreateWin32Version()
 		 "$WINE" ../../cache/nsis/makensis.exe /nocd ../../script/Raster.$RLANG.nsis
 		)
 
+
 		(
 		 cd build
+		 mv "raster-v$RASTERNUMVERSION-$RLANG-full-installer.exe" "raster-v$RASTERNUMVERSION-$ARCH-$RLANG-full-installer.exe"
 		 ln -s electron-v$ELECTRONVERSION-win32-$ARCH-$RLANG Raster-$ARCH-$RLANG
 
 		 rm -f raster-v$RASTERNUMVERSION-$ARCH-$RLANG.zip
 		 zip -q -r raster-v$RASTERNUMVERSION-$ARCH-$RLANG.zip Raster-$ARCH-$RLANG
 
-		 rm -f raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe
-		 # Filenames containing "instal" require admin privileges!?
-		 "$WINE" ../cache/7z/7z.exe a -sfx7z.sfx raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe Raster-$ARCH-$RLANG
-		 "$WINE" ../script/rcedit-x86.exe raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe --set-icon ../script/installraster.ico
+#		 rm -f raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe
+#		 # Filenames containing "instal" require admin privileges!?
+#		 "$WINE" ../cache/7z/7z.exe a -sfx7z.sfx raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe Raster-$ARCH-$RLANG
+#		 "$WINE" ../script/rcedit-x86.exe raster-v$RASTERNUMVERSION-$ARCH-$RLANG-unpack.exe --set-icon ../script/installraster.ico
 
 		 rm Raster-$ARCH-$RLANG
 		)
@@ -277,15 +279,14 @@ CreateAll()
 {
 	RLANG=$1
 	CreateAppVersion $RLANG
-	CreateMacOSVersion $RLANG arm64	&
-#	CreateMacOSVersion $RLANG x64	&
-#	CreateWin32Version $RLANG x64	&
-#	CreateWin32Version $RLANG ia32	&
-	wait
+	CreateMacOSVersion $RLANG arm64
+	CreateMacOSVersion $RLANG x64
+	CreateWin32Version $RLANG ia32
+	CreateWin32Version $RLANG x64
 #	rm -fr $BUILDDIR
 }
 
-#CreateAll "EN"
+CreateAll "EN"
 CreateAll "NL"
 
 if [ ! -x "$WINE" ]; then

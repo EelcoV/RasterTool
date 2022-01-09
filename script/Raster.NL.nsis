@@ -7,7 +7,8 @@
 !define VERSIONMAJOR 4
 !define VERSIONMINOR 0
 !define VERSIONBUILD 0
-!define RASTERNUMVERSION "4.0.0beta"
+# The definition below must match the definition in Versions.sh
+!define RASTERNUMVERSION "4.0beta"
 
 # This is the size (in kB) of all the files copied into "Program Files"
 !define INSTALLSIZE 134000

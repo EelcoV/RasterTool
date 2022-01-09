@@ -1188,7 +1188,7 @@ Node.prototype = {
 		if (icns.length>1) {
 			// Populate menu
 			let idir = p.icondata.dir;
-			$('#mi_cism').empty().append(`<li class="lcT">${H(p.icondata.setDescription)} - ${H(_(Rules.nodetypes[this.type]))}</li>`);
+			$('#mi_cism').empty().append(`<li class="lcT">${H(p.icondata.setDescription)} - ${H(Rules.nodetypes[this.type])}</li>`);
 			icns.forEach(ic => {
 				$('#mi_cism').append(`<li class="iconli" foricon="${ic.image}" title="${ic.name}"><div><img class="menuimage" src="${idir}/${ic.image}"></div></li>`);
 			});

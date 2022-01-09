@@ -15,7 +15,7 @@ XXXX 2022
 * Support for Internet Explorer has been dropped.
 * Reworked printing and saving to PDF in the app-version.
 * Intranet version is now compatible with PHP 7.4 and up.
-* Upgrade to jQueryUI 1.3.0, jQuery 3.6.0, Electron 16.0.5.
+* Upgraded to jQueryUI, jQuery, Electron 16.0.5 to latest versions.
 
 October 2019
 ============
