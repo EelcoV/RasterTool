@@ -16,6 +16,7 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 IDEAS FOR FUTURE FEATURES
+Do away with the menu bar on Windows? It does not fit nicely with the new toolbar. Reinstate the Projects toolbar on Windows (except for the projects library part).
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
 Change all icons in the selection (provided that they are all of the same type).
 New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable. Use areas to expand a cloud into subcomponents?

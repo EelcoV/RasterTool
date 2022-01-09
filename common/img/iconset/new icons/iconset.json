@@ -31,11 +31,11 @@
 		"type": "tUNK",
 		"image": "unknown/unknown.png",
 		"name": {"EN": "Unknown link", "NL": "Onverkend"},
-		"width": 50,
-		"height": 46,
+		"width": 80,
+		"height": 73,
 		"title": "inside",
 		"margin": 15,
-		"offsetConnector": 0.580
+		"offsetConnector": 0.587
 	},{
 		"type": "tACT",
 		"image": "actor/person.png",
@@ -48,6 +48,14 @@
 		"image": "equipment/accesspoint.png",
 		"mask": "equipment/equipment-mask.png",
 		"name": {"EN": "Access point", "NL": "WiFi-punt"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/modem.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Modem", "NL": "Modem"},
 		"width": 50,
 		"height": 44,
 		"title": "below"
@@ -189,6 +197,22 @@
 		"height": 34,
 		"title": "below"
 	},{
+		"type": "tEQT",
+		"image": "equipment/thinclient.png",
+		"name": {"EN": "Thin client", "NL": "Thin client"},
+		"width": 50,
+		"height": 35,
+		"title": "below",
+		"offsetConnector": 0.360
+	},{
+		"type": "tEQT",
+		"image": "equipment/workstation.png",
+		"name": {"EN": "Workstation", "NL": "Werkstation"},
+		"width": 50,
+		"height": 33,
+		"title": "below",
+		"offsetConnector": 0.327
+	},{
 		"type": "tACT",
 		"image": "actor/official.png",
 		"mask": "actor/official-mask.png",
@@ -237,6 +261,15 @@
 		"title": "below"
 	},{
 		"type": "tUNK",
+		"image": "unknown/provider.png",
+		"mask": "unknown/unknown-mask.png",
+		"name": {"EN": "Provider", "NL": "Provider"},
+		"width": 50,
+		"height": 44,
+		"title": "below",
+		"offsetConnector": 0.580
+	},{
+		"type": "tUNK",
 		"image": "unknown/lan.png",
 		"mask": "unknown/unknown-mask.png",
 		"name": {"EN": "LAN", "NL": "LAN"},
@@ -271,11 +304,11 @@
 		"type": "tUNK",
 		"image": "unknown/cloud.png",
 		"name": {"EN": "Cloud", "NL": "Cloud"},
-		"width": 50,
-		"height": 31,
+		"width": 100,
+		"height": 63,
 		"title": "inside",
 		"margin": 15,
-		"offsetConnector": 0.380
+		"offsetConnector": 0.373
 	},{
 		"type": "tUNK",
 		"image": "unknown/globe1.png",
@@ -352,6 +385,14 @@
 		"mask": "wired/wired-mask.png",
 		"name": {"EN": "Fiber optic", "NL": "Glasvezel"},
 		"width": 62,
+		"height": 23,
+		"title": "below"
+	},{
+		"type": "tWRD",
+		"image": "wired/twistedpair.png",
+		"mask": "wired/wired-gen-mask.png",
+		"name": {"EN": "Twisted pair", "NL": "Twisted pair"},
+		"width": 50,
 		"height": 23,
 		"title": "below"
 	},{
