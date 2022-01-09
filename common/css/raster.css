@@ -119,6 +119,7 @@ body {
 	border: 0;
 	margin: 0;
 	background: var(--toolbarbg);
+	border-top: 1px solid black;
 }
 #vtabs {
 	grid-area: vtab;

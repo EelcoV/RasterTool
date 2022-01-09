@@ -898,7 +898,7 @@ function initHomeToolbar() {
 		autoOpen: false,
 		height: 450,
 		minHeight: 120,
-		width: 680,
+		width: 700,
 		minWidth: 470,
 		maxWidth: 800,
 		open: function(/*event*/) {
