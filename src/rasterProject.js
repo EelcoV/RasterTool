@@ -35,7 +35,7 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *	date: (string) date, as returned by the server. Only used for stubs.
  *	stub: (boolean) true iff this is a stub.
  *  iconset: (string) name of the preferred iconset for this project.
- *  icondata: an object containing information on this iconset.
+ *  icondata: an object containing information on this iconset. See retrieicondata() for details.
  *  TransactionBase: the start of the transaction list, a special transaction with kind==null
  *  TransactionCurrent: the most recently performed transaction
  *  TransactionHead: the most recently posted transaction
@@ -661,6 +661,23 @@ Project.prototype = {
 		return arr;
 	},
 
+	/* p.retrieveicondata(): fill the p.icondata object based on the name p.iconset.
+	 * icondata is an object containing these fields:
+	 *	setDescription: (String) a localised name for this iconset
+	 *	dir: (String) path of the directory in which the iconset is stored
+	 *	icons[]: array with specifications for each of the icons in the iconset.
+	 * Each description is an object with these fields:
+	 *	type: a Raster type (cannot be tNOT, as notes do not have icons)
+	 *	image: (String) path to the icon file, relative to icondata.dir
+	 *	mask: (String) path to the mask of the icon file, relative to icondata.dir
+	 *	template: (String) path to the template file, relative to icondata.dir. Is used only on the first icon of each type.
+	 *	width: (Number) width of the icon, in pixels
+	 *	height: (Number) height of the icon, in pixels.
+	 *	title: (String) placement of the icon title; one of 'inside', 'below', 'topleft'.
+	 *	margin: (Number) width of the left and right margins, as a percentage of the width
+	 *	offsetConnector: (Number, between 0 and 1) horizontal position of the top-connector
+	 *	maintainAspect: (Boolean) iff false then width and height can be resized independently.
+	 */
 	retrieveicondata: function(setname) {
 		function trydir(dir,p) {
 			let iurl = `${dir}/iconset/${setname}/iconset.json`;
@@ -675,6 +692,7 @@ Project.prototype = {
 				},
 				success: function(data) {
 					p.icondata.setDescription = mylang(data.setDescription);
+					p.icondata.dir = `${dir}/iconset/${setname}`;
 					p.icondata.icons = [];
 					for (const r of data.icons) {
 						var i;
@@ -687,10 +705,9 @@ Project.prototype = {
 							offsetConnector: 0.5, // center
 							maintainAspect: true
 						};
-						if (r.type==null) return; // mandatory
-						if (r.image==null) return; // mandatory
-						if (Rules.nodetypes[r.type]==null) return; // invalid type
-						if (r.title!=null && ['inside','below','topleft'].indexOf(r.title)==-1) return; // invalid title specification
+						if (r.type==null) break; // mandatory
+						if (r.image==null) break; // mandatory
+						if (Rules.nodetypes[r.type]==null) break; // invalid type
 						
 						i.type = r.type;
 						i.image = r.image;
@@ -704,16 +721,20 @@ Project.prototype = {
 						if (r.offsetConnector!=null) i.offsetConnector = r.offsetConnector;
 						if (r.maintainAspect!=null) i.maintainAspect = r.maintainAspect;
 						if (i.offsetConnector<0.0 || i.offsetConnector>1.0) {
-							console.log(`Correcting invalid offsetConnector value (${i.offsetConnector}) for icon ${r.image}`);
+							console.log(`Correcting invalid offsetConnector value (${i.offsetConnector}) for icon ${i.image}`);
 							i.offsetConnector = 0.5;
 						}
 						if (i.width<20 || i.width>200) {
-							console.log(`Correcting invalid width value (${i.width}) for icon ${r.image}`);
+							console.log(`Correcting invalid width value (${i.width}) for icon ${i.image}`);
 							i.width = 100;
 						}
 						if (i.height<10 || i.height>100) {
-							console.log(`Correcting invalid height value (${i.height}) for icon ${r.image}`);
+							console.log(`Correcting invalid height value (${i.height}) for icon ${i.image}`);
 							i.height = 30;
+						}
+						if (['inside','below','topleft'].indexOf(i.title)==-1) {
+							console.log(`Correcting invalid title specification (${i.title}) for icon ${i.image}`);
+							i.title = 'inside';
 						}
 						// Precompute maskid from the mask filename; replace periods by hyphens, and slashes by underscores
 //						i.maskid = i.mask.replace(/\./g,'-').replace(/\//g,'_');
@@ -726,9 +747,9 @@ Project.prototype = {
 
 		let res;
 #ifdef SERVER
-		res = trydir('../img',this);
+		res = trydir('../img',this) || trydir('.',this) ;
 #else
-		res = trydir( (setname=='default' ? '../img' : prefsDir), this);		// eslint-disable-line no-undef
+		res = trydir('../img',this) || trydir(prefsDir,this);		// eslint-disable-line no-undef
 #endif
 		if (!res) {
 			console.log(`Failed to load iconset ${setname}`);
@@ -843,10 +864,7 @@ Project.prototype = {
 	},
 
 	prepTemplatesAndMasks: function() {
-		let idir = '../img';
-#ifdef STANDALONE
-		if (this.iconset!='default') idir = prefsDir;		// eslint-disable-line no-undef
-#endif
+		let idir = this.icondata.dir;
 //		// Mask images. Some images icons share their mask, so first determine the unique collection of masks
 //		let ma = [];
 //		for (const r of this.icondata.icons) {
@@ -858,16 +876,15 @@ Project.prototype = {
 
 		// Template images. The first image of each type will be the default image.
 		$('#templates').empty();
-		var icns = this.icondata.icons;
 		for (const t of Object.keys(Rules.nodetypes)) {
 			if (t=='tNOT') continue;
-			for (const icn of icns) {
+			for (const icn of this.icondata.icons) {
 				if (icn.type!=t)  continue;
 				$('#templates').append(`
 					<div class="template">
 						<div class="ui-widget templatelabel">${Rules.shortnodetypes[icn.type]}</div>
 						<div id="${icn.type}" class="templatebg">
-							<img class="templateicon" src="${idir}/iconset/${this.iconset}/${icn.template}">
+							<img class="templateicon" src="${idir}/${icn.template}">
 						</div>
 						<img id="tC_${icn.type}" class="tC" src="../img/dropedit.png">
 					<div>

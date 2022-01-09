@@ -8,13 +8,13 @@ Specifically, do use:
 * arrow functions.
 * class definitions.
 * default parameters in function calls.
-* new String and Array methods.
+* additional String and Array methods.
 
 Not sure about modules yet. First check whether they impede debugging in the Developer Tools of Firefox.
 
 *Do not use:*
 * (static) class fields. Instead, declare instance properties on this, in the constructor; declare static properties on the class name, after the class definition.
-* private class methods and fields (declard with #). These have been supported only from Firefox 90 onwards.
+* private class methods and fields (declared with #). These have been supported only from Firefox 90 onwards.
 * static initialization blocks. This is supported only from Firefox 93 onwards.
 * Array.includes (which is part of ECMAScript 2016).
 * async function (ECMAScript 2017).
@@ -41,6 +41,7 @@ Not sure about modules yet. First check whether they impede debugging in the Dev
 * Use single quotes for all strings, except for English/translated strings that will be visible to the user (e.g. any strings inside `_("...")`).
 * Opening brace on the same line as the statement that starts the block. Closing brace at the same indent as that statement.
 * There is no need for braces inside case-blocks of switch-statements.
+* If-statements without else and followed by a single statement may be written on a single line. In this case do not use braces.
 
 For example, place braces like this:
 

@@ -5,7 +5,8 @@ XXXX 2022
 =========
 * Release as 4.0.0 - XXX
 * Undo and Redo are now implemented on all actions.
-* Support for different iconsets.
+* Support for different iconsets. A set "new icons" is provided in addition to the default
+  icons. You can roll your own iconsets; see 'doc/Iconsets.md' for details.
 * A refresh of the entire user interface.
 * A new file format is used. Raster files created with version 3 or earlier will
   automatically be upgraded, but cannot be downgraded.

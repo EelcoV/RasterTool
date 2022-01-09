@@ -43,7 +43,9 @@ const DefaultRasterOptions = {
 	// datetime of last successful check for updates
 	updatechecktime: 0,
 	// Hardware acceleration: there is no UI for this (must edit preference file by hand!)
-	disablehardwareacceleration: true
+	disablehardwareacceleration: true,
+	// Default iconsets installed
+	iconsets: ['default','new icons']
 };
 
 const prefsDir = app.getPath('userData');
@@ -112,6 +114,7 @@ function createWindow(filename) {
 		}
 		win.webContents.send('options', 'labels', app.rasteroptions.labels);
 		win.webContents.send('options', 'vulnlevel', app.rasteroptions.vulnlevel);
+		win.webContents.send('options', 'iconsets', JSON.stringify(app.rasteroptions.iconsets));
 		EnableMenuItems(true);
 		win.show();
 		CheckForUpdates(win);

@@ -46,7 +46,6 @@ ipc.on('window-id', function(event,id) {
 });
 ipc.on('prefs-dir', function(event,dir) {
 	prefsDir = dir;
-	getGroupSettingsAtInitialisation();
 });
 ipc.on('document-start-save', function() {
 	var s = CurrentProjectAsString();
@@ -93,6 +92,11 @@ ipc.on('options', function(event,option,val) {
 	case 'minimap':
 		Preferences.setmap(val);
 		break;
+	case 'iconsets': {
+		const obj = JSON.parse(val);
+		if (Array.isArray(obj)) GroupSettings.iconsets = obj;
+		break;
+		}
 	}
 });
 ipc.on('props-show', function() {

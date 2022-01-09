@@ -802,12 +802,9 @@ Node.prototype = {
 	},
 
 	paint: function(effect) {
-		let idir = '../img';
-		let icn;
 		let p = Project.get(this.project);
-#ifdef STANDALONE
-		if (p.iconset!='default') idir = prefsDir;		// eslint-disable-line no-undef
-#endif
+		let idir = p.icondata.dir;
+		let icn;
 		
 		if (this.type=='tNOT') {
 			$('#diagrams_workspace'+this.service).append(`
@@ -834,7 +831,7 @@ Node.prototype = {
 			var str = `
 				<div id="node${this.id}" class="node node${this.type}" tabindex="2">
 					<div id="nodecolorbackground${this.id}" class="nodecolorbackground B${(Preferences.label?this.color:'none')}"></div>
-					<img id="nodeimg${this.id}" src="${idir}/iconset/${p.iconset}/${icn.image}" class="contentimg I${(Preferences.label?this.color:'none')}">
+					<img id="nodeimg${this.id}" src="${idir}/${icn.image}" class="contentimg I${(Preferences.label?this.color:'none')}">
 					<div id="nodeheader${this.id}" class="nodeheader _HB_ H${(Preferences.label?this.color:'none')}">
 					  <div id="nodetitle${this.id}" class="_TB_"><span id="titlemain${this.id}"></span><span id="titlesuffix${this.id}"></span></div>
 					</div>
@@ -860,8 +857,8 @@ Node.prototype = {
 			// See comments in raster.css at nodecolorbackground
 //			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url(${idir}/iconset/${p.iconset}/${icn.mask})`);
 //			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
-			$(`#nodecolorbackground${this.id}`).css('mask-image', `url("${idir}/iconset/${p.iconset}/${icn.mask}")`);
-			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url("${idir}/iconset/${p.iconset}/${icn.mask}")`);
+			$(`#nodecolorbackground${this.id}`).css('mask-image', `url("${idir}/${icn.mask}")`);
+			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url("${idir}/${icn.mask}")`);
 		}
 		
 		str = '<div id="tinynode_ID_" class="tinynode"></div>\n';
@@ -1190,13 +1187,10 @@ Node.prototype = {
 		let icns = Project.get(this.project).iconsoftype(this.type);
 		if (icns.length>1) {
 			// Populate menu
-			let idir = '../img';
-#ifdef STANDALONE
-			if (p.iconset!='default') idir = prefsDir;		// eslint-disable-line no-undef
-#endif
-			$('#mi_cism').empty();
+			let idir = p.icondata.dir;
+			$('#mi_cism').empty().append(`<li class="lcT">${H(p.icondata.setDescription)} - ${H(_(Rules.nodetypes[this.type]))}</li>`);
 			icns.forEach(ic => {
-				$('#mi_cism').append(`<li class="iconli" foricon="${ic.image}" title="${ic.name}"><div><img class="menuimage" src="${idir}/iconset/${p.iconset}/${ic.image}"></div></li>`);
+				$('#mi_cism').append(`<li class="iconli" foricon="${ic.image}" title="${ic.name}"><div><img class="menuimage" src="${idir}/${ic.image}"></div></li>`);
 			});
 			$('#nodemenu').menu('refresh');
 		} else {

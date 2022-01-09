@@ -108,7 +108,8 @@ CreateMacOSVersion()
 	
 	echo copying files
 	cp -p standalone/README.md $BASEDIR/Documentation
-	cp -p common/img/iconset/README.md $BASEDIR/Documentation/Iconsets.md
+	cp -R -p doc/Iconsets.md $BASEDIR/Documentation
+	cp -R -p doc/ReleaseNotes.txt $BASEDIR/Documentation
 
 	cp -R -p $BUILDDIR/* $APPDIR
 	cp -p standalone/* $APPDIR
@@ -284,7 +285,7 @@ CreateAll()
 #	rm -fr $BUILDDIR
 }
 
-CreateAll "EN"
+#CreateAll "EN"
 CreateAll "NL"
 
 if [ ! -x "$WINE" ]; then

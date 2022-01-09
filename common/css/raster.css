@@ -719,10 +719,16 @@ Dialog windows:
 .lcT {
 	font-weight: bold;
 	border-bottom: 1px solid gray;
+	width: 100%;
 }
 li.lcT div:first-child {
 	background-color: var(--lightbg) !important;
 	font-weight: bold;
+	padding-left: 1em;
+}
+/* Title on icon submenu with icons */
+#mi_cism li.lcT {
+	padding-left: 1em;
 }
 
 .smallblock {
