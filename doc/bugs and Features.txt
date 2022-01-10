@@ -25,6 +25,7 @@ Exclude entire vulnerabilities in Analysis|Failures and Vulnerabilities tab.
 Select multiple nodes using Ctrl/Cmd-click (and have multiple selectrects)
 Filter on Single Failures, including on overall threat score.
 Sort vulns for a component on name/freq/impact/total/remark
+Improve support for frequency assessments on intentional failures (cyber attacks).
 
 OTHER TODO
 Hide the URL mouseover popup in the bottom left corner of the window. They are in the way of bottom tabs.

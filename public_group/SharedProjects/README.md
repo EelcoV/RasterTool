@@ -5,4 +5,4 @@ On many installations this can be accomplished by either `chown _www SharedProje
 followed by `chmod 0755 SharedProjects`.
 
 When either the `classroom` or `localonly` option is true, the `SharedProjects` directory on the web server can be made read-only.
-See `public_group/README.md` for details. 
+See `doc/Project groups.md` for details. 
