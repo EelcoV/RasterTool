@@ -347,7 +347,7 @@ class Service {
 			if (evt.eventPhase==Event.BUBBLING_PHASE)  return; // Only direct events
 			Service._rectDragOrigin.left = evt.pageX;
 			Service._rectDragOrigin.top = evt.pageY;
-			$('#selectrectC').css({visibility: 'hidden'});
+			$('#selectrectC').hide();
 			$('#selectrect').show().offset({left: evt.pageX, top: evt.pageY}).width(0).height(0);
 			$('#diagrams_workspace'+serviceid).on('mousemove', function(evt) {
 				// only do plain left mousebutton drags
@@ -385,7 +385,7 @@ class Service {
 			//console.debug("Stole the focus");
 			$('#diagrams_workspace'+serviceid).off('mousemove');
 			if ($('#selectrect').width()>20 && $('#selectrect').height()>20) {
-				$('#selectrectC').css({visibility: 'visible'});
+				$('#selectrectC').show();
 			} else {
 				$('#selectrect').hide();
 			}
@@ -528,6 +528,7 @@ function diagramTabEditStart(/*event*/) {
 	});
 	dialog.dialog({
 		title: _("Rename service '%%'", s.title),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		modal: true,
 		position: {my: 'center', at: 'center'},
 		width: 350,

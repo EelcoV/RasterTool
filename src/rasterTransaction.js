@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, refreshComponentThreatAssessmentsDialog, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts
+/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts
 */
 
 const DebugTransactions = false;
@@ -408,7 +408,7 @@ Transaction.prototype = {
 			//   connect: array of node IDs to connect to
 			//   component: id of the component object
 			//   assmnt: array of objects containing info on the vulnerabilities:
-			//     id, type, vulnerability, title, description, freq, impact, remark: as of the assessment
+			//     id, type, vulnerability, malice, title, description, freq, impact, remark: as of the assessment
 			//   accordionopened: state of the component in Single Failures view
 			//   single: id of the representing node iff single, or false iff not single
 			//  cluster: an array of objects with the following properties (may be absent only if creating tACT or tNOT)
@@ -454,6 +454,7 @@ Transaction.prototype = {
 						if (vln==null) {
 							vln = new Vulnerability(t.project,t.type,t.vulnerability);
 							vln.settitle(t.title);
+							if (t.malice) vln.setmalice(t.malice);
 							vln.setdescription(t.description);
 							vln.setcommon(t.common);
 							let nc = new NodeCluster(t.type,t.clid);
@@ -602,7 +603,7 @@ Transaction.prototype = {
 			//  title: title of the node
 			//  suffix: suffix of the node
 			//  assmnt: array of assessments when the component needs to be created
-			//		id, vulnerability, title, description, freq, impact, remark of the assessment
+			//		id, vulnerability, title, malice, description, freq, impact, remark of the assessment
 			//  component: id of the component
 			//	accordionopened: folding state of the component
 			//	single: class-type of the component
@@ -631,6 +632,7 @@ Transaction.prototype = {
 							if (vln==null) {
 								vln = new Vulnerability(t.project,t.type,t.vulnerability);
 								vln.settitle(t.title);
+								if (t.malice) vln.setmalice(t.malice);
 								vln.setdescription(t.description);
 								vln.setcommon(t.common);
 								let nc = new NodeCluster(t.type,t.clid);
@@ -871,6 +873,7 @@ Transaction.prototype = {
 			//	title: title of the Vulnerability (iff create)
 			//	description: description of the Vulnerability (iff create)
 			//	common: whether or not this Vulnerability is default for the project (iff create)
+			//	malice: whether or not this Vulnerability is malicious (iff create)
 			//  cluster: ID of the root cluster for this Vulnerability (iff create)
 			//  cla: ID of the Assessment of the cluster (iff create)
 			//	index: position of the Vulnerability within the project (iff create and common==true)
@@ -881,6 +884,7 @@ Transaction.prototype = {
 					if (d.title!=null) vln.settitle(d.title);
 					if (d.description!=null) vln.setdescription(d.description);
 					if (d.common!=null) vln.setcommon(d.common);
+					if (d.malice!=null) vln.setmalice(d.malice);
 					if (d.common) {
 						let p = Project.get(d.project);
 						p.addvulnerability(d.id,d.cluster,d.cla,d.index);
@@ -922,10 +926,12 @@ Transaction.prototype = {
 			// Global edit of title and description of vulnerabilities and node templates
 			// data: array of objects; each object has these properties
 			//	vuln: ID of the Vulnerability to change
+			//	malice: new setting natural/malicious (may be null, indicating no change)
 			//	title: new title (may be null, indicating no change)
 			//	description: new description (may be null, indicating no change)
 			for (const d of data) {
 				let vln = Vulnerability.get(d.vuln);
+				if (d.malice!=null)  vln.setmalice(d.malice);
 				if (d.description!=null)  vln.setdescription(d.description);
 				if (d.title!=null) {
 					let it = new NodeClusterIterator({project: vln.project, type: vln.type, title: vln.title});
@@ -937,7 +943,7 @@ Transaction.prototype = {
 					nc.settitle(d.title);
 				}
 				refreshChecklistsDialog(vln.type);
-				refreshComponentThreatAssessmentsDialog();
+//				refreshComponentThreatAssessmentsDialog();
 				// Repaint each component in which this vulnerability appears
 				let it = new AssessmentIterator({vuln: d.vuln});
 				for (const a of it) {
@@ -1019,6 +1025,7 @@ function refreshChecklistsDialog(type) {
 		if (th.type!=type)  continue;
 		th.addtablerow('#'+type+'threats');
 	}
+	$('.malset label').removeClass('ui-corner-left ui-corner-right');
 }
 
 // rebuildCluster: restore one root cluster and its subclusters to its original state

@@ -483,15 +483,17 @@ console.log("Check Component.absorbe()");
 			svcs.push(nd.service);
 		}
 		for (const sid of svcs) {
+			let prefix = `sfa${sid}_${this.id}`;
 			let snippet = "";
-			for (const thid of this.assmnt) snippet += Assessment.get(thid).addtablerow_textonly("sfa"+sid+'_'+this.id) + '\n';
+			for (const thid of this.assmnt) snippet += Assessment.get(thid).addtablerow_textonly(prefix) + '\n';
 			$('#sfaccordion'+sid+'_'+this.id+' .sfa_sortable').html(snippet);
-			for (const thid of this.assmnt) Assessment.get(thid).addtablerow_behavioronly('#sfa'+sid+'_'+this.id,"sfa"+sid+'_'+this.id);
+			for (const thid of this.assmnt) Assessment.get(thid).addtablerow_behavioronly(prefix);
 			this.setmarkeroid("#sfamark"+sid+'_'+this.id);
 		}
 		if (this.id==Component.ThreatsComponent) {
 			refreshComponentThreatAssessmentsDialog();
 		}
+		$('.malset label').removeClass('ui-corner-left ui-corner-right');
 	},
 
 	updateLabelGroup(sid) {

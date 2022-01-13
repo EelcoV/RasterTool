@@ -148,13 +148,14 @@ See LICENSE.md
 
 	.nodeMagnitude { box-shadow: 0 0 !important; }
 
-	div.ui-widget { background: transparent !important; }
-	div.ui-widget-content { background: transparent !important; }
-	div.th_name { background: transparent !important; }
-	div.th_descr { background: transparent !important; }
-	div.th_freq { background: transparent !important; }
-	div.th_impact { background: transparent !important; }
-	div.th_total { background: transparent !important; }
+	div.ui-widget,
+	div.ui-widget-content,
+	div.th_mal,
+	div.th_name,
+	div.th_descr,
+	div.th_freq,
+	div.th_impact,
+	div.th_total,
 	div.th_remark { background: transparent !important; }
 
 	div.tACTheader {
@@ -163,13 +164,14 @@ See LICENSE.md
 	}
 
 	.servplusbutton { visibility: hidden; }
-	#templates { display: none !important; }
-	#selectrect { display: none !important; }
-	.checklist { display: none !important; }
-	.scroller_overview { display: none !important; }
-	.nodeC { display: none !important; }
-	.ui-resizable-handle { display: none !important; }
-	.ui-widget-overlay { display: none !important; }
+
+	#templates,
+	#selectrect,
+	.checklist,
+	.scroller_overview,
+	.nodeC,
+	.ui-resizable-handle,
+	.ui-widget-overlay,
 	.ui-dialog.ui-draggable { display: none !important; }
 
 }

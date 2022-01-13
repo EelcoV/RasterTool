@@ -42,6 +42,7 @@ P: Project
 .vulns[i]		(internal)				.t  	[Vulnerability]	version>=4, careful: 't' is also used for 'type'
 .labels[i]		(internal)				.c						extra label for version>=2
 .iconset		seticonset(str)			.i						version>=4
+.wpa			setwpa(str)				.q						version>=4: worst plausible attacker
 
 T: Threat 														version<=3, removed in version 4
 .id				creator(p.id,type,th.id)						changed in version 3
@@ -57,6 +58,7 @@ V: Vulnerability 												version>=4, added in version 4
 .title			settitle(str)			.l
 .description	setdescription(str)		.d
 .common			setcommon(b)			.c
+.malice			setmalice(b)			.m						true->'malicous', false->'natural'
 
 S: Service
 .id				creator(s.id)									changed in version 3

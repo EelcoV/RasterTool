@@ -3,7 +3,7 @@
  */
 
 /* global
-_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator
+_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, paintSingleFailures, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator, TabAnaVulnOverview, TabAnaAssOverview, TabAnaLonglist, repaintAnalysisIfVisible
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -35,6 +35,7 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *	date: (string) date, as returned by the server. Only used for stubs.
  *	stub: (boolean) true iff this is a stub.
  *  iconset: (string) name of the preferred iconset for this project.
+ *	wpa: (string) worst plausible attacker for malicious actions/vulnerabilities. Sophistication level 'A' (lowest) to 'E' (highest)
  *  icondata: an object containing information on this iconset. See retrieicondata() for details.
  *  TransactionBase: the start of the transaction list, a special transaction with kind==null
  *  TransactionCurrent: the most recently performed transaction
@@ -49,6 +50,7 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *	setshared(b): set sharing status to 'b' (boolean).
  *	setdescription(s): change description to 's'.
  *	setdate(d): change date to 'd'.
+ *	setwpa(level): changa wpa to 'level' and recalculate Assessments, repaint Single Failures
  *	autosettitle: choose a unique standard name.
  *		Either settitle() or autosettitle() must be called.
  *	addservice(id,idx): add an existing Service object to this project, at position idx.
@@ -99,6 +101,7 @@ var Project = function(id,asstub) {
 #endif
 
 	this.iconset = GroupSettings.iconsets[0];
+	this.wpa = 'A';
 	this.icondata = {};
 	// Do not fetch the iconset yet, delay this until Project.load()
 
@@ -115,18 +118,21 @@ Project._all =new Map();
 Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Pink"), _("Purple"), _("Grey")];
 Project.colors = ["none","red","orange","yellow","green","blue","pink","purple","grey"];
 Project.defaultVulnerabilities = [		// eslint-disable-line no-unused-vars
-	/* [ type , title , description ] */
-	["tWLS",_("Interference"),		_("Unintentional interference by a radio source using the same frequency band.")],
-	["tWLS",_("Jamming"),			_("Intentional interference by some third party.")],
-	["tWLS",_("Congestion"),		_("The amount of traffic offered exceeds the capacity of the link.")],
-	["tWLS",_("Signal weakening"),	_("Loss of signal strength through distance or blocking by buildings, trees, etc.")],
-	["tWRD",_("Break"),				_("Cable damaged by natural events, trenching, anchors, or other external influence.")],
-	["tWRD",_("Congestion"),		_("The amount of traffic offered exceeds the capacity of the link.")],
-	["tWRD",_("Cable aging"),		_("Insulation weakens with age.")],
-	["tEQT",_("Physical damage"),	_("Fire, flood, knocks and other physical damage inflicted.")],
-	["tEQT",_("Power"),				_("Failure of electrical power supply.")],
-	["tEQT",_("Configuration"),		_("Incorrect configuration or mistakes by operators or users.")],
-	["tEQT",_("Malfunction"),		_("Failure of an internal module without a clear external cause, possibly by aging.")]
+	/* [ type , title , malicious, description ] */
+	["tWLS",_("Interference"),		false, _("Unintentional interference by a radio source using the same frequency band.")],
+	["tWLS",_("Congestion"),		false, _("The amount of traffic offered exceeds the capacity of the link.")],
+	["tWLS",_("Signal weakening"),	false, _("Loss of signal strength through distance or blocking by buildings, trees, etc.")],
+	["tWLS",_("Jamming"),			true,  _("Intentional interference or denial of service (DDOS) by some third party.")],
+	["tWRD",_("Break"),				false, _("Cable damaged by natural events, aging, trenching, anchors, or other external influence.")],
+	["tWRD",_("Congestion"),		false, _("The amount of traffic offered exceeds the capacity of the link.")],
+	["tWRD",_("Denial of service"),	true,  _("Intentional congestion (DDOS).")],
+	["tEQT",_("Physical damage"),	false, _("Fire, flood, knocks and other physical damage inflicted.")],
+	["tEQT",_("Power"),				false, _("Failure of electrical power supply.")],
+	["tEQT",_("Configuration"),		false, _("Incorrect configuration or mistakes by operators or users.")],
+	["tEQT",_("Malfunction"),		false, _("Failure of an internal module without a clear external cause, possibly by aging.")],
+	["tEQT",_("Theft"),				true,  _("Insider our outsider steals the item through embezzlement or burglary.")],
+	["tEQT",_("Software"),			true,  _("Exploits due to lack of updates, zero days, or insecure settings/configuration.")],
+	["tEQT",_("Unsafe use"),		true,  _("Social engineering, phishing, weak or shared passwords.")]
 ];
 
 
@@ -571,6 +577,7 @@ Project.prototype = {
 #endif
 
 	setdescription: function(s) {
+		if (this.description==s) return;
 		this.description = String(s).trim().substr(0,100);
 		this.store();
 	},
@@ -579,7 +586,26 @@ Project.prototype = {
 		this.date = String(d).trim().substr(0,20);
 		this.store();
 	},
-	
+
+	setwpa: function(l) {
+		if (this.wpa==l) return;
+		if (['A','B','C','D','E'].indexOf(l)==-1) return;
+		this.wpa = l;
+		// Re-compute the display values of all assessments
+		let it = new AssessmentIterator({project: this.id});
+		it.forEach(asmnt => asmnt.computetotal());
+		// Repaint all single failure tabs
+		this.services.forEach(sid => {
+			let svc = Service.get(sid);
+			paintSingleFailures(svc);
+		});
+		// Repaint all relevant Analysis tabs
+		repaintAnalysisIfVisible(TabAnaVulnOverview);
+		repaintAnalysisIfVisible(TabAnaAssOverview);
+		repaintAnalysisIfVisible(TabAnaLonglist);
+		this.store();
+	},
+
 	addservice: function(id,idx) {
 		var s = Service.get(id);
 		if (this.services.indexOf(s.id)!=-1) {
@@ -640,7 +666,8 @@ Project.prototype = {
 		for (const dv of Project.defaultVulnerabilities) {
 			let vln = new Vulnerability(this.id,dv[0],createUUID());
 			vln.settitle(dv[1]);
-			vln.setdescription(dv[2]);
+			vln.setmalice(dv[2]);
+			vln.setdescription(dv[3]);
 			this.addvulnerability(vln.id,createUUID(),createUUID());
 		}
 	},
@@ -653,6 +680,7 @@ Project.prototype = {
 				id: createUUID(),
 				type: vln.type,
 				vulnerability: vln.id,
+				malice: vln.malice,
 				freq: '-',
 				impact: '-',
 				remark: ''
@@ -758,6 +786,7 @@ Project.prototype = {
 	},
 	
 	seticonset: function(iconset) {
+		if (this.iconset==iconset) return;
 		if (GroupSettings.iconsets.indexOf(iconset)==-1) return;
 		if (this.id==Project.cid) {
 			let res = this.retrieveicondata(iconset);
@@ -766,14 +795,15 @@ Project.prototype = {
 			this.store();
 			this.prepTemplatesAndMasks();
 			this.services.forEach(sid => {
-//				let it = new NodeIterator({service: sid});
-//				it.forEach(rn => rn.iconinit(rn.index));
 				let svc = Service.get(sid);
 				svc.unload();
 				svc.load();
+				paintSingleFailures(svc);
 			});
 			if (Preferences.tab==0) {
 				$('#tab_diagramstabtitle'+Service.cid).trigger('click');
+			} else if (Preferences.tab==1) {
+				$('#tab_singlefstabtitle'+Service.cid).trigger('click');
 			}
 		} else {
 			this.iconset = iconset;
@@ -820,6 +850,7 @@ Project.prototype = {
 				bugreport('unknown type encountered','Project.load'); 
 			}
 		}
+		$('.malset label').removeClass('ui-corner-left ui-corner-right');
 
 		var pid = this.id;
 		var sortfunc = function(/*event,ui*/) {
@@ -912,7 +943,9 @@ Project.prototype = {
 		$('#tC_tWLS').attr('title', _("Click to edit common vulnerabilities for Wireless links."));
 		$('#tC_tWRD').attr('title', _("Click to edit common vulnerabilities for Wired links."));
 		$('#tC_tEQT').attr('title', _("Click to edit common vulnerabilities for Equipment components."));
-
+		$('#tC_tACT').css('visibility','hidden');
+		$('#tC_tUNK').css('visibility','hidden');
+		
 		$('.templatebg').draggable({
 			cursor: 'move',
 			helper: 'clone'
@@ -946,6 +979,7 @@ Project.prototype = {
 		data.t=this.vulns;
 		data.c=this.labels;
 		data.i=this.iconset;
+		data.q=this.wpa;
 		return JSON.stringify(data);
 	},
 

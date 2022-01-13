@@ -981,7 +981,7 @@ Node.prototype = {
 			var id = nid2id(this.id);
 			var rn = Node.get(id);
 			if (!rn.editinprogress()) this.focus();
-			$('#nodeC'+id).css({visibility: 'visible'});
+			$('#nodeC'+id).show();
 			if (rn.dragpoint) $(rn.dragpoint.canvas).css({visibility: 'visible'});
 			if (Preferences.emsize=='em_none') {
 				$('#nodeMagnitude'+id).addClass('doshow');
@@ -991,7 +991,7 @@ Node.prototype = {
 			var rn = Node.get(id);
 			this.blur();
 			if (!rn.editinprogress()) this.blur();
-			$('#nodeC'+id).css({visibility: 'hidden'});
+			$('#nodeC'+id).hide();
 			if (rn.dragpoint) $(rn.dragpoint.canvas).css({visibility: 'hidden'});
 			$('#nodeMagnitude'+id).removeClass('doshow');
 		}).on('contextmenu', function(e) {
@@ -1077,6 +1077,7 @@ Node.prototype = {
 			$('#nodereport').html( s );
 			$('#nodereport').dialog({
 				title: _("Warning report on %%", rn.texttitle()),
+				classes: {"ui-dialog-titlebar": "ui-corner-top"},
 				position: {my: 'left top', at: 'center', of: e, collision: 'fit'}
 			});
 			$('#nodereport').dialog('open');
@@ -1346,7 +1347,8 @@ function RefreshNodeReportDialog() {
 	}
 	$('#nodereport').html( s );
 	$('#nodereport').dialog({
-		title: _("Warning report on %%", rn.title+' '+rn.suffix)
+		title: _("Warning report on %%", rn.title+' '+rn.suffix),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"}
 	});
 	$('#nodereport').dialog('open');
 }

@@ -35,7 +35,6 @@ Change cursor to hourglass during rollback/redo.
 Remove all uses of for..in, so that we can add an eslint rule preventing its use (to detect accidental typing for..in instead of for..of).
 Emit a Ctrl-Z or Cmd-Z when using the Undo/Redo menuitems in the standalone app while a textfield has focus.
 Some functions take an object as parameter, others take an ID. Allow both: if (typeof(param)=='string') param=Node.get(param);. Alternatively change all functions to take objects as parameter. Any conversion is then on the caller (which may already have the correct object).
-Use show()/hide() iso using css('visibility',...)
 Fancy workspace, indicate right and bottom borders, for those with huge screens or large zoom factors?
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
 Already requiring ES6 (const/let, arrow functions, class for interators). Now make use of more: all objects as class definitions, create modules with import/export, remove var definitions.

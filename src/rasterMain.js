@@ -229,6 +229,7 @@ function initAllAndSetup() {
 		modal: false,
 		width: 420,
 		resizable: false,
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		buttons: [
 			{ text: _("Cancel"),
 				click: function() {$('#pdfoptions').dialog('close');}
@@ -254,7 +255,12 @@ function initAllAndSetup() {
 	$('.toolbarlargebutton,.toolbarbutton,.toolbarlargeiconbutton,.toolbariconbutton').addClass('ui-widget ui-button ui-corner-all');
 	$('.toolbarlabel').addClass('ui-widget');
 
-	$('#modaldialog').dialog({ autoOpen:false, modal:true, width: 400 });
+	$('#modaldialog').dialog({
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		autoOpen:false,
+		modal:true,
+		width: 400
+	});
 
 	initTabDiagrams();
 	initTabSingleFs();
@@ -901,6 +907,7 @@ function initHomeToolbar() {
 		width: 700,
 		minWidth: 470,
 		maxWidth: 800,
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		open: function(/*event*/) {
 			initFrequencyTool();
 			$('#helptabs ul').width($('#helppanel').width()-14);
@@ -1317,6 +1324,7 @@ function StartFind(str) {
 		title: _("Find nodes"),
 		width: 405,
 		resizable: true,
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		buttons: [{ text: _("Done"),
 			click: function() {dialog.dialog('close');}
 		}],
@@ -1472,28 +1480,47 @@ function ShowDetails() {
 		${_H("Title:")}<br><input id="field_projecttitle" name="fld" type="text" value="${H(p.title)}"><br>
 		`;
 	if (!GroupSettings.localonly && p.shared) { //For standalone .localonly==true
-		snippet += `<div>${_H("Creator:")} ${p.stub ? p.creator : Preferences.creator}, ${_("last stored on")} ${H(prettyDate(p.date))}.<br><br></div>
-			`;
+		snippet += `<div>${_H("Creator:")} ${p.stub ? p.creator : Preferences.creator}, ${_("last stored on")} ${H(prettyDate(p.date))}.<br><br></div>`;
 	}
-	snippet +=`${_H("Description:")}<br><textarea id="field_projectdescription" rows="3">${H(p.description)}</textarea><br>
-		`;
+	snippet +=`${_H("Description:")}<br><textarea id="field_projectdescription" rows="3">${H(p.description)}</textarea><br>`;
+	snippet += '<div id="psettings">';
+	// Private or Shared
 	if (!GroupSettings.localonly) { //For standalone .localonly==false
-		snippet += `<fieldset>
-		<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">${_H("Private")}</label>
-		<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">${_H("Shared")}</label>
+		snippet += `<div class="psitem">${_H("Sharing: ")}<br>
+		<fieldset>
+			<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">${_H("Private")}</label>
+			<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">${_H("Shared")}</label>
 		</fieldset>
+		</div>
 		`;
+	} else {
+		snippet += '<div class="psitem"></div>';
 	}
+	// Worst Plausible Actor
+	snippet += `<div class="psitem">${_H("Worst plausible attacker: ")}<br>
+		<select name="wpalist" id="wpalist">
+			<option value="A">${H("Customers, employees")}</option>
+			<option value="B">${H("Activists")}</option>
+			<option value="C">${H("Criminals")}</option>
+			<option value="D">${H("Competitors")}</option>
+			<option value="E">${H("State actors")}</option>
+		</select>
+		</div>`;
+	// Iconset
 	if (GroupSettings.iconsets.length>1) { //For standalone .localonly==false
-		snippet += `<div class="floatright">${_H("Iconset: ")}
+		snippet += `<div class="psitem">${_H("Iconset: ")}<br>
 			<select name="iconsetlist" id="iconsetlist">`;
 		GroupSettings.iconsets.forEach(is => snippet += `<option value="${H(is)}">${H(is)}</option>` );
 		snippet += '</select></div>';
+	} else {
+		snippet += '<div class="psitem"></div>';
 	}
+	snippet += '</div">';
 	
 	snippet += '</form>';
 	let dialog = $('<div></div>');
 	dialog.append(snippet);
+	$('#wpalist').selectmenu();
 	$('#iconsetlist').selectmenu();
 
 	let dbuttons = [];
@@ -1509,6 +1536,7 @@ function ShowDetails() {
 					let fname = $('#field_projecttitle').val();
 					let fdescr = $('#field_projectdescription').val();
 					let becomesShared = $('#sh_on').prop('checked');
+					let fwpa = $('#wpalist').val();
 					let fset = $('#iconsetlist').val();
 					$(this).dialog('close');
 					
@@ -1518,6 +1546,7 @@ function ShowDetails() {
 					Preferences.setcurrentproject(p.title);
 					
 					p.setdescription(fdescr);
+					p.setwpa(fwpa);
 					p.seticonset(fset);
 #ifdef SERVER
 					if (!GroupSettings.localonly) {
@@ -1548,8 +1577,9 @@ function ShowDetails() {
 	});
 	dialog.dialog({
 		title: _("Properties for project '%%'", p.title),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		modal: true,
-		width: 490, maxWidth: 490, minWidth: 490,
+		width: 520, maxWidth: 520, minWidth: 520,
 		buttons: dbuttons,
 		open: function() {
 #ifdef SERVER
@@ -1564,6 +1594,7 @@ function ShowDetails() {
 				$('input[name="sh_onoff"]').checkboxradio('option','disabled',true);
 			}
 #endif
+			$('#wpalist').val(p.wpa);
 			$('#iconsetlist').val(p.iconset);
 			$('#field_projecttitle').focus().select();
 			$('#form_projectprops').submit(function() {
@@ -1857,6 +1888,7 @@ function rasterAlert(title,msg) {
 	]);
 	$('#modaldialog').dialog({
 		title: String(title),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		height: 'auto',
 		maxHeight: 600
 	});
@@ -2603,6 +2635,7 @@ function loadFromString(str,options) {
 		}
 		vln.settitle(lv.l);
 		vln.setcommon(lv.c);
+		vln.setmalice(lv.m);
 	}
 	for (i=0; i<lProjectlen; i++) {
 		var lp = lProject[i];
@@ -2613,6 +2646,7 @@ function loadFromString(str,options) {
 		if (lp.d) p.description = lp.d;
 		if (lp.w) p.date = lp.w;
 		if (lp.i) p.iconset = lp.i;
+		if (lp.q) p.wpa = lp.q;
 		for (k=0; k<lp.s.length; k++) {
 			p.addservice(lp.s[k]);
 		}
@@ -2992,6 +3026,7 @@ function initTabDiagrams() {
 		minWidth: 775,
 		maxWidth: 779,
 		width: 775,
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		create: function() {
 			// Add vulnerability
 			$('<div id="dthadddia" class="titlebarbutton"></div>')
@@ -3038,6 +3073,7 @@ function initTabDiagrams() {
 		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 
+	$('.th_mal.thr_header').text( _("Cause") );
 	$('.th_name.thr_header').text( _("Name") );
 	$('.th_descr.thr_header').text( _("Description") );
 	$('.addthreatbutton').val( _("+ Add vulnerability"));
@@ -3076,6 +3112,7 @@ function initTabDiagrams() {
 	$('#selectrectC').on('click', showSelectMenu);
 
 	$('#nodereport').dialog({
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		autoOpen: false,
 		minHeight: 80
 	});
@@ -3092,9 +3129,9 @@ function initTabDiagrams() {
 	});
 
 	$('#templates').on('mouseenter', function() {
-		$('.tC').css({visibility: 'visible'});
+		$('.tC').show();
 	}).on('mouseleave',function() {
-		$('.tC').css({visibility: 'hidden'});
+		$('.tC').hide();
 	});
 	$(document).on('mousedown', '.tC', function(/*event,ui*/){
 		// this.id is of the form "tC_YYY", and we need to know YYY
@@ -3224,6 +3261,7 @@ function initTabDiagrams() {
 			width: 350,
 			height: 130,
 			buttons: dbuttons,
+			classes: {"ui-dialog-titlebar": "ui-corner-top"},
 			open: function() {
 				$('#field_componentrename').focus().select();
 				$('#form_componentrename').submit(function() {
@@ -3273,6 +3311,7 @@ function initTabDiagrams() {
 			width: 350,
 			height: 130,
 			buttons: dbuttons,
+			classes: {"ui-dialog-titlebar": "ui-corner-top"},
 			open: function() {
 				$('#field_suffixrename').focus().select();
 				$('#form_suffixrename').submit(function() {
@@ -3682,8 +3721,9 @@ function initChecklistsDialog(type) {
 	var offsets = {'tWLS': 100, 'tWRD': 130, 'tEQT': 160};
 	$('#checklist_'+type).dialog({
 		title: _("Common vulnerabilities for all nodes of type '%%'", Rules.nodetypes[type]),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		closeOnEscape: false,
-		minWidth: 725,
+		minWidth: 790,
 		minHeight: 180,
 		position: {my: 'left+'+(offsets[type]+50)+' top+'+offsets[type], at: 'left top', of: '#workspace', collision: 'fit'},
 		autoOpen: false,
@@ -3778,6 +3818,7 @@ function showLabelEditForm() {
 	});
 	dialog.dialog({
 		title: _("Edit labels"),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		modal: true,
 		width: 285,
 		height: 320,
@@ -3841,6 +3882,7 @@ function refreshComponentThreatAssessmentsDialog(force) {
 	var c = Component.get(Component.ThreatsComponent);
 	var snippet = '<div id="dialogthreatlist">\
 		<div class="threat">\
+		<div class="th_mal th_col thr_header">_LM_</div>\
 		<div class="th_name th_col thr_header">_LN_</div>\
 		<div class="th_freq th_col thr_header">_LF_</div>\
 		<div class="th_impact th_col thr_header">_LI_</div>\
@@ -3849,8 +3891,9 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		</div>\
 		<div id="threats_CI_" class="threats"></div>\
 		</div>';
+	snippet = snippet.replace(/_LM_/g, _H("Cause"));
 	snippet = snippet.replace(/_LN_/g, _H("Name"));
-	snippet = snippet.replace(/_LF_/g, _H("Freq."));
+	snippet = snippet.replace(/_LF_/g, _H("F/D"));
 	snippet = snippet.replace(/_LI_/g, _H("Impact"));
 	snippet = snippet.replace(/_LT_/g, _H("Total"));
 	snippet = snippet.replace(/_LR_/g, _H("Remark"));
@@ -3865,9 +3908,8 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		if (th==null) continue;
 		Assessment.get(th).addtablerow('#threats'+c.id,'dia');
 	}
-//	$('#dthadddia'+c.id).button();
-//	$('#dthcopydia'+c.id).button();
-//	$('#dthpastedia'+c.id).button();
+	$('.malset label').removeClass('ui-corner-left ui-corner-right');
+
 	$('#threats'+c.id).sortable({
 		containment: 'parent',
 		helper: 'clone',
@@ -3935,6 +3977,7 @@ function displayComponentThreatAssessmentsDialog(cid,where) {
 	refreshComponentThreatAssessmentsDialog(true);
 	$('#componentthreats').dialog({
 		title: _("Vulnerability assessment for '%%'", c.title) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		position: {my: 'left top', at: 'right', of: where, collision: 'fit'}
 	});
 	$('#componentthreats').dialog('open');
@@ -4048,6 +4091,7 @@ function paintSingleFailures(s) {
 			 <div id="sfapaste_SV___ID_" class="pastebutton titlebaricon" title="_BP_"><img src="../img/cpaste.png"></div></div>\n\
 			 <div id="sfa_SV___ID_">\n\
 			  <div class="threat">\n\
+			   <div class="th_mal th_col thr_header">_LC_</div>\n\
 			   <div class="th_name th_col thr_header">_LN_</div>\n\
 			   <div class="th_freq th_col thr_header">_LF_</div>\n\
 			   <div class="th_impact th_col thr_header">_LI_</div>\n\
@@ -4057,8 +4101,9 @@ function paintSingleFailures(s) {
 			 </div>\n\
 		';
 		snippet = snippet.replace(/_LSF_/g, _("Single failures for"));
+		snippet = snippet.replace(/_LC_/g, _("Cause"));
 		snippet = snippet.replace(/_LN_/g, _("Name"));
-		snippet = snippet.replace(/_LF_/g, _("Freq."));
+		snippet = snippet.replace(/_LF_/g, _("F/D"));
 		snippet = snippet.replace(/_LI_/g, _("Impact"));
 		snippet = snippet.replace(/_LT_/g, _("Total"));
 		snippet = snippet.replace(/_LR_/g, _("Remark"));
@@ -4109,7 +4154,7 @@ function paintSingleFailures(s) {
 	// Now loop again, add vulnerabilities and behaviour.
 	for (const cm of it) {
 		cm.setmarkeroid("#sfamark"+s.id+'_'+cm.id);
-		for (const thid of cm.assmnt) Assessment.get(thid).addtablerow_behavioronly('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
+		for (const thid of cm.assmnt) Assessment.get(thid).addtablerow_behavioronly("sfa"+s.id+'_'+cm.id);
 		var copyhandler = function(s,cm) {
 			return function() {
 				Assessment.Clipboard = [];
@@ -4724,6 +4769,7 @@ function repaintCluster(elem) {
 
 	var snippet = '<div>\
 		<div class="threat">\
+		<div class="th_mal th_col thr_header">_LC_</div>\
 		<div class="th_name th_col thr_header">_LN_</div>\
 		<div class="th_freq th_col thr_header">_LF_</div>\
 		<div class="th_impact th_col thr_header">_LI_</div>\
@@ -4732,8 +4778,9 @@ function repaintCluster(elem) {
 		</div>\
 		<div id="ccftable_ID_" class="threats">\
 		</div></div>\n';
+	snippet = snippet.replace(/_LC_/g, _H("Cause"));
 	snippet = snippet.replace(/_LN_/g, _H("Name"));
-	snippet = snippet.replace(/_LF_/g, _H("Freq."));
+	snippet = snippet.replace(/_LF_/g, _H("F/D"));
 	snippet = snippet.replace(/_LI_/g, _H("Impact"));
 	snippet = snippet.replace(/_LT_/g, _H("Total"));
 	snippet = snippet.replace(/_LR_/g, _H("Remark"));
@@ -5733,7 +5780,7 @@ function paintAssessmentOverviewType(tabletype) {
 	function addUp(ta) {
 		var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
 		if (v_total[t]) v_total[t]++; else v_total[t]=1;
-		switchvar = (tabletype==0 ? ta.total : (tabletype==1 ? ta.freq : ta.impact) );
+		switchvar = (tabletype==0 ? ta.total : (tabletype==1 ? ta.freqDisp : ta.impact) );
 		switch (switchvar) {
 		case 'U': v_U['__TOTAL__']++; if (v_U[t]>0) v_U[t]++; else v_U[t]=1; break;
 		case 'L': v_L['__TOTAL__']++; if (v_L[t]>0) v_L[t]++; else v_L[t]=1; break;

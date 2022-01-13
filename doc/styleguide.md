@@ -14,8 +14,8 @@ Not sure about modules yet. First check whether they impede debugging in the Dev
 
 *Do not use:*
 * (static) class fields. Instead, declare instance properties on this, in the constructor; declare static properties on the class name, after the class definition.
-* private class methods and fields (declared with #). These have been supported only from Firefox 90 onwards.
-* static initialization blocks. This is supported only from Firefox 93 onwards.
+* private class methods and fields (declared with #). These have been supported only from Firefox 90 onwards (July 2021).
+* static initialization blocks. This is supported only from Firefox 93 onwards (September 2021).
 * Array.includes (which is part of ECMAScript 2016).
 * async function (ECMAScript 2017).
 

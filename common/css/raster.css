@@ -425,14 +425,10 @@ img.templateicon {
 	max-width: 58px;
 	max-height: 20px;
 }
-/* Pencil is enabled/disabled using 'display', and shown/hidden using 'visibility' */
-#tC_tWLS { display: block; }
-#tC_tWRD { display: block; }
-#tC_tEQT { display: block; }
+/* Checklist edit is enabled/disabled using 'visibility', and shown/hidden using 'display' / $().show() & .hide() */
 img.tC {
 	position: absolute;
 	display: none;
-	visibility: hidden;
 	top: -7px;
 	right: -2px;
 	width: 16px;
@@ -679,7 +675,7 @@ textarea.inplace_field {
 }
 ::placeholder { font-style: italic; }
 
-/* Panel for projects */
+/* Panel for project settings */
 #form_projectprops input,
 #form_projectprops textarea,
 #sh_onoff {
@@ -689,6 +685,19 @@ textarea.inplace_field {
 #field_projecttitle,
 #field_projectdescription {
 	width: 470px;
+}
+
+.psitem {
+	display: inline-block;
+	vertical-align: top;
+	margin-right: 4em;
+	margin-top: 2px;
+	line-height: 23px;
+}
+.psitem label.ui-checkboxradio-radio-label {
+	/* Tweaked to get the text on the same horizontal line as the select menus */
+	padding: 3px 10px;
+	top: -2px;
 }
 
 #creator {
@@ -796,6 +805,9 @@ div.th_name {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
+div.th_mal {
+	width: 4.5em;
+}
 div.th_descr {
 	width: 46em;
 	overflow: hidden;
@@ -834,6 +846,19 @@ div.th_del .ui-button:hover {
 
 /* Dialog: checklist */
 .checklist { display: none; }
+
+.malset label {
+	padding: 0 3px;
+	height: 18px;
+	width: 13px;
+	border-color: var(--lightbg);
+}
+.malset img {
+	opacity: 0.35;
+}
+.malset label.ui-state-active img {
+	opacity: 1;
+}
 
 /* Dialog: threat evaluation */
 div.th_freq { width: 4.5em; }
@@ -1158,10 +1183,10 @@ img.nodeC {
 	box-shadow: 0 0 3px #999999;
 	z-index: 15;
 	cursor: context-menu;
-	visibility: hidden;
+	display: none;
 }
-.markhi { visibility: visible; }
-.marklo { visibility: hidden; }
+.markhi { display: block; }
+.marklo { display: none; }
 img.nodeW {
 	position: absolute;
 	top: -5px;

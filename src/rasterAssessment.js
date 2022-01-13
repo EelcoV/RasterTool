@@ -25,6 +25,7 @@ bugreport, _, _H, AssessmentIterator, LS, Component, NodeClusterIterator, Transa
  * Instance properties:
  *	id: UUID
  *	vulnerability: Vulnerability-object associated with this assessment
+ *	malice (getter): true iff the vulnerability is marked as malicious
  *	component: Component object to which this evaluation belongs (may be null).
  *	cluster: NodeCluster object to which this evaluation belongs (may be null).
  *	type: type of threat (type of Node to which this evaluation belongs)
@@ -32,6 +33,7 @@ bugreport, _, _H, AssessmentIterator, LS, Component, NodeClusterIterator, Transa
  *	title (getter): short name of the threat (50 chars max)
  *	description (getter): description of the threat (100 chars max)
  *	freq: frequency
+ *  freqDisp: (computed&cached) adjusted frequency to display. frqDisp==freq, except for malicious vulnerabilities.
  *	impact: magnitude of effects
  *  minimpact: minimum value for impact; if less than this, highlight the field.
  *  _impactoid: object id of the impact <div> on which edit-in-place is possible.
@@ -52,7 +54,7 @@ bugreport, _, _H, AssessmentIterator, LS, Component, NodeClusterIterator, Transa
  *	computetotal: update total based on current freq and impact, and update component and node cluster.
  *	setremark(str): sets the remark to 'str'
  *	addtablerow_textonly(prefix,interact): create the HTML code visually representing this threat assessment.
- *	addtablerow_behavioronly(oid,prefix,interact): enable the editing-interactions for the table row.
+ *	addtablerow_behavioronly(prefix,interact): enable the editing-interactions for the table row.
  *	addtablerow(oid): add a HTML table row to the DOM object with id 'oid'.
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
@@ -75,6 +77,7 @@ var Assessment = function(type,id) {
 	this.cluster = null;
 	this._title = null;
 	this.freq='-';
+	this.freqDisp='-';
 	this.impact='-';
 	this.minimpact='-';
 	this._impactoid=null;
@@ -116,6 +119,22 @@ Assessment.descr = [
 	_("Extremely high"),
 	_("Unknown")
 ];
+Assessment.wpavalueindex = [];
+Assessment.wpavalueindex['A']=0;
+Assessment.wpavalueindex['B']=1;
+Assessment.wpavalueindex['C']=2;
+Assessment.wpavalueindex['D']=3;
+Assessment.wpavalueindex['E']=4;
+Assessment.mdescr = [
+	_("Undetermined"),
+	_("Ambiguous"),
+	_("Nearly impossible"),
+	_("Very difficult"),
+	_("Difficult"),
+	_("Easy"),
+	_("Trivial"),
+	_("Unknown")
+];
 /* Combine all risk factors into a combined total score for a single threat
  * Assessment.combine[freq][impact], where
  * freq and impact = Assessment.valueindex[...]
@@ -134,6 +153,22 @@ Assessment.combinearr = [
 Assessment.combine = function(a,b) {
 	return Assessment.combinearr[Assessment.valueindex[a]][Assessment.valueindex[b]];
 };
+
+Assessment.ffsaw = [
+/* 			 A	 B	 C	 D	 E	*/
+/* '-' */ [	'-','-','-','-','-'], // undetermined
+/* 'A' */ [	'A','A','A','A','A'], // ambiguous
+/* 'U' */ [	'U','L','L','L','M'], // nearly impossible
+/* 'L' */ [	'L','L','L','M','M'], // very difficult
+/* 'M' */ [	'L','M','M','H','H'], // difficult
+/* 'H' */ [	'M','H','H','H','H'], // easy
+/* 'V' */ [	'H','H','H','H','V'], // trivial
+/* 'X' */ [	'X','X','X','X','X']  // unknown
+];
+Assessment.freqFromSophisticationAndWPA = function(fr,wpa) {
+	return Assessment.ffsaw[Assessment.valueindex[fr]][Assessment.wpavalueindex[wpa]];
+};
+
 /* Combine two totals into an overall vulnerability score
  * For assessment totals t0, t1, ..., tn the overall score is
  * Assessment.sum(tn, Assessment.sum(tn-1, ... (t1, t0)) ...)
@@ -217,6 +252,10 @@ Assessment.prototype = {
 		} else {
 			return NodeCluster.get(this.cluster).project;
 		}
+	},
+	
+	get malice() {
+		return Vulnerability.get(this.vulnerability).malice;
 	},
 
 	setvulnerability: function(vid) {
@@ -333,7 +372,12 @@ Assessment.prototype = {
 	},
 
 	computetotal: function() {
-		this.total = Assessment.combine(this.freq,this.impact);
+		let fr = this.freq;
+		if (this.malice) {
+			fr = Assessment.freqFromSophisticationAndWPA(fr,Project.get(this.project).wpa);
+		}
+		this.freqDisp = fr;
+		this.total = Assessment.combine(fr,this.impact);
 		if (this.component!=null) {
 			Component.get(this.component).calculatemagnitude();
 		}
@@ -352,6 +396,12 @@ Assessment.prototype = {
 		if (beforestring==null) beforestring='<span>';
 		if (afterstring==null) afterstring='</span>';
 		var snippet = '<div id="dth_PF___TI_" class="threat">\
+			<div id="dth__PF_mal_TI_" class="th_mal th_col">\
+				<fieldset class="malset">\
+					<input type="radio" id="_PF_thmal_TI_-off" name="_PF_labelthmal_TI_"><label for="_PF_thmal_TI_-off" title="_LN_"><img src="../img/natural.png"></label>\
+					<input type="radio" id="_PF_thmal_TI_-on"  name="_PF_labelthmal_TI_"><label for="_PF_thmal_TI_-on" title="_LM_"><img src="../img/malice.png"></label>\
+				</fieldset>\
+			</div>\
 			<div id="dth__PF_name_TI_" class="th_name th_col">_BS_<span id="dthE__PF_name_TI_">_TT_</span>_AS_</div>\
 			<div id="dth__PF_freq_TI_" class="th_freq th_col"><span>_DF_</span></div>\
 			<div id="dth__PF_impact_TI_" class="th_impact th_col"><span>_DI_</span></div>\
@@ -367,9 +417,11 @@ Assessment.prototype = {
 		snippet = snippet.replace(/_TT_/g, H(this.title));
 		snippet = snippet.replace(/_TO_/g, this.total);
 		snippet = snippet.replace(/_PF_/g, prefix);
-		snippet = snippet.replace(/_DF_/g, this.freq);
+		snippet = snippet.replace(/_DF_/g, this.freqDisp);
 		snippet = snippet.replace(/_DI_/g, this.impact);
 		snippet = snippet.replace(/_DR_/g, H(this.remark));
+		snippet = snippet.replace(/_LN_/g, _("Natural or unintentional cause"));
+		snippet = snippet.replace(/_LM_/g, _("Malicious and intentional action"));
 		snippet = snippet.replace(/_DD_/g, _("Remove vulnerability"));
 		this._impactoid = '#dth_'+prefix+'impact'+this.id;
 		return snippet;
@@ -378,12 +430,13 @@ Assessment.prototype = {
 	addtablerow: function(oid,prefix,interact,beforestring,afterstring) {
 		if (interact==null) interact=true;
 		$(oid).append( this.addtablerow_textonly(prefix,interact,beforestring,afterstring) );
-		this.addtablerow_behavioronly(oid,prefix,interact);
-		$('dth_'+prefix+'del'+this.id).button({icon: 'ui-icon-trash'});
+		this.addtablerow_behavioronly(prefix,interact);
+//		$('dth_'+prefix+'del'+this.id).button({icon: 'ui-icon-trash'});
 	},
 	
-	addtablerow_behavioronly: function(oid,prefix,interact) {
+	addtablerow_behavioronly: function(prefix,interact) {
 		if (interact==null) interact=true;
+		let vln = Vulnerability.get(this.vulnerability);
 
 		if (this.component!=null && Component.get(this.component).type=='tUNK') {
 			$('#dth_'+prefix+'name'+this.id).attr('title', _("For %%: ",Rules.nodetypes[this.type]) + this.description);
@@ -391,15 +444,37 @@ Assessment.prototype = {
 			$('#dth_'+prefix+'name'+this.id).attr('title', this.description);
 		}
 		
-		var selectoptions = '';
-		for (var i=0; i<Assessment.values.length; i++) {
+		$(`#dth_${prefix}mal${this.id} input`).checkboxradio({icon: false});
+		$(`#dth_${prefix}mal${this.id} fieldset`).controlgroup();
+		$(`#dth_${prefix}mal${this.id} input`).eq(0).prop('checked',!this.malice);
+		$(`#dth_${prefix}mal${this.id} input`).eq(1).prop('checked',this.malice);
+		$(`#dth_${prefix}mal${this.id} input`).checkboxradio('option','disabled',true);
+		$(`#dth_${prefix}mal${this.id} input`).checkboxradio('refresh');
+
+		let selectoptions = '';
+		for (let i=0; i<Assessment.values.length; i++) {
 			if (selectoptions!='')  selectoptions += ',';
 			selectoptions += '_L_ _D_:_L_';
 			selectoptions = selectoptions.replace(/_L_/g, Assessment.values[i]);
 			selectoptions = selectoptions.replace(/_D_/g, Assessment.descr[i]);
 		}
-		var assmnt = this;
-		var c;
+		let wpa = Project.get(this.project).wpa;
+		let fselectoptions='', fselecttext;
+		if (this.malice) {
+			for (let i=0; i<Assessment.values.length; i++) {
+				if (fselectoptions!='')  fselectoptions += ',';
+				fselectoptions += '_T_ _D_:_L_';
+				fselectoptions = fselectoptions.replace(/_T_/g, Assessment.freqFromSophisticationAndWPA(Assessment.values[i],wpa));
+				fselectoptions = fselectoptions.replace(/_D_/g, Assessment.mdescr[i]);
+				fselectoptions = fselectoptions.replace(/_L_/g, Assessment.values[i]);
+			}
+			fselecttext = _("Difficulty");
+		} else {
+			fselectoptions = selectoptions;
+			fselecttext = _("Frequency:");
+		}
+		let assmnt = this;
+		let c;
 
 		if (this.component==null && this.cluster==null) {
 			bugreport('neither .component nor .cluster is set','this.addtablerow');
@@ -426,7 +501,6 @@ Assessment.prototype = {
 						);
 						return enteredText;
 					}
-					let vln = Vulnerability.get(assmnt.vulnerability);
 					let it = new VulnerabilityIterator({project: vln.project, type: vln.type, title: enteredText});
 					if (it.isEmpty()) {
 						new Transaction('vulnDetails',
@@ -486,15 +560,28 @@ Assessment.prototype = {
 		$('#dth_'+prefix+'freq'+this.id).editInPlace({
 			bg_out: 'var(--vlightbg)', bg_over: 'var(--highlt)',
 			field_type: 'select',
-			select_options: selectoptions,
-			select_text: "",
+			select_options: fselectoptions,
+			select_text: fselecttext,
 			callback: function(oid, enteredText) {
 				new Transaction('assessmentDetails',
 					[{assmnt: assmnt.id, freq: assmnt.freq}],
 					[{assmnt: assmnt.id, freq: enteredText}],
 					_("Edit frequency")
 				);
-				return '<span>'+enteredText+'</span>';
+				return assmnt.freqDisp;
+			},
+			delegate: {
+				shouldOpenEditInPlace: function() {
+					// When malicious, we display the adjust frequency. Quickly swap the store .freq value
+					// into place just before openening the select.
+					$('#dth_'+prefix+'freq'+assmnt.id).text(assmnt.freq);
+					return true;
+				},
+				didCloseEditInPlace: function() {
+					// When malicious, we restore the display freqeuncy. There is a Transaction coming after
+					// this, so this is only useful in case there is no change.
+					$('#dth_'+prefix+'freq'+assmnt.id).text(assmnt.freqDisp);
+				}
 			}
 		});
 
@@ -503,7 +590,7 @@ Assessment.prototype = {
 			bg_out: 'var(--vlightbg)', bg_over: 'var(--highlt)',
 			field_type: 'select',
 			select_options: selectoptions,
-			select_text: '',
+			select_text: _("Impact:"),
 			preinit: function() {
 				// Add a hint: the impact probably should be at least that of the highest impact of its member nodes.
 				var highnodes = assmnt.computeminimpact();
@@ -567,6 +654,16 @@ Assessment.prototype = {
 		});
 	
 		if (interact) {
+			$(`#dth_${prefix}mal${this.id} input`).checkboxradio('option','disabled',false);
+			$(`#dth_${prefix}mal${this.id} input`).on('change', function() {
+				let val = $(`#dth_${prefix}mal${assmnt.id} input`).eq(1).prop('checked');
+				new Transaction('vulnDetails',
+					[{vuln: vln.id, malice: vln.malice}],
+					[{vuln: vln.id, malice: val}],
+					_("Change cause type of vulnerability")
+				);
+
+			});
 			$('#dth_'+prefix+"del"+this.id).button({label: '⊗'}).on('click',  function() {
 				let assmnt = Assessment.get(nid2id(this.id));
 				let cm;

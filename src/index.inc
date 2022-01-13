@@ -462,17 +462,17 @@ See LICENSE.md
 <div id="modaldialog"></div>
 
 <div id="checklist_tWLS" class="checklist">
-    <div class="threat"><div class="th_name th_col thr_header">xyz</div><div class="th_descr th_col thr_header">xyz</div></div>
+    <div class="threat"><div class="th_mal th_col thr_header">xyz</div><div class="th_name th_col thr_header">xyz</div><div class="th_descr th_col thr_header">xyz</div></div>
     <div id="tWLSthreats" class="threats">
     </div>
 </div>
 <div id="checklist_tWRD" class="checklist">
-    <div class="threat"><div class="th_name th_col thr_header">xyz</div><div class="th_descr th_col thr_header">xyz</div></div>
+    <div class="threat"><div class="th_mal th_col thr_header">xyz</div><div class="th_name th_col thr_header">xyz</div><div class="th_descr th_col thr_header">xyz</div></div>
     <div id="tWRDthreats" class="threats">
     </div>
 </div>
 <div id="checklist_tEQT" class="checklist">
-    <div class="threat"><div class="th_name th_col thr_header">xyz</div><div class="th_descr th_col thr_header">xyz</div></div>
+    <div class="threat"><div class="th_mal th_col thr_header">xyz</div><div class="th_name th_col thr_header">xyz</div><div class="th_descr th_col thr_header">xyz</div></div>
     <div id="tEQTthreats" class="threats">
     </div>
 </div>

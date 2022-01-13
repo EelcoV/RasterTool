@@ -31,6 +31,8 @@
 		49367208275ADDCA00B4F351 /* ccopy.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ccopy.png; sourceTree = "<group>"; };
 		4938942D239C0FA300C3E2A5 /* _lang.bat */ = {isa = PBXFileReference; lastKnownFileType = text; path = _lang.bat; sourceTree = "<group>"; };
 		493AA22F1A7419A9005DDFFB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		4941B032278DBC0600F9A687 /* natural.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = natural.png; sourceTree = "<group>"; };
+		4941B033278DBC0700F9A687 /* malice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = malice.png; sourceTree = "<group>"; };
 		4943444A203A026600043E80 /* jquery-ui.min.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "jquery-ui.min.css"; sourceTree = "<group>"; };
 		494464AD1A2323990066BDE1 /* About.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = About.html; sourceTree = "<group>"; };
 		494464AE1A2323990066BDE1 /* Frequency.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Frequency.html; sourceTree = "<group>"; };
@@ -95,12 +97,14 @@
 		49ADB676276BE41000A99B47 /* checktranslation.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = checktranslation.sh; sourceTree = "<group>"; };
 		49ADB677276CF02300A99B47 /* installbg_EN.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = installbg_EN.png; sourceTree = "<group>"; };
 		49ADB678276CF02300A99B47 /* installbg_NL.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = installbg_NL.png; sourceTree = "<group>"; };
-		49ADB679276D30E700A99B47 /* fix-the-disk-image.applescript */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.applescript; path = "fix-the-disk-image.applescript"; sourceTree = "<group>"; };
+		49ADB679276D30E700A99B47 /* fix-the-disk-image.applescript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.applescript; path = "fix-the-disk-image.applescript"; sourceTree = "<group>"; };
 		49ADB67B276E7BFB00A99B47 /* props_p.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = props_p.png; sourceTree = "<group>"; };
 		49ADB67C277066D400A99B47 /* icons.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = icons.odg; sourceTree = "<group>"; };
 		49ADB67D2770673B00A99B47 /* filepp-1.8.0.tar.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = "filepp-1.8.0.tar.gz"; sourceTree = "<group>"; };
 		49ADD30023CA0B5C003BE3D4 /* rasterTransaction.js */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; path = rasterTransaction.js; sourceTree = "<group>"; };
 		49AE7CC62378595A00F12B9D /* winbuild.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = winbuild.bat; sourceTree = "<group>"; };
+		49AF86612790953A00AC54EE /* standalone-readme-EN.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "standalone-readme-EN.txt"; sourceTree = "<group>"; };
+		49AF866227909CCD00AC54EE /* standalone-readme-NL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "standalone-readme-NL.txt"; sourceTree = "<group>"; };
 		49BEE0DE23C1F90E00AC17F7 /* group.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = group.json; sourceTree = "<group>"; };
 		49CA255E23CB3A32002F7B74 /* redo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = redo.png; sourceTree = "<group>"; };
 		49CA255F23CB3A32002F7B74 /* undo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = undo.png; sourceTree = "<group>"; };
@@ -224,6 +228,8 @@
 		494B6FEB18796E9D00400328 /* img */ = {
 			isa = PBXGroup;
 			children = (
+				4941B033278DBC0700F9A687 /* malice.png */,
+				4941B032278DBC0600F9A687 /* natural.png */,
 				49E78B48278510130030B0D7 /* editlabels.png */,
 				496AB70C2773561300DEB5A2 /* tNOTicon.png */,
 				49ADB67B276E7BFB00A99B47 /* props_p.png */,
@@ -348,6 +354,8 @@
 				49E402C11F99383100978B5C /* electron.iconset */,
 				49E402A91F99378B00978B5C /* RasterIcon.odg */,
 				49ADB67C277066D400A99B47 /* icons.odg */,
+				49AF86612790953A00AC54EE /* standalone-readme-EN.txt */,
+				49AF866227909CCD00AC54EE /* standalone-readme-NL.txt */,
 				49EE093027888DD200A9735C /* installbg.odg */,
 				4915A6301FA0482800B4B205 /* raster.ico */,
 				494AF84E1FA48AA100356A28 /* installraster.ico */,

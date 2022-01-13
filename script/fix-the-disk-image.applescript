@@ -3,13 +3,14 @@ on run (volumeName)
 		tell disk (volumeName as string)
 			open
 			
-			set theXOrigin to 20
+			set theXOrigin to 60
 			set theYOrigin to 60
-			set theWidth to 650
-			set theHeight to 420
+			set theWidth to 750
+			set theHeight to 430
 			
 			set theBottomRightX to (theXOrigin + theWidth)
 			set theBottomRightY to (theYOrigin + theHeight)
+			set rootDir to "/Volumes/" & volumeName
 			set dsStore to "\"" & "/Volumes/" & volumeName & "/" & ".DS_STORE\""
 			
 			tell container window
@@ -28,10 +29,19 @@ on run (volumeName)
 			end tell
 			set background picture of opts to file ".background:image.png"
 			
+			set myLoc to (path to desktop folder)
+			if file "Desktop" exists then
+				-- assume all is well
+			else
+				make new alias to myLoc at POSIX file rootDir
+				set name of result to " "
+			end if
+			
 			-- Positioning
-			set position of item "Raster.app" to {0, 130}
-			set position of item "Applications" to {360, 130}
-			set position of item "Documentation" to {360, 290}
+			set position of item "Raster.app" to {5, 130}
+			set position of item " " to {385, 130}
+			set position of item "!!" to {510, 310}
+			set position of item "Documentation" to {0, 500}
 			
 			-- Hiding
 			set extension hidden of item "Raster.app" to true

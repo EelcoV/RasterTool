@@ -129,6 +129,7 @@ CreateMacOSVersion()
 	defaults write $INFO "CFBundleVersion" "$RASTERSEASON"
 	defaults write $INFO "CFBundleIconFile" "raster.icns"
 	mv $BASEDIR/Raster.app/Contents/MacOS/Electron $BASEDIR/Raster.app/Contents/MacOS/Raster 2> /dev/null || true
+	codesign --force --deep --sign - $BASEDIR/Raster.app
 
 #	VOLDIR="/Volumes/Raster $RLANG"
 #
@@ -154,8 +155,10 @@ echo "** Copying background image"
 	rm -fr $BASEDIR/.background
 	mkdir $BASEDIR/.background
 	cp script/installbg_$RLANG.png $BASEDIR/.background/image.png
-echo "** Creating link to /Applications"
-	ln -s -f /Applications $BASEDIR
+#echo "** Creating link to /Applications"
+#	ln -s -f ~/Desktop $BASEDIR
+echo "** Copying readme"
+	cp "script/standalone-readme-$RLANG.txt" "$BASEDIR/!!"
 echo "** Deleting old disk images"
 	rm -f build/RW-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
 	rm -f build/Raster-v$RASTERNUMVERSION.$RLANG-$ARCH.dmg
