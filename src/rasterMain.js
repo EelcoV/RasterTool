@@ -67,13 +67,15 @@ ipc.on('document-save-success', function(event,docname) {
 	Project.get(Project.cid).settitle(docname);
 });
 ipc.on('document-start-open', function(event,str) {
-	var newp = loadFromString(str,{strsource: _("File")});
-	if (newp!=null) {
-		switchToProject(newp);
-		checkForErrors(false);
-		checkUpgradeDone();
-	}
-	clearModified();
+	lengthy(function() {
+		var newp = loadFromString(str,{strsource: _("File")});
+		if (newp!=null) {
+			switchToProject(newp);
+			checkForErrors(false);
+			checkUpgradeDone();
+		}
+		clearModified();
+	});
 });
 ipc.on('options', function(event,option,val) {
 	switch (option) {
@@ -160,7 +162,9 @@ function lengthy(func) {
 	window.setTimeout(function() {
 		func();
 		$('body').removeClass('waiting');
-	});
+	},50);
+	// In Chrome, when the timout value is too small, the cursor does not change.
+	// In Firefox, no value is needed and the cursor is always changed. 50 ms seems to be OK for Chrome.
 }
 
 function initAllAndSetup() {
