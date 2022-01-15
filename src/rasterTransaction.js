@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts
+/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy
 */
 
 const DebugTransactions = false;
@@ -72,8 +72,15 @@ var Transaction = function(knd,undo_data,do_data,descr,chain) {
 		S1 = exportProject(Project.cid);
 	}
 
-	this.perform();
-
+	if (DebugTransactions) {
+		this.perform();
+	} else {
+		let tr = this;
+		lengthy(function() {
+			tr.perform();
+		});
+	}
+	
 	if (DebugTransactions) {
 		transactionCompleted("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
 		checkForErrors();
@@ -105,34 +112,36 @@ Transaction.undo = function() {
 	}
 	if (p.TransactionCurrent==p.TransactionBase)  return;
 
-	do {
-		let S1, S2, S3, S4;
-		if (DebugTransactions) {
-			checkForErrors();
-			S1 = exportProject(Project.cid);
-		}
-
-		p.TransactionCurrent.rollback();
-
-		if (DebugTransactions) {
-			checkForErrors();
-			S2 = exportProject(Project.cid);
-			p.TransactionCurrent.perform();
-			checkForErrors();
-			S3 = exportProject(Project.cid);
-			p.TransactionCurrent.rollback();
-			checkForErrors();
-			S4 = exportProject(Project.cid);
-			if (S1!=S3) {
-				logdiff(S1,S3,"in undo: undo,redo != nil");
-			} else if (S2!=S4) {
-				logdiff(S2,S4,"in undo: redo,undo != nil");
+	lengthy(function() {
+		do {
+			let S1, S2, S3, S4;
+			if (DebugTransactions) {
+				checkForErrors();
+				S1 = exportProject(Project.cid);
 			}
-		}
-		transactionCompleted("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
-		p.TransactionCurrent = p.TransactionCurrent.prev;
-	} while (p.TransactionCurrent.chain==true);
-	p.updateUndoRedoUI();
+
+			p.TransactionCurrent.rollback();
+
+			if (DebugTransactions) {
+				checkForErrors();
+				S2 = exportProject(Project.cid);
+				p.TransactionCurrent.perform();
+				checkForErrors();
+				S3 = exportProject(Project.cid);
+				p.TransactionCurrent.rollback();
+				checkForErrors();
+				S4 = exportProject(Project.cid);
+				if (S1!=S3) {
+					logdiff(S1,S3,"in undo: undo,redo != nil");
+				} else if (S2!=S4) {
+					logdiff(S2,S4,"in undo: redo,undo != nil");
+				}
+			}
+			transactionCompleted("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
+			p.TransactionCurrent = p.TransactionCurrent.prev;
+		} while (p.TransactionCurrent.chain==true);
+		p.updateUndoRedoUI();
+	});
 };
 
 Transaction.redo = function() {
@@ -143,35 +152,37 @@ Transaction.redo = function() {
 	}
 	if (p.TransactionCurrent==p.TransactionHead)  return;
 
-	do {
-		let S1, S2, S3, S4;
-		if (DebugTransactions) {
-			checkForErrors();
-			S1 = exportProject(Project.cid);
-		}
-		
-		p.TransactionCurrent = p.TransactionCurrent.next;
-		p.TransactionCurrent.perform();
-		
-		if (DebugTransactions) {
-			checkForErrors();
-			S2 = exportProject(Project.cid);
-			p.TransactionCurrent.rollback();
-			checkForErrors();
-			S3 = exportProject(Project.cid);
-			p.TransactionCurrent.perform();
-			checkForErrors();
-			S4 = exportProject(Project.cid);
-			if (S1!=S3) {
-				logdiff(S1,S3,"in redo: redo,undo != nil");
-			} else if (S2!=S4) {
-				logdiff(S2,S4,"in redo: undo,redo != nil");
+	lengthy(function() {
+		do {
+			let S1, S2, S3, S4;
+			if (DebugTransactions) {
+				checkForErrors();
+				S1 = exportProject(Project.cid);
 			}
-		}
-		
-		transactionCompleted(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
-	} while(p.TransactionCurrent.chain==true);
-	p.updateUndoRedoUI();
+			
+			p.TransactionCurrent = p.TransactionCurrent.next;
+			p.TransactionCurrent.perform();
+			
+			if (DebugTransactions) {
+				checkForErrors();
+				S2 = exportProject(Project.cid);
+				p.TransactionCurrent.rollback();
+				checkForErrors();
+				S3 = exportProject(Project.cid);
+				p.TransactionCurrent.perform();
+				checkForErrors();
+				S4 = exportProject(Project.cid);
+				if (S1!=S3) {
+					logdiff(S1,S3,"in redo: redo,undo != nil");
+				} else if (S2!=S4) {
+					logdiff(S2,S4,"in redo: undo,redo != nil");
+				}
+			}
+			
+			transactionCompleted(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
+		} while(p.TransactionCurrent.chain==true);
+		p.updateUndoRedoUI();
+	});
 };
 
 

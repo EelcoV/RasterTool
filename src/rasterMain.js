@@ -155,6 +155,14 @@ function CurrentProjectAsString() {
  */
 $( initAllAndSetup );
 
+function lengthy(func) {
+	$('body').addClass('waiting');
+	window.setTimeout(function() {
+		func();
+		$('body').removeClass('waiting');
+	});
+}
+
 function initAllAndSetup() {
 	$.ajaxSetup({
 		timeout: 10000	// Cancel each AJAX request after 10 seconds
@@ -535,14 +543,18 @@ function initProjectsToolbar() {
 	$('#buttimport').attr('title',_("Load a project from a file."));
 	$('#buttexport').attr('title',_("Save the current project to a file."));
 	// Add --------------------
-	$('#buttadd').on('click',loadDefaultProject);
+	$('#buttadd').on('click',function() {
+		lengthy(loadDefaultProject);
+	});
 	// Duplicate --------------------
 	$('#buttduplicate').on('click',  function() {
-		let p = Project.get(Project.cid);
-		let clone = p.duplicate();
-		clone.settitle(p.title+_(" (copy)"));
-		populateProjectList();
-		switchToProject(clone.id,true);
+		lengthy(function () {
+			let p = Project.get(Project.cid);
+			let clone = p.duplicate();
+			clone.settitle(p.title+_(" (copy)"));
+			populateProjectList();
+			switchToProject(clone.id,true);
+		});
 	});
 	// Import --------------------
 	$('#buttimport').on('click',  function() {
@@ -554,23 +566,25 @@ function initProjectsToolbar() {
 	$('#fileElem').on('change',  function(event) {
 		var files = event.target.files;
 		if (files.length==null || files.length==0)  return;
-		var reader = new FileReader();
-		reader.onload = function(evt) {
-			var newp = loadFromString(evt.target.result,{strsource:`File "${files[0].name}"`});
-			if (newp!=null) {
-				// Make sure the newly imported project is indeed private
-				var p = Project.get(newp);
-				p.setshared(false,false);
-				switchToProject(newp);
-			}
-			// Remove the default project, as long as it is still unmodified??
-			transactionCompleted("Project add");
-			// Import checks are not as thorough as the internal consistency checks on components.
-			// Therefore, force a check after load.
-			checkForErrors(false);
-			checkUpgradeDone();
-		};
-		reader.readAsText(files[0]);
+		lengthy(function() {
+			var reader = new FileReader();
+			reader.onload = function(evt) {
+				var newp = loadFromString(evt.target.result,{strsource:`File "${files[0].name}"`});
+				if (newp!=null) {
+					// Make sure the newly imported project is indeed private
+					var p = Project.get(newp);
+					p.setshared(false,false);
+					switchToProject(newp);
+				}
+				// Remove the default project, as long as it is still unmodified??
+				transactionCompleted("Project add");
+				// Import checks are not as thorough as the internal consistency checks on components.
+				// Therefore, force a check after load.
+				checkForErrors(false);
+				checkUpgradeDone();
+			};
+			reader.readAsText(files[0]);
+		});
 	});
 	// Export --------------------
 	$('#buttexport').on('click',  function() {
@@ -596,7 +610,10 @@ function initProjectsToolbar() {
 		let p = Project.get( $('#projlist').val() );
 		if (!p) return;
 		if (!p.stub) {
-			switchToProject(p.id,true);
+			lengthy(function() {
+				switchToProject(p.id,true);
+				refreshProjectToolbar(Project.cid);
+			});
 		} else {
 			// Activating a stub project.
 			// Make sure that there is no local project with that name
@@ -605,15 +622,17 @@ function initProjectsToolbar() {
 					_H("There is already a project called '%%'. Please rename that project first.", p.title)
 				);
 			} else {
-				// Do a retrieve operation, and switch to that new project, if successful.
-				Project.asyncRetrieveStub(p.id,function(newpid){
-					populateProjectList();
-					switchToProject(newpid);
-					startAutoSave();
+				lengthy(function() {
+					// Do a retrieve operation, and switch to that new project, if successful.
+					Project.asyncRetrieveStub(p.id,function(newpid){
+						populateProjectList();
+						switchToProject(newpid);
+						startAutoSave();
+					});
+					refreshProjectToolbar(Project.cid);
 				});
 			}
 		}
-		refreshProjectToolbar(Project.cid);
 	});
 	// Delete --------------------
 	$('#buttdel').on('click',  function(/*evt*/){
@@ -653,7 +672,7 @@ function initProjectsToolbar() {
 					_("Yes, really remove"),_("Cancel"))
 				.done(dokill);
 			} else {
-				dokill();
+				lengthy(dokill);
 			}
 		});
 	});

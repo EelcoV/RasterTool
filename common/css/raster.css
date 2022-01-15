@@ -113,6 +113,9 @@ body {
 	overflow: hidden;
 	min-width: 1240px;
 }
+body.waiting * {
+	cursor: wait !important;
+}
 #toolbars {
 	grid-area: toolbar;
 	padding: 0;
