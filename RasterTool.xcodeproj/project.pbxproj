@@ -111,6 +111,7 @@
 		49CD587E1F933CD600A9F17F /* e-translation-EN.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "e-translation-EN.js"; sourceTree = "<group>"; };
 		49D256041A1E87BF00102918 /* jquery.localisation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.localisation.js; sourceTree = "<group>"; };
 		49D256061A1E88A200102918 /* translation-nl.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "translation-nl.js"; sourceTree = "<group>"; };
+		49D8AF9A27932309002CD1FE /* bugs and features.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "bugs and features.txt"; sourceTree = "<group>"; };
 		49E402A91F99378B00978B5C /* RasterIcon.odg */ = {isa = PBXFileReference; lastKnownFileType = file; path = RasterIcon.odg; sourceTree = "<group>"; };
 		49E402B61F99381500978B5C /* icon_256x256.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_256x256.png; sourceTree = "<group>"; };
 		49E402B71F99381600978B5C /* icon_16x16@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_16x16@2x.png"; sourceTree = "<group>"; };
@@ -372,6 +373,7 @@
 		49F279FE1F91DB3E003F360B /* doc */ = {
 			isa = PBXGroup;
 			children = (
+				49D8AF9A27932309002CD1FE /* bugs and features.txt */,
 				49597082278B1CD0007EE7EE /* Project groups.md */,
 				49597081278B18AD007EE7EE /* Iconsets.md */,
 				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
