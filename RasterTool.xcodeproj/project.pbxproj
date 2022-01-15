@@ -44,7 +44,7 @@
 		494464B81A2324D40066BDE1 /* About-nl.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "About-nl.html"; sourceTree = "<group>"; };
 		494AF84D1FA3BCBF00356A28 /* 7z.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = 7z.zip; sourceTree = "<group>"; };
 		494AF84E1FA48AA100356A28 /* installraster.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; name = installraster.ico; path = script/installraster.ico; sourceTree = SOURCE_ROOT; };
-		494B6F6718796E9D00400328 /* bugs and Features.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "bugs and Features.txt"; sourceTree = "<group>"; };
+		494B6F6718796E9D00400328 /* bugs and features.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "bugs and features.txt"; sourceTree = "<group>"; };
 		494B6F6818796E9D00400328 /* designAtomicActions.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = designAtomicActions.txt; sourceTree = "<group>"; };
 		494B6F6918796E9D00400328 /* encodedecode.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = encodedecode.js; sourceTree = "<group>"; };
 		494B6F6F18796E9D00400328 /* jquery.editinplace-2.2.1.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "jquery.editinplace-2.2.1.js"; sourceTree = "<group>"; };
@@ -377,7 +377,7 @@
 				49597081278B18AD007EE7EE /* Iconsets.md */,
 				494B702A18796E9D00400328 /* ReleaseNotes.txt */,
 				499A6BA01A72DC080047E182 /* LICENSE.md */,
-				494B6F6718796E9D00400328 /* bugs and Features.txt */,
+				494B6F6718796E9D00400328 /* bugs and features.txt */,
 				494B6F6818796E9D00400328 /* designAtomicActions.txt */,
 				4918F0BE1FBEBF13008A6208 /* build and Install.md */,
 				494B6F8818796E9D00400328 /* testcase.txt */,

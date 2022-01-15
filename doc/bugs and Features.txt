@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+When changing WPA, only redo Assessments for malicious Vulnerabilities, and repaint Components containing those. Speedups!!!!
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.
 Do away with the online/offline setting?
@@ -16,7 +17,6 @@ Change details of a project on the server but not active: function not implement
 Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
 
 IDEAS FOR FUTURE FEATURES
-Do away with the menu bar on Windows? It does not fit nicely with the new toolbar. Reinstate the Projects toolbar on Windows (except for the projects library part).
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
 Change all icons in the selection (provided that they are all of the same type).
 New object: area. Like a selection, but fixed. Like a label, but visually less obvious and more resizable. Use areas to expand a cloud into subcomponents?
@@ -25,7 +25,6 @@ Exclude entire vulnerabilities in Analysis|Failures and Vulnerabilities tab.
 Select multiple nodes using Ctrl/Cmd-click (and have multiple selectrects)
 Filter on Single Failures, including on overall threat score.
 Sort vulns for a component on name/freq/impact/total/remark
-Improve support for frequency assessments on intentional failures (cyber attacks).
 
 OTHER TODO
 Hide the URL mouseover popup in the bottom left corner of the window. They are in the way of bottom tabs.
@@ -35,6 +34,7 @@ Change cursor to hourglass during rollback/redo.
 Remove all uses of for..in, so that we can add an eslint rule preventing its use (to detect accidental typing for..in instead of for..of).
 Emit a Ctrl-Z or Cmd-Z when using the Undo/Redo menuitems in the standalone app while a textfield has focus.
 Some functions take an object as parameter, others take an ID. Allow both: if (typeof(param)=='string') param=Node.get(param);. Alternatively change all functions to take objects as parameter. Any conversion is then on the caller (which may already have the correct object).
+Use show()/hide() iso using css('visibility',...)
 Fancy workspace, indicate right and bottom borders, for those with huge screens or large zoom factors?
 Make UI action scriptable (e.g. UIdrag(type,drop_x,drop_y)) so that all testcases can be automated.
 Already requiring ES6 (const/let, arrow functions, class for interators). Now make use of more: all objects as class definitions, create modules with import/export, remove var definitions.

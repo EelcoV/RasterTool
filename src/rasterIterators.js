@@ -99,6 +99,7 @@ class rasterIterator {
  *	match: type matches value (equal to value OR value equals 'tUNK')
  *	title: title string equals value (case insensitive and locale sensitive)
  *	vuln: vulnerability id equals value
+ *	malice: maliciousness of vulnerability equals value
  *	ofcomponent: (boolean) whether or not this assessment belongs to a component
  */
 class AssessmentIterator extends rasterIterator {		// eslint-disable-line no-unused-vars
@@ -112,6 +113,7 @@ class AssessmentIterator extends rasterIterator {		// eslint-disable-line no-unu
 			if (opt.match!=undefined && opt.match!=obj.type && opt.match!='tUNK')  continue;
 			if (opt.title!=undefined && !isSameString(obj.title,opt.title))  continue;
 			if (opt.vuln!=undefined && opt.vuln!=obj.vulnerability)  continue;
+			if (opt.malice!=undefined && opt.malice!=obj.malice)  continue;
 			if (opt.ofcomponent!=undefined && opt.ofcomponent!=(obj.component!=null))  continue;
 			this.item.push(obj);
 		}
@@ -302,6 +304,7 @@ class ServiceIterator extends rasterIterator {		// eslint-disable-line no-unused
  *	project: project id equals value
  *	type: type equals value
  *	match: type matches value (equal to value OR value equals 'tUNK')
+ *	malice: maliciousness equals value
  *	title: title string equals value (case insensitive and locale sensitive)
  *	common: common equals value
  */
@@ -314,6 +317,7 @@ class VulnerabilityIterator extends rasterIterator {		// eslint-disable-line no-
 			if (opt.project!=undefined && opt.project!=obj.project)  continue;
 			if (opt.type!=undefined && opt.type!=obj.type)  continue;
 			if (opt.match!=undefined && opt.match!=obj.type && opt.match!='tUNK')  continue;
+			if (opt.malice!=undefined && opt.malice!=obj.malice)  continue;
 			if (opt.title!=undefined && !isSameString(obj.title,opt.title))  continue;
 			if (opt.common!=undefined && obj.common!=opt.common)  continue;
 			this.item.push(obj);

@@ -476,12 +476,8 @@ console.log("Check Component.absorbe()");
 
 	repaint: function() {
 		// repaint this component for each service in which it occurs
-		let svcs = [];
-		for (const nid of this.nodes) {
-			const nd = Node.get(nid);
-			if (svcs.indexOf(nd.service)!=-1) continue;
-			svcs.push(nd.service);
-		}
+		let svcs = new Set();
+		this.nodes.forEach(nid => svcs.add(Node.get(nid).service));
 		for (const sid of svcs) {
 			let prefix = `sfa${sid}_${this.id}`;
 			let snippet = "";

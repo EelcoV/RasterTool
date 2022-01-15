@@ -255,6 +255,7 @@ Assessment.prototype = {
 	},
 	
 	get malice() {
+		if (this.vulnerability==null) return false;
 		return Vulnerability.get(this.vulnerability).malice;
 	},
 
@@ -458,21 +459,6 @@ Assessment.prototype = {
 			selectoptions = selectoptions.replace(/_L_/g, Assessment.values[i]);
 			selectoptions = selectoptions.replace(/_D_/g, Assessment.descr[i]);
 		}
-		let wpa = Project.get(this.project).wpa;
-		let fselectoptions='', fselecttext;
-		if (this.malice) {
-			for (let i=0; i<Assessment.values.length; i++) {
-				if (fselectoptions!='')  fselectoptions += ',';
-				fselectoptions += '_T_ _D_:_L_';
-				fselectoptions = fselectoptions.replace(/_T_/g, Assessment.freqFromSophisticationAndWPA(Assessment.values[i],wpa));
-				fselectoptions = fselectoptions.replace(/_D_/g, Assessment.mdescr[i]);
-				fselectoptions = fselectoptions.replace(/_L_/g, Assessment.values[i]);
-			}
-			fselecttext = _("Difficulty");
-		} else {
-			fselectoptions = selectoptions;
-			fselecttext = _("Frequency:");
-		}
 		let assmnt = this;
 		let c;
 
@@ -560,8 +546,8 @@ Assessment.prototype = {
 		$('#dth_'+prefix+'freq'+this.id).editInPlace({
 			bg_out: 'var(--vlightbg)', bg_over: 'var(--highlt)',
 			field_type: 'select',
-			select_options: fselectoptions,
-			select_text: fselecttext,
+			select_options: selectoptions,
+			select_text: _("Frequency"),
 			callback: function(oid, enteredText) {
 				new Transaction('assessmentDetails',
 					[{assmnt: assmnt.id, freq: assmnt.freq}],
@@ -571,16 +557,33 @@ Assessment.prototype = {
 				return assmnt.freqDisp;
 			},
 			delegate: {
-				shouldOpenEditInPlace: function() {
-					// When malicious, we display the adjust frequency. Quickly swap the store .freq value
-					// into place just before openening the select.
-					$('#dth_'+prefix+'freq'+assmnt.id).text(assmnt.freq);
+				shouldOpenEditInPlace: function(dom,settings) {
+					if (assmnt.malice) {
+						// When malicious, we display the adjust frequency. Quickly swap the stored .freq value
+						// into place just before openening the select.
+						dom.text(assmnt.freq);
+						// And also change the select options, as the current project.wpa may have changed
+						let wpa = Project.get(assmnt.project).wpa;
+						let fselectoptions='';
+						for (let i=0; i<Assessment.values.length; i++) {
+							if (fselectoptions!='')  fselectoptions += ',';
+							fselectoptions += '_T_ _D_:_L_';
+							fselectoptions = fselectoptions.replace(/_T_/g, Assessment.freqFromSophisticationAndWPA(Assessment.values[i],wpa));
+							fselectoptions = fselectoptions.replace(/_D_/g, Assessment.mdescr[i]);
+							fselectoptions = fselectoptions.replace(/_L_/g, Assessment.values[i]);
+						}
+						settings.select_options = fselectoptions;
+						settings.select_text = _("Difficulty");
+					} else {
+						settings.selectoptions = selectoptions;
+						settings.selecttext = _("Frequency");
+					}
 					return true;
 				},
-				didCloseEditInPlace: function() {
+				didCloseEditInPlace: function(dom) {
 					// When malicious, we restore the display freqeuncy. There is a Transaction coming after
 					// this, so this is only useful in case there is no change.
-					$('#dth_'+prefix+'freq'+assmnt.id).text(assmnt.freqDisp);
+					dom.text(assmnt.freqDisp);
 				}
 			}
 		});

@@ -591,13 +591,20 @@ Project.prototype = {
 		if (this.wpa==l) return;
 		if (['A','B','C','D','E'].indexOf(l)==-1) return;
 		this.wpa = l;
-		// Re-compute the display values of all assessments
-		let it = new AssessmentIterator({project: this.id});
-		it.forEach(asmnt => asmnt.computetotal());
-		// Repaint all single failure tabs
-		this.services.forEach(sid => {
-			let svc = Service.get(sid);
-			paintSingleFailures(svc);
+		let it = new AssessmentIterator({project: this.id, malice: true});
+		// Repaint all Difficulty levels
+		it.forEach(asmnt => {
+			// Re-compute the display values of all malicious assessments
+			asmnt.computetotal();
+			// Find all services for this assessment
+			if (asmnt.component==null) return;
+			let cm = Component.get(asmnt.component);
+			let svcs = new Set();
+			cm.nodes.forEach(nid => svcs.add(Node.get(nid).service));
+			for (const sid of svcs) {
+				let prefix = `sfa${sid}_${cm.id}`;
+				$(`#dth_${prefix}freq${asmnt.id}`).text(asmnt.freqDisp);
+			}
 		});
 		// Repaint all relevant Analysis tabs
 		repaintAnalysisIfVisible(TabAnaVulnOverview);

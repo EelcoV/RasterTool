@@ -1494,16 +1494,16 @@ function ShowDetails() {
 		</div>
 		`;
 	} else {
-		snippet += '<div class="psitem"></div>';
+		snippet += '<div class="psitem" style="margin:0"></div>';
 	}
 	// Worst Plausible Actor
 	snippet += `<div class="psitem">${_H("Worst plausible attacker: ")}<br>
 		<select name="wpalist" id="wpalist">
-			<option value="A">${H("Customers, employees")}</option>
-			<option value="B">${H("Activists")}</option>
-			<option value="C">${H("Criminals")}</option>
-			<option value="D">${H("Competitors")}</option>
-			<option value="E">${H("State actors")}</option>
+			<option value="A">${_H("Customers, employees")}</option>
+			<option value="B">${_H("Activists")}</option>
+			<option value="C">${_H("Criminals")}</option>
+			<option value="D">${_H("Competitors")}</option>
+			<option value="E">${_H("State actors")}</option>
 		</select>
 		</div>`;
 	// Iconset
@@ -1579,7 +1579,7 @@ function ShowDetails() {
 		title: _("Properties for project '%%'", p.title),
 		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		modal: true,
-		width: 520, maxWidth: 520, minWidth: 520,
+		width: 530, maxWidth: 530, minWidth: 530,
 		buttons: dbuttons,
 		open: function() {
 #ifdef SERVER
@@ -3893,7 +3893,7 @@ function refreshComponentThreatAssessmentsDialog(force) {
 		</div>';
 	snippet = snippet.replace(/_LM_/g, _H("Cause"));
 	snippet = snippet.replace(/_LN_/g, _H("Name"));
-	snippet = snippet.replace(/_LF_/g, _H("F/D"));
+	snippet = snippet.replace(/_LF_/g, _H("Freq"));
 	snippet = snippet.replace(/_LI_/g, _H("Impact"));
 	snippet = snippet.replace(/_LT_/g, _H("Total"));
 	snippet = snippet.replace(/_LR_/g, _H("Remark"));
@@ -4103,7 +4103,7 @@ function paintSingleFailures(s) {
 		snippet = snippet.replace(/_LSF_/g, _("Single failures for"));
 		snippet = snippet.replace(/_LC_/g, _("Cause"));
 		snippet = snippet.replace(/_LN_/g, _("Name"));
-		snippet = snippet.replace(/_LF_/g, _("F/D"));
+		snippet = snippet.replace(/_LF_/g, _("Freq"));
 		snippet = snippet.replace(/_LI_/g, _("Impact"));
 		snippet = snippet.replace(/_LT_/g, _("Total"));
 		snippet = snippet.replace(/_LR_/g, _("Remark"));
@@ -4780,7 +4780,7 @@ function repaintCluster(elem) {
 		</div></div>\n';
 	snippet = snippet.replace(/_LC_/g, _H("Cause"));
 	snippet = snippet.replace(/_LN_/g, _H("Name"));
-	snippet = snippet.replace(/_LF_/g, _H("F/D"));
+	snippet = snippet.replace(/_LF_/g, _H("Freq"));
 	snippet = snippet.replace(/_LI_/g, _H("Impact"));
 	snippet = snippet.replace(/_LT_/g, _H("Total"));
 	snippet = snippet.replace(/_LR_/g, _H("Remark"));
