@@ -38,8 +38,7 @@ To build, run these scripts from the root of the Raster tools project:
 If you cannot use Wine, or if you attempt to build on Windows, run the `winbuild.bat` batch file to create the Windows ZIP, exe and full installer.
 
 The build results are found in the `build` directory. For both platforms, the tool is available in English (EN) or Dutch (NL). For MacOS both Intel and ARM versions will be created. For Windows both 32-bit and 64-bit versions will be created.
-The MacOS version is distributed using the DMG files. To install, doubleclick the DMG file, and drag the Raster application to your Applications folder.
-The Windows version is distributed in three formats.
+The MacOS version is distributed using the DMG files. To install, doubleclick the DMG file, and drag the Raster application to your Desktop folder. Make sure to remove the quarantine attribute if you downloaded the disk image from the internet.
+The Windows version is distributed in two formats.
 * The full installer requires Administrator rights. It will install in `C:\Program Files`, create an uninstall option in the Settings / Control Panel, and will associate .raster files with the tool.
-* The unpack-version requires no special rights. It will simply unpack the files in a location of choice. The user will have to associate .raster files manually, using the `Open With` option in Explorer.
-* The Zip-version is for those who do not trust exe files. It contains the same files as the unpacker.
+* The Zip-version requires no special rights. Simply unpack the files in a location of choice. The user will have to associate .raster files manually, using the `Open With` option in Explorer.

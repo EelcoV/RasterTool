@@ -15,7 +15,7 @@ With the transition towards transactions with undo/redo, the code for setting pr
 Perhaps: use change<property> for methods that start a transaction, and set<property> for methods that immediately affect the object?
 
 
-Actions
+Actions (this section is outdated, needs update based on Transactions)
 ~~~~~~~
 The following are atomic user-interface actions.
 
@@ -80,26 +80,29 @@ Zap Library is not a UI action that changes a project.
 
 January 2020
 ~~~~~~~~~~~~
-Instead of sequential keys starting from 1, use 128 bit random keys (e.g. UUID).
+Instead of sequential keys starting from 1, use 128 bit random keys (UUID).
 This will, in practice, guarantee unique keys even across browsers/client computers.
 No checks on uniqueness of keys is necessary in practice. The probability of a cosmic ray causing a bit flip is far higher than the probability of key collision.
-Is there a benefit to using UUIDs instead of plain hexadecimal 128-bit random numbers?
-A very good random number generator is necessary. Math.random() is insufficient, we must use crypto.getRandomValues().
-Currently, loadFromString contains elaborate code to renumber keys to prevent collisions. This will no longer be necessary.
-Whenever one browser posts an atomic change, that change can be included into another browser without rekeying.
-If we build the code to save, stash and adopt such changes, we almost the the Undo function for free. The only extra requirement for an Undo is that each atomic change can be easily converted into its reverse.
-Main disadvantage: yet another one-way upgrade (as we had when transitioning to version 3.0 of the tools).
 
-Two browsers can simultaneously work on the same project. Different browsers have a separate instance of the same project.
-Do we need the feature of simultaneous editing at all? Can we drop it?
+Benefits/disadvantages:
+[+] Whenever one browser posts an atomic change, that change can be included into another browser without rekeying.
+[+] Simplifies the Undo function across browsers that simultaneously edit the same project.
+[-] Yet another one-way upgrade (as we had when transitioning to version 3.0 of the tools).
+[-] DOM object id's and Raster files are longer, and more difficult to inspect and understand.
+
+Note:
+- A very good random number generator is necessary. Math.random() is insufficient, we must use crypto.getRandomValues().
+- Currently, loadFromString contains elaborate code to renumber keys to prevent collisions. This will still be necessary: for backwards compatibility, and in cases where we need to duplicate on import.
+
+Two browsers can simultaneously work on the same project. Do we need the feature of simultaneous editing at all? Can we drop it? If we drop it, how do we prevent browsers from accessing the same project?
+
 The current implementation is clumsy, as the entire project is uploaded to the server, and pushed to fellow browsers who must do a full load-then-switch of the modified project.
 It would be much more efficient to share atomic changes.
-Because of network delays and interruption, we need to have a robust sync service, and queuing of possibly multiple actions.
+Because of network delays and interruption, we need to have a robust sync service, and queuing of possibly multiple actions. Note that some of the browsers may be offline.
 
-Should one browser instance be able to Undo action made by another browser?
-What if a browser receives some but not all actions, undoes the last of those, and then receive the remaining actions? Will the project still be in a consistent state? Not necessarily: suppose that the action that was undone was a Create Node action. Subsequent actions will likely refer to that node. This proves that only the last action can be safely undone.
-A browser instance will never know whether it is up to date, or whether there are still atomic actions queued and undelivered. Therefore, Undo cannot be applied to actions received from other browsers.
-So the answer must be that you can only Undo your own actions. The only way to avoid inconsistencies is to detect the situation, and offer the user to take the shared project private.
+A browser is not allowed to Undo action made by, and received from, other browsers.
+A browser instance cannot know whether it is up to date, or whether there are still atomic actions queued and undelivered.
+Consider the situation in which a browser receives some but not all actions, undoes the last of those, and then receives the remaining actions. The project will now be in a consistent state, unless the action is redone again.
 
 Alternatively, we can give each atomic action a timestamp, and order them sequentially.
 When a browser receives atomic actions from another instance they are merged into this sequential list.
@@ -110,36 +113,44 @@ How do we ensure that instances have roughly the same clock?
 Currently, share.php uses the server's clock only, not the browsers' clocks.
 We can apply a correction (drift) to the local clock, based on the server's clock.
 
-The above may work, provided that all actions are undoable.
-Are there actions that cannot be undone?
-Difficult/impossible to undo:
-- delete a selection
-- delete a service
-- delete a project
-- zap, delete localstorage (probably not an action)
-- actions on clusters that lead to normalisation?
-At first glance all actions are *in principle* undoable.
 
-In fact, even changing the title of a node proves to be complex (because renaming als creates/deletes node classes).
+SHARED PROJECTS
+By default, projects are stored locally only (private).
+When a project is marked 'shared', it will also be stored remotely.
+Remotely stored projects that are not also stored locally are called 'remote'.
+The Library panel will show local (private and public) as well as remote projects.
+Private projects will be grouped separately from shared projects (both local and remote).
 
-What to do with transactions when the user switches projects?
-Switching projects is itself not a transaction (although undoable).
-Switching projects can be useful in the workflow, to quickly check how that other project solved some issue.
-Preserve? Then there must be a transaction list as property of each project. Or, transactions must have a project-id.
-Reset: the easiest for now, but not the most user-friendly.
-Let's see how the server sync of transactions works out, before deciding on this.
+Private projects must have a locally unique name. Public projects must have a group-wide unique name.
+When a project is made public a unique name must be chosen, if necessary.
+Projects have metadata: name, description, last saved timestamp, last saved by.
+Browsers have an option for name of creator (Options panel). There is no check whether that name is unique. This is a feature: one person can use two browsers, and two people can work as a team.
 
-Also complex: creating a new node. Undo is easy: just delete the node.
-Creating requires new ID for the node, often an ID for the component and IDs for its ThreatAssessment.
-But also an ID for a node cluster *and* an ID for its ThreatAssessment.
-Alternatively: provide each do_data and undo_data with a list of IDs to use, in case an ID is needed?
-IDs to create a node:
- 1 for the node
- 1 for the component
- N for the threat assessments of the component
- N for the each root cluster
- N for the each cluster's threat assessment
---> 3N+2 IDs required. With 5 or 6 default vulnerabilities about 20 IDs are needed!
-When we leave empty root clusters be instead of 'normalizing' them, to make this at least a bit easier?
-It would then need only N+2 new IDs, which is what is needed for nodeTitle actions as well.
+Actions on private projects:
+- activate: nothing special.
+- details, name or description: nothing special.
+- details, change to shared: name must not exist on server, user is prompted to rename first. Otherwise, project is saved. If saving fails,  a warning is shown and the project is marked as private (again).
+- delete: no preconditions, no effect on server.
+- export: no preconditions, no effect on server.
+- merge: no preconditions. If the second project is remote, it will be fetched and merged, and become public.
 
+Actions on shared project:
+- activate: update if server version is more recent. If project has been removed from server, show warning and make private.
+- details, name or description: new name must not exist locally or on the server, if so the name reverts to the old value. Otherwise, name and description are changed locally and on the server. If the project does not exist remotely, show warning and make local.
+- details, change to private: no preconditions. The file will be removed from the server. It is not an error if the project does not exist remotely.
+- delete: no preconditions, removed locally and from the server. It is not an error if the project does not exist remotely.
+- export: no preconditions, no effect on server. Check if project is still on server, if not: show warning and make local.
+- merge: no preconditions. If the second project is remote, it will be fetched and merged, and become public.
+
+Actions on remote project:
+- activate: name must not match with existing private project (if so, warn and stop), no effect on server. Project becomes public.
+- details, name or description: new name must not exist locally or on the server, if so the name reverts to the old value. Otherwise, name and description are changed locally and on the server. If the project does not exist remotely, show warning and make local.
+- details, change to private: no preconditions. The file will be removed from the server. It is not an error if the project does not exist remotely.
+- delete: no preconditions, removed locally and from the server. It is not an error if the project does not exist remotely.
+- export: no preconditions, no effect on server. Check if project is still on server, if not: show warning and make local.
+- merge: no preconditions. If the second project is remote, it will be fetched and merged, and become public.
+
+When (re)loading the tool:
+- private projects: no action
+- public projects: reload from server, if the server is newer
+- remote project: nothing.

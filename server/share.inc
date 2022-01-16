@@ -214,7 +214,8 @@ function doDel() {
 	if (is_null($gdate) || $gdate=="") sendError("Required parameter 'date' is missing.");
 	if (!readIndexFile())
 		sendError("Index file cannot be read or contains invalid entries.");
-	foreach ($projName as $n => $pName) {
+	foreach ($projName as $n
+	=> $pName) {
 		if ($pName != $gname) continue;
 		if ($projCreator[$n] != $gcreator) continue;
 		if ($projDate[$n] != $gdate) continue;

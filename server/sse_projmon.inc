@@ -15,6 +15,10 @@ See LICENSE.md
  * - NOP: sent periodically, to monitor connectivity to the client.
  * - UPDATED: when the project to watch has been changed.
  * - DELETED: the project disappeared. Some client deleted it.
+ *
+ * After sending an event the script will end. Each event specifies a retry parameter, so the
+ * browser will reopen a connection to the server. The lifetime of this script is therefore
+ * limited to the NOPINTERVAL, and will be shorter if a file event occurs.
  */
 
 define("RASTERDIR", "SharedProjects/");	// Prefix for location of shared Raster files
@@ -35,7 +39,7 @@ $projDate = "";
 $projDescr = "";
 $projFname = "";
 
-set_time_limit(0);
+set_time_limit(0);  // No limit on execution time. Lifetime is limited to NOPINTERVAL
 
 header('X-Accel-Buffering: no');
 header('Content-Type: text/event-stream');
@@ -53,21 +57,13 @@ if ($projFname == "") {
 $filemtime = filemtime(RASTERDIR . $projFname);
 if (DEBUGINFO) error_log("starting watch for file $projFname, project $projName");
 
-// Set the current time, so that we can send NOP every NOPINTERVAL seconds. We need to send
-// some output, for that is the only way to discover that the client has disconnected.
-// Not sure if this is right or works, but having NOPs is not a bad thing.
 $noptime = time();
 
 while (true) {
     usleep(IDLETIME);
     // Send NOP, if necessary.
     if (time()-$noptime > NOPINTERVAL) {
-    	send(NOP);
-//    	$noptime = time();
-//		if (connection_aborted()) {
-//			if (DEBUGINFO) error_log("client disconnected");
-//			exit(0);
-//		}
+    	send(NOP); // will exit the script
     }
     // Check whether the index file was updated, and update project details
     clearstatcache(); // Because mtimes are cached by PHP
@@ -76,7 +72,6 @@ while (true) {
     	lookupDetails($name);
     	if ($projFname=="") {
     		send(DELETED);
- //   		exit(0);
     	}
 		$indexmtime = $curtime;
     }
@@ -97,14 +92,13 @@ while (true) {
     if ($contents == FALSE) {
     	// An error occurred. Pretend that the project was deleted, which is not too far from
     	// the truth.
-    	send(DELETED);
-    	exit(0);
+    	send(DELETED); // will exit the script
     }
     $str = sprintf(
 		"{\"name\": \"%s\", \"creator\": \"%s\", \"date\": \"%s\", \"description\": \"%s\", \"contents\": \"%s\"}",
 		slashadd($projName), slashadd($projCreator), slashadd($projDate), slashadd($projDescr), slashadd($contents)
 	);
-    send($str);
+    send($str); // will exit the script
 } 
 
 // Add slashes to special characters, but NOT to single quotes.
@@ -118,7 +112,6 @@ function send($mesg) {
 	$mesg = str_replace("\n", '\n', $mesg);
 	$mesg = str_replace("\t", '\t', $mesg);
 	$mesg = str_replace("\r", '\r', $mesg);
-//	$mesg = preg_replace('/^/m', "data: ", $mesg);
 	echo "data: $mesg" . PHP_EOL;
 	echo "retry: 100" . PHP_EOL;
 	echo PHP_EOL;
