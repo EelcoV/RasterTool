@@ -78,8 +78,8 @@ Zap Library is not a UI action that changes a project.
 
 
 
-January 2020
-~~~~~~~~~~~~
+UUIDs
+~~~~~~
 Instead of sequential keys starting from 1, use 128 bit random keys (UUID).
 This will, in practice, guarantee unique keys even across browsers/client computers.
 No checks on uniqueness of keys is necessary in practice. The probability of a cosmic ray causing a bit flip is far higher than the probability of key collision.
@@ -94,13 +94,14 @@ Note:
 - A very good random number generator is necessary. Math.random() is insufficient, we must use crypto.getRandomValues().
 - Currently, loadFromString contains elaborate code to renumber keys to prevent collisions. This will still be necessary: for backwards compatibility, and in cases where we need to duplicate on import.
 
+Live editing
+~~~~~~~~~~~~~
 Two browsers can simultaneously work on the same project. Do we need the feature of simultaneous editing at all? Can we drop it? If we drop it, how do we prevent browsers from accessing the same project?
 
 The current implementation is clumsy, as the entire project is uploaded to the server, and pushed to fellow browsers who must do a full load-then-switch of the modified project.
 It would be much more efficient to share atomic changes.
 Because of network delays and interruption, we need to have a robust sync service, and queuing of possibly multiple actions. Note that some of the browsers may be offline.
 
-A browser is not allowed to Undo action made by, and received from, other browsers.
 A browser instance cannot know whether it is up to date, or whether there are still atomic actions queued and undelivered.
 Consider the situation in which a browser receives some but not all actions, undoes the last of those, and then receives the remaining actions. The project will now be in a consistent state, unless the action is redone again.
 

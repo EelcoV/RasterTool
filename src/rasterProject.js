@@ -1259,6 +1259,88 @@ Project.prototype = {
 			}
 		});
 	},
+
+	appendCurrentTransaction: function() {
+		if (!this.shared) return;
+		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
+		let tr = this.TransactionCurrent;
+		let trobj = {
+			id: tr.id,			// UUID-string
+			descr: tr.descr,	// String
+			prev: tr.prev.id,	// UUID-string
+			undo_data: tr.undo_data,	// object
+			do_data: tr.do_data,		// object
+			kind: tr.kind,		// String
+			chain: tr.chain		// Boolean
+		};
+		let trString = JSON.stringify(trobj,null,' ');
+		let thisp = this;
+		$.ajax({
+			url: 'share.php?op=appendtr&name=' + urlEncode(thisp.title),
+			type: 'POST',
+			dataType: 'text',
+			data: trString,
+			success: function() {
+				// no action necessary
+			},
+			error: function(jqXHR, textStatus /*, errorThrown*/) {
+				if (textStatus=="timeout") {
+					Preferences.setonline(false);
+					rasterAlert(_("Server is offline"),
+						_H("The server appears to be unreachable. The tool is switching to working offline.")
+					);
+				} else {
+					rasterAlert(_("A request to the server failed"),
+						_("Could not share this action.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
+					);
+				}
+			}
+		});
+	},
+
+	getNewTransactionsFromServer: function() {
+		if (!this.shared) return;
+		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
+		// Get all missing transactions, and apply them in sequence
+		let thisp = this;
+		$.ajax({
+			url: 'share.php?op=gettrsfrom&' +
+				'tr=' + thisp.TransactionHead.id +
+				'&name=' + urlEncode(thisp.title),
+			dataType: 'json',
+			success: function(data) {
+				// Find the transaction succeeding TransactionHead, apply it and remove it from the list.
+				// Repeat until nu transactions remain
+				while (data.length>0) {
+					let n = data.findIndex(tr => tr.prev==thisp.TransactionHead.id);
+					if (n==-1) {
+						console.log(`No transaction found succeeding thisp.TransactionHead.id`);
+						return;
+					}
+					let tr = data[n];
+					data.splice(n,1); // remove this transaction from data[]
+					// First, make sure that the current transaction is at head
+					while (thisp.TransactionCurrent!=thisp.TransactionHead) {
+						Transaction.redo();
+					}
+					new Transaction(tr.kind,tr.undo_data,tr.do_data,tr.descr,tr.chain,tr.id);
+				}
+			},
+			error: function(jqXHR, textStatus /*, errorThrown*/) {
+				if (textStatus=="timeout") {
+					Preferences.setonline(false);
+					rasterAlert(_("Server is offline"),
+						_H("The server appears to be unreachable. The tool is switching to working offline.")
+					);
+				} else {
+					rasterAlert(_("A request to the server failed"),
+						_("Could not share this action.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
+					);
+				}
+			}
+		});
+		
+	},
 #endif
 
 	internalCheck: function() {

@@ -1602,7 +1602,7 @@ function ShowDetails() {
 		title: _("Properties for project '%%'", p.title),
 		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		modal: true,
-		width: 530, maxWidth: 530, minWidth: 530,
+		width: 540, maxWidth: 540, minWidth: 540,
 		buttons: dbuttons,
 		open: function() {
 #ifdef SERVER
@@ -1836,6 +1836,8 @@ function switchToProject(pid,dorefresh) {
 	}
 }
 
+const NilUUID = '00000000-0000-0000-0000-000000000000';
+
 /* createUUID: return a new "unique" random UUID.
  * There are different UUID-versions; version 4 is randomly generated.
  * Use the crypto library, as Math.random() is insufficiently random.
@@ -1968,7 +1970,7 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 function bugreport(mess,funcname) {
 	console.log('bugreport: "'+mess+'" in function "'+funcname+'".');
 	if (DEBUG) {
-		rasterAlert('Please report this bug',H(`You found a bug in this program.\n("${mess}" in function "${funcname}").`));
+		rasterAlert('Please report this bug',H(`You found a bug in this program.\n("${mess}" in function "${funcname}"). You should save this project then exit the app IMMEDIATELY or you may lose your data!`));
 	}
 }
 
@@ -2031,6 +2033,7 @@ function startAutoSave() {
 	startWatching(p);
 }
 
+let SSERetriesHack = 0;
 /* We use Server-Sent Events (), to prevent polling over the network. With SSE,
  * the server is doing the periodic checks locally, notifying the client when changes
  * have been made.
@@ -2040,22 +2043,32 @@ function startWatching(p) {
 		SSEClient.close();
 	}
 	SSEClient = new EventSource('sse_projmon.php?name=' + urlEncode(p.title));
-
+	
 	SSEClient.onmessage = function(msg) {
 		if (msg.data=="NO PROJECT") {
 			// Project is not on the server. It probably has not been saved yet.
 			// Wait a bit, then try again.
 			SSEClient.close();
 			SSEClient=null;
-			window.setTimeout(function(){
-				startWatching(p);
-			},500);
+			if (SSERetriesHack<3) {
+console.log(`SSE_PROJMON RETRIES = ${SSERetriesHack}`);
+				SSERetriesHack++;
+				window.setTimeout(function(){
+					startWatching(p);
+				},500);
+			} else {
+				SSERetriesHack = 0;
+			}
 		} else if (msg.data=="NOP") {
 			// Sent periodically for testing connectivity. No action required
-			/*jsl:pass*/
+			SSERetriesHack = 0;
+		} else if (msg.data=="TRANSACTION") {
+			let pp = Project.get(Project.cid);
+			pp.getNewTransactionsFromServer();
 		} else  if (msg.data=="DELETED") {
+			SSERetriesHack = 0;
 			// Project has been deleted from the server
-			var pp = Project.get(Project.cid);
+			let pp = Project.get(Project.cid);
 			stopWatching(Project.cid);
 			pp.setshared(false,false);
 			removetransientwindows();
@@ -2068,9 +2081,10 @@ function startWatching(p) {
 				"</i>"
 			);
 		} else {
-			var xdetails = JSON.parse(msg.data);
-			pp = Project.get(Project.cid);
-			var newpid = loadFromString(xdetails.contents);
+			SSERetriesHack = 0;
+			let xdetails = JSON.parse(msg.data);
+			let pp = Project.get(Project.cid);
+			let newpid = loadFromString(xdetails.contents);
 			if (newpid!=null) {
 				var newp = Project.get(newpid);
 				newp.shared = true;
@@ -2914,7 +2928,9 @@ function Zap() {
 	localStorage.clear();
 	// Preserve the user's preferences
 	Preferences.settab(0);
-	window.location.reload();
+	lengthy(function() {
+		window.location.reload();
+	});
 }
 
 /* Show an alert if there are any errors in the projects (e.g. in a newly loaded project).

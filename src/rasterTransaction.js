@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy
+/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy, DEBUG, createUUID, NilUUID
 */
 
 const DebugTransactions = false;
@@ -37,7 +37,8 @@ const DebugTransactions = false;
  *  perform(data): perform the action using data; data defaults to this.do_data
  *  rollback: perform the action using this.undo_data.
  */
-var Transaction = function(knd,undo_data,do_data,descr,chain) {
+var Transaction = function(knd,undo_data,do_data,descr,chain,id) {
+	this.id = (id==null ? createUUID() : id);
 	this.kind = knd;
 	this.descr = (descr ? descr : knd);
 	this.chain = (chain ? chain : false);
@@ -48,6 +49,8 @@ var Transaction = function(knd,undo_data,do_data,descr,chain) {
 	if (this.kind==null) {
 		this.prev = null;
 		this.next = null;
+		this.id = NilUUID;
+		this.prev = NilUUID;
 		return;
 	}
 	// Perform this action, and make it the head of the transaction list.
@@ -80,9 +83,10 @@ var Transaction = function(knd,undo_data,do_data,descr,chain) {
 			tr.perform();
 		});
 	}
+	transactionCompleted(this.descr);
 	
 	if (DebugTransactions) {
-		transactionCompleted("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
+		console.log("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
 		checkForErrors();
 		S2 = exportProject(Project.cid);
 		this.rollback();
@@ -102,6 +106,7 @@ var Transaction = function(knd,undo_data,do_data,descr,chain) {
 	p.TransactionCurrent = this;
 	p.TransactionHead = this;
 	p.updateUndoRedoUI();
+	p.appendCurrentTransaction();
 };
 
 Transaction.undo = function() {
@@ -136,8 +141,8 @@ Transaction.undo = function() {
 				} else if (S2!=S4) {
 					logdiff(S2,S4,"in undo: redo,undo != nil");
 				}
+				console.log("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
 			}
-			transactionCompleted("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
 			p.TransactionCurrent = p.TransactionCurrent.prev;
 		} while (p.TransactionCurrent.chain==true);
 		p.updateUndoRedoUI();
@@ -177,9 +182,8 @@ Transaction.redo = function() {
 				} else if (S2!=S4) {
 					logdiff(S2,S4,"in redo: undo,redo != nil");
 				}
+				console.log(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
 			}
-			
-			transactionCompleted(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
 		} while(p.TransactionCurrent.chain==true);
 		p.updateUndoRedoUI();
 	});
@@ -1088,7 +1092,7 @@ function rebuildCluster(c) {
 
 
 function transactionCompleted(str) {
-	if (DebugTransactions)  console.log(str);
+	if (DEBUG) console.log(`Transaction ${str}`);
 #ifdef SERVER
 	autoSaveFunction();			// eslint-disable-line no-undef
 #else

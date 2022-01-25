@@ -739,8 +739,8 @@ Assessment.prototype = {
 			type: this.type,
 			vulnerability: this.vulnerability,
 			common: (this.vulnerability!=null && Vulnerability.get(this.vulnerability).common),
-			clid: nc.id,
-			cla: nc.assmnt,
+			clid: nc==null?null:nc.id,		// nc must not be null; this helps to recover from data corruption
+			cla: nc==null?null:nc.assmnt,
 			project: this.project,
 			title: this.title,
 			description: this.description,
