@@ -2,7 +2,8 @@
  * See LICENSE.md
  */
 
-/* globals bugreport, createUUID, prependIfMissing, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, VulnerabilityIterator, refreshComponentThreatAssessmentsDialog, H, Project */
+/* globals bugreport, createUUID, prependIfMissing, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, VulnerabilityIterator, refreshComponentThreatAssessmentsDialog, H, Project, reasonableString
+ */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -259,7 +260,7 @@ console.log("Check Component.absorbe()");
 	},
 
 	changeclasstitle: function(str) {
-		str = str.trim();
+		str = reasonableString(str);
 		// Blank title is not allowed. Retain current title.
 		if (str==this.title || str=='')  return;
 
@@ -271,7 +272,7 @@ console.log("Check Component.absorbe()");
 	},
 
 	setclasstitle: function(str) {
-		this.title = str;
+		this.title = reasonableString(str);
 		this.repaintmembertitles();
 		this.store();
 	},
@@ -295,7 +296,7 @@ console.log("Check Component.absorbe()");
 	},
 
 	_settitle: function(str) {
-		this.title = str.trim();
+		this.title = reasonableString(str);
 		this.store();
 	},
 

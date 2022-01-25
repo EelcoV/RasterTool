@@ -3,7 +3,7 @@
  */
 
 /* globals
- Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, _H, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog, ComponentIterator
+ Component, H, LS, NodeCluster, NodeClusterIterator, Preferences, Project, Service, Assessment, Transaction, _, _H, arrayJoinAsString, bugreport, createUUID, isSameString, nid2id, plural, populateLabelMenu, displayComponentThreatAssessmentsDialog, ComponentIterator, reasonableString
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -274,7 +274,7 @@ Node.prototype = {
 	},
 	
 	changetitle: function(str) {
-		str = str.trim();
+		str = reasonableString(str);
 		// Blank title is not allowed. Retain current title.
 		if (str==this.title || str=='')  return;
 
@@ -375,8 +375,8 @@ Node.prototype = {
 	},
 
 	settitle: function(str,suff) {
-		this.title=str;
-		if (suff!=null)  this.suffix=suff;
+		this.title=reasonableString(str);
+		if (suff!=null)  this.suffix=reasonableString(suff);
 		if (suff=='') bugreport('empty suffix','Node.settitle');
 
 		let cm = Component.get(this.component);
@@ -397,7 +397,7 @@ Node.prototype = {
 	},
 
 	changesuffix: function(str) {
-		str = str.trim();
+		str = reasonableString(str);
 		if (str==this.suffix || str=="")  return;
 
 		new Transaction('nodeSuffix',
@@ -408,7 +408,7 @@ Node.prototype = {
 	},
 
 	setsuffix: function(str) {
-		this.suffix = str;
+		this.suffix = reasonableString(str);
 		this.settitle(this.title,this.suffix);
 	},
 

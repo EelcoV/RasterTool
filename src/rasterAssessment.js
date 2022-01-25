@@ -3,7 +3,7 @@
  */
 
 /* globals
-bugreport, _, _H, AssessmentIterator, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id, internalID, repaintCluster
+bugreport, _, _H, AssessmentIterator, LS, Component, NodeClusterIterator, Transaction, Vulnerability, VulnerabilityIterator, isSameString, NodeCluster, Project, H, Rules, createUUID, newRasterConfirm, nid2id, internalID, repaintCluster, reasonableString
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -214,6 +214,7 @@ Assessment.autotitle = function(pid,newtitle) {
 };
 
 Assessment.projecthastitle= function(pid,str) {
+	str = reasonableString(str);
 	for (const cidobj of Component._all) {
 		let cm = cidobj[1];
 		if (cm.project!=pid)  continue;
@@ -281,9 +282,9 @@ Assessment.prototype = {
 	},
 	
 	settitle: function(t) {
-		t = String(t).trim().substr(0,50);
+		t = reasonableString(t);
 		// Silently ignore an attempt to set a blank title
-		if (t=="")  return;
+		if (t=='')  return;
 
 		if (this.component!=null) {
 			// If the component already contains a threat with title "t" and the same type,
@@ -388,7 +389,7 @@ Assessment.prototype = {
 	},
 	
 	setremark: function(t) {
-		this.remark = String(t).trim().substr(0,200);
+		this.remark = reasonableString(t);
 		this.store();
 	},
 
@@ -739,8 +740,8 @@ Assessment.prototype = {
 			type: this.type,
 			vulnerability: this.vulnerability,
 			common: (this.vulnerability!=null && Vulnerability.get(this.vulnerability).common),
-			clid: nc.id,
-			cla: nc.assmnt,
+			clid: nc==null?null:nc.id,		// nc being null is a bug, but this helps in recovery
+			cla: nc==null?null:nc.assmnt,
 			project: this.project,
 			title: this.title,
 			description: this.description,

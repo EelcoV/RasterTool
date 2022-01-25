@@ -81,7 +81,7 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 	};
 
 	this.setcurrentproject = function(projectname) {
-		this.currentproject = String(projectname);
+		this.currentproject = projectname;
 		this.store();
 	};
 

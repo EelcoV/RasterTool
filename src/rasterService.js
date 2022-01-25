@@ -3,7 +3,7 @@
  */
 
 /* globals
- H, LS, Preferences, Project, RefreshNodeReportDialog, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, workspacedrophandler
+ H, LS, Preferences, Project, RefreshNodeReportDialog, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, workspacedrophandler, reasonableString
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -87,7 +87,7 @@ class Service {
 	}
 	
 	static autotitle(pid,str = _("New service")) {
-		let targettitle = str;
+		let targettitle = reasonableString(str);
 		if (Service.titleisused(pid,targettitle,null)) {
 			var n=0;
 			do {
@@ -108,7 +108,7 @@ class Service {
 	}
 	
 	settitle(newtitle) {
-		newtitle = String(newtitle).trim().substr(0,50);
+		newtitle = reasonableString(newtitle);
 		if (newtitle=='')  return;
 		var targettitle = newtitle;
 		if (Service.titleisused(this.project,targettitle,this.id)) {

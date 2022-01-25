@@ -2,7 +2,8 @@
  * See LICENSE.md
  */
 
-/* global bugreport, _, repaintCluster, Component, createUUID, DEBUG, LS, Assessment, NodeClusterIterator, Vulnerability, VulnerabilityIterator, H, createUUID, isSameString */
+/* global bugreport, _, repaintCluster, Component, createUUID, DEBUG, LS, Assessment, NodeClusterIterator, Vulnerability, VulnerabilityIterator, H, createUUID, isSameString, reasonableString
+ */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -217,6 +218,7 @@ NodeCluster.prototype = {
 	},
 
 	settitle: function(str) {
+		str = reasonableString(str);
 		if (this.title==str)  return;
 		var it = new NodeClusterIterator({project: this.project, isroot: true, type: this.type, title: str});
 		if (it.count()>0) {

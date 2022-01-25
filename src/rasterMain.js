@@ -30,6 +30,7 @@ const LS = LS_prefix+':'+LS_version+':';
 
 const tab_height = 31;		// See CSS definition of <body>
 //const toolbar_height = 94;	// See CSS definition of <body>
+const MaxStringLen = 5000;	// Limit on object titles, descriptions, etc.
 
 #ifdef STANDALONE
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1881,6 +1882,12 @@ function prependIfMissing(a,b) {		// eslint-disable-line no-unused-vars
 	}
 }
 
+/* reasonableString: fix str to something of reasonable length and without leading or trailing whitespace
+ */
+function reasonableString(str) {	// eslint-disable-line no-unused-vars
+	return String(str).substr(0,MaxStringLen).trim();
+}
+
 /* Test whether two strings are identical in a locale and case-insensitive way.
 */
 function isSameString(a,b) {
@@ -1965,11 +1972,32 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 	return dfd.promise();
 }
 
+/* bugreport: Notify the user of a bug, save the project and block the UI.
+ */
 function bugreport(mess,funcname) {
 	console.log('bugreport: "'+mess+'" in function "'+funcname+'".');
-	if (DEBUG) {
-		rasterAlert('Please report this bug',H(`You found a bug in this program.\n("${mess}" in function "${funcname}").`));
-	}
+	let dialog = $('<div id="bugreport"></div>').dialog({
+  		title: _H("Please report this bug"),
+		dialogClass: "no-close",
+		closeOnEscape: false,
+		classes: {"ui-dialog-titlebar": "ui-corner-top no-close"},
+		buttons: [{
+			text: _("Close"),
+			click: function() {
+				$(this).dialog('close');
+				exportAll();
+				$('#splash').show();
+				$('#splashstatus').html( _("Halted on error: %% in function %%.",mess,funcname) );
+			}
+		}]
+	});
+	$('#bugreport').html(_H("You found a bug in this program.")
+		+ '<br><br><i>'
+		+ _H("%% in function %%.", mess, funcname)
+		+ '</i><br><br>'
+		+ _H("This program will save your work, then halt to prevent further damage.")
+	);
+	dialog.dialog('open');
 }
 
 #ifdef SERVER

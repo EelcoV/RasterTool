@@ -715,6 +715,11 @@ Dialog windows:
  - threat evaluations for element nodes
 */
 
+/* Used to hide the close button on dialog windows */
+.no-close .ui-dialog-titlebar-close {
+	display: none;
+}
+
 .ui-menu {
 	position: absolute;
 	min-width: 150px;

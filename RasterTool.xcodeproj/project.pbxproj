@@ -324,8 +324,8 @@
 				494B6F8618796E9D00400328 /* rasterService.js */,
 				494B6F8718796E9D00400328 /* rasterAssessment.js */,
 				492431532742F79C00FA02BE /* rasterVulnerability.js */,
-				49D256061A1E88A200102918 /* translation-nl.js */,
 				49ADD30023CA0B5C003BE3D4 /* rasterTransaction.js */,
+				49D256061A1E88A200102918 /* translation-nl.js */,
 				4931606627511F1400F41FBC /* rasterIterators.js */,
 			);
 			path = src;
