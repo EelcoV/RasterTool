@@ -365,24 +365,24 @@ function sendError($errorMessage) {
  *	current date and time to the filename.
  *
  */
-function doReflect() {
-	$name=slashadd($_REQUEST['name']);
-	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
-	if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {
-		$content=stripslashes($_REQUEST['contents']);
-	} else {
-		$content=$_REQUEST['contents'];
-	}
-	if (is_null($content) || $content=="") sendError("Required parameter 'content' is missing.");
-	
-	$datetime = strftime("%Y%m%d %H%M %S");
-	header('Content-Description: Project exported');
-	header('Content-Type: text/x-raster');
-	header("Content-Disposition: attachment; filename=\"${name} ${datetime}.raster\"");
-	header("Content-Length: " . strlen($content));
-	echo $content;
-	exit(0);
-}
+//function doReflect() {
+//	$name=slashadd($_REQUEST['name']);
+//	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
+//	if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {
+//		$content=stripslashes($_REQUEST['contents']);
+//	} else {
+//		$content=$_REQUEST['contents'];
+//	}
+//	if (is_null($content) || $content=="") sendError("Required parameter 'content' is missing.");
+//
+//	$datetime = strftime("%Y%m%d %H%M %S");
+//	header('Content-Description: Project exported');
+//	header('Content-Type: text/x-raster');
+//	header("Content-Disposition: attachment; filename=\"${name} ${datetime}.raster\"");
+//	header("Content-Length: " . strlen($content));
+//	echo $content;
+//	exit(0);
+//}
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  * MAIN BODY
@@ -401,9 +401,9 @@ case "put":
 case "get":
 	doGet();
 	break;
-case "reflect":
-	doReflect();
-	break;
+//case "reflect":
+//	doReflect();
+//	break;
 default:
 	doList();
 }

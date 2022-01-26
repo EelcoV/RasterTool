@@ -2843,14 +2843,11 @@ function checkUpgradeDone() {
 /* singleProjectExport(p): save all data into a local file.
  */
 function singleProjectExport(p) {
-	var proj = Project.get(p);
-	var s = exportProject(p);
-//	var url = "data:text/x-raster;," + urlEncode(s);
-//	document.location.assign(url);
-
-	$('#exp_name').val(proj.title);
-	$('#exp_contents').val(s);
-	$('#exp_form').submit();
+	let proj = Project.get(p);
+	saveStringAsRasterFile(exportProject(p),proj.title);
+//	$('#exp_name').val(proj.title);
+//	$('#exp_contents').val(s);
+//	$('#exp_form').submit();
 }
 
 function exportProject(pid) {
@@ -2879,6 +2876,46 @@ function exportProject(pid) {
 	return s;
 }
 
+/* dateAsAstring: returns the current datetime as string "YYYYMMDD HHMM SS"
+ */
+function dateAsAstring() {
+	let dt = new Date();
+	let x;
+	let s = '';
+	s += dt.getFullYear();
+	x = dt.getMonth()+1;
+	s += (x<10?'0':'')+x;
+	x = dt.getDate();
+	s += (x<10?'0':'')+x;
+	s += ' ';
+	x = dt.getHours();
+	s += (x<10?'0':'')+x;
+	x = dt.getMinutes();
+	s += (x<10?'0':'')+x;
+	s += ' ';
+	x = dt.getSeconds();
+	s += (x<10?'0':'')+x;
+	return s;
+}
+
+/* saveStringAsRasterFile: make the browser download a Raster file using a given filename
+ * s: (String) contents of the new file
+ * name: (String) filename in which to save string s
+ * append: (Boolean, default true) append a datetime string and extension to the filename
+ */
+function saveStringAsRasterFile(s,name, append=true) {
+	if (append) name += ` ${dateAsAstring()}.raster`;
+	let fileBlob = new Blob([s], {type: 'text/x-raster'});
+	let url = window.URL.createObjectURL(fileBlob);
+	let anchor = document.createElement('a');
+	anchor.href = url;
+	anchor.download = name;
+	anchor.click();
+	window.URL.revokeObjectURL(url);
+	// the line below gives a DOMException
+//	document.removeChild(anchor);
+}
+
 /* exportAll: save all data into a local file.
  */
 function exportAll() {
@@ -2888,8 +2925,9 @@ function exportAll() {
 		s+= key+'\t';
 		s+= localStorage[key]+'\n';
 	}
-	var url = 'data:text/x-raster;,' + urlEncode(s);
-	document.location.assign(url);
+//	var url = 'data:text/x-raster;,' + urlEncode(s);
+//	document.location.assign(url);
+	saveStringAsRasterFile(s,'exportall');
 }
 
 const TabWorkDia = 0;
