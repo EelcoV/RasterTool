@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy, DEBUG, createUUID, NilUUID
+/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy, DEBUG, createUUID
 */
 
 const DebugTransactions = false;
@@ -33,24 +33,26 @@ const DebugTransactions = false;
  *  undo_data: (any) an object or literal containing all information to undo the transaction
  *  do_data: (any) an object or literal containing all information to perform the transaction
  *	project: the project ot which this Transaction belongs
+ *  remote: (Boolean) false if this client created the transaction, true if the transaction was received from the server
  * Instance methods:
  *  perform(data): perform the action using data; data defaults to this.do_data
  *  rollback: perform the action using this.undo_data.
  */
-var Transaction = function(knd,undo_data,do_data,descr,chain,id) {
-	this.id = (id==null ? createUUID() : id);
+var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=false,id=createUUID()) {
+	this.id = id;
 	this.kind = knd;
-	this.descr = (descr ? descr : knd);
-	this.chain = (chain ? chain : false);
+	this.descr = descr;
+	this.chain = chain;
 	this.timestamp = Date.now();
 	this.project = Project.cid;
 	this.undo_data = undo_data;
 	this.do_data = do_data;
+	this.remote = remote;
 	if (this.kind==null) {
 		this.prev = null;
 		this.next = null;
-		this.id = NilUUID;
-		this.prev = NilUUID;
+//		this.id = NilUUID;
+//		this.prev = NilUUID;
 		return;
 	}
 	// Perform this action, and make it the head of the transaction list.
@@ -83,7 +85,7 @@ var Transaction = function(knd,undo_data,do_data,descr,chain,id) {
 			tr.perform();
 		});
 	}
-	transactionCompleted(this.descr);
+	transactionCompleted(this.descr,this);
 	
 	if (DebugTransactions) {
 		console.log("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
@@ -1091,10 +1093,10 @@ function rebuildCluster(c) {
 }
 
 
-function transactionCompleted(str) {
+function transactionCompleted(str,tr) {
 	if (DEBUG) console.log(`Transaction ${str}`);
 #ifdef SERVER
-	autoSaveFunction();			// eslint-disable-line no-undef
+	if (tr==null || !tr.remote) autoSaveFunction();			// eslint-disable-line no-undef
 #else
 	setModified();				// eslint-disable-line no-undef
 #endif

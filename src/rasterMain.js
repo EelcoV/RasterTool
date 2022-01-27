@@ -1590,7 +1590,7 @@ function ShowDetails() {
 							stopWatching(p.id);
 							p.setshared(becomesShared,true);
 						} else if (p.shared && becomesShared) {
-							p.storeOnServer(false,exportProject(p.id),{});
+							p.storeOnServer();
 						}
 					}
 					showProjectList();
@@ -1836,7 +1836,7 @@ function switchToProject(pid,dorefresh) {
 	}
 }
 
-const NilUUID = '00000000-0000-0000-0000-000000000000';
+//const NilUUID = '00000000-0000-0000-0000-000000000000';
 
 /* createUUID: return a new "unique" random UUID.
  * There are different UUID-versions; version 4 is randomly generated.
@@ -2009,7 +2009,7 @@ var SSEClient = null;
  *		Switch project to private. Issue a warning to the user. Tool remains online.
  *
  * Whenever we start periodic checks for local changes to be stored on the server,
- * we must als periodically check for server changes using startWatching().
+ * we must also periodically check for server changes using startWatching().
  * When the remote project is deleted by another client, watching will stop. It must
  * be restarted whenever a local change is propagated to the server again.
  *
@@ -2017,9 +2017,6 @@ var SSEClient = null;
  * changed, then the local project will be shown as 'shared' without a server version
  * being present.
  *
- * NOTE: There should be a smarter way of noticing changes to the project. Perhaps
- * the concept of 'actions' should be introduced, with each action signifying a single
- * change to the project. This would also make it easier to implement an Undo capability.
  */
 function startAutoSave() {
 	stopWatching(null);
@@ -2084,6 +2081,12 @@ console.log(`SSE_PROJMON RETRIES = ${SSERetriesHack}`);
 			SSERetriesHack = 0;
 			let xdetails = JSON.parse(msg.data);
 			let pp = Project.get(Project.cid);
+			// Check whether we already got that data through a transaction update
+			if (pp.TransactionHead.id==xdetails.trlast) {
+				// No need to process
+console.log('Ignoring newer project file');
+				return;
+			}
 			let newpid = loadFromString(xdetails.contents);
 			if (newpid!=null) {
 				var newp = Project.get(newpid);
@@ -2128,10 +2131,9 @@ function autoSaveFunction() {		// eslint-disable-line no-unused-vars
 		}
 		return;
 	}
-	var exportstring = exportProject(p.id);
 	// First, stop watching the file so that we do not notify ourselves
 	stopWatching(p.id);
-	p.storeOnServer(false,exportstring,{
+	p.storeOnServer(false,{
 		onUpdate: function() {
 			startWatching(p);
 		}
@@ -2684,6 +2686,10 @@ function loadFromString(str,options) {
 		if (lp.w) p.date = lp.w;
 		if (lp.i) p.iconset = lp.i;
 		if (lp.q) p.wpa = lp.q;
+		if (lp.r) {
+			p.TransactionBase.id = lp.r;
+			p.lasttr = lp.r;
+		}
 		for (k=0; k<lp.s.length; k++) {
 			p.addservice(lp.s[k]);
 		}
@@ -2847,7 +2853,7 @@ function exportProject(pid) {
 	// and retrieved by the server separately from the project data.
 	let olddate = p.date;
 	p.date = "";
-	s += p.exportstring();
+	s += p.exportstring(p.TransactionCurrent.id);
 	p.date = olddate;
 	let it;
 	it = new AssessmentIterator({project: pid});
@@ -3016,8 +3022,7 @@ function bottomTabsCloseHandler(event) {
 			new Transaction('serviceCreate',
 				[{id: s.id, project: s.project, title: s.title, index: p.services.indexOf(s.id)}],
 				[{id: s.id, project: s.project}],
-				_("Remove service %%", s.title),
-				false
+				_("Remove service %%", s.title)
 			);
 		}
 	);

@@ -41,6 +41,7 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *  TransactionCurrent: the most recently performed transaction
  *  TransactionHead: the most recently posted transaction
  *		See rasterTransaction.js for description of these, and the transaction list.
+ *  lasttr: ID of the latest/current transaction
  * Methods:
  *	destroy(): destructor for this object
  *	duplicate(): creates an exact copy of this project, and returns that duplicate. Note: this will create two projects with the samen name.
@@ -114,7 +115,7 @@ var Project = function(id,asstub) {
 };
 Project.get = function(id) { return Project._all.get(id); };
 Project.cid = 0;
-Project._all =new Map();
+Project._all = new Map();
 Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Pink"), _("Purple"), _("Grey")];
 Project.colors = ["none","red","orange","yellow","green","blue","pink","purple","grey"];
 Project.defaultVulnerabilities = [		// eslint-disable-line no-unused-vars
@@ -226,7 +227,7 @@ Project.merge = function(intoproject,otherproject) {
 	otherproject.date = saveddate;
 
 	if (intoproject.shared) {
-		intoproject.storeOnServer(false,exportProject(intoproject.id),{});
+		intoproject.storeOnServer();
 	}
 };
 
@@ -564,7 +565,7 @@ Project.prototype = {
 		if (updateServer==undefined || updateServer==true) {
 			if (newstatus==true) {
 				// Project was private, now becomes shared.
-				this.storeOnServer(false,exportProject(this.id),{});
+				this.storeOnServer();
 			} else {
 				// Project was shared, now becomes private.
 				this.deleteFromServer();
@@ -975,7 +976,7 @@ Project.prototype = {
 		return this.labels[i-1];
 	},
 	
-	_stringify: function() {
+	_stringify: function(transactionId=null) {
 		var data = {};
 		data.l=this.title;
 		data.g=this.group;
@@ -987,12 +988,15 @@ Project.prototype = {
 		data.c=this.labels;
 		data.i=this.iconset;
 		data.q=this.wpa;
+		if (transactionId!=null) {
+			data.r = transactionId;
+		}
 		return JSON.stringify(data);
 	},
 
-	exportstring: function() {
+	exportstring: function(transactionId=null) {
 		var key = LS+'P:'+this.id;
-		return key + '\t' + this._stringify() + '\n';
+		return key + '\t' + this._stringify(transactionId) + '\n';
 	},
 	
 	store: function() {
@@ -1002,8 +1006,14 @@ Project.prototype = {
 	},
 
 #ifdef SERVER
-	storeOnServer: function(auto,exportstring,callback) {
+	/* storeOnServer: store a project file onto the server
+	 * auto: (Boolean, default true) if true then do not ask for confirmation
+	 * callback: (Object, default {}) containing callback functions:
+	 *		onUpdate: called when successful
+	 */
+	storeOnServer: function(auto=false,callback={}) {
 		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
+		let exportstring = exportProject(this.id);
 		var thisp = this;
 		// First, check that no other browser has touched the versions since we last
 		// retrieved it.
@@ -1264,6 +1274,11 @@ Project.prototype = {
 		if (!this.shared) return;
 		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
 		let tr = this.TransactionCurrent;
+		if (this.lasttr==tr.id) {
+			return;
+		} else {
+			this.lasttr=tr.id;
+		}
 		let trobj = {
 			id: tr.id,			// UUID-string
 			descr: tr.descr,	// String
@@ -1290,9 +1305,11 @@ Project.prototype = {
 						_H("The server appears to be unreachable. The tool is switching to working offline.")
 					);
 				} else {
-					rasterAlert(_("A request to the server failed"),
-						_("Could not share this action.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
-					);
+					console.log(`append transaction failed: ${jqXHR.responseText}`);
+//					rasterAlert(_("A request to the server failed"),
+//						_("Could not share this action.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
+//					);
+					Transaction.undo();
 				}
 			}
 		});
@@ -1323,7 +1340,8 @@ Project.prototype = {
 					while (thisp.TransactionCurrent!=thisp.TransactionHead) {
 						Transaction.redo();
 					}
-					new Transaction(tr.kind,tr.undo_data,tr.do_data,tr.descr,tr.chain,tr.id);
+					thisp.lasttr = tr.id; // prevent notification to other clients using share.php?op=appendtr
+					new Transaction(tr.kind,tr.undo_data,tr.do_data,tr.descr,tr.chain,true,tr.id);
 				}
 			},
 			error: function(jqXHR, textStatus /*, errorThrown*/) {
@@ -1491,7 +1509,7 @@ function askForConflictResolution(proj,details) {
 	{text: _("Overrule"), click: function(){
 		$(this).dialog('close');
 		proj.setdate(details.date);
-		proj.storeOnServer(true,exportProject(proj.id),{}); // auto-save, without asking for confirmation
+		proj.storeOnServer(true); // auto-save, without asking for confirmation
 		startAutoSave();
 	} },
 	{text: _("Adopt other"), click: function(){
@@ -1518,7 +1536,7 @@ function askForConflictResolution(proj,details) {
 	$('#modaldialog').dialog( 'option', 'title', _("Conflict resulution"));
 	$('#modaldialog').html(
 		_H("A newer version of project '%%' has been stored on the server by user '%%' on '%%'. ", H(proj.title), H(details.creator), H(prettyDate(details.date)))
-		+_H("You can continue this version as a private project, overrule the other version so that everyone will use this version, or you can adopt the other version.")
+		+_H("You can continue this version as a private project, overrule the other version so that everyone will use your version, or you can adopt the other version.")
 		+"<p>"
 		+_H("If you adopt the other version, you may lose some of your latest edits.")
 	);

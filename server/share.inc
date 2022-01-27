@@ -20,17 +20,11 @@ $projTname = array();	// Filename of transactions on the server
 define("RASTERDIR", "SharedProjects/");	// Prefix for location of shared Raster files
 define("INDEXFILE", RASTERDIR . "projectindex.csv");	// Location of Index file
 define("DEBUGINFO", true);		// Show extra info when errors are reported
-define("MAXRFILESIZE", 1024*1024);	// Largest reasonable file size for projects or transactions: 1 MByte
+define("MAXTRANSACTIONS", 100);	// Maximum number of transactions to save
+//define("NilUUID", "00000000-0000-0000-0000-000000000000");
 
 error_reporting(E_ERROR | E_PARSE);		// Hide warnings
 
-function errlog($msg) {
-	$errh = fopen(RASTERDIR . "phperrors.log","a");
-	fwrite($errh,strftime("%T ") . $msg . "\n");
-	fflush($errh);
-	fclose($errh);
-}
-errlog("----");
 
 /* readIndexFile: Read the list of projects from the index file
  *
@@ -42,6 +36,10 @@ function readIndexFile() {
 	$fh = fopen(INDEXFILE, "r");
 	if ($fh==false)
 		return true; // Assume that the list is empty, no projects.
+	if (!flock($fh,LOCK_SH)) {
+		fclose($fh);
+		return false;
+	}
 	$n = 0;
 	while (($record = fgetcsv($fh)) !== false) {
 		if (count($record)!=5) {
@@ -59,12 +57,12 @@ function readIndexFile() {
 		$projDescr[$n] = $record[3];
 		$projRname[$n] = $record[4];
 		$projTname[$n] = str_replace('.raster','.tr',$record[4]);
-errlog("$n  name=" . $projName[$n]);
-errlog("$n Rname=" . $projRname[$n]);
-errlog("$n Tname=" . $projTname[$n]);
+error_log("$n  name=" . $projName[$n]);
+error_log("$n Rname=" . $projRname[$n]);
+error_log("$n Tname=" . $projTname[$n]);
 		$n++;
 	}
-	fclose($fh);
+	fclose($fh); // releases the lock
 	return true;
 }
 
@@ -75,9 +73,18 @@ errlog("$n Tname=" . $projTname[$n]);
  */
 function rewriteIndexFile() {
 	global $projName,$projCreator,$projDate,$projDescr,$projRname;
-	$fh = fopen(INDEXFILE, "w");
+	$fh = fopen(INDEXFILE, "c");
 	if ($fh==false)
 		return false;
+	if (!flock($fh,LOCK_EX)) {
+		fclose($fh);
+		return false;
+	}
+	// At this point, if the file existed it has not been modified yet.
+	if (!ftruncate($fh,0)) {
+		fclose($fh);
+		return false;
+	}
 	foreach ($projName as $n => $pName) {
 		$line = array($pName, $projCreator[$n], $projDate[$n], $projDescr[$n], $projRname[$n]);
 		if (!fputcsv($fh,$line)) {
@@ -85,7 +92,7 @@ function rewriteIndexFile() {
 			return false;
 		}
 	}
-	return fclose($fh);
+	return fclose($fh); // release the lock
 }
 
 /* getSharedProjects: Returns the contents of the index file in JSON format
@@ -145,7 +152,7 @@ function writeRasterFile($fname,$content) {
  * Returns true on success, false on error.
  */
 function appendRasterFile($fname,$content) {
-errlog("appendRasterFile($fname,...)");
+error_log("appendRasterFile($fname,...)");
 	$fh = fopen(RASTERDIR . $fname, 'a');
 	if ($fh===false) {
 		return false;
@@ -167,12 +174,13 @@ errlog("appendRasterFile($fname,...)");
  * Returns the contents of the file on success, false on error.
  */
 function readRasterFile($fname) {
-	$fh = fopen(RASTERDIR . $fname, 'r');
+	$filename = RASTERDIR . $fname;
+	$fh = fopen($filename,'r');
 	if ($fh===false) return false;
 	$res = false;
 	if (flock($fh, LOCK_SH)) {
 		// File locked and ready for reading
-		$res = fread($fh, MAXRFILESIZE);
+		$res = fread($fh, filesize($filename));
 	}
 	fclose($fh); // will release the lock
 	return $res;
@@ -194,19 +202,19 @@ function existsAndNotemptyRasterFile($fname) {
  * Returns an (empty) array on success, or false on error.
  */
 function getTransactions($trname) {
-errlog('getTransactions()');
+error_log('getTransactions()');
 	if (!existsAndNotemptyRasterFile($trname))
 		return array();
 	$contents = readRasterFile($trname);
 	if ($contents===false)
 		return false;
-errlog('have contents');
+error_log('have contents');
 	$transactions = json_decode($contents);
 	if ($transactions===null) {
-errlog('decode error: ' . json_last_error_msg());
+error_log('decode error: ' . json_last_error_msg());
 		return false;
 	}
-errlog('done decode');
+error_log('done decode');
 	return $transactions;
 }
 
@@ -300,7 +308,7 @@ function doGetTransactionsFrom() {
 }
 
 function doAppendTransaction() {
-errlog("doAppendTransaction()");
+error_log("doAppendTransaction()");
 	global $projName,$projTname;
 	if ($_SERVER["REQUEST_METHOD"] != "POST")
 		sendError("The 'appendtr' operation must use the POST method.");
@@ -326,17 +334,21 @@ errlog("doAppendTransaction()");
 			if ($t->{'id'}==$tr->{'prev'})
 				$prevexists = true;
 			if ($t->{'prev'}==$tr->{'prev'})
-				sendError('Cannot add transaction: would create fork');
+				sendError('Cannot add transaction: previous transaction already covered');
 		}
 		if (count($transactions)>0 && !prevexists)
-			sendError('Cannot add transaction: would break the chain');
+			sendError('Cannot add transaction: previous transaction does not exist');
 		array_push($transactions, $tr);
+		// Keep at most the last MAXTRANSACTIONS transactions
+		if (count($transactions)>MAXTRANSACTIONS) {
+			splice($transactions, 0, count($transactions)-MAXTRANSACTIONS);
+		}
 		$contents = json_encode($transactions,JSON_PRETTY_PRINT);
 		if ($contents===false)
 			sendError("Failed to encode new transactions file.");
 		$res = writeRasterFile($projTname[$n],$contents);
 		if ($res===false)
-			sendError("Failed to append to transactions file.");
+			sendError("Failed to update transactions file.");
 		header('Content-type: text/x-raster',true,200);
 		echo $res;
 		exit(0);
@@ -424,7 +436,7 @@ function doDel() {
 		// Now modify the filesystem, and return true on success
 		if (!unlink(RASTERDIR . $fname))
 			sendError("Failed to remove the raster datafile.");
-		if (!unlink(RASTERDIR . $tname))
+		if (file_exists(RASTERDIR . $tname) && !unlink(RASTERDIR . $tname))
 			sendError("Failed to remove the raster transactions file.");
 		if (!rewriteIndexFile())
 			sendError("Failed to update the index file.");
