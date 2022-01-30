@@ -13,8 +13,8 @@ See LICENSE.md
  * The messages sent from the server to the client are single lines:
  * - NO PROJECT: the project to watch does not exists (yet).
  * - NOP: sent periodically, to monitor connectivity to the client.
- * - UPDATED: when the project to watch has been changed.
  * - DELETED: the project disappeared. Some client deleted it.
+ * - TRANSACTION: a transaction has been posted on the project.
  *
  * After sending an event the script will end. Each event specifies a retry parameter, so the
  * browser will reopen a connection to the server. The lifetime of this script is therefore
@@ -29,28 +29,113 @@ define("IDLETIME", 200000);	// Interval between checks for file changes (in *mic
 define("NilUUID", "00000000-0000-0000-0000-000000000000");
 
 define("NOPROJECT", "NO PROJECT");
-define("UPDATED", "UPDATED");
-define("TRANSACTION", "TRANSACTION");
-define("DELETED", "DELETED");
 define("NOP", "NOP");
-
-// Globals
-$projName = "";		// project name
-$projCreator = "";	// project creator
-$projDate = "";		// data-time of creation of Raster file and project
-$projDescr = "";	// project description
-$projRname = "";	// filename of Raster project on the server
-$projTname = "";	// filename of transactions on the server
+define("DELETED", "DELETED");
 
 set_time_limit(0);  // No limit on execution time. Lifetime is limited to NOPINTERVAL
+
+header('X-Accel-Buffering: no');
+header('Content-Type: text/event-stream');
+header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
+
+// Globals
+$projTname = "";	// filename of transactions on the server
+$name = $_REQUEST['name'];
+$indexmtime = filemtime(INDEXFILE);
+
+lookupDetails($name);
+if ($projTname == "") {
+	send(NOPROJECT);
+	exit(0);
+}
+
+// We know the file name. Save it, and find its modification time
+$filename = RASTERDIR . $projTname;
+if (file_exists($filename)) {
+	$Tfilemtime = filemtime($filename);
+} else {
+	$Tfilemtime = 0;
+}
+if (DEBUGINFO) error_log("starting watch for file $projTname, project $name");
+
+$noptime = time();
+
+while (true) {
+	usleep(IDLETIME);
+	// Send NOP, if necessary.
+	if (time()-$noptime > NOPINTERVAL) {
+		send(NOP); // will exit the script
+	}
+	// Check whether the index file was updated, and update project details
+	clearstatcache(); // Because mtimes are cached by PHP
+	if (filemtime(INDEXFILE) != $indexmtime) {
+		lookupDetails($name);
+		if ($projTname=="") {
+			send(DELETED);
+		}
+		$indexmtime = $curtime;
+	}
+
+	// Check current mtime of the Transaction file
+	if (file_exists($filename) && filemtime($filename) > $Tfilemtime) {
+		// File was updated, notify with id of latest transaction
+		send(getLatestTransactionID()); // will exit the script
+	}
+}
+
+function send($mesg) {
+	global $projTname, $name;
+	// Replace control characters by string literals
+	$mesg = str_replace("\n", '\n', $mesg);
+	$mesg = str_replace("\t", '\t', $mesg);
+	$mesg = str_replace("\r", '\r', $mesg);
+	echo "data: $mesg" . PHP_EOL;
+	echo "retry: 100" . PHP_EOL;
+	echo PHP_EOL;
+	ob_flush();
+	flush();
+	$mesg = substr($mesg,0,15);
+	if (DEBUGINFO) error_log("sent [$mesg] for file $projTname, project [$name]");
+	exit(0);
+}
+
+/* Read details from the project index file, and set global variables.
+ * Globals are set to the empty string if project $name is not found, or on other errors
+ */
+function lookupDetails($name) {
+	global $projTname;
+	$fh = fopen(INDEXFILE, "r");
+	if ($fh==false) {
+		// Cannot read index file. Assume that the list is empty, and that there are no projects.
+		$projTname = "";
+		return;
+	}
+	while (($record = fgetcsv($fh)) !== false) {
+		if (count($record)==5 && $record[0]==$name)
+			break;
+	}
+	fclose($fh);
+	if ($record[0]==$name) {
+//		$projName = $record[0];
+//		$projCreator = $record[1];
+//		$projDate = $record[2];
+//		$projDescr = $record[3];
+		$projRname = $record[4];
+		$projTname = str_replace('.raster','.tr',$projRname);
+	} else {
+		// Project did not appear in the index file
+		$projTname = "";
+	}
+}
 
 /* existsAndNotemptyRasterFile: checks whether a file named '$fname' exists *and* containts data
  *
  * File can be a project file (*.raster) or a transactions file (*.tr).
  * Returns the true if the file exists and has a non-zero size, false otherwise and on errors.
  */
-function existsAndNotemptyRasterFile($fname) {
-	$s = filesize(RASTERDIR . $fname);
+function existsAndNotemptyRasterFile() {
+	global $filename;
+	$s = filesize($filename);
 	if ($s===false) return false;
 	return ($s>0);
 }
@@ -59,8 +144,8 @@ function existsAndNotemptyRasterFile($fname) {
  *
  * Returns the contents of the file on success, false on error.
  */
-function readRasterFile($fname) {
-	$filename = RASTERDIR . $fname;
+function readRasterFile() {
+	global $filename;
 	$fh = fopen($filename,'r');
 	if ($fh===false) return false;
 	$res = false;
@@ -76,10 +161,10 @@ function readRasterFile($fname) {
  *
  * Returns an (empty) array on success, or false on error.
  */
-function getTransactions($trname) {
-	if (!existsAndNotemptyRasterFile($trname))
+function getTransactions() {
+	if (!existsAndNotemptyRasterFile())
 		return array();
-	$contents = readRasterFile($trname);
+	$contents = readRasterFile();
 	if ($contents===false)
 		return false;
 	$transactions = json_decode($contents);
@@ -89,8 +174,8 @@ function getTransactions($trname) {
 	return $transactions;
 }
 
-function getLatestTransactionID($trfname) {
-	$transactions = getTransactions($trfname);
+function getLatestTransactionID() {
+	$transactions = getTransactions();
 	if ($transactions===false) {
 		return NilUUID;
 	}
@@ -101,125 +186,5 @@ function getLatestTransactionID($trfname) {
 	return $tr->{'id'};
 }
 
-
-header('X-Accel-Buffering: no');
-header('Content-Type: text/event-stream');
-header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
-
-$name = $_REQUEST['name'];
-$indexmtime = filemtime(INDEXFILE);
-lookupDetails($name);
-if ($projRname == "") {
-	send(NOPROJECT);
-	exit(0);
-}
-
-// We know the file names. Find their modification time
-$Rfilemtime = filemtime(RASTERDIR . $projRname);
-$Tfilemtime = filemtime(RASTERDIR . $projTname);
-if (DEBUGINFO) error_log("starting watch for file $projRname, project $projName");
-
-$noptime = time();
-
-while (true) {
-	usleep(IDLETIME);
-	// Send NOP, if necessary.
-	if (time()-$noptime > NOPINTERVAL) {
-		send(NOP); // will exit the script
-	}
-	// Check whether the index file was updated, and update project details
-	clearstatcache(); // Because mtimes are cached by PHP
-	$curtime = filemtime(INDEXFILE);
-	if ($curtime != $indexmtime) {
-		lookupDetails($name);
-		if ($projRname=="") {
-			send(DELETED);
-		}
-		$indexmtime = $curtime;
-	}
-
-	// Check current mtime of the Transaction file
-	$curtimeTr = filemtime(RASTERDIR . $projTname);
-	if ($curtimeTr > $Tfilemtime) {
-		// File was updated, notify update.
-		send(TRANSACTION); // will exit the script
-	}
-
-	// Check current mtime of the Raster file
-	// only notifyif project file is newer than the transaction file
-	$curtime = filemtime(RASTERDIR . $projRname);
-	if ($curtime>$curtimeTr && $curtime>$Rfilemtime) {
-		// File was updated, notify update.
-		
-		// We send a JSON object with 6 fields:
-		// name
-		// creator
-		// date
-		// description
-		// ID of last transaction
-		// contents
-		$contents = readRasterFile($projRname);
-		if ($contents == FALSE) {
-			// An error occurred. Pretend that the project was deleted, which is not too far from
-			// the truth.
-			send(DELETED); // will exit the script
-		}
-		$str = sprintf(
-			"{\"name\": \"%s\", \"creator\": \"%s\", \"date\": \"%s\", \"description\": \"%s\", \"trlast\": \"%s\", \"contents\": \"%s\"}",
-			slashadd($projName), slashadd($projCreator), slashadd($projDate), slashadd($projDescr), getLatestTransactionID($projTname), slashadd($contents)
-		);
-		send($str); // will exit the script
-	}
-}
-
-// Add slashes to special characters, but NOT to single quotes.
-function slashadd($str) {
-	return str_replace("\\'","'",addslashes($str));
-}
-
-function send($mesg) {
-	global $projRname, $projName;
-	// Replace control characters by string literals
-	$mesg = str_replace("\n", '\n', $mesg);
-	$mesg = str_replace("\t", '\t', $mesg);
-	$mesg = str_replace("\r", '\r', $mesg);
-	echo "data: $mesg" . PHP_EOL;
-	echo "retry: 100" . PHP_EOL;
-	echo PHP_EOL;
-	ob_flush();
-	flush();
-	$mesg = substr($mesg,0,15);
-	if (DEBUGINFO) error_log("sent [$mesg] for file $projRname, project $projName");
-	exit(0);
-}
-
-/* Read details from the project index file, and set global variables.
- * Globals are set to the empty string if project $name is not found, or on other errors
- */
-function lookupDetails($name) {
-	global $projName,$projCreator,$projDate,$projDescr,$projRname,$projTname;
-	$fh = fopen(INDEXFILE, "r");
-	if ($fh==false) {
-		// Cannot read index file. Assume that the list is empty, and that there are no projects.
-		$projName = $projCreator = $projDate = $projDescr = $projRname = $projTname = "";
-		return;
-	}
-	while (($record = fgetcsv($fh)) !== false) {
-		if (count($record)==5 && $record[0]==$name)
-			break;
-	}
-	fclose($fh);
-	if ($record[0]==$name) {
-		$projName = $record[0];
-		$projCreator = $record[1];
-		$projDate = $record[2];
-		$projDescr = $record[3];
-		$projRname = $record[4];
-		$projTname = str_replace('.raster','.tr',$projRname);
-	} else {
-		// Project did not appear in the index file
-		$projName = $projCreator = $projDate = $projDescr = $projRname = $projTname = "";
-	}
-}
 
 ?>

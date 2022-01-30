@@ -57,9 +57,6 @@ function readIndexFile() {
 		$projDescr[$n] = $record[3];
 		$projRname[$n] = $record[4];
 		$projTname[$n] = str_replace('.raster','.tr',$record[4]);
-error_log("$n  name=" . $projName[$n]);
-error_log("$n Rname=" . $projRname[$n]);
-error_log("$n Tname=" . $projTname[$n]);
 		$n++;
 	}
 	fclose($fh); // releases the lock
@@ -152,7 +149,6 @@ function writeRasterFile($fname,$content) {
  * Returns true on success, false on error.
  */
 function appendRasterFile($fname,$content) {
-error_log("appendRasterFile($fname,...)");
 	$fh = fopen(RASTERDIR . $fname, 'a');
 	if ($fh===false) {
 		return false;
@@ -202,19 +198,15 @@ function existsAndNotemptyRasterFile($fname) {
  * Returns an (empty) array on success, or false on error.
  */
 function getTransactions($trname) {
-error_log('getTransactions()');
 	if (!existsAndNotemptyRasterFile($trname))
 		return array();
 	$contents = readRasterFile($trname);
 	if ($contents===false)
 		return false;
-error_log('have contents');
 	$transactions = json_decode($contents);
 	if ($transactions===null) {
-error_log('decode error: ' . json_last_error_msg());
 		return false;
 	}
-error_log('done decode');
 	return $transactions;
 }
 
@@ -308,7 +300,6 @@ function doGetTransactionsFrom() {
 }
 
 function doAppendTransaction() {
-error_log("doAppendTransaction()");
 	global $projName,$projTname;
 	if ($_SERVER["REQUEST_METHOD"] != "POST")
 		sendError("The 'appendtr' operation must use the POST method.");

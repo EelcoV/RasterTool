@@ -3,7 +3,7 @@
  */
 
 /* globals
-AssessmentIterator, Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, unescapeNewlines, urlDecode, urlEncode
+AssessmentIterator, Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, urlDecode, urlEncode
 */
 
 "use strict";
@@ -357,7 +357,7 @@ function initAllAndSetup() {
 	} else {
 		loadDefaultProject();
 	}
-	startAutoSave();
+	startWatchingCurrentProject();
 	populateProjectList();
 #else
 	localStorage.clear();
@@ -631,7 +631,7 @@ function initProjectsToolbar() {
 					Project.asyncRetrieveStub(p.id,function(newpid){
 						populateProjectList();
 						switchToProject(newpid);
-						startAutoSave();
+						startWatchingCurrentProject();
 					});
 					refreshProjectToolbar(Project.cid);
 				});
@@ -797,9 +797,7 @@ function populateProjectList() {
 	}
 	$('#projlist').html(newoptions);
 	// Finally all stubs projects
-	refreshStubList(false); // Add current stubs, possibly outdated wrt server status
-	// Select the current project, and enable/disable the buttons
-	refreshProjectToolbar(Project.cid);
+	refreshStubList(true); // Add current stubs, possibly outdated wrt server status
 }
 
 /* showProjectList: Show project list using current stubs, and do fire periodic updates
@@ -828,7 +826,7 @@ function startPeriodicStubListRefresh() {
 }
 
 
-function refreshStubList(dorepaint) {
+function refreshStubList(dorepaint=false) {
 	if (GroupSettings.localonly) return;
 	let snippet = '';
 	let it = new ProjectIterator({group: ToolGroup, stub: true});
@@ -2018,8 +2016,7 @@ var SSEClient = null;
  * being present.
  *
  */
-function startAutoSave() {
-	stopWatching(null);
+function startWatchingCurrentProject() {
 	var p = Project.get(Project.cid);
 	if (p==null || !p.shared || !Preferences.online) {
 		if (Preferences!=null && !Preferences.online) {
@@ -2059,9 +2056,6 @@ console.log(`SSE_PROJMON RETRIES = ${SSERetriesHack}`);
 		} else if (msg.data=="NOP") {
 			// Sent periodically for testing connectivity. No action required
 			SSERetriesHack = 0;
-		} else if (msg.data=="TRANSACTION") {
-			let pp = Project.get(Project.cid);
-			pp.getNewTransactionsFromServer();
 		} else  if (msg.data=="DELETED") {
 			SSERetriesHack = 0;
 			// Project has been deleted from the server
@@ -2072,45 +2066,18 @@ console.log(`SSE_PROJMON RETRIES = ${SSERetriesHack}`);
 			rasterAlert( _("Project has been made private"),
 				_H("Project '%%' has been deleted from the server by someone. ", pp.title)+
 				_H("Your local version of the project will now be marked as private. ")+
-				_H("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
+				_H("If you wish to share your project again, you must set its details to 'Shared' yourself.")+
 				"<br><p><i>"+
 				_H("Your changes are not shared with others anymore.")+
 				"</i>"
 			);
 		} else {
-			SSERetriesHack = 0;
-			let xdetails = JSON.parse(msg.data);
+			// msg.data is the id of the latest transaction.
+			// Only fetch updates if this project is out of sync (no fetch if we caused the SSEvent outselves).
 			let pp = Project.get(Project.cid);
-			// Check whether we already got that data through a transaction update
-			if (pp.TransactionHead.id==xdetails.trlast) {
-				// No need to process
-console.log('Ignoring newer project file');
-				return;
-			}
-			let newpid = loadFromString(xdetails.contents);
-			if (newpid!=null) {
-				var newp = Project.get(newpid);
-				newp.shared = true;
-				newp.creator = xdetails.creator;
-				newp.date = xdetails.date;
-				newp.description = unescapeNewlines(xdetails.description);
-				var t = pp.title;
-				pp.destroy();
-				newp.settitle(t);
-				switchToProject(newpid);
-			} else {
-				rasterAlert(_("Project has been made private"),
-					_H("The server version of project '%%' is damaged. ", pp.title)+
-					_H("The project  will now be marked as private. ")+
-					'<p><i>'+
-					_H("Your changes are not shared with others anymore.")+
-					'</i>'
-				);
-				pp.setshared(false,false);
-			}
+			if (msg.data!=pp.TransactionCurrent.id) pp.getNewTransactionsFromServer();
 		}
 	};
-
 }
 
 /* Stop monitoring a project using Server-Sent Events. Either stop a specific
@@ -2123,7 +2090,9 @@ function stopWatching(pid) {
 	}
 }
 
-function autoSaveFunction() {		// eslint-disable-line no-unused-vars
+/* saveThenStartWatching: save current project on server, then begin monitoring from transactions posted by other clients
+ */
+function saveThenStartWatching() {		// eslint-disable-line no-unused-vars
 	var p = Project.get(Project.cid);
 	if (!p.shared || !Preferences.online) {
 		if (!Preferences.online) {
@@ -2132,11 +2101,11 @@ function autoSaveFunction() {		// eslint-disable-line no-unused-vars
 		return;
 	}
 	// First, stop watching the file so that we do not notify ourselves
-	stopWatching(p.id);
+//	stopWatching(p.id);
 	p.storeOnServer(false,{
-		onUpdate: function() {
-			startWatching(p);
-		}
+//		onUpdate: function() {
+//			startWatching(p);
+//		}
 	});
 }
 #endif
