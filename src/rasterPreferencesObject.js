@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* global bugreport, _, ProjectIterator, refreshStubList, startAutoSave, LS, ToolGroup, Service */
+/* global bugreport, _, ProjectIterator, refreshStubList, startWatchingCurrentProject, LS, ToolGroup, Service */
 
 /*
  *
@@ -117,7 +117,7 @@ var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 			refreshStubList();
 		}
 		this.store();
-		startAutoSave();
+		startWatchingCurrentProject();
 	};
 	
 	this.store = function() {

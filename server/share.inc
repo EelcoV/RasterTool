@@ -14,24 +14,32 @@ $projName = array();
 $projCreator = array();
 $projDate = array();
 $projDescr = array();
-$projFname = array();
+$projRname = array();	// Filename of Raster project on the server
+$projTname = array();	// Filename of transactions on the server
 
 define("RASTERDIR", "SharedProjects/");	// Prefix for location of shared Raster files
 define("INDEXFILE", RASTERDIR . "projectindex.csv");	// Location of Index file
 define("DEBUGINFO", true);		// Show extra info when errors are reported
+define("MAXTRANSACTIONS", 100);	// Maximum number of transactions to save
+//define("NilUUID", "00000000-0000-0000-0000-000000000000");
 
 error_reporting(E_ERROR | E_PARSE);		// Hide warnings
+
 
 /* readIndexFile: Read the list of projects from the index file
  *
  * Returns true when successful, false on error.
- * When successful, global arrays $projName...$projFname will have been set.
+ * When successful, global arrays $projName...$projTname will have been set.
  */
 function readIndexFile() {
-	global $projName,$projCreator,$projDate,$projDescr,$projFname;
+	global $projName,$projCreator,$projDate,$projDescr,$projRname,$projTname;
 	$fh = fopen(INDEXFILE, "r");
 	if ($fh==false)
 		return true; // Assume that the list is empty, no projects.
+	if (!flock($fh,LOCK_SH)) {
+		fclose($fh);
+		return false;
+	}
 	$n = 0;
 	while (($record = fgetcsv($fh)) !== false) {
 		if (count($record)!=5) {
@@ -39,17 +47,19 @@ function readIndexFile() {
 			$projCreator = array();
 			$projDate = array();
 			$projDescr = array();
-			$projFname = array();
+			$projRname = array();
+			$projTname = array();
 			return false;
 		}
 		$projName[$n] = $record[0];
 		$projCreator[$n] = $record[1];
 		$projDate[$n] = $record[2];
 		$projDescr[$n] = $record[3];
-		$projFname[$n] = $record[4];
+		$projRname[$n] = $record[4];
+		$projTname[$n] = str_replace('.raster','.tr',$record[4]);
 		$n++;
 	}
-	fclose($fh);
+	fclose($fh); // releases the lock
 	return true;
 }
 
@@ -59,58 +69,27 @@ function readIndexFile() {
  * On error, the index file may be only partially written or empty.
  */
 function rewriteIndexFile() {
-	global $projName,$projCreator,$projDate,$projDescr,$projFname;
-	$fh = fopen(INDEXFILE, "w");
+	global $projName,$projCreator,$projDate,$projDescr,$projRname;
+	$fh = fopen(INDEXFILE, "c");
 	if ($fh==false)
 		return false;
+	if (!flock($fh,LOCK_EX)) {
+		fclose($fh);
+		return false;
+	}
+	// At this point, if the file existed it has not been modified yet.
+	if (!ftruncate($fh,0)) {
+		fclose($fh);
+		return false;
+	}
 	foreach ($projName as $n => $pName) {
-		$line = array($pName, $projCreator[$n], $projDate[$n], $projDescr[$n], $projFname[$n]);
+		$line = array($pName, $projCreator[$n], $projDate[$n], $projDescr[$n], $projRname[$n]);
 		if (!fputcsv($fh,$line)) {
 			fclose($fh);
 			return false;
 		}
 	}
-	return fclose($fh);
-}
-
-/* appendToIndexFile: Add a line to the end of the index file.
- *
- * Returns true when successful, false on error.
- * On error, the contents of the index file may be corrupted.
- */
-function appendToIndexFile($name,$creator,$date,$descr,$fname) {
-	$fh = fopen(INDEXFILE, "a");
-	if ($fh==false)
-		return false;
-	$line = array($name, $creator, $date, $descr,$fname);
-	if (!fputcsv($fh,$line)) {
-		fclose($fh);
-		return false;
-	}
-	return fclose($fh);
-}
-
-/* deleteFile: Remove the file named '$del'.
- *
- * Unlink the file, and update the globals as well as the index file.
- * Returns true on success, false on error.
- * On error, the contents of the index file may be incorrect.
- */
-function deleteFile($del) {
-	global $projName,$projCreator,$projDate,$projDescr,$projFname;
-	foreach ($projFname as $n => $pFname) {
-		if ($pFname != $del) continue;
-		// Delete all $n'th elements
-		array_splice($projName,$n,1);
-		array_splice($projCreator,$n,1);
-		array_splice($projDate,$n,1);
-		array_splice($projDescr,$n,1);
-		array_splice($projFname,$n,1);
-		// Now modify the filesystem, and return true on success
-		return unlink(RASTERDIR . $del) && rewriteIndexFile();
-	}
-	// File '$del' wasn't found, and that is an error.
-	return false;
+	return fclose($fh); // release the lock
 }
 
 /* getSharedProjects: Returns the contents of the index file in JSON format
@@ -121,7 +100,7 @@ function deleteFile($del) {
  * Returns a JSON string on success, an empty string on errors.
  */
 function getSharedProjects() {
-	global $projName,$projCreator,$projDate,$projDescr,$projFname;
+	global $projName,$projCreator,$projDate,$projDescr,$projRname;
 	if (!readIndexFile())
 		return "";
 	
@@ -131,7 +110,7 @@ function getSharedProjects() {
 		$pCreator = $projCreator[$n];
 		$pDate = $projDate[$n];
 		$pDescr = $projDescr[$n];
-		$pFname = $projFname[$n];
+		$pFname = $projRname[$n];
 
 		$r .= ($firstproj ? "\n" : ",\n"); 
 		$r .= sprintf(
@@ -149,16 +128,86 @@ function getSharedProjects() {
  * Returns true on success, false on error.
  */
 function writeRasterFile($fname,$content) {
-	$res = file_put_contents(RASTERDIR . $fname, $content);
-	return ($res===false ? false : true);
+	$fh = fopen(RASTERDIR . $fname, 'c');
+	if ($fh===false) {
+		return false;
+	}
+	if (!flock($fh, LOCK_EX)) { // failed to get lock
+		fclose($fh);
+		return false;
+	}
+	// At this point, if the file existed it has not been modified yet.
+	$res = ftruncate($fh,0);
+	if ($res!==false) $res = fwrite($fh,$content);
+	if ($res!==false) $res = fflush($fh);
+	$resc = fclose($fh); // this will release the lock
+	return ($res!==false && $resc!==false);
 }
 
-/* readRasterFile: read contents of a file named '$fname'
+/* appendRasterFile: append $contents to a file named '$fname'
  *
+ * Returns true on success, false on error.
+ */
+function appendRasterFile($fname,$content) {
+	$fh = fopen(RASTERDIR . $fname, 'a');
+	if ($fh===false) {
+		return false;
+	}
+	if (!flock($fh, LOCK_EX)) { // failed to get lock
+		fclose($fh);
+		return false;
+	}
+	// At this point, if the file existed it has not been modified yet.
+	$res = fwrite($fh,$content);
+	if ($res!==false) $res = fflush($fh);
+	$resc = fclose($fh); // this will release the lock
+	return ($res!==false && $resc!==false);
+}
+
+/* readRasterFile: safely read contents of a file named '$fname'
+ *
+ * File can be a project file (*.raster) or a transactions file (*.tr).
  * Returns the contents of the file on success, false on error.
  */
 function readRasterFile($fname) {
-	return file_get_contents(RASTERDIR . $fname);
+	$filename = RASTERDIR . $fname;
+	$fh = fopen($filename,'r');
+	if ($fh===false) return false;
+	$res = false;
+	if (flock($fh, LOCK_SH)) {
+		// File locked and ready for reading
+		$res = fread($fh, filesize($filename));
+	}
+	fclose($fh); // will release the lock
+	return $res;
+}
+
+/* existsAndNotemptyRasterFile: checks whether a file named '$fname' exists *and* containts data
+ *
+ * File can be a project file (*.raster) or a transactions file (*.tr).
+ * Returns the true if the file exists and has a non-zero size, false otherwise and on errors.
+ */
+function existsAndNotemptyRasterFile($fname) {
+	$s = filesize(RASTERDIR . $fname);
+	if ($s===false) return false;
+	return ($s>0);
+}
+
+/* getTransactions: read a transactions file into an array of objects
+ *
+ * Returns an (empty) array on success, or false on error.
+ */
+function getTransactions($trname) {
+	if (!existsAndNotemptyRasterFile($trname))
+		return array();
+	$contents = readRasterFile($trname);
+	if ($contents===false)
+		return false;
+	$transactions = json_decode($contents);
+	if ($transactions===null) {
+		return false;
+	}
+	return $transactions;
 }
 
 function getRandomString($length) {
@@ -175,8 +224,155 @@ function slashadd($str) {
 	return str_replace("\\'","'",addslashes($str));
 }
 
+function doGetTransactions() {
+	global $projName,$projTname;
+	if ($_SERVER["REQUEST_METHOD"] != "GET")
+		sendError("The 'gettrs' operation must use the GET method.");
+	$gname=$_REQUEST['name'];
+	if (is_null($gname) || $gname=="") sendError("Required parameter 'name' is missing.");
+	if (!readIndexFile())
+		sendError("Index file cannot be read or contains invalid entries.");
+	foreach ($projName as $n => $pName) {
+		if ($pName != $gname) continue;
+		// We have a match. Read project's transactions
+		$transactions = getTransactions($projTname[$n]);
+		if ($transactions===false)
+			sendError("Failed to read and parse that transactions file.");
+		// Return JSON of all id & prev
+		header('Content-type: text/x-raster',true,200);
+		echo "[\n";
+		foreach ($transactions as $n => $tr) {
+			if ($n!=0)
+				echo ",\n";
+			echo "{\"id\": \"" . $tr->{'id'} . "\", \"prev\": \"" . $tr->{'prev'} . "\"}\n";
+		}
+		echo "]\n";
+		exit(0);
+	}
+	// A project with that name was not found, return null.
+	header('Content-type: text/x-raster',true,200);
+	echo "null";
+	exit(0);
+}
+
+function doGetTransactionsFrom() {
+	global $projName,$projTname;
+	if ($_SERVER["REQUEST_METHOD"] != "GET")
+		sendError("The 'gettrs' operation must use the GET method.");
+	$gname=$_REQUEST['name'];
+	$gtr=$_REQUEST['tr'];
+	if (is_null($gname) || $gname=="") sendError("Required parameter 'name' is missing.");
+	if (is_null($gtr) || $gtr=="") sendError("Required parameter 'tr' is missing.");
+	if (!readIndexFile())
+		sendError("Index file cannot be read or contains invalid entries.");
+	foreach ($projName as $n => $pName) {
+		if ($pName != $gname) continue;
+		// We have a match. Read project's transactions
+		$transactions = getTransactions($projTname[$n]);
+		if ($transactions===false)
+			sendError("Failed to read and parse that transactions file.");
+		$first = true;
+		$contents = "";
+		do {
+			$found = false;
+			foreach ($transactions as $n => $tr) {
+				if ($tr->{'prev'}==$gtr) {
+					$str = json_encode($tr,JSON_PRETTY_PRINT);
+					if ($str===false)
+						sendError("Failed to encode transaction.");
+					if ($first)
+						$contents = $contents . "\n,\n";
+					$contents = $contents . $str;
+					$found = true;
+					$gtr = $tr->{'id'};
+					break;
+				}
+			}
+		} while ($found);
+		header('Content-type: text/x-raster',true,200);
+		echo "[" . $str . "]";
+		exit(0);
+	}
+	// A project with that name was not found, return empty array.
+	header('Content-type: text/x-raster',true,200);
+	echo "[]";
+	exit(0);
+}
+
+function doAppendTransaction() {
+	global $projName,$projTname;
+	if ($_SERVER["REQUEST_METHOD"] != "POST")
+		sendError("The 'appendtr' operation must use the POST method.");
+	$name=$_REQUEST['name'];
+	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
+	$content = file_get_contents('php://input');
+	$tr = json_decode($content);
+	if ($tr===null)
+		sendError("Failed to parse new transaction");
+	if (!readIndexFile())
+		sendError("Index file cannot be read or contains invalid entries.");
+	foreach ($projName as $n => $pName) {
+		if ($pName != $name) continue;
+		// We have a match. Read project's transactions
+		$transactions = getTransactions($projTname[$n]);
+		if ($transactions===false)
+			// assume that the file did not exist
+			$transactions = array();
+		// check that there is no existing transaction claiming the same prev,
+		// and that the prev exists (unless we are adding the very first transaction)
+		$prevexists = false;
+		foreach ($transactions as $i => $t) {
+			if ($t->{'id'}==$tr->{'prev'})
+				$prevexists = true;
+			if ($t->{'prev'}==$tr->{'prev'})
+				sendError('Cannot add transaction: previous transaction already covered');
+		}
+		if (count($transactions)>0 && !prevexists)
+			sendError('Cannot add transaction: previous transaction does not exist');
+		array_push($transactions, $tr);
+		// Keep at most the last MAXTRANSACTIONS transactions
+		if (count($transactions)>MAXTRANSACTIONS) {
+			splice($transactions, 0, count($transactions)-MAXTRANSACTIONS);
+		}
+		$contents = json_encode($transactions,JSON_PRETTY_PRINT);
+		if ($contents===false)
+			sendError("Failed to encode new transactions file.");
+		$res = writeRasterFile($projTname[$n],$contents);
+		if ($res===false)
+			sendError("Failed to update transactions file.");
+		header('Content-type: text/x-raster',true,200);
+		echo $res;
+		exit(0);
+	}
+	// Project wasn't found.
+	sendError("No matching project was found.");
+}
+
+function doPutTransactions() {
+	global $projName,$projTname;
+	if ($_SERVER["REQUEST_METHOD"] != "POST")
+		sendError("The 'puttrs' operation must use the POST method.");
+	$name=$_REQUEST['name'];
+	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
+	if (!readIndexFile())
+		sendError("Index file cannot be read or contains invalid entries.");
+	foreach ($projName as $n => $pName) {
+		if ($pName != $name) continue;
+		$fname = $projTname[$n];
+		$content = file_get_contents('php://input');
+		$res = writeRasterFile($fname,$content);
+		if ($res===false)
+			sendError("Failed to write transactions file.");
+		header('Content-type: text/x-raster',true,200);
+		echo $res;
+		exit(0);
+	}
+	// Project wasn't found.
+	sendError("No matching project was found.");
+}
+
 function doGetProps() {
-	global $projName,$projCreator,$projDate,$projDescr,$projFname;
+	global $projName,$projCreator,$projDate,$projDescr;
 	if ($_SERVER["REQUEST_METHOD"] != "GET")
 		sendError("The 'getprops' operation must use the GET method.");
 	$gname=$_REQUEST['name'];
@@ -203,7 +399,7 @@ function doGetProps() {
 }
 
 function doDel() {
-	global $projName,$projCreator,$projDate,$projDescr,$projFname;
+	global $projName,$projCreator,$projDate,$projDescr,$projRname,$projTname;
 	if ($_SERVER["REQUEST_METHOD"] != "POST")
 		sendError("The 'del' operation must use the POST method.");
 	$gname=$_REQUEST['name'];
@@ -219,17 +415,20 @@ function doDel() {
 		if ($pName != $gname) continue;
 		if ($projCreator[$n] != $gcreator) continue;
 		if ($projDate[$n] != $gdate) continue;
-		$fname = $projFname[$n];
+		$fname = $projRname[$n];
+		$tname = $projTname[$n];
 		
 		// Remove from the global arrays
 		array_splice($projName,$n,1);
 		array_splice($projCreator,$n,1);
 		array_splice($projDate,$n,1);
 		array_splice($projDescr,$n,1);
-		array_splice($projFname,$n,1);
+		array_splice($projRname,$n,1);
 		// Now modify the filesystem, and return true on success
 		if (!unlink(RASTERDIR . $fname))
 			sendError("Failed to remove the raster datafile.");
+		if (file_exists(RASTERDIR . $tname) && !unlink(RASTERDIR . $tname))
+			sendError("Failed to remove the raster transactions file.");
 		if (!rewriteIndexFile())
 			sendError("Failed to update the index file.");
 		// Success!
@@ -242,7 +441,7 @@ function doDel() {
 }
 
 function doGet() {
-	global $projName,$projCreator,$projDate,$projDescr,$projFname;
+	global $projName,$projCreator,$projDate,$projRname;
 	if ($_SERVER["REQUEST_METHOD"] != "GET")
 		sendError("The 'get' operation must use the GET method.");
 	$gname=$_REQUEST['name'];
@@ -257,7 +456,7 @@ function doGet() {
 		if ($pName != $gname) continue;
 		if ($projCreator[$n] != $gcreator) continue;
 		if ($projDate[$n] != $gdate) continue;
-		$res = readRasterFile($projFname[$n]);
+		$res = readRasterFile($projRname[$n]);
 		if ($res===false)
 			sendError("Failed to read that project's file.");
 		header('Content-type: text/x-raster',true,200);
@@ -274,7 +473,7 @@ function doGet() {
  * replaced by spaces.
  */
 function doPut() {
-	global $projName,$projCreator,$projDate,$projDescr,$projFname;
+	global $projName,$projCreator,$projDate,$projDescr,$projRname,$projTname;
 	if ($_SERVER["REQUEST_METHOD"] != "POST")
 		sendError("The 'put' operation must use the POST method.");
 	$name=$_REQUEST['name'];
@@ -283,27 +482,33 @@ function doPut() {
 	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
 	if (is_null($creator) || $creator=="") sendError("Required parameter 'creator' is missing.");
 	if (is_null($descr)) sendError("Required parameter 'description' is missing.");
+	$date = strftime("%Y%m%d %H%M %S");
+	$content = file_get_contents('php://input');
 	if (!readIndexFile())
 		sendError("Index file cannot be read or contains invalid entries.");
-	$date = strftime("%Y%m%d %H%M %S");
-	$fname = getRandomString(20) . ".raster";
-	$content = file_get_contents('php://input');
+	// Find the old project in the in-memory index (if any)
+	$fname = "";
+	$i = -1;
+	foreach ($projName as $n => $pname) {
+		if ($pname != $name) continue;
+		$fname = $projRname[$n];
+		break;
+	}
+	if ($fname=="") $fname = getRandomString(20) . ".raster";
 	// 1. create the new raster file on disk
 	$res = writeRasterFile($fname,$content);
 	if (!$res)
 		sendError("Failed to store file on server.");
 	// 2. remove the old project from the in-memory index (if any)
-	$oldFname = "";
 	foreach ($projName as $n => $pname) {
 		if ($pname != $name) continue;
-		// Remember the raster file
-		$oldFname = $projFname[$n];
 		// Delete all $n'th elements
 		array_splice($projName,$n,1);
 		array_splice($projCreator,$n,1);
 		array_splice($projDate,$n,1);
 		array_splice($projDescr,$n,1);
-		array_splice($projFname,$n,1);
+		array_splice($projRname,$n,1);
+		array_splice($projTname,$n,1);
 	}
 	// 3. add the new raster file to the in-memory index
 	$n = count($projName);
@@ -311,17 +516,12 @@ function doPut() {
 	$projCreator[$n] = $creator;
 	$projDate[$n] = $date;
 	$projDescr[$n] = $descr;
-	$projFname[$n] = $fname;
+	$projRname[$n] = $fname;
+	$projTname[$n] = str_replace('.raster','.tr',$fname);
 	// 4. rewrite the index to reflect both changes.
 	$res = rewriteIndexFile();
 	if (!$res)
 		sendError("Failed to rewrite the index file.");
-	// 5. unlink the old raster file (if any)
-	if ($oldFname != "") {
-		$res = unlink(RASTERDIR . $oldFname);
-		if (!$res)
-			sendError("Failed to unlink previous raster file.");
-	}
 
 	// Return 200 as HTTP return code with a document containing the timestamp for the project.
 	header('Content-type: text/x-raster',true,200);
@@ -348,8 +548,8 @@ function sendError($errorMessage) {
 		foreach ($_REQUEST as $key => $val)
 			echo "REQUEST $key = [$val]\n";
 		echo "\n";
-		foreach ($_SERVER as $key => $val)
-			echo "$key = $val\n";
+//		foreach ($_SERVER as $key => $val)
+//			echo "$key = $val\n";
 	}
 	exit(0);
 }
@@ -389,6 +589,18 @@ function sendError($errorMessage) {
  *
  */
 switch ($_REQUEST['op']) {
+case "gettrs":
+	doGetTransactions();
+	break;
+case "gettrsfrom":
+	doGetTransactionsFrom();
+	break;
+case "puttrs":
+	doPutTransactions();
+	break;
+case "appendtr":
+	doAppendTransaction();
+	break;
 case "getprops":
 	doGetProps();
 	break;

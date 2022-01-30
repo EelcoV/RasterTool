@@ -2,10 +2,8 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy
+/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy, DEBUG, createUUID
 */
-
-const DebugTransactions = false;
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -27,62 +25,67 @@ const DebugTransactions = false;
  * Instance properties:
  *  kind: (String) the type of transaction
  *  descr: (String, optional) UI description of the transaction
- *  timestamp: (integer) time of this transaction's creation
  *  chain: (boolean) treat this and the next transaction as one, when (un)doing.
  *  prev: previous
  *  undo_data: (any) an object or literal containing all information to undo the transaction
  *  do_data: (any) an object or literal containing all information to perform the transaction
  *	project: the project ot which this Transaction belongs
+ *  remote: (Boolean) false if this client created the transaction, true if the transaction was received from the server
  * Instance methods:
  *  perform(data): perform the action using data; data defaults to this.do_data
  *  rollback: perform the action using this.undo_data.
  */
-var Transaction = function(knd,undo_data,do_data,descr,chain) {
+var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=false,id=createUUID(),pid=Project.cid,createonly=false) {
+	this.id = id;
 	this.kind = knd;
-	this.descr = (descr ? descr : knd);
-	this.chain = (chain ? chain : false);
-	this.timestamp = Date.now();
-	this.project = Project.cid;
+	this.descr = descr;
+	this.chain = chain;
+	this.project = pid;
 	this.undo_data = undo_data;
 	this.do_data = do_data;
+	this.remote = remote;
+	this.next = null;
 	if (this.kind==null) {
 		this.prev = null;
-		this.next = null;
 		return;
 	}
 	// Perform this action, and make it the head of the transaction list.
 	// If there are any actions between current and head, then these are discarded
-	let p = Project.get(Project.cid);
+	let p = Project.get(pid);
 	if (!p) {
-		bugreport('No active project to work on','new Transaction');
+		bugreport('Project does not exist','new Transaction');
 		return;
 	}
 	p.TransactionCurrent.next = this;
 	this.prev = p.TransactionCurrent;
+	p.TransactionCurrent = this;
+	p.TransactionHead = this;
+	if (createonly) return;
 	
 	/* Test!
 	 *
 	 * This block, and undo and redo below, contain a lot of debugging code. The transaction
 	 * is rolled back, to check that there are no unaccounted side-effects. When this new
-	 * structure is working, the DebugTransactions can be set to false.
+	 * structure is working, the Transaction.debug can be set to false.
 	 */
 	let S1, S2, S3, S4;
-	if (DebugTransactions) {
+	if (Transaction.debug) {
 		checkForErrors();
 		S1 = exportProject(Project.cid);
 	}
 
-	if (DebugTransactions) {
+	let pf = function() {
 		this.perform();
-	} else {
-		let tr = this;
-		lengthy(function() {
-			tr.perform();
-		});
-	}
+		p.updateUndoRedoUI();
+		// Asynchronously update the transactions file & the project file, and start watching for transaction updates.
+		if (Transaction.debug) console.log(`Transaction ${this.descr}`);
+		if (!this.remote) p.appendCurrentTransaction();
+		if (!this.chain) transactionCompleted(this.descr,false);
+	};
 	
-	if (DebugTransactions) {
-		transactionCompleted("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
+	if (Transaction.debug) {
+		pf();
+		console.log("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
 		checkForErrors();
 		S2 = exportProject(Project.cid);
 		this.rollback();
@@ -97,12 +100,12 @@ var Transaction = function(knd,undo_data,do_data,descr,chain) {
 		if (S2!=S4) {
 			logdiff(S2,S4,"in new: perform != perform + undo + redo");
 		}
+	} else {
+		lengthy(pf.bind(this));
 	}
-	
-	p.TransactionCurrent = this;
-	p.TransactionHead = this;
-	p.updateUndoRedoUI();
 };
+
+Transaction.debug = false;
 
 Transaction.undo = function() {
 	let p = Project.get(Project.cid);
@@ -115,14 +118,14 @@ Transaction.undo = function() {
 	lengthy(function() {
 		do {
 			let S1, S2, S3, S4;
-			if (DebugTransactions) {
+			if (Transaction.debug) {
 				checkForErrors();
 				S1 = exportProject(Project.cid);
 			}
 
 			p.TransactionCurrent.rollback();
 
-			if (DebugTransactions) {
+			if (Transaction.debug) {
 				checkForErrors();
 				S2 = exportProject(Project.cid);
 				p.TransactionCurrent.perform();
@@ -136,8 +139,8 @@ Transaction.undo = function() {
 				} else if (S2!=S4) {
 					logdiff(S2,S4,"in undo: redo,undo != nil");
 				}
+				console.log("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
 			}
-			transactionCompleted("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
 			p.TransactionCurrent = p.TransactionCurrent.prev;
 		} while (p.TransactionCurrent.chain==true);
 		p.updateUndoRedoUI();
@@ -155,7 +158,7 @@ Transaction.redo = function() {
 	lengthy(function() {
 		do {
 			let S1, S2, S3, S4;
-			if (DebugTransactions) {
+			if (Transaction.debug) {
 				checkForErrors();
 				S1 = exportProject(Project.cid);
 			}
@@ -163,7 +166,7 @@ Transaction.redo = function() {
 			p.TransactionCurrent = p.TransactionCurrent.next;
 			p.TransactionCurrent.perform();
 			
-			if (DebugTransactions) {
+			if (Transaction.debug) {
 				checkForErrors();
 				S2 = exportProject(Project.cid);
 				p.TransactionCurrent.rollback();
@@ -177,9 +180,8 @@ Transaction.redo = function() {
 				} else if (S2!=S4) {
 					logdiff(S2,S4,"in redo: undo,redo != nil");
 				}
+				console.log(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
 			}
-			
-			transactionCompleted(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
 		} while(p.TransactionCurrent.chain==true);
 		p.updateUndoRedoUI();
 	});
@@ -1086,11 +1088,10 @@ function rebuildCluster(c) {
 	cl.store();
 }
 
-
-function transactionCompleted(str) {
-	if (DebugTransactions)  console.log(str);
+function transactionCompleted(str,dosave=true) {
+	if (DEBUG) console.log(`Completed ${str}`);
 #ifdef SERVER
-	autoSaveFunction();			// eslint-disable-line no-undef
+	if (dosave) saveThenStartWatching();			// eslint-disable-line no-undef
 #else
 	setModified();				// eslint-disable-line no-undef
 #endif

@@ -135,6 +135,7 @@ class Service {
 	}
 
 	unload() {
+		if (!this._loaded) return;
 		// Save the selectrect, if it is attached to this diagram. And if it isn't, it will be reattached automatically.
 		$('#selectrect').hide().detach().appendTo('body');
 		$('#scroller_overview'+this.id).hide();

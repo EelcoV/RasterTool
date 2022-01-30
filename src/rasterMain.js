@@ -3,7 +3,7 @@
  */
 
 /* globals
-AssessmentIterator, Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, unescapeNewlines, urlDecode, urlEncode
+AssessmentIterator, Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, urlDecode, urlEncode
 */
 
 "use strict";
@@ -30,7 +30,6 @@ const LS = LS_prefix+':'+LS_version+':';
 
 const tab_height = 31;		// See CSS definition of <body>
 //const toolbar_height = 94;	// See CSS definition of <body>
-const MaxStringLen = 5000;	// Limit on object titles, descriptions, etc.
 
 #ifdef STANDALONE
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -358,7 +357,7 @@ function initAllAndSetup() {
 	} else {
 		loadDefaultProject();
 	}
-	startAutoSave();
+	startWatchingCurrentProject();
 	populateProjectList();
 #else
 	localStorage.clear();
@@ -632,7 +631,7 @@ function initProjectsToolbar() {
 					Project.asyncRetrieveStub(p.id,function(newpid){
 						populateProjectList();
 						switchToProject(newpid);
-						startAutoSave();
+						startWatchingCurrentProject();
 					});
 					refreshProjectToolbar(Project.cid);
 				});
@@ -798,9 +797,7 @@ function populateProjectList() {
 	}
 	$('#projlist').html(newoptions);
 	// Finally all stubs projects
-	refreshStubList(false); // Add current stubs, possibly outdated wrt server status
-	// Select the current project, and enable/disable the buttons
-	refreshProjectToolbar(Project.cid);
+	refreshStubList(true); // Add current stubs, possibly outdated wrt server status
 }
 
 /* showProjectList: Show project list using current stubs, and do fire periodic updates
@@ -829,7 +826,7 @@ function startPeriodicStubListRefresh() {
 }
 
 
-function refreshStubList(dorepaint) {
+function refreshStubList(dorepaint=false) {
 	if (GroupSettings.localonly) return;
 	let snippet = '';
 	let it = new ProjectIterator({group: ToolGroup, stub: true});
@@ -1591,7 +1588,7 @@ function ShowDetails() {
 							stopWatching(p.id);
 							p.setshared(becomesShared,true);
 						} else if (p.shared && becomesShared) {
-							p.storeOnServer(false,exportProject(p.id),{});
+							p.storeOnServer();
 						}
 					}
 					showProjectList();
@@ -1603,7 +1600,7 @@ function ShowDetails() {
 		title: _("Properties for project '%%'", p.title),
 		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		modal: true,
-		width: 530, maxWidth: 530, minWidth: 530,
+		width: 540, maxWidth: 540, minWidth: 540,
 		buttons: dbuttons,
 		open: function() {
 #ifdef SERVER
@@ -1837,6 +1834,8 @@ function switchToProject(pid,dorefresh) {
 	}
 }
 
+//const NilUUID = '00000000-0000-0000-0000-000000000000';
+
 /* createUUID: return a new "unique" random UUID.
  * There are different UUID-versions; version 4 is randomly generated.
  * Use the crypto library, as Math.random() is insufficiently random.
@@ -1880,12 +1879,6 @@ function prependIfMissing(a,b) {		// eslint-disable-line no-unused-vars
 	} else {
 		return (b.indexOf(a)==-1 ? a+' '+b : b);
 	}
-}
-
-/* reasonableString: fix str to something of reasonable length and without leading or trailing whitespace
- */
-function reasonableString(str) {	// eslint-disable-line no-unused-vars
-	return String(str).substr(0,MaxStringLen).trim();
 }
 
 /* Test whether two strings are identical in a locale and case-insensitive way.
@@ -1972,32 +1965,11 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 	return dfd.promise();
 }
 
-/* bugreport: Notify the user of a bug, save the project and block the UI.
- */
 function bugreport(mess,funcname) {
 	console.log('bugreport: "'+mess+'" in function "'+funcname+'".');
-	let dialog = $('<div id="bugreport"></div>').dialog({
-  		title: _H("Please report this bug"),
-		dialogClass: "no-close",
-		closeOnEscape: false,
-		classes: {"ui-dialog-titlebar": "ui-corner-top no-close"},
-		buttons: [{
-			text: _("Close"),
-			click: function() {
-				$(this).dialog('close');
-				exportAll();
-				$('#splash').show();
-				$('#splashstatus').html( _("Halted on error: %% in function %%.",mess,funcname) );
-			}
-		}]
-	});
-	$('#bugreport').html(_H("You found a bug in this program.")
-		+ '<br><br><i>'
-		+ _H("%% in function %%.", mess, funcname)
-		+ '</i><br><br>'
-		+ _H("This program will save your work, then halt to prevent further damage.")
-	);
-	dialog.dialog('open');
+	if (DEBUG) {
+		rasterAlert('Please report this bug',H(`You found a bug in this program.\n("${mess}" in function "${funcname}"). You should save this project then exit the app IMMEDIATELY or you may lose your data!`));
+	}
 }
 
 #ifdef SERVER
@@ -2035,7 +2007,7 @@ var SSEClient = null;
  *		Switch project to private. Issue a warning to the user. Tool remains online.
  *
  * Whenever we start periodic checks for local changes to be stored on the server,
- * we must als periodically check for server changes using startWatching().
+ * we must also periodically check for server changes using startWatching().
  * When the remote project is deleted by another client, watching will stop. It must
  * be restarted whenever a local change is propagated to the server again.
  *
@@ -2043,12 +2015,8 @@ var SSEClient = null;
  * changed, then the local project will be shown as 'shared' without a server version
  * being present.
  *
- * NOTE: There should be a smarter way of noticing changes to the project. Perhaps
- * the concept of 'actions' should be introduced, with each action signifying a single
- * change to the project. This would also make it easier to implement an Undo capability.
  */
-function startAutoSave() {
-	stopWatching(null);
+function startWatchingCurrentProject() {
 	var p = Project.get(Project.cid);
 	if (p==null || !p.shared || !Preferences.online) {
 		if (Preferences!=null && !Preferences.online) {
@@ -2059,6 +2027,7 @@ function startAutoSave() {
 	startWatching(p);
 }
 
+let SSERetriesHack = 0;
 /* We use Server-Sent Events (), to prevent polling over the network. With SSE,
  * the server is doing the periodic checks locally, notifying the client when changes
  * have been made.
@@ -2068,60 +2037,47 @@ function startWatching(p) {
 		SSEClient.close();
 	}
 	SSEClient = new EventSource('sse_projmon.php?name=' + urlEncode(p.title));
-
+	
 	SSEClient.onmessage = function(msg) {
 		if (msg.data=="NO PROJECT") {
 			// Project is not on the server. It probably has not been saved yet.
 			// Wait a bit, then try again.
 			SSEClient.close();
 			SSEClient=null;
-			window.setTimeout(function(){
-				startWatching(p);
-			},500);
+			if (SSERetriesHack<3) {
+console.log(`SSE_PROJMON RETRIES = ${SSERetriesHack}`);
+				SSERetriesHack++;
+				window.setTimeout(function(){
+					startWatching(p);
+				},500);
+			} else {
+				SSERetriesHack = 0;
+			}
 		} else if (msg.data=="NOP") {
 			// Sent periodically for testing connectivity. No action required
-			/*jsl:pass*/
+			SSERetriesHack = 0;
 		} else  if (msg.data=="DELETED") {
+			SSERetriesHack = 0;
 			// Project has been deleted from the server
-			var pp = Project.get(Project.cid);
+			let pp = Project.get(Project.cid);
 			stopWatching(Project.cid);
 			pp.setshared(false,false);
 			removetransientwindows();
 			rasterAlert( _("Project has been made private"),
 				_H("Project '%%' has been deleted from the server by someone. ", pp.title)+
 				_H("Your local version of the project will now be marked as private. ")+
-				_H("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
+				_H("If you wish to share your project again, you must set its details to 'Shared' yourself.")+
 				"<br><p><i>"+
 				_H("Your changes are not shared with others anymore.")+
 				"</i>"
 			);
 		} else {
-			var xdetails = JSON.parse(msg.data);
-			pp = Project.get(Project.cid);
-			var newpid = loadFromString(xdetails.contents);
-			if (newpid!=null) {
-				var newp = Project.get(newpid);
-				newp.shared = true;
-				newp.creator = xdetails.creator;
-				newp.date = xdetails.date;
-				newp.description = unescapeNewlines(xdetails.description);
-				var t = pp.title;
-				pp.destroy();
-				newp.settitle(t);
-				switchToProject(newpid);
-			} else {
-				rasterAlert(_("Project has been made private"),
-					_H("The server version of project '%%' is damaged. ", pp.title)+
-					_H("The project  will now be marked as private. ")+
-					'<p><i>'+
-					_H("Your changes are not shared with others anymore.")+
-					'</i>'
-				);
-				pp.setshared(false,false);
-			}
+			// msg.data is the id of the latest transaction.
+			// Only fetch updates if this project is out of sync (no fetch if we caused the SSEvent outselves).
+			let pp = Project.get(Project.cid);
+			if (msg.data!=pp.TransactionCurrent.id) pp.getNewTransactionsFromServer();
 		}
 	};
-
 }
 
 /* Stop monitoring a project using Server-Sent Events. Either stop a specific
@@ -2134,7 +2090,9 @@ function stopWatching(pid) {
 	}
 }
 
-function autoSaveFunction() {		// eslint-disable-line no-unused-vars
+/* saveThenStartWatching: save current project on server, then begin monitoring from transactions posted by other clients
+ */
+function saveThenStartWatching() {		// eslint-disable-line no-unused-vars
 	var p = Project.get(Project.cid);
 	if (!p.shared || !Preferences.online) {
 		if (!Preferences.online) {
@@ -2142,13 +2100,12 @@ function autoSaveFunction() {		// eslint-disable-line no-unused-vars
 		}
 		return;
 	}
-	var exportstring = exportProject(p.id);
 	// First, stop watching the file so that we do not notify ourselves
-	stopWatching(p.id);
-	p.storeOnServer(false,exportstring,{
-		onUpdate: function() {
-			startWatching(p);
-		}
+//	stopWatching(p.id);
+	p.storeOnServer(false,{
+//		onUpdate: function() {
+//			startWatching(p);
+//		}
 	});
 }
 #endif
@@ -2698,6 +2655,10 @@ function loadFromString(str,options) {
 		if (lp.w) p.date = lp.w;
 		if (lp.i) p.iconset = lp.i;
 		if (lp.q) p.wpa = lp.q;
+		if (lp.r) {
+			p.TransactionBase.id = lp.r;
+			p.lasttr = lp.r;
+		}
 		for (k=0; k<lp.s.length; k++) {
 			p.addservice(lp.s[k]);
 		}
@@ -2843,11 +2804,14 @@ function checkUpgradeDone() {
 /* singleProjectExport(p): save all data into a local file.
  */
 function singleProjectExport(p) {
-	let proj = Project.get(p);
-	saveStringAsRasterFile(exportProject(p),proj.title);
-//	$('#exp_name').val(proj.title);
-//	$('#exp_contents').val(s);
-//	$('#exp_form').submit();
+	var proj = Project.get(p);
+	var s = exportProject(p);
+//	var url = "data:text/x-raster;," + urlEncode(s);
+//	document.location.assign(url);
+
+	$('#exp_name').val(proj.title);
+	$('#exp_contents').val(s);
+	$('#exp_form').submit();
 }
 
 function exportProject(pid) {
@@ -2858,7 +2822,7 @@ function exportProject(pid) {
 	// and retrieved by the server separately from the project data.
 	let olddate = p.date;
 	p.date = "";
-	s += p.exportstring();
+	s += p.exportstring(p.TransactionCurrent.id);
 	p.date = olddate;
 	let it;
 	it = new AssessmentIterator({project: pid});
@@ -2876,46 +2840,6 @@ function exportProject(pid) {
 	return s;
 }
 
-/* dateAsAstring: returns the current datetime as string "YYYYMMDD HHMM SS"
- */
-function dateAsAstring() {
-	let dt = new Date();
-	let x;
-	let s = '';
-	s += dt.getFullYear();
-	x = dt.getMonth()+1;
-	s += (x<10?'0':'')+x;
-	x = dt.getDate();
-	s += (x<10?'0':'')+x;
-	s += ' ';
-	x = dt.getHours();
-	s += (x<10?'0':'')+x;
-	x = dt.getMinutes();
-	s += (x<10?'0':'')+x;
-	s += ' ';
-	x = dt.getSeconds();
-	s += (x<10?'0':'')+x;
-	return s;
-}
-
-/* saveStringAsRasterFile: make the browser download a Raster file using a given filename
- * s: (String) contents of the new file
- * name: (String) filename in which to save string s
- * append: (Boolean, default true) append a datetime string and extension to the filename
- */
-function saveStringAsRasterFile(s,name, append=true) {
-	if (append) name += ` ${dateAsAstring()}.raster`;
-	let fileBlob = new Blob([s], {type: 'text/x-raster'});
-	let url = window.URL.createObjectURL(fileBlob);
-	let anchor = document.createElement('a');
-	anchor.href = url;
-	anchor.download = name;
-	anchor.click();
-	window.URL.revokeObjectURL(url);
-	// the line below gives a DOMException
-//	document.removeChild(anchor);
-}
-
 /* exportAll: save all data into a local file.
  */
 function exportAll() {
@@ -2925,9 +2849,8 @@ function exportAll() {
 		s+= key+'\t';
 		s+= localStorage[key]+'\n';
 	}
-//	var url = 'data:text/x-raster;,' + urlEncode(s);
-//	document.location.assign(url);
-	saveStringAsRasterFile(s,'exportall');
+	var url = 'data:text/x-raster;,' + urlEncode(s);
+	document.location.assign(url);
 }
 
 const TabWorkDia = 0;
@@ -2980,7 +2903,9 @@ function Zap() {
 	localStorage.clear();
 	// Preserve the user's preferences
 	Preferences.settab(0);
-	window.location.reload();
+	lengthy(function() {
+		window.location.reload();
+	});
 }
 
 /* Show an alert if there are any errors in the projects (e.g. in a newly loaded project).
@@ -3066,8 +2991,7 @@ function bottomTabsCloseHandler(event) {
 			new Transaction('serviceCreate',
 				[{id: s.id, project: s.project, title: s.title, index: p.services.indexOf(s.id)}],
 				[{id: s.id, project: s.project}],
-				_("Remove service %%", s.title),
-				false
+				_("Remove service %%", s.title)
 			);
 		}
 	);

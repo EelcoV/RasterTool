@@ -3,7 +3,7 @@
  */
 
 /* global
-_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, paintSingleFailures, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startAutoSave, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator, TabAnaVulnOverview, TabAnaAssOverview, TabAnaLonglist, repaintAnalysisIfVisible, reasonableString
+_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, paintSingleFailures, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startWatchingCurrentProject, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator, TabAnaVulnOverview, TabAnaAssOverview, TabAnaLonglist, repaintAnalysisIfVisible
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -41,12 +41,15 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *  TransactionCurrent: the most recently performed transaction
  *  TransactionHead: the most recently posted transaction
  *		See rasterTransaction.js for description of these, and the transaction list.
+ *  lasttr: ID of the latest/current transaction
  * Methods:
  *	destroy(): destructor for this object
  *	duplicate(): creates an exact copy of this project, and returns that duplicate. Note: this will create two projects with the samen name.
+ *  updateUndoRedoUI: highlight/lowlight the undo/redo buttons as necessary
  *	totalnodes(): returns the count of all nodes within all services of this project.
  *	settitle(t): change the title to 't' (50 chars max). The actual title may receive
  *		a numerical suffix to make it unique.
+ *  autosettitle(): set the title using a default name.
  *	setshared(b): set sharing status to 'b' (boolean).
  *	setdescription(s): change description to 's'.
  *	setdate(d): change date to 'd'.
@@ -58,29 +61,32 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *  addvulnerability(id,clid,clthrid,idx): add a common vulnerability to the project, including id of new root cluster,
  *		id of the assessment of that cluster, and the index of the vulnerability within vulns[].
  *	removevulnerability(id): remove acommon vulnerability from the project.
+ *  adddefaultvulns: add all Project default vulnerabilities.
  *  defaultassessmentdata(t): returns do/undo data for common vulnerabilities of type t.
- *	seticonset(s): change the iconset, and repaint all services
  *	retrieveicondata(s): try to assign .icondata based on the ${s}/icondata.json on the server. Return true iff succesful.
- *	prepTemplatesAndMasks: set DOM (templates and masks for the current icons)
+ *	seticonset(s): change the iconset, and repaint all services
+ *	paintTemplates: set DOM (templates and masks for the current icons)
  *	unload(): remove all DOM elements for this project.
  *	load(): create and set all DOM elements for this project.
- *	adddefaultvulns: add the predefined checklist vulnerabilities to this project.
+ *  paintTemplates: paint the templates in the Home toolbar.
  *	_stringify: create a JSON text string representing this object's data.
  *	exportstring: return a line of text for insertion when saving this file.
  *	store(): store the object into localStorage.
  *	storeOnServer(): save this project onto the server.
- *  storeIfNotPresent():
+ *  storeIfNotPresent(): save this project onto the server, but do not overwrite existing files. (UNUSED)
  *	deleteFromServer(): remove this project from the server.
- *	getDate(): retrieve last saved date of this project.
- *  refreshIfNecessary():
- *  dorefresh():
- *  updateUndoRedoUI: highlight/lowlight the undo/redo buttons as necessary
+ *	getDate(): retrieve last saved date of this project. (UNUSED)
+ *  refreshIfNecessary(): retrieve & replace this project from the server, if that version is newer.
+ *  dorefresh(): wrapper around refreshIfNecessary.
+ *  appendCurrentTransaction(): append this.TransactionCurrent to the transaction-list on the server.
+ *  getNewTransactionsFromServer: retrieve all transactions more recent than this.TransactionHead from the server, and apply.
+ *  askForConflictResolution: make private, overrule (everyone uses our version), or adopt (we use the server version)
  */
-var Project = function(id,asstub) {
-	if (id!=null && Project._all.has(id)) {
+var Project = function(id=createUUID(),asstub=false) {
+	if (Project._all.has(id)) {
 		bugreport("Project with id "+id+" already exists","Project.constructor");
 	}
-	this.id = (id==null ? createUUID() : id);
+	this.id = id;
 	this.title = "?";
 	this.group = ToolGroup;
 	this.description = "";
@@ -90,15 +96,11 @@ var Project = function(id,asstub) {
 	this.creator = "";
 	this.date = "";
 #ifdef SERVER
-	if (asstub==null) {
-		this.stub = false;
-	} else {
-		this.stub = (asstub===true);
-	}
-	this.shared = this.stub;	// default to private, but stubs are always shared
+	this.stub = (asstub===true);
 #else
 	this.stub = false;
 #endif
+	this.shared = this.stub;	// default to private, but stubs are always shared
 
 	this.iconset = GroupSettings.iconsets[0];
 	this.wpa = 'A';
@@ -114,7 +116,7 @@ var Project = function(id,asstub) {
 };
 Project.get = function(id) { return Project._all.get(id); };
 Project.cid = 0;
-Project._all =new Map();
+Project._all = new Map();
 Project.defaultlabels = [_("Red"), _("Orange"), _("Yellow"), _("Green"), _("Blue"), _("Pink"), _("Purple"), _("Grey")];
 Project.colors = ["none","red","orange","yellow","green","blue","pink","purple","grey"];
 Project.defaultVulnerabilities = [		// eslint-disable-line no-unused-vars
@@ -226,28 +228,29 @@ Project.merge = function(intoproject,otherproject) {
 	otherproject.date = saveddate;
 
 	if (intoproject.shared) {
-		intoproject.storeOnServer(false,exportProject(intoproject.id),{});
+		intoproject.storeOnServer();
 	}
 };
 
 #ifdef SERVER
 // Make sure that at most one request runs at any time
 // This should not be necessary, but may be useful during debugging.
-var updateStubsInProgress=false;
+Project.updateStubsInProgress=false;
 
-/* Add all projects that can be found on the server, except those that share their name with a
- * project that is shared, as stub projects.
+/* UpdateStubs(load_async,dorepaint): replace all stubs with the project list currently on the server.
+ *  load_async: (Boolean, default=true) if true then wait for results before returning
+ *  dorepaint: (Boolean, default=true) if true then update the visible UI
+ * Add all projects that can be found on the server, except those that share their name with a
+ * project that is shared, as stub projects. All current stubs are removed or replaced.
  */
-Project.UpdateStubs = function(load_async,dorepaint) {
-	if (load_async==null) load_async=true;
-	if (dorepaint==null) dorepaint=true;
+Project.UpdateStubs = function(load_async=true,dorepaint=true) {
 	if (!Preferences.online)  return; // No actions when offline
 	// Ignore if we already have a request running.
-	if (updateStubsInProgress) {
+	if (Project.updateStubsInProgress) {
 		console.log('Project.updateStubs aborted; already in progress');
 		return;
 	}
-	updateStubsInProgress=true;
+	Project.updateStubsInProgress=true;
 	// Fire off request to server
 	$.ajax({
 		url: 'share.php?op=list',
@@ -262,14 +265,14 @@ Project.UpdateStubs = function(load_async,dorepaint) {
 				var p = Project.withTitle(rp.name);
 				if (p!=null && Project.get(p).shared==true) continue;
 
-				p = new Project(null,true);
+				p = new Project(createUUID(),true);
 				p.title = rp.name;
 				p.creator = rp.creator;
 				p.date = rp.date;
 				p.description = unescapeNewlines(rp.description);
 			}
 			refreshStubList(dorepaint);
-			updateStubsInProgress=false;
+			Project.updateStubsInProgress=false;
 		},
 		error: function(jqXHR, textStatus) {
 			if (textStatus=="timeout") {
@@ -282,26 +285,32 @@ Project.UpdateStubs = function(load_async,dorepaint) {
 					_("Could not retrieve the list of remote projects.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
 				);
 			}
-			updateStubsInProgress=false;
+			Project.updateStubsInProgress=false;
 		},
 		complete: function() {
-			updateStubsInProgress=false;
+			Project.updateStubsInProgress=false;
 		}
 	});
 };
 
-var retrieveInProgress=false;
+Project.retrieveInProgress=false;
 
-Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError) {
+/* asyncRetrieveStub(pid,doWhenReady,doOnError,removepid): create a project from a stub.
+ *  pid: id of the stub project
+ *  doWhenReady (optional): function(newpid) to call after the project is loaded. Parameter newpid is the id of the loaded project.
+ *  doOnError (optional): function(jqXHR, textStatus, errorThrown) to call on errors
+ *  removepid (optional): id of project to remove before loading the stub.
+ */
+Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError,removepid) {
 	if (!Preferences.online)  return; // No actions when offline
-	if (retrieveInProgress)  return;
+	if (Project.retrieveInProgress)  return;
 
 	var p = Project.get(pid);
 	if (!p.stub) {
 		bugreport("Retrieving a project that is not a stub","Project.retrieve");
 		return;
 	}
-	retrieveInProgress =true;
+	Project.retrieveInProgress = true;
 	$.ajax({
 		url: 'share.php?op=get'+
 			'&name=' + urlEncode(p.title) +
@@ -309,6 +318,7 @@ Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError) {
 			'&date=' + urlEncode(p.date),
 		dataType: 'text',
 		success: function (data) {
+			if (removepid!=null) Project.get(removepid).destroy();
 			var newp = loadFromString(data,{
 				strsource:'Remote project',
 				duplicate: GroupSettings.classroom || isSameString(p.title,GroupSettings.template)
@@ -338,7 +348,7 @@ Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError) {
 					);
 				}
 			}
-			retrieveInProgress = false;
+			Project.retrieveInProgress = false;
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
 			if (textStatus=="timeout") {
@@ -358,10 +368,10 @@ Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError) {
 					);
 				}
 			}
-			retrieveInProgress = false;
+			Project.retrieveInProgress = false;
 		},
 		complete: function() {
-			retrieveInProgress = false;
+			Project.retrieveInProgress = false;
 		}
 	});
 };
@@ -424,6 +434,11 @@ Project.prototype = {
 		it.forEach(obj => tr.set(obj.id,createUUID()));
 		it = new NodeClusterIterator({project: this.id});
 		it.forEach(obj => tr.set(obj.id,createUUID()));
+		let transaction = this.TransactionBase;
+		do {
+			tr.set(transaction.id,createUUID());
+			transaction = transaction.next;
+		} while (transaction!=null);
 		tr.set(this.id,createUUID());
 		// Now that we have all existing and new UUIDs, clone each of the objects
 		let p = new Project(tr.get(this.id));
@@ -438,6 +453,26 @@ Project.prototype = {
 		p.shared = this.shared;
 		p.stub = this.stub;
 		p.store();
+		// Clone the list of transactions
+		transaction = this.TransactionBase;
+		p.TransactionBase = new Transaction(null,null,null,null,false,false,tr.get(transaction.id),p.id,true);
+		p.TransactionCurrent = p.TransactionBase;
+		p.TransactionHead = p.TransactionBase;
+		while (transaction.next!=null) {
+			transaction = transaction.next;
+			new Transaction(
+				transaction.kind,
+				transaction.undo_data,
+				transaction.do_data,
+				transaction.descr,
+				transaction.chain,
+				transaction.remote,
+				tr.get(transaction.id),
+				p.id,
+				true // create only
+			);
+		}
+		// Now duplicate all other referenced objects
 		it = new VulnerabilityIterator({project: this.id});
 		it.forEach(vln => {
 			let vc = new Vulnerability(p.id,vln.type,tr.get(vln.id));
@@ -564,7 +599,7 @@ Project.prototype = {
 		if (updateServer==undefined || updateServer==true) {
 			if (newstatus==true) {
 				// Project was private, now becomes shared.
-				this.storeOnServer(false,exportProject(this.id),{});
+				this.storeOnServer();
 			} else {
 				// Project was shared, now becomes private.
 				this.deleteFromServer();
@@ -572,14 +607,13 @@ Project.prototype = {
 		}
 		this.shared = newstatus;
 		this.store();
-		startAutoSave();
+		startWatchingCurrentProject();
 	},
 #endif
 
 	setdescription: function(s) {
-		s = reasonableString(s);
 		if (this.description==s) return;
-		this.description = s;
+		this.description = String(s).trim().substr(0,100);
 		this.store();
 	},
 	
@@ -801,7 +835,7 @@ Project.prototype = {
 			if (!res) return;
 			this.iconset = iconset;
 			this.store();
-			this.prepTemplatesAndMasks();
+			this.paintTemplates();
 			this.services.forEach(sid => {
 				let svc = Service.get(sid);
 				svc.unload();
@@ -840,7 +874,7 @@ Project.prototype = {
 			this.store();
 			this.retrieveicondata(this.iconset);
 		}
-		this.prepTemplatesAndMasks();
+		this.paintTemplates();
 		this.services.forEach(sid => Service.get(sid).load());
 		for (const vid of this.vulns) {
 			let vln = Vulnerability.get(vid);
@@ -902,16 +936,8 @@ Project.prototype = {
 #endif
 	},
 
-	prepTemplatesAndMasks: function() {
+	paintTemplates: function() {
 		let idir = this.icondata.dir;
-//		// Mask images. Some images icons share their mask, so first determine the unique collection of masks
-//		let ma = [];
-//		for (const r of this.icondata.icons) {
-//			// Add r to ma iff ma does not yet contain an icn the the same .mask
-//			if (ma.findIndex(icn => icn.mask==r.mask)==-1) ma.push(r);
-//		}
-//		$('#mask-collection').empty();
-//		for (const r of ma) $('#mask-collection').append(`<img class="mask" id="${r.maskid}" src="${idir}/iconset/${this.iconset}/${r.mask}">`);
 
 		// Template images. The first image of each type will be the default image.
 		$('#templates').empty();
@@ -928,9 +954,6 @@ Project.prototype = {
 						<img id="tC_${icn.type}" class="tC" src="../img/dropedit.png">
 					<div>
 				`);
-//				// See comments in raster.css at nodecolorbackground
-//				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `url("${idir}/iconset/${this.iconset}/${icn.mask}")`);
-//				$(`#tbg_${icn.type}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
 				break;
 			}
 		}
@@ -976,7 +999,7 @@ Project.prototype = {
 		return this.labels[i-1];
 	},
 	
-	_stringify: function() {
+	_stringify: function(transactionId=null) {
 		var data = {};
 		data.l=this.title;
 		data.g=this.group;
@@ -988,12 +1011,15 @@ Project.prototype = {
 		data.c=this.labels;
 		data.i=this.iconset;
 		data.q=this.wpa;
+		if (transactionId!=null) {
+			data.r = transactionId;
+		}
 		return JSON.stringify(data);
 	},
 
-	exportstring: function() {
+	exportstring: function(transactionId=null) {
 		var key = LS+'P:'+this.id;
-		return key + '\t' + this._stringify() + '\n';
+		return key + '\t' + this._stringify(transactionId) + '\n';
 	},
 	
 	store: function() {
@@ -1003,23 +1029,23 @@ Project.prototype = {
 	},
 
 #ifdef SERVER
-	storeOnServer: function(auto,exportstring,callback) {
+	/* storeOnServer: store a project file onto the server
+	 * auto: (Boolean, default true) if true then do not ask for confirmation
+	 * callback: (Object, default {}) containing callback functions:
+	 *		onUpdate: called when successful
+	 */
+	storeOnServer: function(auto=false,callback={}) {
 		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
-		var thisp = this;
-		// First, check that no other browser has touched the versions since we last
-		// retrieved it.
-		Project.getProps(this.title,function(details){
-			if (details!=null && (thisp.date=="" || thisp.date < details.date) && !auto) {
-				askForConflictResolution(thisp,details);
-				return;
-			} 
-			// It is safe to upload the file.
+		let exportstring = exportProject(this.id);
+		let thisp = this;
+		let doshare = function() {
+			// Note that startWatching() will receive a notification of the change to the transaction list on the server
 			$.ajax({
 				url: 'share.php?op=put'+
 					'&name=' + urlEncode(thisp.title) +
 					'&creator=' + urlEncode(Preferences.creator) +
 					'&description=' + urlEncode(escapeNewlines(thisp.description)),
-				type: 'POST',				
+				type: 'POST',
 				dataType: 'text',
 				data: exportstring,
 				success: function(datestamp) {
@@ -1034,7 +1060,7 @@ Project.prototype = {
 						Preferences.setonline(false);
 						rasterAlert(_("Server is offline"),
 							_H("The server appears to be unreachable. The tool is switching to working offline.")
-						); 
+						);
 					} else {
 						rasterAlert(_("A request to the server failed"),
 							_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
@@ -1042,10 +1068,30 @@ Project.prototype = {
 					}
 				}
 			});
+		};
+		if (auto) {
+			doshare();
+			return;
+		}
+		// First, check that no other browser has touched the versions since we last
+		// retrieved it.
+		Project.getProps(this.title,function(details){
+			if (details!=null && (thisp.date=="" || thisp.date < details.date) && !auto) {
+				thisp.askForConflictResolution(details);
+				return;
+			} 
+			// It is safe to upload the file.
+			doshare();
 		});
 	},
 
-	storeIfNotPresent: function(exportstring,callback) {
+#ifdef UNUSED
+	/* storeIfNotPresent(string,callback): store this project on the server without overwriting existing projects
+	 *  string: contents of the project (should be exportProject(this.id))
+	 *  callback: object containing callback functions:
+	 *		onUpdate: called after the project has been stored successfully
+	 */
+	storeIfNotPresent: function(exportstring,callback={}) {
 		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
 		var thisp = this;
 		// First, check that no other browser has touched the versions since we last
@@ -1086,7 +1132,10 @@ Project.prototype = {
 			});
 		});
 	},
+#endif
 
+	/* deleteFromServer: remove this project from the server.
+	 */
 	deleteFromServer: function() {
 		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
 		var thisp = this;
@@ -1127,7 +1176,11 @@ Project.prototype = {
 			});				
 		});
 	},
-	
+
+#ifdef UNUSED
+	/* getDate: retrieve the datetime for this project on the server and update this project's date.
+	 *  doWhenReady: function that is called after the date has been updated.
+	 */
 	getDate: function(doWhenReady) {
 		if (!Preferences.online)  return; // No actions when offline
 		var thisp = this;
@@ -1140,10 +1193,11 @@ Project.prototype = {
 			}
 		});
 	},
-	
-	/* auto is a boolean; when true no confirmation is necessary. When false, a
-	 *			confirmation will be asked before updating. 
-	 * callbacks is an object containing three possible functions:
+#endif
+
+	/* refreshIfNecessary(auto,callbacks): replace the local copy of this project by the one stored on the server, if it is newer.
+	 * auto is a boolean; when true no confirmation is necessary. When false, a confirmation will be asked before updating.
+	 * callbacks is an object containing four possible functions:
 	 *	callbacks.onUpdate(newpid): function to call when the project was updated
 	 *			successfully. Parameter 'newpid' is the id of the new project.
 	 *	callbacks.onNoupdate(): function to call when the server version is the
@@ -1178,20 +1232,29 @@ Project.prototype = {
 			// Project is on server. Check remote date
 			if (p.date!="" && props.date > p.date) {
 				var doUpdate = function(){
-					var newp = new Project(null,true);
-					newp.shared = true;
+					// Duplicate this project, and erase the original before loading the stub so that we have a backup when loading fails.
+					let backup = p.duplicate();
+					let newp = new Project(createUUID(),true);
 					newp.title = props.name;
 					newp.creator = props.creator;
 					newp.date = props.date;
 					newp.description = props.description;
 					Project.asyncRetrieveStub(newp.id,
-						callbacks.onUpdate,
+						function(newpid) {
+							if (callbacks.onUpdate!=null) callbacks.onUpdate(newpid);
+							backup.destroy();
+						},
 						function(jqXHR /*, textStatus, errorThrown*/) {
-							p.setshared(false,false);
-							if (callbacks.onError) {
-								callbacks.onError(jqXHR.responseText);
+							// Old project may or may not have been deleted. Only remove backup if this project still exists.
+							p = Project.get(p.id);
+							if (p!=null) {
+								p.setshared(false,false);
+								backup.destroy();
 							}
-					});
+							if (callbacks.onError!=null) callbacks.onError(jqXHR.responseText);
+						},
+						p.id
+					);
 				};
 				if (auto) {
 					// Update without asking permission
@@ -1200,7 +1263,7 @@ Project.prototype = {
 					newRasterConfirm(_("Update project?"),
 						_H("There is a more recent version of this project available. ")+
 						_H("You should update your project. ")+
-						_H("If you want to continue using this version, you must make it into a private project."),
+						_H("If you want to continue using your own version, you must make it into a private project."),
 						_("Make private"),_("Update")
 					).done(function() {
 						// Make private
@@ -1228,7 +1291,7 @@ Project.prototype = {
 				rasterAlert(_("Project has been made private"),
 					_H("Project '%%' has been deleted from the server by someone. ", p.title)+
 					_H("Your local version of the project will now be marked as private. ")+
-					_H("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
+					_H("If you wish to share your project again, you must set its details to 'Shared' yourself.")+
 					"<br><p><i>"+
 					_H("Your changes are not shared with others anymore.")+
 					"</i>"
@@ -1236,22 +1299,20 @@ Project.prototype = {
 			},
 			onUpdate: function(newpid) {
 				switchToProject(newpid);
-				var t = p.title;
-				p.destroy();
 				var newp = Project.get(newpid);
-				newp.settitle(t); // Because the name got '(1)' appended to it.
-				Preferences.setcurrentproject(t);
+				newp.settitle(p.title); // Because the name got '(1)' appended to it.
+				Preferences.setcurrentproject(newp.title);
 				$('.projectname').text(newp.title);
-				startAutoSave();
+				startWatchingCurrentProject();
 			},
 			onNoupdate: function() {
-				startAutoSave();
+				startWatchingCurrentProject();
 			},
 			onError: function(str) {
 				rasterAlert(_("Project has been made private"),
 					_H("Project '%%' could not be retrieved from the server. ", p.title)+
 					_H("Your local version of the project will now be marked as private. ")+
-					_H("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
+					_H("If you wish to share your project again, you must set its details to 'Shared' yourself.")+
 					"<br><p><i>"+
 					_H("Your changes are not shared with others anymore.")+
 					"</i><p>"+
@@ -1259,6 +1320,155 @@ Project.prototype = {
 				);
 			}
 		});
+	},
+
+	appendCurrentTransaction: function() {
+		if (!this.shared) return;
+		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
+		let tr = this.TransactionCurrent;
+		if (this.lasttr==tr.id) {
+			return;
+		} else {
+			this.lasttr=tr.id;
+		}
+		let trobj = {
+			id: tr.id,			// UUID-string
+			descr: tr.descr,	// String
+			prev: tr.prev.id,	// UUID-string
+			undo_data: tr.undo_data,	// object
+			do_data: tr.do_data,		// object
+			kind: tr.kind,		// String
+			chain: tr.chain		// Boolean
+		};
+		let trString = JSON.stringify(trobj,null,' ');
+		let thisp = this;
+		$.ajax({
+			url: 'share.php?op=appendtr&name=' + urlEncode(thisp.title),
+			type: 'POST',
+			dataType: 'text',
+			data: trString,
+			success: function() {
+				if (!tr.chain) thisp.storeOnServer(true);
+			},
+			error: function(jqXHR, textStatus /*, errorThrown*/) {
+				if (textStatus=="timeout") {
+					Preferences.setonline(false);
+					rasterAlert(_("Server is offline"),
+						_H("The server appears to be unreachable. The tool is switching to working offline.")
+					);
+				} else {
+					console.log(`append transaction failed: ${jqXHR.responseText}`);
+//					rasterAlert(_("A request to the server failed"),
+//						_("Could not share this action.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
+//					);
+					Transaction.undo();
+				}
+			}
+		});
+	},
+
+	getNewTransactionsFromServer: function() {
+		if (!this.shared) return;
+		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
+		// Get all missing transactions, and apply them in sequence
+		let thisp = this;
+		$.ajax({
+			url: 'share.php?op=gettrsfrom&' +
+				'tr=' + thisp.TransactionHead.id +
+				'&name=' + urlEncode(thisp.title),
+			dataType: 'json',
+			success: function(data) {
+				// Find the transaction succeeding TransactionHead, apply it and remove it from the list.
+				// Repeat until nu transactions remain
+				while (data.length>0) {
+					let n = data.findIndex(tr => tr.prev==thisp.TransactionHead.id);
+					if (n==-1) {
+						console.log(`No transaction found succeeding thisp.TransactionHead.id`);
+						return;
+					}
+					let tr = data[n];
+					data.splice(n,1); // remove this transaction from data[]
+					// First, make sure that the current transaction is at head
+					while (thisp.TransactionCurrent!=thisp.TransactionHead) {
+						Transaction.redo();
+					}
+					thisp.lasttr = tr.id; // prevent notification to other clients using share.php?op=appendtr
+					new Transaction(tr.kind,tr.undo_data,tr.do_data,tr.descr,tr.chain,true,tr.id);
+				}
+			},
+			error: function(jqXHR, textStatus /*, errorThrown*/) {
+				if (textStatus=="timeout") {
+					Preferences.setonline(false);
+					rasterAlert(_("Server is offline"),
+						_H("The server appears to be unreachable. The tool is switching to working offline.")
+					);
+				} else {
+					rasterAlert(_("A request to the server failed"),
+						_("Could not share this action.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
+					);
+				}
+			}
+		});
+		
+	},
+#endif
+
+
+#ifdef SERVER
+	askForConflictResolution: function(details) {
+		let proj = this;
+		$('#modaldialog').dialog('option', 'buttons', [
+			{text: _("Make private"), click: function(){
+				$(this).dialog('close');
+				proj.setshared(false,false);
+			} },
+			{text: _("Overrule"), click: function(){
+				$(this).dialog('close');
+				proj.setdate(details.date);
+				proj.storeOnServer(true); // auto-save, without asking for confirmation
+				startWatchingCurrentProject();
+			} },
+			{text: _("Adopt other"), click: function(){
+				$(this).dialog('close');
+				// The contents of 'date' may be stale; the project may have been saved since we
+				// created this dialog.
+				Project.getProps(proj.title,function(details){
+					let backup = proj.duplicate();
+					let newp = new Project(createUUID(),true);
+					newp.title = proj.title;
+					newp.creator = details.creator;
+					newp.date = details.date;
+					newp.description = details.description;
+					Project.asyncRetrieveStub(newp.id,
+						function(newpid){
+							backup.destroy();
+							switchToProject(newpid);
+							var t = proj.title;
+							Project.get(newpid).settitle(t); // Because the name got '(1)' appended to it.
+							startWatchingCurrentProject();
+						},
+						function () {
+							// Old project may or may not have been deleted. Only remove backup if this project stil exists.
+							proj= Project.get(proj.id);
+							if (proj!=null) {
+								proj.setshared(false,false);
+								backup.destroy();
+							}
+						},
+						proj.id
+					);
+				});
+			} }
+		]);
+		$('#modaldialog').dialog( 'option', 'title', _("Conflict resulution"));
+		$('#modaldialog').html(
+			_H("A newer version of project '%%' has been stored on the server by user '%%' on '%%'. ", H(proj.title), H(details.creator), H(prettyDate(details.date)))
+			+_H("You can continue this version as a private project, overrule the other version so that everyone will use your version, or you can adopt the other version.")
+			+"<p>"
+			+_H("If you adopt the other version, you may lose some of your latest edits.")
+		);
+		$('#modaldialog').dialog('open');
+		$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
 	},
 #endif
 
@@ -1399,50 +1609,3 @@ function mylang(obj) {		// eslint-disable-line no-unused-vars
 		return obj[lang];
 	}
 }
-
-#ifdef SERVER
-function askForConflictResolution(proj,details) {
-	$('#modaldialog').dialog('option', 'buttons', [
-	{text: _("Make private"), click: function(){
-		$(this).dialog('close'); 
-		proj.setshared(false,false);
-	} },
-	{text: _("Overrule"), click: function(){
-		$(this).dialog('close');
-		proj.setdate(details.date);
-		proj.storeOnServer(true,exportProject(proj.id),{}); // auto-save, without asking for confirmation
-		startAutoSave();
-	} },
-	{text: _("Adopt other"), click: function(){
-		$(this).dialog('close'); 
-		// The contents of 'date' may be stale; the project may have been saved since we
-		// created this dialog.
-		Project.getProps(proj.title,function(details){
-			var newp = new Project(null,true);
-			newp.shared = true;
-			newp.title = proj.title;
-			newp.creator = details.creator;
-			newp.date = details.date;
-			newp.description = details.description;
-			Project.asyncRetrieveStub(newp.id,function(newpid){
-				switchToProject(newpid);
-				var t = proj.title;
-				proj.destroy();
-				Project.get(newpid).settitle(t); // Because the name got '(1)' appended to it.
-				startAutoSave();
-			});
-		});
-	} }
-	]);
-	$('#modaldialog').dialog( 'option', 'title', _("Conflict resulution"));
-	$('#modaldialog').html(
-		_H("A newer version of project '%%' has been stored on the server by user '%%' on '%%'. ", H(proj.title), H(details.creator), H(prettyDate(details.date)))
-		+_H("You can continue this version as a private project, overrule the other version so that everyone will use this version, or you can adopt the other version.")
-		+"<p>"
-		+_H("If you adopt the other version, you may lose some of your latest edits.")
-	);
-	$('#modaldialog').dialog('open');
-	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
-}
-#endif
-
