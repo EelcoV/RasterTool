@@ -30,6 +30,7 @@ const LS = LS_prefix+':'+LS_version+':';
 
 const tab_height = 31;		// See CSS definition of <body>
 //const toolbar_height = 94;	// See CSS definition of <body>
+const MaxStringLen = 5000;	// Limit on object titles, descriptions, etc.
 
 #ifdef STANDALONE
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1881,6 +1882,12 @@ function prependIfMissing(a,b) {		// eslint-disable-line no-unused-vars
 	}
 }
 
+/* reasonableString: fix str to something of reasonable length and without leading or trailing whitespace
+ */
+function reasonableString(str) {	// eslint-disable-line no-unused-vars
+	return String(str).substr(0,MaxStringLen).trim();
+}
+
 /* Test whether two strings are identical in a locale and case-insensitive way.
 */
 function isSameString(a,b) {
@@ -1965,11 +1972,32 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 	return dfd.promise();
 }
 
+/* bugreport: Notify the user of a bug, save the project and block the UI.
+ */
 function bugreport(mess,funcname) {
 	console.log('bugreport: "'+mess+'" in function "'+funcname+'".');
-	if (DEBUG) {
-		rasterAlert('Please report this bug',H(`You found a bug in this program.\n("${mess}" in function "${funcname}"). You should save this project then exit the app IMMEDIATELY or you may lose your data!`));
-	}
+	let dialog = $('<div id="bugreport"></div>').dialog({
+  		title: _H("Please report this bug"),
+		dialogClass: "no-close",
+		closeOnEscape: false,
+		classes: {"ui-dialog-titlebar": "ui-corner-top no-close"},
+		buttons: [{
+			text: _("Close"),
+			click: function() {
+				$(this).dialog('close');
+				exportAll();
+				$('#splash').show();
+				$('#splashstatus').html( _("Halted on error: %% in function %%.",mess,funcname) );
+			}
+		}]
+	});
+	$('#bugreport').html(_H("You found a bug in this program.")
+		+ '<br><br><i>'
+		+ _H("%% in function %%.", mess, funcname)
+		+ '</i><br><br>'
+		+ _H("This program will save your work, then halt to prevent further damage.")
+	);
+	dialog.dialog('open');
 }
 
 #ifdef SERVER
@@ -2804,14 +2832,11 @@ function checkUpgradeDone() {
 /* singleProjectExport(p): save all data into a local file.
  */
 function singleProjectExport(p) {
-	var proj = Project.get(p);
-	var s = exportProject(p);
-//	var url = "data:text/x-raster;," + urlEncode(s);
-//	document.location.assign(url);
-
-	$('#exp_name').val(proj.title);
-	$('#exp_contents').val(s);
-	$('#exp_form').submit();
+	let proj = Project.get(p);
+	saveStringAsRasterFile(exportProject(p),proj.title);
+//	$('#exp_name').val(proj.title);
+//	$('#exp_contents').val(s);
+//	$('#exp_form').submit();
 }
 
 function exportProject(pid) {
@@ -2840,6 +2865,46 @@ function exportProject(pid) {
 	return s;
 }
 
+/* dateAsAstring: returns the current datetime as string "YYYYMMDD HHMM SS"
+ */
+function dateAsAstring() {
+	let dt = new Date();
+	let x;
+	let s = '';
+	s += dt.getFullYear();
+	x = dt.getMonth()+1;
+	s += (x<10?'0':'')+x;
+	x = dt.getDate();
+	s += (x<10?'0':'')+x;
+	s += ' ';
+	x = dt.getHours();
+	s += (x<10?'0':'')+x;
+	x = dt.getMinutes();
+	s += (x<10?'0':'')+x;
+	s += ' ';
+	x = dt.getSeconds();
+	s += (x<10?'0':'')+x;
+	return s;
+}
+
+/* saveStringAsRasterFile: make the browser download a Raster file using a given filename
+ * s: (String) contents of the new file
+ * name: (String) filename in which to save string s
+ * append: (Boolean, default true) append a datetime string and extension to the filename
+ */
+function saveStringAsRasterFile(s,name, append=true) {
+	if (append) name += ` ${dateAsAstring()}.raster`;
+	let fileBlob = new Blob([s], {type: 'text/x-raster'});
+	let url = window.URL.createObjectURL(fileBlob);
+	let anchor = document.createElement('a');
+	anchor.href = url;
+	anchor.download = name;
+	anchor.click();
+	window.URL.revokeObjectURL(url);
+	// the line below gives a DOMException
+//	document.removeChild(anchor);
+}
+
 /* exportAll: save all data into a local file.
  */
 function exportAll() {
@@ -2849,8 +2914,9 @@ function exportAll() {
 		s+= key+'\t';
 		s+= localStorage[key]+'\n';
 	}
-	var url = 'data:text/x-raster;,' + urlEncode(s);
-	document.location.assign(url);
+//	var url = 'data:text/x-raster;,' + urlEncode(s);
+//	document.location.assign(url);
+	saveStringAsRasterFile(s,'exportall');
 }
 
 const TabWorkDia = 0;
