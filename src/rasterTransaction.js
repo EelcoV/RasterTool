@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy, DEBUG, createUUID
+/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy, DEBUG, createUUID, Preferences, rasterAlert, _H, H, urlEncode, stopWatching, startWatching, escapeNewlines
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -43,7 +43,7 @@ var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=fa
 	this.project = pid;
 	this.undo_data = undo_data;
 	this.do_data = do_data;
-	this.remote = remote;
+//	this.remote = remote;
 	this.next = null;
 	if (this.kind==null) {
 		this.prev = null;
@@ -79,7 +79,7 @@ var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=fa
 		p.updateUndoRedoUI();
 		// Asynchronously update the transactions file & the project file, and start watching for transaction updates.
 		if (Transaction.debug) console.log(`Transaction ${this.descr}`);
-		if (!this.remote) p.appendCurrentTransaction();
+		if (!remote) p.appendCurrentTransaction();
 		if (!this.chain) transactionCompleted(this.descr,false);
 	};
 	
@@ -107,7 +107,7 @@ var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=fa
 
 Transaction.debug = false;
 
-Transaction.undo = function() {
+Transaction.undo = function(num=1,remote=false) {
 	let p = Project.get(Project.cid);
 	if (!p) {
 		bugreport('No active project to work on','Transaction.undo');
@@ -116,18 +116,21 @@ Transaction.undo = function() {
 	if (p.TransactionCurrent==p.TransactionBase)  return;
 
 	lengthy(function() {
+		let n=0;
+		let S2;
 		do {
-			let S1, S2, S3, S4;
+			let S1, S3, S4;
 			if (Transaction.debug) {
 				checkForErrors();
 				S1 = exportProject(Project.cid);
 			}
 
 			p.TransactionCurrent.rollback();
+			n++;
 
+			S2 = exportProject(Project.cid);
 			if (Transaction.debug) {
 				checkForErrors();
-				S2 = exportProject(Project.cid);
 				p.TransactionCurrent.perform();
 				checkForErrors();
 				S3 = exportProject(Project.cid);
@@ -142,12 +145,42 @@ Transaction.undo = function() {
 				console.log("<"+ (p.TransactionCurrent.chain?"↑":" ") +" "+p.TransactionCurrent.kind);
 			}
 			p.TransactionCurrent = p.TransactionCurrent.prev;
-		} while (p.TransactionCurrent.chain==true);
+			if (!p.TransactionCurrent.chain) num--;
+		} while (num>0);
 		p.updateUndoRedoUI();
+		if (p.shared && !remote) {
+			stopWatching();
+			$.ajax({
+				url: `share.php?op=undo&name=${urlEncode(p.title)}&num=${n}&`
+					+ `creator=${urlEncode(Preferences.creator)}&`
+					+ `description=${urlEncode(escapeNewlines(p.description))}`,
+				dataType: 'text',
+				type: 'POST',
+				data: S2,
+				success: function(datestamp) {
+					// Update the timestamp of the project, as indicated by the server
+					p.setdate(datestamp);
+					startWatching(p);
+				},
+				error: function(jqXHR, textStatus /*, errorThrown*/) {
+					if (textStatus=="timeout") {
+						Preferences.setonline(false);
+						rasterAlert(_("Server is offline"),
+							_H("The server appears to be unreachable. The tool is switching to working offline.")
+						);
+					} else {
+						rasterAlert(_("A request to the server failed"),
+							_("Could not undo.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
+						);
+					}
+				}
+			});
+		}
+		if (!remote) transactionCompleted(_("Undo"),false);
 	});
 };
 
-Transaction.redo = function() {
+Transaction.redo = function(num=1,remote=false) {
 	let p = Project.get(Project.cid);
 	if (!p) {
 		bugreport('No active project to work on','Transaction.redo');
@@ -165,6 +198,7 @@ Transaction.redo = function() {
 			
 			p.TransactionCurrent = p.TransactionCurrent.next;
 			p.TransactionCurrent.perform();
+			if (!remote) p.appendCurrentTransaction();
 			
 			if (Transaction.debug) {
 				checkForErrors();
@@ -182,8 +216,10 @@ Transaction.redo = function() {
 				}
 				console.log(">"+ (p.TransactionCurrent.chain?"↓":" ") +" "+p.TransactionCurrent.kind);
 			}
-		} while(p.TransactionCurrent.chain==true);
+			if (!p.TransactionCurrent.chain) num--;
+		} while(num>0);
 		p.updateUndoRedoUI();
+		if (!remote) transactionCompleted(_("Redo"),false);
 	});
 };
 

@@ -921,7 +921,7 @@ div.th_remark {
 	background-color: var(--vlightbg) !important;
 	background-image: url("../img/paper.png") !important;
 	background-size: 100px !important;
-	background-position: 15px 15px !important;
+	background-position: 8px 9px !important; /* So that node centers line up exactly with the grid */
 }
 .plainworkspace {
 	overflow: auto !important;

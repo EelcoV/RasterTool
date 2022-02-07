@@ -3,7 +3,7 @@
  */
 
 /* global
-_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, paintSingleFailures, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startWatchingCurrentProject, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator, TabAnaVulnOverview, TabAnaAssOverview, TabAnaLonglist, repaintAnalysisIfVisible
+_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, paintSingleFailures, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startWatchingCurrentProject, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator, TabAnaVulnOverview, TabAnaAssOverview, TabAnaLonglist, repaintAnalysisIfVisible, reasonableString
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -41,10 +41,9 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *  TransactionCurrent: the most recently performed transaction
  *  TransactionHead: the most recently posted transaction
  *		See rasterTransaction.js for description of these, and the transaction list.
- *  lasttr: ID of the latest/current transaction
  * Methods:
  *	destroy(): destructor for this object
- *	duplicate(): creates an exact copy of this project, and returns that duplicate. Note: this will create two projects with the samen name.
+ *	duplicate(): creates an exact copy of this project, and returns that duplicate. NOTE: this will create two projects with the samen name.
  *  updateUndoRedoUI: highlight/lowlight the undo/redo buttons as necessary
  *	totalnodes(): returns the count of all nodes within all services of this project.
  *	settitle(t): change the title to 't' (50 chars max). The actual title may receive
@@ -107,7 +106,7 @@ var Project = function(id=createUUID(),asstub=false) {
 	this.icondata = {};
 	// Do not fetch the iconset yet, delay this until Project.load()
 
-	this.TransactionBase = new Transaction(null,null,null);
+	this.TransactionBase = new Transaction(null,null,null,null,false,false,createUUID(),this.id);
 	this.TransactionCurrent = this.TransactionBase;
 	this.TransactionHead = this.TransactionBase;
 
@@ -312,14 +311,17 @@ Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError,removepid) {
 	}
 	Project.retrieveInProgress = true;
 	$.ajax({
-		url: 'share.php?op=get'+
+		url: 'share.php?op=getproject'+
 			'&name=' + urlEncode(p.title) +
 			'&creator=' + urlEncode(p.creator) +
 			'&date=' + urlEncode(p.date),
-		dataType: 'text',
+		dataType: 'json',
 		success: function (data) {
+			/* data.project: (String) the project as text (one key:value pair per line)
+			 * data.transactions: Array of objects containing stored transactions
+			 */
 			if (removepid!=null) Project.get(removepid).destroy();
-			var newp = loadFromString(data,{
+			var newp = loadFromString(data.project,{
 				strsource:'Remote project',
 				duplicate: GroupSettings.classroom || isSameString(p.title,GroupSettings.template)
 			});
@@ -333,6 +335,24 @@ Project.asyncRetrieveStub = function(pid,doWhenReady,doOnError,removepid) {
 					np.shared = true;
 				}
 				np.store();
+				data.transactions.forEach(tr => {
+					let nt = new Transaction(
+						tr.kind,
+						tr.undo_data,
+						tr.do_data,
+						tr.descr,
+						tr.chain,
+						false,
+						tr.id,
+						np.id,
+						true // create only
+					);
+					if (tr.kind==null) {
+						np.TransactionBase = nt;
+						np.TransactionHead = nt;
+						np.TransactionCurrent = nt;
+					}
+				});
 				if (doWhenReady) {
 					doWhenReady(newp);
 				}
@@ -466,7 +486,7 @@ Project.prototype = {
 				transaction.do_data,
 				transaction.descr,
 				transaction.chain,
-				transaction.remote,
+				false,
 				tr.get(transaction.id),
 				p.id,
 				true // create only
@@ -612,8 +632,9 @@ Project.prototype = {
 #endif
 
 	setdescription: function(s) {
+		s = reasonableString(s);
 		if (this.description==s) return;
-		this.description = String(s).trim().substr(0,100);
+		this.description = s;
 		this.store();
 	},
 	
@@ -1029,30 +1050,59 @@ Project.prototype = {
 	},
 
 #ifdef SERVER
-	/* storeOnServer: store a project file onto the server
-	 * auto: (Boolean, default true) if true then do not ask for confirmation
-	 * callback: (Object, default {}) containing callback functions:
-	 *		onUpdate: called when successful
+	/* storeOnServer: store a project file onto the server.
+	 * The following options can be used:
+	 *  auto: (Boolean, default true) if true then do not ask for confirmation
+	 *  onUpdate: called when successful
+	 *  transactions: (Boolean, default true) of true then also store the transactions list
 	 */
-	storeOnServer: function(auto=false,callback={}) {
+	storeOnServer: function(option={}) {
 		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
-		let exportstring = exportProject(this.id);
+		if (option.auto==null) option.auto = true;
+		if (option.transactions==null) option.transactions = true;
+
+		let op, data;
+		if (option.transactions) {
+			op = 'putproject';
+			let transarr = [];
+			let tr = this.TransactionBase;
+			while (tr!=null) {
+				transarr.push({
+					id: tr.id,			// UUID-string
+					descr: tr.descr,	// String
+					prev: tr.prev==null?null:tr.prev.id,	// UUID-string
+					undo_data: tr.undo_data,	// object
+					do_data: tr.do_data,		// object
+					kind: tr.kind,		// String
+					chain: tr.chain		// Boolean
+				});
+				tr = tr.next;
+			}
+			data = JSON.stringify({
+					project: exportProject(this.id),
+					transactions: transarr
+				},null,' ');
+		} else {
+			op = 'put';
+			data = exportProject(this.id);
+		}
+		
 		let thisp = this;
 		let doshare = function() {
 			// Note that startWatching() will receive a notification of the change to the transaction list on the server
 			$.ajax({
-				url: 'share.php?op=put'+
+				url: `share.php?op=${op}`+
 					'&name=' + urlEncode(thisp.title) +
 					'&creator=' + urlEncode(Preferences.creator) +
 					'&description=' + urlEncode(escapeNewlines(thisp.description)),
 				type: 'POST',
 				dataType: 'text',
-				data: exportstring,
+				data: data,
 				success: function(datestamp) {
 					// Update the timestamp of the project, as indicated by the server
 					thisp.setdate(datestamp);
-					if (callback.onUpdate) {
-						callback.onUpdate();
+					if (option.onUpdate) {
+						option.onUpdate();
 					}
 				},
 				error: function(jqXHR, textStatus /*, errorThrown*/) {
@@ -1069,14 +1119,14 @@ Project.prototype = {
 				}
 			});
 		};
-		if (auto) {
+		if (option.auto) {
 			doshare();
 			return;
 		}
 		// First, check that no other browser has touched the versions since we last
 		// retrieved it.
 		Project.getProps(this.title,function(details){
-			if (details!=null && (thisp.date=="" || thisp.date < details.date) && !auto) {
+			if (details!=null && (thisp.date=="" || thisp.date < details.date)) {
 				thisp.askForConflictResolution(details);
 				return;
 			} 
@@ -1084,55 +1134,6 @@ Project.prototype = {
 			doshare();
 		});
 	},
-
-#ifdef UNUSED
-	/* storeIfNotPresent(string,callback): store this project on the server without overwriting existing projects
-	 *  string: contents of the project (should be exportProject(this.id))
-	 *  callback: object containing callback functions:
-	 *		onUpdate: called after the project has been stored successfully
-	 */
-	storeIfNotPresent: function(exportstring,callback={}) {
-		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
-		var thisp = this;
-		// First, check that no other browser has touched the versions since we last
-		// retrieved it.
-		Project.getProps(this.title,function(details){
-			if (details!=null) {
-				// Project is on the server
-				return;
-			} 
-			// Not yet present, so upload the file.
-			$.ajax({
-				url: 'share.php?op=put'+
-					'&name=' + urlEncode(thisp.title) +
-					'&creator=' + urlEncode(Preferences.creator) +
-					'&description=' + urlEncode(escapeNewlines(thisp.description)),
-				type: 'POST',				
-				dataType: 'text',
-				data: exportstring,
-				success: function(datestamp) {
-					// Update the timestamp of the project, as indicated by the server
-					thisp.setdate(datestamp);
-					if (callback.onUpdate) {
-						callback.onUpdate();
-					}
-				},
-				error: function(jqXHR, textStatus /*, errorThrown*/) {
-					if (textStatus=="timeout") {
-						Preferences.setonline(false);
-						rasterAlert(_("Server is offline"),
-							_H("The server appears to be unreachable. The tool is switching to working offline.")
-						); 
-					} else {
-						rasterAlert(_("A request to the server failed"),
-							_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
-						);
-					}
-				}
-			});
-		});
-	},
-#endif
 
 	/* deleteFromServer: remove this project from the server.
 	 */
@@ -1177,23 +1178,6 @@ Project.prototype = {
 		});
 	},
 
-#ifdef UNUSED
-	/* getDate: retrieve the datetime for this project on the server and update this project's date.
-	 *  doWhenReady: function that is called after the date has been updated.
-	 */
-	getDate: function(doWhenReady) {
-		if (!Preferences.online)  return; // No actions when offline
-		var thisp = this;
-		Project.getProps(this.title,function(props){
-			if (props && props.creator==Preferences.creator) {
-				thisp.setdate(props.date);
-			}
-			if (doWhenReady) {
-				doWhenReady(props);
-			}
-		});
-	},
-#endif
 
 	/* refreshIfNecessary(auto,callbacks): replace the local copy of this project by the one stored on the server, if it is newer.
 	 * auto is a boolean; when true no confirmation is necessary. When false, a confirmation will be asked before updating.
@@ -1206,9 +1190,9 @@ Project.prototype = {
 	 *			the server. The project will have been made private.
 	 *	callbacks.onError(str): function to call when there was any other error. The
 	 *			error message itself is in parameter 'str'.
-	 * All callbacks are optional, but the callbacks object is not. The default is 'no action'.
+	 * All callbacks are optional. The default is 'no action'.
 	 */
-	refreshIfNecessary: function(auto,callbacks) {
+	refreshIfNecessary: function(auto,callbacks={}) {
 		if (!this.shared || !Preferences.online) {
 			// No actions when offline
 			if (callbacks.onNoupdate) {
@@ -1234,6 +1218,8 @@ Project.prototype = {
 				var doUpdate = function(){
 					// Duplicate this project, and erase the original before loading the stub so that we have a backup when loading fails.
 					let backup = p.duplicate();
+					// backup has exactly the same title as p
+					backup.settitle(p.title+_(" (backup)"));
 					let newp = new Project(createUUID(),true);
 					newp.title = props.name;
 					newp.creator = props.creator;
@@ -1300,7 +1286,6 @@ Project.prototype = {
 			onUpdate: function(newpid) {
 				switchToProject(newpid);
 				var newp = Project.get(newpid);
-				newp.settitle(p.title); // Because the name got '(1)' appended to it.
 				Preferences.setcurrentproject(newp.title);
 				$('.projectname').text(newp.title);
 				startWatchingCurrentProject();
@@ -1321,16 +1306,11 @@ Project.prototype = {
 			}
 		});
 	},
-
+ 
 	appendCurrentTransaction: function() {
 		if (!this.shared) return;
 		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
 		let tr = this.TransactionCurrent;
-		if (this.lasttr==tr.id) {
-			return;
-		} else {
-			this.lasttr=tr.id;
-		}
 		let trobj = {
 			id: tr.id,			// UUID-string
 			descr: tr.descr,	// String
@@ -1348,7 +1328,7 @@ Project.prototype = {
 			dataType: 'text',
 			data: trString,
 			success: function() {
-				if (!tr.chain) thisp.storeOnServer(true);
+				if (!tr.chain) thisp.storeOnServer({auto: true, transactions: false});
 			},
 			error: function(jqXHR, textStatus /*, errorThrown*/) {
 				if (textStatus=="timeout") {
@@ -1373,28 +1353,25 @@ Project.prototype = {
 		// Get all missing transactions, and apply them in sequence
 		let thisp = this;
 		$.ajax({
-			url: 'share.php?op=gettrsfrom&' +
-				'tr=' + thisp.TransactionHead.id +
-				'&name=' + urlEncode(thisp.title),
+			url: `share.php?op=gettrsfrom&tr=${thisp.TransactionCurrent.id}&name=${urlEncode(thisp.title)}`,
 			dataType: 'json',
 			success: function(data) {
 				// Find the transaction succeeding TransactionHead, apply it and remove it from the list.
 				// Repeat until nu transactions remain
-				while (data.length>0) {
-					let n = data.findIndex(tr => tr.prev==thisp.TransactionHead.id);
-					if (n==-1) {
-						console.log(`No transaction found succeeding thisp.TransactionHead.id`);
-						return;
-					}
-					let tr = data[n];
-					data.splice(n,1); // remove this transaction from data[]
-					// First, make sure that the current transaction is at head
-					while (thisp.TransactionCurrent!=thisp.TransactionHead) {
-						Transaction.redo();
-					}
-					thisp.lasttr = tr.id; // prevent notification to other clients using share.php?op=appendtr
-					new Transaction(tr.kind,tr.undo_data,tr.do_data,tr.descr,tr.chain,true,tr.id);
+				let n = data.findIndex(tr => tr.prev==thisp.TransactionCurrent.id);
+				if (n==-1) {
+					console.log(`No transaction found succeeding thisp.TransactionCurrent.id`);
+					return;
 				}
+				let tr = data[n];
+				// truncate the transactionlist at current
+				thisp.TransactionCurrent.next = null;
+				this.TransactionHead = thisp.TransactionCurrent;
+				// apply all new transactions (normally just 1)
+				do {
+					new Transaction(tr.kind,tr.undo_data,tr.do_data,tr.descr,tr.chain,true,tr.id);
+					tr = tr.next;
+				} while (tr!=null);
 			},
 			error: function(jqXHR, textStatus /*, errorThrown*/) {
 				if (textStatus=="timeout") {
@@ -1408,8 +1385,7 @@ Project.prototype = {
 					);
 				}
 			}
-		});
-		
+		});		
 	},
 #endif
 
@@ -1425,7 +1401,7 @@ Project.prototype = {
 			{text: _("Overrule"), click: function(){
 				$(this).dialog('close');
 				proj.setdate(details.date);
-				proj.storeOnServer(true); // auto-save, without asking for confirmation
+				proj.storeOnServer({auto: true}); // auto-save, without asking for confirmation
 				startWatchingCurrentProject();
 			} },
 			{text: _("Adopt other"), click: function(){
@@ -1574,6 +1550,72 @@ Project.prototype = {
 
 		return errors;
 	}
+
+#ifdef UNUSED
+	/* storeIfNotPresent(string,callback): store this project on the server without overwriting existing projects
+	 *  string: contents of the project (should be exportProject(this.id))
+	 *  callback: object containing callback functions:
+	 *		onUpdate: called after the project has been stored successfully
+	 */
+	storeIfNotPresent: function(exportstring,callback={}) {
+		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
+		var thisp = this;
+		// First, check that no other browser has touched the versions since we last
+		// retrieved it.
+		Project.getProps(this.title,function(details){
+			if (details!=null) {
+				// Project is on the server
+				return;
+			}
+			// Not yet present, so upload the file.
+			$.ajax({
+				url: 'share.php?op=put'+
+					'&name=' + urlEncode(thisp.title) +
+					'&creator=' + urlEncode(Preferences.creator) +
+					'&description=' + urlEncode(escapeNewlines(thisp.description)),
+				type: 'POST',
+				dataType: 'text',
+				data: exportstring,
+				success: function(datestamp) {
+					// Update the timestamp of the project, as indicated by the server
+					thisp.setdate(datestamp);
+					if (callback.onUpdate) {
+						callback.onUpdate();
+					}
+				},
+				error: function(jqXHR, textStatus /*, errorThrown*/) {
+					if (textStatus=="timeout") {
+						Preferences.setonline(false);
+						rasterAlert(_("Server is offline"),
+							_H("The server appears to be unreachable. The tool is switching to working offline.")
+						);
+					} else {
+						rasterAlert(_("A request to the server failed"),
+							_("Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
+						);
+					}
+				}
+			});
+		});
+	},
+
+	/* getDate: retrieve the datetime for this project on the server and update this project's date.
+	 *  doWhenReady: function that is called after the date has been updated.
+	 */
+	getDate: function(doWhenReady) {
+		if (!Preferences.online)  return; // No actions when offline
+		var thisp = this;
+		Project.getProps(this.title,function(props){
+			if (props && props.creator==Preferences.creator) {
+				thisp.setdate(props.date);
+			}
+			if (doWhenReady) {
+				doWhenReady(props);
+			}
+		});
+	},
+#endif
+
 };
 
 function escapeNewlines(s) {

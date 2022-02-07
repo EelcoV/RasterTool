@@ -21,7 +21,7 @@ define("RASTERDIR", "SharedProjects/");	// Prefix for location of shared Raster 
 define("INDEXFILE", RASTERDIR . "projectindex.csv");	// Location of Index file
 define("DEBUGINFO", true);		// Show extra info when errors are reported
 define("MAXTRANSACTIONS", 100);	// Maximum number of transactions to save
-//define("NilUUID", "00000000-0000-0000-0000-000000000000");
+define("NilUUID", "00000000-0000-0000-0000-000000000000");
 
 error_reporting(E_ERROR | E_PARSE);		// Hide warnings
 
@@ -271,26 +271,21 @@ function doGetTransactionsFrom() {
 		$transactions = getTransactions($projTname[$n]);
 		if ($transactions===false)
 			sendError("Failed to read and parse that transactions file.");
-		$first = true;
-		$contents = "";
-		do {
-			$found = false;
-			foreach ($transactions as $n => $tr) {
-				if ($tr->{'prev'}==$gtr) {
-					$str = json_encode($tr,JSON_PRETTY_PRINT);
-					if ($str===false)
-						sendError("Failed to encode transaction.");
-					if ($first)
-						$contents = $contents . "\n,\n";
-					$contents = $contents . $str;
-					$found = true;
-					$gtr = $tr->{'id'};
-					break;
-				}
+		// Find the start position in the $transactions array
+		$start = -1;
+		foreach ($transactions as $n => $tr) {
+			if ($tr->{'id'}==$gtr) {
+				$start=$n;
+				break;
 			}
-		} while ($found);
+		}
+		// Remove the transactions leading up to $gtr
+		array_splice($transactions,0,$start+1);
+		$contents = json_encode($transactions,JSON_PRETTY_PRINT);
+		if ($contents===false)
+			sendError("Failed to encode new transactions file.");
 		header('Content-type: text/x-raster',true,200);
-		echo "[" . $str . "]";
+		echo $contents;
 		exit(0);
 	}
 	// A project with that name was not found, return empty array.
@@ -332,7 +327,7 @@ function doAppendTransaction() {
 		array_push($transactions, $tr);
 		// Keep at most the last MAXTRANSACTIONS transactions
 		if (count($transactions)>MAXTRANSACTIONS) {
-			splice($transactions, 0, count($transactions)-MAXTRANSACTIONS);
+			array_splice($transactions, 0, count($transactions)-MAXTRANSACTIONS);
 		}
 		$contents = json_encode($transactions,JSON_PRETTY_PRINT);
 		if ($contents===false)
@@ -343,6 +338,39 @@ function doAppendTransaction() {
 		header('Content-type: text/x-raster',true,200);
 		echo $res;
 		exit(0);
+	}
+	// Project wasn't found.
+	sendError("No matching project was found.");
+}
+
+function doUndo() {
+	global $projName,$projTname;
+	if ($_SERVER["REQUEST_METHOD"] != "POST")
+		sendError("The 'undo' operation must use the POST method.");
+	$name=$_REQUEST['name'];
+	$num=$_REQUEST['num'];
+	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
+	if (!readIndexFile())
+		sendError("Index file cannot be read or contains invalid entries.");
+	foreach ($projName as $n => $pName) {
+		if ($pName != $name) continue;
+		// We have a match. Read project's transactions
+		$transactions = getTransactions($projTname[$n]);
+error_log("name=[".$name."], count=".count($transactions));
+		if ($transactions===false) $transactions = array(); // assume that the file did not exist
+		while ($num>0) {
+			if (count($transactions)>=1) array_pop($transactions); // remove the transaction to undo
+error_log("popped, count=".count($transactions));
+			$num--;
+		}
+		$contents = json_encode($transactions,JSON_PRETTY_PRINT);
+		if ($contents===false)
+			sendError("Failed to encode new transactions file.");
+		$res = writeRasterFile($projTname[$n],$contents);
+		if ($res===false)
+			sendError("Failed to update transactions file.");
+		// Now do everything that we would do on a put operation
+		doPut();
 	}
 	// Project wasn't found.
 	sendError("No matching project was found.");
@@ -467,6 +495,46 @@ function doGet() {
 	sendError("No matching project was found.");
 }
 
+/* doGetProject: fetch a project as well as all Transactions
+ * Returns a JSON object containing two properties:
+ *	project: (String) the project as a single string (lines of key:value pairs)
+ *	transactions: (JSON string data) array of all transactions
+ */
+function doGetProject() {
+	global $projName,$projCreator,$projDate,$projRname,$projTname;
+	if ($_SERVER["REQUEST_METHOD"] != "GET")
+		sendError("The 'get' operation must use the GET method.");
+	$gname=$_REQUEST['name'];
+	$gcreator=$_REQUEST['creator'];
+	$gdate=$_REQUEST['date'];
+	if (is_null($gname) || $gname=="") sendError("Required parameter 'name' is missing.");
+	if (is_null($gcreator) || $gcreator=="") sendError("Required parameter 'creator' is missing.");
+	if (is_null($gdate) || $gdate=="") sendError("Required parameter 'date' is missing.");
+	if (!readIndexFile())
+		sendError("Index file cannot be read or contains invalid entries.");
+	foreach ($projName as $n => $pName) {
+		if ($pName != $gname) continue;
+		if ($projCreator[$n] != $gcreator) continue;
+		if ($projDate[$n] != $gdate) continue;
+		$project = readRasterFile($projRname[$n]);
+		if ($project===false)
+			sendError("Failed to read that project's data file.");
+		$transactions = readRasterFile($projTname[$n]);
+		if ($transactions===false) $transactions = "[ ]";
+		$project = addcslashes($project,"\"\\/\n\t");	// escape double quote, backslash, forward slash, newline and tab
+		header('Content-type: text/x-raster',true,200);
+		echo <<<EOT
+{
+	"project": "$project",
+	"transactions": $transactions
+}
+EOT;
+		exit(0);
+	}
+	// Project wasn't found.
+	sendError("No matching project was found.");
+}
+
 /* Description cannot be a multiline string. Any newline characters must be escaped
  * by the client, and restored after retrieving data from this PHP script.
  * To prevent issues, any remaining newlines (which are a bug in the client) will be
@@ -522,6 +590,74 @@ function doPut() {
 	$res = rewriteIndexFile();
 	if (!$res)
 		sendError("Failed to rewrite the index file.");
+
+	// Return 200 as HTTP return code with a document containing the timestamp for the project.
+	header('Content-type: text/x-raster',true,200);
+	echo $date;
+	exit(0);
+}
+
+function doPutProject() {
+	global $projName,$projCreator,$projDate,$projDescr,$projRname,$projTname;
+	if ($_SERVER["REQUEST_METHOD"] != "POST")
+		sendError("The 'put' operation must use the POST method.");
+	$name=$_REQUEST['name'];
+	$creator=$_REQUEST['creator'];
+	$descr=str_replace("\n"," ",$_REQUEST['description']);
+	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
+	if (is_null($creator) || $creator=="") sendError("Required parameter 'creator' is missing.");
+	if (is_null($descr)) sendError("Required parameter 'description' is missing.");
+	$date = strftime("%Y%m%d %H%M %S");
+	$content = file_get_contents('php://input');
+	$data = json_decode($content);
+	if ($data===null || $data->{'project'}==null || $data->{'transactions'}==null) {
+		sendError("Could not parse contents: " . json_last_error_msg());
+	}
+	if (!readIndexFile())
+		sendError("Index file cannot be read or contains invalid entries.");
+	// Find the old project in the in-memory index (if any)
+	$fname = "";
+	$i = -1;
+	foreach ($projName as $n => $pname) {
+		if ($pname != $name) continue;
+		$fname = $projRname[$n];
+		break;
+	}
+	if ($fname=="") $fname = getRandomString(20) . ".raster";
+	// 1. create the new raster file on disk
+	$res = writeRasterFile($fname,$data->{'project'});
+	if (!$res)
+		sendError("Failed to store file on server.");
+	// 2. remove the old project from the in-memory index (if any)
+	foreach ($projName as $n => $pname) {
+		if ($pname != $name) continue;
+		// Delete all $n'th elements
+		array_splice($projName,$n,1);
+		array_splice($projCreator,$n,1);
+		array_splice($projDate,$n,1);
+		array_splice($projDescr,$n,1);
+		array_splice($projRname,$n,1);
+		array_splice($projTname,$n,1);
+	}
+	// 3. add the new raster file to the in-memory index
+	$n = count($projName);
+	$projName[$n] = $name;
+	$projCreator[$n] = $creator;
+	$projDate[$n] = $date;
+	$projDescr[$n] = $descr;
+	$projRname[$n] = $fname;
+	$projTname[$n] = str_replace('.raster','.tr',$fname);
+	// 4. rewrite the index to reflect both changes.
+	$res = rewriteIndexFile();
+	if (!$res)
+		sendError("Failed to rewrite the index file.");
+	// 5. Write the transactions to the transactions file
+	if (count($data->{'transactions'})>0) {
+		$content = json_encode($data->{'transactions'},JSON_PRETTY_PRINT);
+		$res = writeRasterFile($projTname[$n],$content);
+		if ($res===false)
+			sendError("Failed to write transactions file.");
+	}
 
 	// Return 200 as HTTP return code with a document containing the timestamp for the project.
 	header('Content-type: text/x-raster',true,200);
@@ -601,6 +737,9 @@ case "puttrs":
 case "appendtr":
 	doAppendTransaction();
 	break;
+case "undo":
+	doUndo();
+	break;
 case "getprops":
 	doGetProps();
 	break;
@@ -612,6 +751,12 @@ case "put":
 	break;
 case "get":
 	doGet();
+	break;
+case "putproject":
+	doPutProject();
+	break;
+case "getproject":
+	doGetProject();
 	break;
 //case "reflect":
 //	doReflect();

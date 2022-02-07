@@ -43,7 +43,6 @@ P: Project
 .labels[i]		(internal)				.c						extra label for version>=2
 .iconset		seticonset(str)			.i						version>=4
 .wpa			setwpa(str)				.q						version>=4: worst plausible attacker
-.lasttr			exportProject			.r		[Transaction]	version>=4: id of the current transaction of the project (only on export/import)
 
 T: Threat 														version<=3, removed in version 4
 .id				creator(p.id,type,th.id)						changed in version 3

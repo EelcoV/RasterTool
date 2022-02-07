@@ -632,6 +632,7 @@ function initProjectsToolbar() {
 					Project.asyncRetrieveStub(p.id,function(newpid){
 						populateProjectList();
 						switchToProject(newpid);
+						Project.get(newpid).updateUndoRedoUI();
 						startWatchingCurrentProject();
 					});
 					refreshProjectToolbar(Project.cid);
@@ -651,6 +652,7 @@ function initProjectsToolbar() {
 				stopWatching(p.id);
 				// remove from the server
 				p.deleteFromServer();
+				populateProjectList();
 			}
 			if (p.id==Project.cid) {
 				p.destroy();
@@ -1497,6 +1499,7 @@ function freqIndicatorUpdate(anim) {
 /* ShowDetails: a dialog to edit the current project's properties
  */
 function ShowDetails() {
+	Project.UpdateStubs(true,false); // async, no need to repaint
 	let p = Project.get(Project.cid);
 	let snippet =`<form id="form_projectprops">
 		${_H("Title:")}<br><input id="field_projecttitle" name="fld" type="text" value="${H(p.title)}"><br>
@@ -1808,6 +1811,7 @@ function removetransientwindowsanddialogs(/*evt*/) {
 
 function switchToProject(pid,dorefresh) {
 	if (pid==Project.cid)  return;
+	stopWatching();
 	removetransientwindowsanddialogs();
 	$('#ccfs_details').empty();
 	CurrentCluster = null;
@@ -1976,6 +1980,7 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
  */
 function bugreport(mess,funcname) {
 	console.log('bugreport: "'+mess+'" in function "'+funcname+'".');
+	stopWatching();
 	let dialog = $('<div id="bugreport"></div>').dialog({
   		title: _H("Please report this bug"),
 		dialogClass: "no-close",
@@ -1995,7 +2000,7 @@ function bugreport(mess,funcname) {
 		+ '<br><br><i>'
 		+ _H("%% in function %%.", mess, funcname)
 		+ '</i><br><br>'
-		+ _H("This program will save your work, then halt to prevent further damage.")
+		+ _H("This program will save your work, then halt to prevent further damage to the database.")
 	);
 	dialog.dialog('open');
 }
@@ -2100,10 +2105,33 @@ console.log(`SSE_PROJMON RETRIES = ${SSERetriesHack}`);
 				"</i>"
 			);
 		} else {
-			// msg.data is the id of the latest transaction.
-			// Only fetch updates if this project is out of sync (no fetch if we caused the SSEvent outselves).
-			let pp = Project.get(Project.cid);
-			if (msg.data!=pp.TransactionCurrent.id) pp.getNewTransactionsFromServer();
+			// msg.data is the id of the last transaction on the server
+			let p = Project.get(Project.cid);
+			// First check for Undo/Redo: does a Transaction with id==msg.data exist behind/in front of TransactionCurrent?
+			let undo=false, numundo=0;
+			let tr=p.TransactionCurrent.prev;
+			while (!undo && tr!=null) {
+				undo = tr.id==msg.data;
+				tr = tr.prev;
+				if (tr==null || !tr.chain) numundo++;
+			}
+			let redo=false, numredo=0;
+			tr=p.TransactionCurrent.next;
+			while (!redo && tr!=null) {
+				if (!tr.chain) numredo++;
+				redo = tr.id==msg.data;
+				tr = tr.next;
+			}
+			if (undo) {
+				Transaction.undo(numundo,true);
+			} else if (redo) {
+				Transaction.redo(numredo,true);
+			} else if (msg.data!=p.TransactionCurrent.id) {
+				// Only fetch updates if this project is out of sync (no fetch if we caused the SSEvent outselves).
+				p.getNewTransactionsFromServer();
+			} else {
+				// We are already up to date.
+			}
 		}
 	};
 }
@@ -2130,11 +2158,7 @@ function saveThenStartWatching() {		// eslint-disable-line no-unused-vars
 	}
 	// First, stop watching the file so that we do not notify ourselves
 //	stopWatching(p.id);
-	p.storeOnServer(false,{
-//		onUpdate: function() {
-//			startWatching(p);
-//		}
-	});
+	p.storeOnServer({auto: false});
 }
 #endif
 
@@ -2683,10 +2707,6 @@ function loadFromString(str,options) {
 		if (lp.w) p.date = lp.w;
 		if (lp.i) p.iconset = lp.i;
 		if (lp.q) p.wpa = lp.q;
-		if (lp.r) {
-			p.TransactionBase.id = lp.r;
-			p.lasttr = lp.r;
-		}
 		for (k=0; k<lp.s.length; k++) {
 			p.addservice(lp.s[k]);
 		}
