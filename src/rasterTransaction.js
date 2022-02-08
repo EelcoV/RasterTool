@@ -1125,7 +1125,7 @@ function rebuildCluster(c) {
 }
 
 function transactionCompleted(str,dosave=true) {
-	if (DEBUG) console.log(`Completed ${str}`);
+	if (Transaction.debug) console.log(`Completed ${str}`);
 #ifdef SERVER
 	if (dosave) saveThenStartWatching();			// eslint-disable-line no-undef
 #else

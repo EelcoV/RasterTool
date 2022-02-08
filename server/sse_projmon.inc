@@ -25,7 +25,7 @@ define("RASTERDIR", "SharedProjects/");	// Prefix for location of shared Raster 
 define("INDEXFILE", RASTERDIR . "projectindex.csv");	// Location of Index file
 define("DEBUGINFO", false);		// Show extra info when errors are reported
 define("NOPINTERVAL", 30);	// Interval between successive NOPs (in *seconds*)
-define("IDLETIME", 200000);	// Interval between checks for file changes (in *microseconds*)
+define("IDLETIME", 100000);	// Interval between checks for file changes (in *microseconds*)
 define("NilUUID", "00000000-0000-0000-0000-000000000000");
 
 define("NOPROJECT", "NO PROJECT");
@@ -45,7 +45,7 @@ $indexmtime = filemtime(INDEXFILE);
 
 lookupDetails($name);
 if ($projTname == "") {
-	send(NOPROJECT);
+	sendAndExit(NOPROJECT);
 	exit(0);
 }
 
@@ -64,14 +64,14 @@ while (true) {
 	usleep(IDLETIME);
 	// Send NOP, if necessary.
 	if (time()-$noptime > NOPINTERVAL) {
-		send(NOP); // will exit the script
+		sendAndExit(NOP); // will exit the script
 	}
 	// Check whether the index file was updated, and update project details
 	clearstatcache(); // Because mtimes are cached by PHP
 	if (filemtime(INDEXFILE) != $indexmtime) {
 		lookupDetails($name);
 		if ($projTname=="") {
-			send(DELETED);
+			sendAndExit(DELETED);
 		}
 		$indexmtime = $curtime;
 	}
@@ -83,6 +83,11 @@ while (true) {
 	}
 }
 
+function sendAndExit($mesg) {
+	Send($mesg);
+	exit(0);
+}
+
 function send($mesg) {
 	global $projTname, $name;
 	// Replace control characters by string literals
@@ -90,13 +95,12 @@ function send($mesg) {
 	$mesg = str_replace("\t", '\t', $mesg);
 	$mesg = str_replace("\r", '\r', $mesg);
 	echo "data: $mesg" . PHP_EOL;
-	echo "retry: 100" . PHP_EOL;
+	echo "retry: 1" . PHP_EOL;
 	echo PHP_EOL;
 	ob_flush();
 	flush();
 	$mesg = substr($mesg,0,15);
 	if (DEBUGINFO) error_log("sent [$mesg] for file $projTname, project [$name]");
-	exit(0);
 }
 
 /* Read details from the project index file, and set global variables.

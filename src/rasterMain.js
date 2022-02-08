@@ -2105,6 +2105,7 @@ console.log(`SSE_PROJMON RETRIES = ${SSERetriesHack}`);
 				"</i>"
 			);
 		} else {
+			SSERetriesHack = 0;
 			// msg.data is the id of the last transaction on the server
 			let p = Project.get(Project.cid);
 			// First check for Undo/Redo: does a Transaction with id==msg.data exist behind/in front of TransactionCurrent?
@@ -2122,6 +2123,7 @@ console.log(`SSE_PROJMON RETRIES = ${SSERetriesHack}`);
 				redo = tr.id==msg.data;
 				tr = tr.next;
 			}
+			// All the following actions are either lengthy() or async ajax calls
 			if (undo) {
 				Transaction.undo(numundo,true);
 			} else if (redo) {
