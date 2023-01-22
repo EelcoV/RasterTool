@@ -272,13 +272,6 @@ function initAllAndSetup() {
 	$('.toolbarlargebutton,.toolbarbutton,.toolbarlargeiconbutton,.toolbariconbutton').addClass('ui-widget ui-button ui-corner-all');
 	$('.toolbarlabel').addClass('ui-widget');
 
-	$('#modaldialog').dialog({
-		classes: {"ui-dialog-titlebar": "ui-corner-top"},
-		autoOpen:false,
-		modal:true,
-		width: 400
-	});
-
 	initTabDiagrams();
 	initTabSingleFs();
 	initTabCCFs();
@@ -1925,19 +1918,22 @@ function prettyDate(d) {
  * - you can set the title (text only, no need to HTML-escape)
  */
 function rasterAlert(title,msg) {
-	$('#modaldialog').dialog('option', 'buttons', [
-	{text: _("Close"), click: function(){
-		$(this).dialog('close');
-	} }
-	]);
-	$('#modaldialog').dialog({
+	let modaldialog = $('<div id="modaldialog"></div>');
+
+	modaldialog.dialog({
 		title: String(title),
 		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		modal:true,
+		width: 400,
 		height: 'auto',
 		maxHeight: 600
 	});
-	$('#modaldialog').html( String(msg) );
-	$('#modaldialog').dialog('open');
+	modaldialog.html( String(msg) );
+	modaldialog.dialog('option', 'buttons', [
+		{text: _("Close"), click: function(){
+			modaldialog.remove();
+		} }
+	]);
 	console.log(String(msg));
 }
 
@@ -1951,37 +1947,55 @@ function rasterAlert(title,msg) {
  * The msg can contain HTML code; use H() whenever possible.
  */
 function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
-	$('#modaldialog').dialog('option', 'buttons', [
-	{text: buttcancel, click: function(){
-		$(this).dialog('close');
-		if (funcnoaction) funcnoaction();
-	} },
-	{text: buttok, click: function(){
-		$(this).dialog('close');
-		funcaction();
-	} }
+	let modaldialog = $('<div id="modaldialog"></div>');
+
+	modaldialog.dialog({
+		title: String(title),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		modal:true,
+		width: 400,
+		height: 'auto',
+		maxHeight: 600,
+		close: function(/*event, ui*/) { modaldialog.remove(); }
+	});
+	modaldialog.html( String(msg) );
+	modaldialog.dialog('option', 'buttons', [
+		{text: buttcancel, click: function(){
+			$(this).dialog('close');
+			if (funcnoaction) funcnoaction();
+		} },
+		{text: buttok, click: function(){
+			$(this).dialog('close');
+			funcaction();
+		} }
 	]);
-	$('#modaldialog').dialog( 'option', 'title', String(title) );
-	$('#modaldialog').html( String(msg) );
-	$('#modaldialog').dialog('open');
 	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 }
 
 function newRasterConfirm(title,msg,buttok,buttcancel) {
 	var dfd = $.Deferred();
-	$('#modaldialog').dialog('option', 'buttons', [
-	{text: buttcancel, click: function(){
-		$(this).dialog('close');
-		dfd.reject(false);
-	} },
-	{text: buttok, click: function(){
-		$(this).dialog('close');
-		dfd.resolve(true);
-	} }
+	let modaldialog = $('<div id="modaldialog"></div>');
+
+	modaldialog.dialog({
+		title: String(title),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		modal:true,
+		width: 400,
+		height: 'auto',
+		maxHeight: 600,
+		close: function(/*event, ui*/) { modaldialog.remove(); }
+	});
+	modaldialog.html( String(msg) );
+	modaldialog.dialog('option', 'buttons', [
+		{text: buttcancel, click: function(){
+			$(this).dialog('close');
+			dfd.reject(false);
+		} },
+		{text: buttok, click: function(){
+			$(this).dialog('close');
+			dfd.resolve(true);
+		} }
 	]);
-	$('#modaldialog').dialog( 'option', 'title', String(title) );
-	$('#modaldialog').html( String(msg) );
-	$('#modaldialog').dialog('open');
 	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 	return dfd.promise();
 }

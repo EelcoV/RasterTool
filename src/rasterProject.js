@@ -1408,6 +1408,24 @@ Project.prototype = {
 #ifdef SERVER
 	askForConflictResolution: function(details) {
 		let proj = this;
+		let modaldialog = $('<div id="modaldialog"></div>');
+
+		modaldialog.dialog({
+			title: _("Conflict resulution"),
+			classes: {"ui-dialog-titlebar": "ui-corner-top"},
+			modal:true,
+			width: 400,
+			height: 'auto',
+			maxHeight: 600,
+			close: function(/*event, ui*/) { modaldialog.remove(); }
+		});
+		modaldialog.html(
+			_H("A newer version of project '%%' has been stored on the server by user '%%' on '%%'. ", H(proj.title), H(details.creator), H(prettyDate(details.date)))
+			+_H("You can continue this version as a private project, overrule the other version so that everyone will use your version, or you can adopt the other version.")
+			+"<p>"
+			+_H("If you adopt the other version, you may lose some of your latest edits.")
+		);
+
 		$('#modaldialog').dialog('option', 'buttons', [
 			{text: _("Make private"), click: function(){
 				$(this).dialog('close');
@@ -1451,14 +1469,6 @@ Project.prototype = {
 				});
 			} }
 		]);
-		$('#modaldialog').dialog( 'option', 'title', _("Conflict resulution"));
-		$('#modaldialog').html(
-			_H("A newer version of project '%%' has been stored on the server by user '%%' on '%%'. ", H(proj.title), H(details.creator), H(prettyDate(details.date)))
-			+_H("You can continue this version as a private project, overrule the other version so that everyone will use your version, or you can adopt the other version.")
-			+"<p>"
-			+_H("If you adopt the other version, you may lose some of your latest edits.")
-		);
-		$('#modaldialog').dialog('open');
 		$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
 	},
 #endif

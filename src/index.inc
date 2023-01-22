@@ -459,7 +459,6 @@ See LICENSE.md
 
 <div id="nodereport" class="nodereport"></div>
 <div id="componentthreats" class="componentthreats"></div>
-<div id="modaldialog"></div>
 
 <div id="checklist_tWLS" class="checklist">
     <div class="threat"><div class="th_mal th_col thr_header">xyz</div><div class="th_name th_col thr_header">xyz</div><div class="th_descr th_col thr_header">xyz</div></div>
