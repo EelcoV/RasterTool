@@ -55,7 +55,7 @@ _t["Are you really sure?"] = "Weet u het echt zeker?";
 _t["Are you sure that '%%' for '%%' is nonsensical?"] = "Weet u zeker dat '%%' voor '%%' onzinnig is?";
 _t["Are you sure you want to delete %% '%%'?"] = "Weet u zeker dat u %% '%%' wilt verwijderen?";
 _t["Are you sure you want to delete all selected nodes?"] = "Weet u zeker dat u alle geselecteerde componenten wilt verwijderen?";
-_t["Are you sure you want to fold project '%%' into the current project?"] = "Weet u zeker dat u project '%%' wilt invoegen in het huidige project?";
+_t["Are you sure you want to fold project '%%' into the current project? <strong>This cannot be undone.</strong><br>"] = "Weet u zeker dat u project '%%' wilt invoegen in het huidige project? <strong>Deze actie kan niet ongedaan gemaakt worden.</strong><br>";
 _t["Are you sure you want to remove project <i>'%%'</i>?\n<strong>This cannot be undone.</strong>"] = "Weet u zeker dat u project <i>'%%'</i> wilt verwijderen?\n<strong>Deze actie kan niet ongedaan gemaakt worden.</strong>";
 _t["Are you sure you want to remove service '%%' from project '%%'?"] = "Weet u zeker dat u dienst '%%' wilt verwijderen van project '%%'?";
 _t["Assess all common cause failures."] = "Beoordeel alle gedeelde foutoorzaken.";
@@ -128,6 +128,7 @@ _t["Could not retrieve properties the remote project.\nThe server reported:<pre>
 _t["Could not retrieve the list of remote projects.\nThe server reported:<pre>%%</pre>"] = "Kon de lijst met opgeslagen projecten niet ophalen. De server meldt:<pre>%%</pre>";
 _t["Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>"] = "Kon het opgeslagen project niet ophalen. De server meldt:<pre>%%</pre>";
 _t["Could not share this action.\nThe server reported:<pre>%%</pre>"] = "Kon dit project niet delen.\nDe server meldt:<pre>%%</pre>";
+_t["Could not undo.\nThe server reported:<pre>%%</pre>"] = "Could not undo.\nThe server reported:<pre>%%</pre>";	//TRANSLATION NEEDED
 _t["Create a copy of this project."] = "Maak een kopie van dit project.";
 _t["Create new cluster"] = "Maak nieuw cluster";
 _t["create new cluster"] = "maak nieuw cluster";

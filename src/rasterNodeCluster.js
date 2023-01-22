@@ -512,7 +512,8 @@ NodeCluster.prototype = {
 			if (ta.cluster!=this.id)	errors += offender+" has a member assessment "+ta.id+" that doesn't refer back.\n";
 			if (ta.component)			errors += offender+" has a member assessment "+ta.id+" that also refers to a component.\n";
 			if (ta.type!=this.type)		errors += offender+" has a member assessment "+ta.id+" with a non-matching type.\n";
-			if (!isSameString(ta.title,this.title))	errors += offender+"has a member assessment "+ta.id+" with a different title.\n";
+			let v = Vulnerability.get(ta.vulnerability);
+			if (ta.vulnerability && v && !isSameString(ta.title,this.title))  errors += offender+"has a member assessment "+ta.id+" with a different title.\n";
 		}
 		if (this.isroot()) {
 			let vid = ta.vulnerability;
@@ -551,6 +552,11 @@ NodeCluster.prototype = {
 			// The component of each child node must have a threat assessment that matches this cluster
 			for (j=0; j<cm.assmnt.length; j++) {
 				ta = Assessment.get(cm.assmnt[j]);
+				let v = Vulnerability.get(ta.vulnerability);
+				if (!v) {
+					errors += offender+" has a child node "+rn.id+" with an assessment of a non-existing Vulnerability ("+ta.vulnerability+").\n";
+					break;
+				}
 				if (ta && isSameString(ta.title,rc.title) && ta.type==rc.type) {
 					break;
 				}

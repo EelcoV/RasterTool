@@ -231,6 +231,7 @@ class Service {
 		jsp.setSuspendDrawing(false, true);
 		it.forEach(rn => rn.setmarker());
 		RefreshNodeReportDialog();
+console.log(`Setting Service.cid to ${this.id}. This may be incorrect.`);
 		Service.cid = this.id;
 		this._loaded=true;
 	}

@@ -237,7 +237,11 @@ Assessment.prototype = {
 
 	get title() {
 		if (this.vulnerability) {
-			return Vulnerability.get(this.vulnerability).title;
+			let v = Vulnerability.get(this.vulnerability);
+			if (!v) {
+				bugreport('Vulnerability does not exist', 'Assessment.title');
+			}
+			return v.title;
 		} else {
 			return this._title;
 		}

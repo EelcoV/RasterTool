@@ -3,10 +3,11 @@ handmatig ontgrendelen voordat u het kan gebruiken. Als u dat niet doet, zal uw 
 klagen dat het bestand is beschadigd, en zelfs voorstellen het naar de Prullenmand
 te verplaatsen.
 
-Volg deze stappen om te ontgrendelen:
+Volg deze drie stappen om te ontgrendelen:
 
-1. Start de Terminal app. U vindt deze in Apps, in de map Hulpprogramma's.
-2. In het Terminal scherm tiept u deze tekst (of knip & plak):
+1. Sleep de Raster.app vanuit de Schijfkopie naar uw Bureaublad.
+2. Start de Terminal app. U vindt deze in Apps, in de map Hulpprogramma's.
+3. In het Terminal scherm tiept u deze tekst (of knip & plak):
 
 	xattr -d com.apple.quarantine ~/Desktop/Raster.app
 

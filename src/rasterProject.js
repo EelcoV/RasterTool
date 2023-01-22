@@ -16,7 +16,6 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *	get(i): returns the object with id 'i'.
  *	withTitle(str): returns the id of the local project with title 'str', or 'null' otherwise.
  *	firstProject(): returns the an existing local Project object, or null otherwise.
- *  merge(target,source): merge source project into target project, deleting source project.
  *	UpdateStubs(): retrieve list of projects from server and update the UI.
  *	asyncRetrieveStub(i): download the stub project with id 'i' from the server.
  *	getProps(s): retrieve properties of remote project with name 's'.
@@ -43,6 +42,7 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *		See rasterTransaction.js for description of these, and the transaction list.
  * Methods:
  *	destroy(): destructor for this object
+ *  merge(pid): insert a duplicate of Project with pid into this project.
  *	duplicate(): creates an exact copy of this project, and returns that duplicate. NOTE: this will create two projects with the samen name.
  *  updateUndoRedoUI: highlight/lowlight the undo/redo buttons as necessary
  *	totalnodes(): returns the count of all nodes within all services of this project.
@@ -157,78 +157,6 @@ Project.firstProject = function() {
 		if (!p.shared || p.group==ToolGroup)  return p;
 	}
 	return null;
-};
-
-/* Note: this is not a general merge procedure. Project 'intoproject' must be
- * the currently activated project for this to work. This needs a rewrite.
- * Consider:
- *  - do a loadFromString(savedcopy,...)
- *  - transfer the services of the newly created project into 'intoproject'
- *  - cleanly destroy the remnants of the created project
- * This will leave 'otherproject' completely untouched.
- * We can then get rid of s.load() below, and move that functionality into $('#buttmerge').on('click',  function() {...})
- */
-Project.merge = function(intoproject,otherproject) {
-	// Save a copy of the file that is merged
-	var savedcopy = exportProject(otherproject.id);
-	var saveddate = otherproject.date;
-	var i;
-	// Move each of the services over, one by one
-	for (const sid of otherproject.services) {
-		var s = Service.get(sid);
-		s.setproject(intoproject.id);
-		s.settitle(s.title); // intoproject may already have a service with title s.title
-		s.load(); // Because intoproject is currently active.
-		intoproject.services.push(s.id);
-
-		var it = new ComponentIterator({service: s.id});
-		for (const cm of it) {
-			cm.setproject(intoproject.id);
-			var it2 = new ComponentIterator({project: intoproject.id, type: cm.type});
-			for (const cm2 of it2) {
-				if (cm2.id==cm.id) continue;
-				if (!isSameString(cm2.title,cm.title)) continue;
-
-				// There is already a component in this project with title cm.title
-				// cm needs to be merged into cm2.
-				cm2.absorbe(cm);
-				break;	// Can occur only once, as cm2.title must be unique in otherproject
-			}
-		}
-		
-		// All nodes in this service need to be added to the proper NodeCluster in intoproject
-		it = new NodeIterator({service: s.id});
-		for (const rn of it) {
-			if (rn.type=='tACT' || rn.type=='tNOT') continue;
-
-			let cm = Component.get(rn.component);
-			// If the node was added to a singular component, it doesn't need to added,
-			// unless it is the first node in the singular class.
-			if (cm.single && cm.nodes[0]!=rn.id) continue;
-
-			for (var j=0; j<cm.assmnt.length; j++) {
-				var ta = Assessment.get(cm.assmnt[j]);
-				// During absorbe() in the loop above rn may already have been added to the
-				// node clusters. Therefore, duplicateok==true in this call.
-				NodeCluster.addnode_threat(intoproject.id,rn.id,ta.title,ta.type,true);
-			}
-		}
-	}
-
-	intoproject.store();
-	otherproject.services = [];
-	otherproject.destroy();
-	// Now resurrect the other project
-	i = loadFromString(savedcopy,{strsource:'Merge'});
-	if (i==null) {
-		bugreport("Failed to resurrect merged project", "Project.Merge");
-	}
-	otherproject = Project.get(i);
-	otherproject.date = saveddate;
-
-	if (intoproject.shared) {
-		intoproject.storeOnServer();
-	}
 };
 
 #ifdef SERVER
@@ -437,6 +365,91 @@ Project.prototype = {
 		if (Project.cid==this.id) Project.cid=null;
 	},
 	
+	merge: function(pid) {
+		let it, it2;
+		let newpid = loadFromString(exportProject(pid),{strsource:'Merge', duplicate: true});
+		if (newpid==null) {
+			bugreport(`Failed to re-import project ${pid}`, "Project.merge");
+			return;
+		}
+		let otherproject = Project.get(newpid);
+		
+		it = new VulnerabilityIterator({project: newpid});
+		it2 = new VulnerabilityIterator({project: this.id});
+		let vrenumber = [];
+		for (const v of it) {
+			// If this project already contains a vulnerability with the same name and type,
+			// we can suffice by renumbering assessments from otherproject. Otherwise, we need
+			// to move the vulnerability over to this project
+			it2.forEach( (tv) => {
+				if (tv.type==v.type && tv.title==v.title) {
+					// renumbering required
+					vrenumber[v.id] = tv.id;
+				}
+			});
+			if (vrenumber[v.id]==undefined) {
+				// move into this project
+				this.addvulnerability(v.id,null,null,null,v.common);
+				let loc = otherproject.vulns.indexOf(v.id);
+				otherproject.vulns.splice(loc,1);
+			}
+		}
+		
+		// renumber vulnerabilities now
+		it = new AssessmentIterator({project: newpid});
+		it.forEach( a => {if (vrenumber[a.vulnerability]!=undefined)  a.vulnerability = vrenumber[a.vulnerability]; });
+		
+		// Move each of the services over, one by one
+		for (const sid of otherproject.services) {
+			var s = Service.get(sid);
+			s.setproject(this.id);
+			// add number to title, if this project already has a service with title s.title
+			s.settitle(s.title);
+			this.services.push(s.id);
+
+			it = new ComponentIterator({service: s.id});
+			for (const cm of it) {
+				cm.setproject(this.id);
+				it2 = new ComponentIterator({project: this.id, type: cm.type});
+				for (const cm2 of it2) {
+					if (cm2.id==cm.id) continue;
+					if (!isSameString(cm2.title,cm.title)) continue;
+
+					// There is already a component in this project with title cm.title
+					// cm needs to be merged into cm2.
+					cm2.absorbe(cm);
+					break;	// Can occur only once, as cm2.title must be unique in otherproject
+				}
+			}
+			
+			// All nodes in this service need to be added to the proper NodeCluster in intoproject
+			it = new NodeIterator({service: s.id});
+			for (const rn of it) {
+				if (rn.type=='tACT' || rn.type=='tNOT') continue;
+
+				let cm = Component.get(rn.component);
+				// If the node was added to a singular component, it doesn't need to added,
+				// unless it is the first node in the singular class.
+				if (cm.single && cm.nodes[0]!=rn.id) continue;
+
+				for (var j=0; j<cm.assmnt.length; j++) {
+					var ta = Assessment.get(cm.assmnt[j]);
+					// During absorbe() in the loop above rn may already have been added to the
+					// node clusters. Therefore, duplicateok==true in this call.
+					NodeCluster.addnode_threat(this.id,rn.id,ta.title,ta.type,true);
+				}
+			}
+		}
+
+		this.store();
+		otherproject.services = [];
+		otherproject.destroy();
+
+		if (this.shared) {
+			this.storeOnServer();
+		}
+	},
+
 	duplicate: function() {
 		let tr = new Map();	// translates UUIDs in this to new UUIDs
 		tr.set(null,null);
@@ -690,16 +703,17 @@ Project.prototype = {
 		this.store();
 	},
 
-	addvulnerability: function(vid,clid,thrid,idx) {
+	addvulnerability: function(vid,clid,thrid,idx,cmn) {
 		if (!clid)  clid = createUUID();
 		if (!thrid)  thrid = createUUID();
 		if (idx==null)  idx = this.vulns.length;
+		if (cmn==null)  cmn = true;
 		if (this.vulns.indexOf(vid)!=-1) {
 			bugreport("vulnerability already added","Project.addvulnerability");
 		}
 		let vln = Vulnerability.get(vid);
 		vln.project = this.id;
-		vln.setcommon(true);
+		vln.setcommon(cmn);
 		this.vulns.splice(idx,0,vln.id);
 		this.store();
 
@@ -899,6 +913,7 @@ Project.prototype = {
 		this.services.forEach(sid => Service.get(sid).load());
 		for (const vid of this.vulns) {
 			let vln = Vulnerability.get(vid);
+			if (!vln)  bugreport('unknown vulnerability encountered','Project.load');
 			switch (vln.type) {
 			case 'tWLS':
 				vln.addtablerow('#tWLSthreats');
@@ -1477,6 +1492,11 @@ Project.prototype = {
 			if (s.project != this.id) {
 				errors += "Service "+s.id+" belongs to a different project.\n";
 			}
+			for (var j=0; j<i; j++) {
+				if (this.services[i]==this.services[j]) {
+					errors += "Service "+s.id+" contains duplicate service "+this.services[i]+".\n";
+				}
+			}
 			// Check all nodes for this service
 			it = new NodeIterator({service: s.id});
 			for (const rn of it) {
@@ -1524,7 +1544,7 @@ Project.prototype = {
 		}
 		// Check all common vulnerabilities on this project
 		if (this.stub && this.vulns.length>0) {
-			errors += "Project "+this.id+" is marked as a stub, but does have a vulns array.\n";
+			errors += "Project "+this.id+" is marked as a stub, but does contain Vulnerabilities.\n";
 		}
 		for (i=0; i<this.vulns.length; i++) {
 			let v = Vulnerability.get(this.vulns[i]);
@@ -1539,15 +1559,28 @@ Project.prototype = {
 			if (it.isEmpty()) {
 				errors += "Vulnerability "+v.id+" does not have a corresponding node cluster.\n";
 			}
-
+			for (j=0; j<i; j++) {
+				if (this.vulns[i]==this.vulns[j]) {
+					errors += "Project "+this.id+" contains duplicate vulnerability "+this.vulns[i]+".\n";
+				}
+				let vj = Vulnerability.get(this.vulns[j]);
+				if (isSameString(v.title,vj.title) && v.type==vj.type) {
+					errors += "Project "+this.id+" contains vulnerability "+v.id+" with the same name and type as "+vj.id+".\n";
+				}
+			}
 		}
 		// Check all vulnerabilities
 		it = new VulnerabilityIterator({project: this.id});
 		if (this.stub && it.count()>0) {
 			errors += "Project "+this.id+" is marked as a stub, but does have common vulnerabilities.\n";
 		}
-		for (const v of it) errors += v.internalCheck();
-
+		for (const v of it) {
+			if (this.vulns.indexOf(v.id)==-1) {
+				errors += "Vulnerability "+v.id+" claims to belong to project "+this.id+" but is not known as a member.\n";
+			}
+			errors += v.internalCheck();
+		}
+		
 		return errors;
 	}
 

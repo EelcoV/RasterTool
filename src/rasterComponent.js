@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals bugreport, createUUID, prependIfMissing, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, VulnerabilityIterator, refreshComponentThreatAssessmentsDialog, H, Project, reasonableString
+/* globals bugreport, createUUID, prependIfMissing, Rules, _, isSameString, LS, Assessment, Transaction, NodeCluster, NodeClusterIterator, VulnerabilityIterator, refreshComponentThreatAssessmentsDialog, H, Project, reasonableString, Vulnerability
  */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -101,24 +101,22 @@ Component.prototype = {
 	},
 
 	absorbe: function(cm) {
-		// Merge all new threvals from cm into this. If both contain a threat with the
-		// same name, then use the worst values from each
+		// Merge all assessments from cm into this; destroys cm.
+		// If both contain the same vulnerability, then use the worst values from each
 		for (const thid of cm.assmnt) {
 			var ta =  Assessment.get(thid);
 			for (var j=0; j<this.assmnt.length; j++) {
 				var ta2 = Assessment.get(this.assmnt[j]);
-				if (isSameString(ta2.title,ta.title)) break;
+				if (ta.vulnerability==ta2.vulnerability) break;
 			}
-			if (isSameString(ta.title,ta2.title)) {
-				// This component has a threat ta2 with the same name as the one absorbed.
+			if (ta.vulnerability==ta2.vulnerability) {
+				// This component and cm share a vulnerability
 				ta2.setfreq( Assessment.worst(ta.freq,ta2.freq) );
 				ta2.setimpact( Assessment.worst(ta.impact,ta2.impact) );
 			} else {
-console.log("Check Component.absorbe()");
 				ta2 = new Assessment(ta.type);
 				ta2.component = this.id;
-				ta2.title = ta.title;
-				ta2.description = ta.description;
+				ta2.vulnerability = ta.vulnerability;
 				ta2.freq = Assessment.worst(ta.freq,'-');
 				ta2.impact = Assessment.worst(ta.impact,'-');
 				ta2.remark = ta.remark;
@@ -136,7 +134,7 @@ console.log("Check Component.absorbe()");
 		}
 		// Move nodes over from cm into this
 		for (const nid of cm.nodes) this.addnode(nid);
-		cm.repaintmembertitles();
+		this.repaintmembertitles();
 		cm.nodes = [];
 		cm.destroy();
 	},
@@ -619,7 +617,12 @@ console.log("Check Component.absorbe()");
 				errors += offender+"has a member vuln assessment "+ta.id+" with a non-matching type.\n";
 				continue;
 			}
-			// Each node in this component should belong to a cluster whose rootcluster has the same 
+			let v = Vulnerability.get(ta.vulnerability);
+			if (!v) {
+				errors += offender+"has a member vuln assessment "+ta.id+" with a non-existing Vulnerability ("+ta.vulnerability+").\n";
+				continue;
+			}
+			// Each node in this component should belong to a cluster whose rootcluster has the same
 			// type and title as this Assessment
 			var it = new NodeClusterIterator({project: this.project, type: ta.type, title: ta.title});
 			if (it.isEmpty()) {

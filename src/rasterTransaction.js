@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy, DEBUG, createUUID, Preferences, rasterAlert, _H, H, urlEncode, stopWatching, startWatching, escapeNewlines
+/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy, createUUID, Preferences, rasterAlert, _H, H, urlEncode, stopWatching, startWatching, escapeNewlines
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

@@ -168,6 +168,10 @@ function lengthy(func) {
 	// In Firefox, no value is needed and the cursor is always changed. 50 ms seems to be OK for Chrome.
 }
 
+function lengthyFunction(func) {
+	return function() {lengthy(func);};
+}
+
 function initAllAndSetup() {
 	$.ajaxSetup({
 		timeout: 10000	// Cancel each AJAX request after 10 seconds
@@ -289,6 +293,7 @@ function initAllAndSetup() {
 #endif
 	initHomeToolbar();
 	initSettingsToolbar();
+	$('#toolbars').tabs('option','active',TabTBHome);
 
 	// Vertical tabs
 	$('#workspace').tabs({heightStyle: 'fill', activate: vertTabSelected});
@@ -552,15 +557,14 @@ function initProjectsToolbar() {
 		lengthy(loadDefaultProject);
 	});
 	// Duplicate --------------------
-	$('#buttduplicate').on('click',  function() {
-		lengthy(function () {
+	$('#buttduplicate').on('click',  lengthyFunction(() => {
 			let p = Project.get(Project.cid);
 			let clone = p.duplicate();
 			clone.settitle(p.title+_(" (copy)"));
 			populateProjectList();
 			switchToProject(clone.id,true);
-		});
-	});
+		})
+	);
 	// Import --------------------
 	$('#buttimport').on('click',  function() {
 		$('#buttimport').removeClass('ui-state-hover');
@@ -677,7 +681,7 @@ function initProjectsToolbar() {
 				newRasterConfirm(_("Delete project?"),
 					_("This project has %% nodes.\nAre you <i>really</i> sure you want to discard these?", t),
 					_("Yes, really remove"),_("Cancel"))
-				.done(dokill);
+				.done(lengthyFunction(dokill));
 			} else {
 				lengthy(dokill);
 			}
@@ -692,16 +696,20 @@ function initProjectsToolbar() {
 		}
 		var currentproject = Project.get( Project.cid );
 		rasterConfirm(_("Merge '%%' into '%%'?",otherproject.title,currentproject.title),
-			_H("Are you sure you want to fold project '%%' into the current project?",
-				otherproject.title)
+			_("Are you sure you want to fold project '%%' into the current project? <strong>This cannot be undone.</strong><br>",
+				H(otherproject.title))
 			+'<br>\n'+
 			_H("This will copy the diagrams of '%%' into '%%'.",
 				otherproject.title,currentproject.title),
 			_("Merge"),_("Cancel"),
-			function() {
-				Project.merge(currentproject,otherproject);
-				$('#librarypanel').dialog('close');
-		});
+			lengthyFunction(function() {
+				currentproject.merge(otherproject.id);
+				let it = new ServiceIterator({project: Project.cid});
+				it.forEach( (s) => {
+					if (!s._loaded) s.load();
+				});
+			})
+		);
 	});
 
 	$('#projdebugsection>div:first-child').text(_("Debugging functions"));
@@ -1557,7 +1565,7 @@ function ShowDetails() {
 	});
 	dbuttons.push({
 		text: _("Change properties"),
-		click: function() {
+		click: lengthyFunction(function() {
 					let fname = $('#field_projecttitle').val();
 					let fdescr = $('#field_projectdescription').val();
 					let becomesShared = $('#sh_on').prop('checked');
@@ -1598,7 +1606,7 @@ function ShowDetails() {
 					showProjectList();
 #endif
 					transactionCompleted("Project props change");
-			}
+			})
 	});
 	dialog.dialog({
 		title: _("Properties for project '%%'", p.title),
@@ -1659,7 +1667,7 @@ function log10(x) { return Math.LOG10E * Math.log(x); }
  * when space is limited. Use "wired link" -> "kabelverbinding", and "|short|wired link" -> "kabel"
  * The label 'short' indicates the type of translation requested.
  *
- * Not that we trust the translation to be safe HTML. Still, we use H() on the translations as a good practice.
+ * Not that we trust the translation to be safe HTML. Still, it is good practice use _H().
  */
 function _(s) {
 	var str;
@@ -1811,7 +1819,9 @@ function removetransientwindowsanddialogs(/*evt*/) {
 
 function switchToProject(pid,dorefresh) {
 	if (pid==Project.cid)  return;
+#ifdef SERVER
 	stopWatching();
+#endif
 	removetransientwindowsanddialogs();
 	$('#ccfs_details').empty();
 	CurrentCluster = null;
@@ -1980,7 +1990,9 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
  */
 function bugreport(mess,funcname) {
 	console.log('bugreport: "'+mess+'" in function "'+funcname+'".');
+#ifdef SERVER
 	stopWatching();
+#endif
 	let dialog = $('<div id="bugreport"></div>').dialog({
   		title: _H("Please report this bug"),
 		dialogClass: "no-close",
@@ -2354,7 +2366,7 @@ function loadFromString(str,options) {
 			if (lThreatlen>0 && !containsAllIDs(lThreat,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid checklist.');
 			if (lVulnlen>0 && !containsAllIDs(lVuln,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid common vulnerability.');
 			// Check at least for the projects (not for other objects) whether their id's are unique
-			if (Project.get(lProject[i].id)!=null) throw new Error('Projects cannot be imported twice.');
+			if (Project.get(lProject[i].id)!=null && !options.duplicate) throw new Error('Projects cannot be imported twice.');
 		}
 		for (i=0; i<lThreatlen; i++) {
 			/* lThreat[i].p must be the ID of a project */
@@ -2625,6 +2637,13 @@ function loadFromString(str,options) {
 					};
 					lVuln.push(vln);
 					lVulnlen++;
+					// Find the right project, and add vln as a non-common Vulnerability
+					for (j=0; j<lProjectlen; j++) {
+						let lp = lProject[j];
+						if (lp.id!=vln.p) continue;
+						lp.t.push(vln.id);
+						break;
+					}
 				}
 			}
 			lAssmnt.push({
@@ -2956,8 +2975,8 @@ function forceSelectVerticalTab(n) {
  */
 function vertTabSelected(/*event, ui*/) {
 	removetransientwindowsanddialogs();
-	$('#tb_home .toolbarsection').hide();
-	$('#toolbars').tabs('option','active',TabTBHome);
+//	$('#tb_home .toolbarsection').hide();
+//	$('#toolbars').tabs('option','active',TabTBHome);
 	switch ($('#workspace').tabs('option','active')) {
 	case TabWorkDia:
 		$('#diaopts').show();

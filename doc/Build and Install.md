@@ -18,9 +18,9 @@ You need:
 
 There is one build script for the server. From the root of the Raster tools project, run `script/build-server.sh`. This will create a `tar.gz` file under the `build` directory containing all the server files.
 
-You will need a web server that can handle PHP. Place all files in a directory that is accessible by the web server. All files require read-permission. The webserver requires write-permission on the directory `public_group/SharedProjects`. Note: if set the `localonly` option in `group.json` to true, no write permission is required.
+You will need a web server that can handle PHP. Place all files in a directory that is accessible by the web server. All files require read-permission. The webserver requires write-permission on the directory `public_group/SharedProjects`. Note: if the `classroom` or `localonly` option in `group.json` is set to true, no write permission is required.
 
-For access control to a separate set of server projects, duplicate the directory `public group` under a different name and restrict access to it. A sample `.htaccess` file to this effect is provided for reference. Consult the manual of your web server for specifics.
+For access control to a separate set of server projects, duplicate the directory `public_group` under a different name and restrict access to it. A sample `.htaccess` file to this effect is provided for reference. Consult the manual of your web server for specifics.
 
 The public group of the tool is accessible via the URL http://yourwebserver/path/ .
 Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
@@ -30,7 +30,7 @@ Protected access is accessible via http://yourwebserver/path/YOURGROUPNAME/
 
 In addition to the tools required for the Intranet version, you need the following.
 1. MacOS is required to build the standalone version for MacOS. The special utilities xattr, defaults, iconutil, and hdiutil are necessary to manipulate packages, disk images and icons. Those are not available on non-Mac platforms.
-2. Wine (CodeWeavers` CrossOver, or https://www.winehq.org/) is required to build the standalone version for WIndows under MacOS. If you build the tools under Windows, and if you have the basic Unix shell and utilities available, you should be able to build the standalone versions without Wine.
+2. Wine (CodeWeavers` CrossOver, or https://www.winehq.org/) is required to build the standalone version for Windows under MacOS. If you build the tools under Windows, and if you have the basic Unix shell and utilities available, you should be able to build the standalone versions without Wine.
 3. Alternatively, you can use (virtualised) Microsoft Windows installation to build the standalone version for Windows. The X:-drive must be mapped to the source directory (e.g. x:\build contains the build data).
 
 To build, run these scripts from the root of the Raster tools project:

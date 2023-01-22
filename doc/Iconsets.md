@@ -1,4 +1,6 @@
 # Iconset Description
+An iconset is a collection of cartoon-style images to create Raster diagrams. 
+
 Each iconset should be stored in its own directory inside the `iconset` directory.
 The name of the directory should match the name of the iconset.
 The iconset must contain a description in JSON format; the file must be called `iconset.json`; e.g. for iconset `medical` the description must be stored in `iconset/medical/iconset.json`. See below for the definition of the the `iconset.json` file.
