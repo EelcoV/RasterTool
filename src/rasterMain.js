@@ -163,9 +163,9 @@ function lengthy(func) {
 	window.setTimeout(function() {
 		func();
 		$('body').removeClass('waiting');
-	},50);
+	},300);
 	// In Chrome, when the timout value is too small, the cursor does not change.
-	// In Firefox, no value is needed and the cursor is always changed. 50 ms seems to be OK for Chrome.
+	// Firefox sometimes seems to need this, too. For both, 300 ms seems to work and is not noticeable.
 }
 
 function lengthyFunction(func) {
@@ -568,9 +568,9 @@ function initProjectsToolbar() {
 	$('#fileElem').on('change',  function(event) {
 		var files = event.target.files;
 		if (files.length==null || files.length==0)  return;
-		lengthy(function() {
-			var reader = new FileReader();
-			reader.onload = function(evt) {
+		var reader = new FileReader();
+		reader.onload = function(evt) {
+			lengthy(function() {
 				var newp = loadFromString(evt.target.result,{strsource:`File "${files[0].name}"`});
 				if (newp!=null) {
 					// Make sure the newly imported project is indeed private
@@ -584,9 +584,9 @@ function initProjectsToolbar() {
 				// Therefore, force a check after load.
 				checkForErrors(false);
 				checkUpgradeDone();
-			};
-			reader.readAsText(files[0]);
-		});
+			});
+		};
+		reader.readAsText(files[0]);
 	});
 	// Export --------------------
 	$('#buttexport').on('click',  function() {
