@@ -79,7 +79,9 @@ var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=fa
 		p.updateUndoRedoUI();
 		// Asynchronously update the transactions file & the project file, and start watching for transaction updates.
 		if (Transaction.debug) console.log(`Transaction ${this.descr}`);
+#ifdef SERVER
 		if (!remote) p.appendCurrentTransaction();
+#endif
 		if (!this.chain) transactionCompleted(this.descr,false);
 	};
 	
@@ -198,8 +200,9 @@ Transaction.redo = function(num=1,remote=false) {
 			
 			p.TransactionCurrent = p.TransactionCurrent.next;
 			p.TransactionCurrent.perform();
+#ifdef SERVER
 			if (!remote) p.appendCurrentTransaction();
-			
+#endif
 			if (Transaction.debug) {
 				checkForErrors();
 				S2 = exportProject(Project.cid);
