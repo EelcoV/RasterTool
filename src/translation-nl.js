@@ -129,7 +129,7 @@ _t["Could not retrieve the list of remote projects.\nThe server reported:<pre>%%
 _t["Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>"] = "Kon het opgeslagen project niet ophalen. De server meldt:<pre>%%</pre>";
 _t["Could not share this action.\nThe server reported:<pre>%%</pre>"] = "Kon dit project niet delen.\nDe server meldt:<pre>%%</pre>";
 _t["Could not undo.\nThe server reported:<pre>%%</pre>"] = "Could not undo.\nThe server reported:<pre>%%</pre>";	//TRANSLATION NEEDED
-_t["Create a copy of this project."] = "Maak een kopie van dit project.";
+_t["Create a copy of the current project."] = "Maak een kopie van het huidige project.";
 _t["Create new cluster"] = "Maak nieuw cluster";
 _t["create new cluster"] = "maak nieuw cluster";
 _t["Creator:"] = "Opgesteld door:";
@@ -220,7 +220,7 @@ _t["Incomplete"] = "Onvolledig";
 _t["Incorrect configuration or mistakes by operators or users."] = "Verkeerde instellingen of fouten door beheerders of gebruikers.";
 _t["Information on using this tool"] = "Informatie over het gebruik van dit programma";
 _t["Insider our outsider steals the item through embezzlement or burglary."] = "Interne of buitenstaander steelt het item door verduistering of inbraak.";
-_t["Inspect and modify this project."] = "Bekijk en wijzig dit project.";
+_t["Inspect and modify the current project."] = "Bekijk en wijzig het huidige project.";
 _t["Intentional congestion (DDOS)."] = "Opzettelijke congestie (DDOS).";
 _t["Intentional interference or denial of service (DDOS) by some third party."] = "Opzettelijke interferentie of 'denial of service' (DDOS) door een derde partij.";
 _t["Interference"] = "Interferentie";

@@ -4,7 +4,7 @@ See LICENSE.md
 
 BUGS
 Duplicating a shared project gives a server error about the project unexpectedly being removed from the server.
-Deleting common Vulnerabilities does not work anymore.
+Deleting common Vulnerabilities does not work anymore. <-- delete, cannot reproduce
 Do not switch toolbars automatically unless absolutely useful.
 Bug: "No or too many node clusters" in "common vulnerability delete"
 Bug: Cmd-A will select way too much text.

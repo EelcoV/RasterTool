@@ -217,8 +217,8 @@ function initAllAndSetup() {
 
 	// Some CSS tweaks for the standalone version
 	$('#currentProject').hide();
-	$('#toolbars li:first-child').hide();
-	$('#tb_projects').hide();
+//	$('#toolbars li:first-child').hide();
+//	$('#tb_projects').hide();
 	$('#onlinesection').hide();
 	
 	// PDF print options dialog
@@ -281,9 +281,7 @@ function initAllAndSetup() {
 		beforeActivate: toolbartabselected
 	});
 
-#ifdef SERVER
 	initProjectsToolbar();
-#endif
 	initHomeToolbar();
 	initSettingsToolbar();
 	$('#toolbars').tabs('option','active',TabTBHome);
@@ -538,14 +536,17 @@ function simulateClick(elem) {
 	}, 50);
 }
 
-#ifdef SERVER
 function initProjectsToolbar() {
 	$("a[href^='#tb_projects']").text(_("Projects"));
 	$('#buttadd').attr('title',_("Add a new default project to the library."));
-	$('#buttduplicate').attr('title',_("Create a copy of this project."));
 	$('#buttimport').attr('title',_("Load a project from a file."));
 	$('#buttexport').attr('title',_("Save the current project to a file."));
+	$('#buttduplicate').attr('title',_("Create a copy of the current project."));
+	$('#projectprops').attr('title',_("Inspect and modify the current project."));
+	// Props ------------------
+	$('#projectprops').on('click',  ShowDetails);
 	// Add --------------------
+#ifdef SERVER
 	$('#buttadd').on('click',function() {
 		lengthy(loadDefaultProject);
 	});
@@ -707,6 +708,17 @@ function initProjectsToolbar() {
 			})
 		);
 	});
+#else
+	// Hide stuff for standalone version
+	$('#projselected').hide();
+	$('#buttduplicate').hide();
+	$('#buttadd').on('click',function() { ipc.send('document-new',WindowID); });
+	$('#buttimport').on('click',function() { ipc.send('document-import',WindowID); });
+	$('#buttexport').on('click',function() {
+		let s = CurrentProjectAsString();
+		ipc.send('document-save',WindowID,s);
+	});
+#endif
 
 	$('#projdebugsection>div:first-child').text(_("Debugging functions"));
 	$('#buttcheck').text(_("Check"));
@@ -739,6 +751,7 @@ function initProjectsToolbar() {
 		);
 	});
 
+#ifdef SERVER
 	var flashTimer;
 	$(document).ajaxSend(function(){
 		window.clearTimeout(flashTimer);
@@ -750,8 +763,10 @@ function initProjectsToolbar() {
 			$('#networkactivity').removeClass('activityoff activityyes').addClass('activityno');
 		},200);
 	});
+#endif
 }
 
+#ifdef SERVER
 function refreshProjectToolbar(pid) {
 	$('#projlist').val(pid).selectmenu('refresh');
 	refreshSelProjectButtons(pid);
@@ -966,6 +981,10 @@ function initHomeToolbar() {
 		}
 	});
 
+	// Home toolbar | label section
+	$('#buttlabels').attr('title', _("Edit labels"));
+	$('#buttlabels').on('click', showLabelEditForm);
+
 	// Home toolbar | Diagram items: templates are set up in Project.load()
 
 	// Home toolbar | SF items
@@ -1115,14 +1134,6 @@ function initSettingsToolbar() {
 		ipc.send('option-modified',WindowID,'minimap',Preferences.showmap);
 #endif
 	});
-
-	// Options toolbar | project options
-	$('#projectprops').attr('title',_("Inspect and modify this project."));
-	$('#projectprops').on('click',  ShowDetails);
-
-	$('#buttlabels').attr('title', _("Edit labels"));
-	$('#buttlabels').on('click', showLabelEditForm);
-
 
 #ifdef SERVER
 	// Creator name
@@ -1503,7 +1514,9 @@ function freqIndicatorUpdate(anim) {
 /* ShowDetails: a dialog to edit the current project's properties
  */
 function ShowDetails() {
+#ifdef SERVER
 	Project.UpdateStubs(true,false); // async, no need to repaint
+#endif
 	let p = Project.get(Project.cid);
 	let snippet =`<form id="form_projectprops">
 		${_H("Title:")}<br><input id="field_projecttitle" name="fld" type="text" value="${H(p.title)}"><br>
@@ -1564,7 +1577,6 @@ function ShowDetails() {
 		click: lengthyFunction(function() {
 					let fname = $('#field_projecttitle').val();
 					let fdescr = $('#field_projectdescription').val();
-					let becomesShared = $('#sh_on').prop('checked');
 					let fwpa = $('#wpalist').val();
 					let fset = $('#iconsetlist').val();
 					$(this).dialog('close');
@@ -1578,6 +1590,7 @@ function ShowDetails() {
 					p.setwpa(fwpa);
 					p.seticonset(fset);
 #ifdef SERVER
+					let becomesShared = $('#sh_on').prop('checked');
 					if (!GroupSettings.localonly) {
 						if (!p.shared && becomesShared) {
 							// Before changing the sharing status from 'private' to 'shared', first
@@ -2992,11 +3005,11 @@ function forceSelectVerticalTab(n) {
  */
 function vertTabSelected(/*event, ui*/) {
 	removetransientwindowsanddialogs();
-//	$('#tb_home .toolbarsection').hide();
-//	$('#toolbars').tabs('option','active',TabTBHome);
+	$('#tb_home .toolbarsection').hide();
 	switch ($('#workspace').tabs('option','active')) {
 	case TabWorkDia:
 		$('#diaopts').show();
+		$('#projectpropsection').show();
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
 		$('#tab_diagramstabtitle'+Service.cid).trigger('click');

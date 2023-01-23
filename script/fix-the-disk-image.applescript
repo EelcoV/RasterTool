@@ -5,7 +5,7 @@ on run (volumeName)
 			
 			set theXOrigin to 60
 			set theYOrigin to 60
-			set theWidth to 750
+			set theWidth to 760
 			set theHeight to 430
 			
 			set theBottomRightX to (theXOrigin + theWidth)

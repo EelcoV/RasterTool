@@ -86,13 +86,17 @@ See LICENSE.md
 	</ul>
 
 	<div id="tb_projects" class="toolbar">
-		<!-- On current project -->
+		<!-- Creating a new project -->
 		<div class="toolbarspacer"></div>
 		<div id="buttadd" class="toolbarlargeiconbutton"></div>
-		<div id="buttduplicate" class="toolbarlargeiconbutton"></div>
 		<input id="fileElem" type="file">
 		<div id="buttimport" class="toolbarlargeiconbutton"></div>
-		<div id="buttexport" class="toolbarlargeiconbutton"></div>
+		<!-- On current project -->
+		<div class="toolbarsection">
+			<div id="buttexport" class="toolbarlargeiconbutton"></div>
+			<div id="buttduplicate" class="toolbarlargeiconbutton"></div>
+			<div id="projectprops" class="toolbarlargeiconbutton"></div>
+		</div>
 		<!-- On selected project -->
 		<div id="projselected" class="toolbarsection">
 			<div id="projlistsection" class="toolbarlabel">
@@ -131,9 +135,14 @@ See LICENSE.md
 		<div id="findbutton" class="toolbariconbutton"></div>
 		<div id="helpbutton" class="toolbariconbutton"></div>
 		<!-- Diagrams tab -->
+		<div id="projectpropsection" class="toolbarsection">
+			<div class="toolbarspacer"></div>
+			<div id="buttlabels" class="toolbariconbutton"></div>
+		</div>
 		<div id="diaopts" class="toolbarsection">
 			<div id="templates"> <!-- Is filled in Project.load() --></div>
 		</div>
+
 		<!-- Single failures tab -->
 		<div id="sfopts" class="toolbarsection">
 			<div id="sffoldsection" class="toolbarlabel">
@@ -263,13 +272,6 @@ See LICENSE.md
 			</div>
 		</div>
 		
-		<div id="projectpropsection" class="toolbarsection">
-			<div class="toolbarspacer"></div>
-			<div id="projectprops" class="toolbarlargeiconbutton"></div>
-			<div class="toolbarspacer"></div>
-			<div id="buttlabels" class="toolbariconbutton"></div>
-		</div>
-
 		<div id="onlinesection" class="toolbarsection">
 			<div class="toolbarspacer"></div>
 			<div id="creatorlabel" class="toolbarlabel">

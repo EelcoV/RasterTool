@@ -452,6 +452,14 @@ ipc.on('option-modified', function(event,id,opt,val) {
 	SavePreferences(win);
 });
 
+ipc.on('document-new', function(event,id) {
+	doNew();
+});
+
+ipc.on('document-import', function(event,id) {
+	doOpen(null);
+});
+
 ipc.on('document-modified', function(event,id) {
 	if (!id) return;
 	let win = BrowserWindow.fromId(id);
