@@ -3,7 +3,7 @@
  */
 
 /* globals
- H, LS, Preferences, Project, RefreshNodeReportDialog, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, workspacedrophandler, reasonableString
+ H, LS, Preferences, Project, RefreshNodeReportDialog, Transaction, _, bugreport, createUUID, isSameString, jsPlumb, nid2id, removetransientwindows, SizeDOMElements, workspacedrophandler, reasonableString
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -234,6 +234,7 @@ class Service {
 console.log(`Setting Service.cid to ${this.id}. This may be incorrect.`);
 		Service.cid = this.id;
 		this._loaded=true;
+		SizeDOMElements();	// to size the scroller and it's parts
 	}
 	
 	removetab(tabprefix) {

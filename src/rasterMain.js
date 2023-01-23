@@ -700,7 +700,9 @@ function initProjectsToolbar() {
 				currentproject.merge(otherproject.id);
 				let it = new ServiceIterator({project: Project.cid});
 				it.forEach( (s) => {
-					if (!s._loaded) s.load();
+					if (s._loaded) return;
+					s.load();
+					paintSingleFailures(s);
 				});
 			})
 		);
