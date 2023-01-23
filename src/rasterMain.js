@@ -577,6 +577,7 @@ function initProjectsToolbar() {
 					var p = Project.get(newp);
 					p.setshared(false,false);
 					switchToProject(newp);
+					populateProjectList();
 				}
 				// Remove the default project, as long as it is still unmodified??
 				transactionCompleted("Project add");

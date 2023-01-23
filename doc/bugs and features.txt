@@ -3,7 +3,6 @@ See LICENSE.md
 
 
 BUGS
-Gestopt door fout: No project selected in functie buttdel click handler.
 Duplicating a shared project gives a server error about the project unexpectedly being removed from the server.
 Deleting common Vulnerabilities does not work anymore.
 Do not switch toolbars automatically unless absolutely useful.
