@@ -5,12 +5,12 @@ XXXX 2022
 =========
 * Release as 4.0.0 - XXX
 * Undo and Redo are now implemented on all actions.
-* Support for different iconsets. A set "new icons" is provided in addition to the default
+* A refresh of the entire user interface.
+* Support for different iconsets. A new Default set is provided in addition to the Classic
   icons. You can roll your own iconsets; see 'doc/Iconsets.md' for details.
 * Vulnerabilities can be either natural or malicious. When malicious, the frequency is
   dependent on the difficulty of exploiting the vulnerability and the capabilities of the
   worst plausible attacker (which is a project property).
-* A refresh of the entire user interface.
 * A new file format is used. Raster files created with version 3 or earlier will
   automatically be upgraded, but cannot be downgraded.
 * The Find panel now searches remarks, vulnerabilities and labels as well.

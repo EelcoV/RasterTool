@@ -193,7 +193,7 @@ function initAllAndSetup() {
 	GroupSettings = {
 		classroom: false,
 		template: 'Project Template',
-		iconsets: ['default'],
+		iconsets: ['Default'],
 		localonly: false,
 		templatestring: ''
 	};
@@ -207,7 +207,7 @@ function initAllAndSetup() {
 	GroupSettings = {
 		classroom: false,
 		template: '',
-		iconsets: ['default'],
+		iconsets: ['Default'],
 		localonly: true,
 		templatestring: ''
 	};
@@ -2629,6 +2629,10 @@ function loadFromString(str,options) {
 	}
 
 	if (upgrade_3_4) {
+		// Give all projects the Classic iconset
+		for (i=0; i<lProjectlen; i++) {
+			lProject[i].i = 'Classic';
+		}
 		// Promote Threats to Vulnerabilities
 		for (i=0; i<lThreatlen; i++) {
 			let th = lThreat[i];

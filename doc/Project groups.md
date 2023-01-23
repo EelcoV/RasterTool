@@ -16,7 +16,7 @@ To create a new project group (called `samplegroup` in these instructions):
 The settings for a group are stored in a JSON configuration file. Currently the file may contain these fields:
 * *classroom:* (boolean, default is `false`) If true, classroom functionality is enabled on this group. See below.
 * *template:* (string, default is "Project Template") The name of the project that will be used as the starting point when a new project is created, instead of a blank project. Set to "" to disable the template. 
-* *iconsets:* (array of strings, default is ["default"]) The names of the available iconsets; the first set will be used for new projects. If a `template` is specified, the iconset in the template project takes precedence for new projects. See the `Iconsets.md` for details.
+* *iconsets:* (array of strings, default is ["Default"]) The names of the available iconsets; the first set will be used for new projects. If a `template` is specified, the iconset in the template project takes precedence for new projects. See the `Iconsets.md` for details.
 * *localonly:* (boolean, default is `false`) If true, projects cannot be retrieved nor stored on the server. The template will still be used, if present. If this set, only private projects will be possible.
 
 A template is most useful to define default iconset, vulnerabilities and labels, instead of the builtin defaults. It is possible, although perhaps less useful, to include services and nodes in the template.

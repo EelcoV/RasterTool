@@ -1,57 +1,416 @@
 {
 "setDescription": {
-	"EN": "The original Raster symbols",
-	"NL": "De originele Raster symbolen"
+	"EN": "New Raster symbols",
+	"NL": "Nieuwe Raster-symbolen"
 	},
 "icons": [
 	{
 		"type": "tEQT",
-		"image": "tEQT.png",
+		"image": "equipment/equipment.png",
 		"name": {"EN": "Equipment", "NL": "Apparatuur"},
-		"width": 99,
-		"height": 29,
+		"width": 50,
+		"height": 44,
 		"title": "inside",
-		"margin": 11,
-		"offsetConnector": 0.5
-	},
-	{
+		"margin": 3
+	},{
 		"type": "tWRD",
-		"image": "tWRD.png",
+		"image": "wired/wired.png",
 		"name": {"EN": "Wired link", "NL": "Kabel"},
-		"width": 99,
-		"height": 29,
-		"title": "inside",
-		"margin": 8,
-		"offsetConnector": 0.5
-	},
-	{
-		"type": "tWLS",
-		"image": "tWLS.png",
-		"name": {"EN": "Wireless link", "NL": "Draadloos"},
-		"width": 100,
+		"width": 80,
 		"height": 30,
 		"title": "inside",
-		"margin": 6,
-		"offsetConnector": 0.5
-	},
-	{
-		"type": "tUNK",
-		"image": "tUNK.png",
-		"name": {"EN": "Unknown link", "NL": "Onverkend"},
-		"width": 100,
+		"margin": 3
+	},{
+		"type": "tWLS",
+		"image": "wireless/wireless.png",
+		"name": {"EN": "Wireless link", "NL": "Draadloos"},
+		"width": 50,
 		"height": 50,
+		"title": "below"
+	},{
+		"type": "tUNK",
+		"image": "unknown/unknown.png",
+		"name": {"EN": "Unknown link", "NL": "Onverkend"},
+		"width": 80,
+		"height": 73,
 		"title": "inside",
 		"margin": 15,
-		"offsetConnector": 0.66
-	},
-	{
+		"offsetConnector": 0.587
+	},{
 		"type": "tACT",
-		"image": "tACT.png",
+		"image": "actor/person.png",
 		"name": {"EN": "Actor", "NL": "Actor"},
+		"width": 50,
+		"height": 49,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/accesspoint.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Access point", "NL": "WiFi-punt"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/modem.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Modem", "NL": "Modem"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/audio.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Audio", "NL": "Audio"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/camera.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Camera", "NL": "Camera"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/sensor.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Sensor", "NL": "Sensor"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/ventilation.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Ventilation", "NL": "Ventilatie"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/mechanical.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Mechanical device", "NL": "Mechanisch apparaat"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/valve.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Valve", "NL": "Klep"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/heat.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Heating", "NL": "Verhitting"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/chemical.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Chemical process", "NL": "Chemisch proces"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/radioactive.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Radiation", "NL": "Straling"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+ 		"type": "tEQT",
+		"image": "equipment/router.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Router", "NL": "Router"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/database.png",
+		"name": {"EN": "Database", "NL": "Database"},
+		"width": 44,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/server1.png",
+		"name": {"EN": "Server 1", "NL": "Server 1"},
+		"width": 50,
+		"height": 32,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/server2.png",
+		"name": {"EN": "Server 2", "NL": "Server 2"},
+		"width": 33,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/satellite.png",
+		"mask": "equipment/equipment-mask.png",
+		"name": {"EN": "Satellite", "NL": "Satelliet"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/officephone.png",
+		"name": {"EN": "Office phone", "NL": "Bureautelefoon"},
+		"width": 50,
+		"height": 42,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/porto.png",
+		"name": {"EN": "Walkie-talkie", "NL": "Porto"},
+		"width": 25,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/smartphone.png",
+		"name": {"EN": "Handheld device", "NL": "Mobiel"},
+		"width": 33,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/laptop.png",
+		"name": {"EN": "Laptop", "NL": "Laptop"},
+		"width": 50,
+		"height": 34,
+		"title": "below"
+	},{
+		"type": "tEQT",
+		"image": "equipment/thinclient.png",
+		"name": {"EN": "Thin client", "NL": "Thin client"},
 		"width": 50,
 		"height": 35,
 		"title": "below",
-		"offsetConnector": 0.5
+		"offsetConnector": 0.360
+	},{
+		"type": "tEQT",
+		"image": "equipment/workstation.png",
+		"name": {"EN": "Workstation", "NL": "Werkstation"},
+		"width": 50,
+		"height": 33,
+		"title": "below",
+		"offsetConnector": 0.327
+	},{
+		"type": "tACT",
+		"image": "actor/official.png",
+		"mask": "actor/official-mask.png",
+		"name": {"EN": "Officer", "NL": "Functionaris"},
+		"width": 50,
+		"height": 51,
+		"title": "below"
+	},{
+		"type": "tACT",
+		"image": "actor/tieperson.png",
+		"mask": "actor/person-mask.png",
+		"name": {"EN": "Person with tie", "NL": "Persoon met das"},
+		"width": 50,
+		"height": 49,
+		"title": "below"
+	},{
+		"type": "tACT",
+		"image": "actor/helmet.png",
+		"mask": "actor/helmet-mask.png",
+		"name": {"EN": "Person with helmet", "NL": "Persoon met helm"},
+		"width": 50,
+		"height": 54,
+		"title": "below"
+	},{
+		"type": "tACT",
+		"image": "actor/people.png",
+		"name": {"EN": "People", "NL": "Personen"},
+		"width": 50,
+		"height": 42,
+		"title": "below"
+	},{
+		"type": "tACT",
+		"image": "actor/badperson.png",
+		"mask": "actor/person-mask.png",
+		"name": {"EN": "Bad actor", "NL": "Schurk"},
+		"width": 50,
+		"height": 49,
+		"title": "below"
+	},{
+		"type": "tACT",
+		"image": "actor/badperson-red.png",
+		"mask": "actor/person-mask.png",
+		"name": {"EN": "Bad actor Red", "NL": "Schurk Rood"},
+		"width": 50,
+		"height": 49,
+		"title": "below"
+	},{
+		"type": "tUNK",
+		"image": "unknown/provider.png",
+		"mask": "unknown/unknown-mask.png",
+		"name": {"EN": "Provider", "NL": "Provider"},
+		"width": 50,
+		"height": 44,
+		"title": "below",
+		"offsetConnector": 0.580
+	},{
+		"type": "tUNK",
+		"image": "unknown/lan.png",
+		"mask": "unknown/unknown-mask.png",
+		"name": {"EN": "LAN", "NL": "LAN"},
+		"width": 50,
+		"height": 44,
+		"title": "below",
+		"offsetConnector": 0.580
+	},{
+		"type": "tUNK",
+		"image": "unknown/office.png",
+		"name": {"EN": "Office", "NL": "Kantoor"},
+		"width": 50,
+		"height": 44,
+		"title": "below",
+		"offsetConnector": 0.360
+	},{
+		"type": "tUNK",
+		"image": "unknown/factory.png",
+		"name": {"EN": "Factory", "NL": "Fabriek"},
+		"width": 50,
+		"height": 44,
+		"title": "below",
+		"offsetConnector": 0.133
+	},{
+		"type": "tUNK",
+		"image": "unknown/home.png",
+		"name": {"EN": "Home", "NL": "Huis"},
+		"width": 50,
+		"height": 44,
+		"title": "below"
+	},{
+		"type": "tUNK",
+		"image": "unknown/cloud.png",
+		"name": {"EN": "Cloud", "NL": "Cloud"},
+		"width": 100,
+		"height": 63,
+		"title": "inside",
+		"margin": 15,
+		"offsetConnector": 0.373
+	},{
+		"type": "tUNK",
+		"image": "unknown/globe1.png",
+		"name": {"EN": "Globe 1", "NL": "Wereldbol 1"},
+		"width": 50,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tUNK",
+		"image": "unknown/globe2.png",
+		"name": {"EN": "Globe 2", "NL": "Wereldbol 2"},
+		"width": 50,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tWLS",
+		"image": "wireless/wireless-2G.png",
+		"mask": "wireless/wireless-mask.png",
+		"name": {"EN": "2G Mobile", "NL": "2G Mobiel"},
+		"width": 50,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tWLS",
+		"image": "wireless/wireless-3G.png",
+		"mask": "wireless/wireless-mask.png",
+		"name": {"EN": "3G Mobile", "NL": "3G Mobiel"},
+		"width": 50,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tWLS",
+		"image": "wireless/wireless-4G.png",
+		"mask": "wireless/wireless-mask.png",
+		"name": {"EN": "4G Mobile", "NL": "4G Mobiel"},
+		"width": 50,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tWLS",
+		"image": "wireless/wireless-5G.png",
+		"mask": "wireless/wireless-mask.png",
+		"name": {"EN": "5G Mobile", "NL": "5G Mobiel"},
+		"width": 50,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tWLS",
+		"image": "wireless/wireless-2345G.png",
+		"mask": "wireless/wireless-mask.png",
+		"name": {"EN": "Mobile network", "NL": "Mobiel netwerk"},
+		"width": 50,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tWLS",
+		"image": "wireless/wifi.png",
+		"mask": "wireless/wireless-mask.png",
+		"name": {"EN": "WiFi", "NL": "WiFi"},
+		"width": 50,
+		"height": 50,
+		"title": "below"
+	},{
+		"type": "tWRD",
+		"image": "wired/ethernet.png",
+		"mask": "wired/wired-gen-mask.png",
+		"name": {"EN": "Ethernet cable", "NL": "Ethernet kabel"},
+		"width": 50,
+		"height": 23,
+		"title": "below"
+	},{
+		"type": "tWRD",
+		"image": "wired/fiber.png",
+		"mask": "wired/wired-mask.png",
+		"name": {"EN": "Fiber optic", "NL": "Glasvezel"},
+		"width": 62,
+		"height": 23,
+		"title": "below"
+	},{
+		"type": "tWRD",
+		"image": "wired/twistedpair.png",
+		"mask": "wired/wired-gen-mask.png",
+		"name": {"EN": "Twisted pair", "NL": "Twisted pair"},
+		"width": 50,
+		"height": 23,
+		"title": "below"
+	},{
+		"type": "tWRD",
+		"image": "wired/usb.png",
+		"mask": "wired/wired-gen-mask.png",
+		"name": {"EN": "USB cable", "NL": "USB kabel"},
+		"width": 50,
+		"height": 23,
+		"title": "below"
+	},{
+		"type": "tWRD",
+		"image": "wired/wired-2.png",
+		"mask": "wired/wired-gen-mask.png",
+		"name": {"EN": "Wired link 2", "NL": "Kabel 2"},
+		"width": 50,
+		"height": 23,
+		"title": "below"
 	}
 ]
 }

@@ -45,7 +45,7 @@ const DefaultRasterOptions = {
 	// Hardware acceleration: there is no UI for this (must edit preference file by hand!)
 	disablehardwareacceleration: true,
 	// Default iconsets installed
-	iconsets: ['default','new icons']
+	iconsets: ['Default','Classic']
 };
 
 const prefsDir = app.getPath('userData');
