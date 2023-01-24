@@ -478,13 +478,5 @@ See LICENSE.md
     </div>
 </div>
 
-<!-- div id="exp_div" style="display: none">
-<form id="exp_form" action="share.php" method="post" enctype="multipart/form-data">
-<input id="exp_action" type="hidden" name="op" value="reflect">
-<input id="exp_name" type="text" name="name">
-<textarea id="exp_contents" name="contents"></textarea>
-</form>
-</div -->
-
 </body>
 </html>

@@ -690,35 +690,6 @@ function sendError($errorMessage) {
 	exit(0);
 }
 
-/* Helper function
- *
- * Used to download a file from the app. Because we cannot start a proper download
- * initiated through the browser itself, we upload the file to the server, and
- * immediately have it sent back to us, but this time including all the desired
- * headers.
- *
- * reflect: download that what we uploaded in this very same request, add the
- *	current date and time to the filename.
- *
- */
-//function doReflect() {
-//	$name=slashadd($_REQUEST['name']);
-//	if (is_null($name) || $name=="") sendError("Required parameter 'name' is missing.");
-//	if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {
-//		$content=stripslashes($_REQUEST['contents']);
-//	} else {
-//		$content=$_REQUEST['contents'];
-//	}
-//	if (is_null($content) || $content=="") sendError("Required parameter 'content' is missing.");
-//
-//	$datetime = strftime("%Y%m%d %H%M %S");
-//	header('Content-Description: Project exported');
-//	header('Content-Type: text/x-raster');
-//	header("Content-Disposition: attachment; filename=\"${name} ${datetime}.raster\"");
-//	header("Content-Length: " . strlen($content));
-//	echo $content;
-//	exit(0);
-//}
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  * MAIN BODY
@@ -758,9 +729,6 @@ case "putproject":
 case "getproject":
 	doGetProject();
 	break;
-//case "reflect":
-//	doReflect();
-//	break;
 default:
 	doList();
 }

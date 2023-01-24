@@ -1,3 +1,3 @@
 #!/bin/sh
 
-rm -fR build
+rm -fR build || (sleep 1; rm -fR build)

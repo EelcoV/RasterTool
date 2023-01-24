@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+Adding a custom vulnerability to two nodes (using the clipboard copy & paste) does not paint (create?) a cluster.
 Duplicating a shared project gives a server error about the project unexpectedly being removed from the server.
 Deleting common Vulnerabilities does not work anymore. <-- delete, cannot reproduce
 Do not switch toolbars automatically unless absolutely useful.

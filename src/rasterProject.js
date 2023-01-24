@@ -45,6 +45,7 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *  merge(pid): insert a duplicate of Project with pid into this project.
  *	duplicate(): creates an exact copy of this project, and returns that duplicate. NOTE: this will create two projects with the samen name.
  *  updateUndoRedoUI: highlight/lowlight the undo/redo buttons as necessary
+ *  clearUndo: reset the undo-stack, after an action that causes irreversible changes.
  *	totalnodes(): returns the count of all nodes within all services of this project.
  *	settitle(t): change the title to 't' (50 chars max). The actual title may receive
  *		a numerical suffix to make it unique.
@@ -78,6 +79,7 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *  refreshIfNecessary(): retrieve & replace this project from the server, if that version is newer.
  *  dorefresh(): wrapper around refreshIfNecessary.
  *  appendCurrentTransaction(): append this.TransactionCurrent to the transaction-list on the server.
+ *  storeBaseTransaction(): save the base transaction ont the server (useful with an empy undo-list)
  *  getNewTransactionsFromServer: retrieve all transactions more recent than this.TransactionHead from the server, and apply.
  *  askForConflictResolution: make private, overrule (everyone uses our version), or adopt (we use the server version)
  */
@@ -445,6 +447,7 @@ Project.prototype = {
 		otherproject.services = [];
 		otherproject.destroy();
 
+		this.clearUndo();
 		if (this.shared) {
 			this.storeOnServer();
 		}
@@ -594,6 +597,16 @@ Project.prototype = {
 		}
 	},
 
+	clearUndo: function() {
+		this.TransactionBase = new Transaction(null,null,null,null,false,false,createUUID(),this.id);
+		this.TransactionCurrent = this.TransactionBase;
+		this.TransactionHead = this.TransactionBase;
+#ifdef SERVER
+		// Clear the transactions-list on the server, if any
+		if (this.shared) this.storeBaseTransaction();
+#endif
+	},
+	
 	totalnodes: function() {
 		let it = new NodeIterator({project: this.id});
 		return it.count();
@@ -1357,6 +1370,45 @@ Project.prototype = {
 //						_("Could not share this action.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
 //					);
 					Transaction.undo();
+				}
+			}
+		});
+	},
+
+	storeBaseTransaction: function() {
+		if (!this.shared) return;
+		if (!Preferences.online || GroupSettings.localonly)  return; // No actions when offline
+		let tr = this.TransactionBase;
+		let trobj = {
+			id: tr.id,			// UUID-string
+			descr: tr.descr,	// String
+			prev: (tr.prev ? tr.prev.id : null),	// UUID-string
+			undo_data: tr.undo_data,	// object
+			do_data: tr.do_data,		// object
+			kind: tr.kind,		// String
+			chain: tr.chain		// Boolean
+		};
+		let trString = JSON.stringify(trobj,null,' ');
+		let thisp = this;
+		$.ajax({
+			url: 'share.php?op=puttrs&name=' + urlEncode(thisp.title),
+			type: 'POST',
+			dataType: 'text',
+			data: trString,
+			success: function() {
+				console.log(`Stored base transaction for project ${this.title}`);
+			},
+			error: function(jqXHR, textStatus /*, errorThrown*/) {
+				if (textStatus=="timeout") {
+					Preferences.setonline(false);
+					rasterAlert(_("Server is offline"),
+						_H("The server appears to be unreachable. The tool is switching to working offline.")
+					);
+				} else {
+					console.log(`storing of base transaction failed: ${jqXHR.responseText}`);
+//					rasterAlert(_("A request to the server failed"),
+//						_("Could not share this action.\nThe server reported:<pre>%%</pre>", H(jqXHR.responseText))
+//					);
 				}
 			}
 		});

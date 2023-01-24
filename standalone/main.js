@@ -452,11 +452,11 @@ ipc.on('option-modified', function(event,id,opt,val) {
 	SavePreferences(win);
 });
 
-ipc.on('document-new', function(event,id) {
+ipc.on('document-new', function(/*event,id*/) {
 	doNew();
 });
 
-ipc.on('document-import', function(event,id) {
+ipc.on('document-import', function(/*event,id*/) {
 	doOpen(null);
 });
 

@@ -128,7 +128,7 @@ _t["Could not retrieve properties the remote project.\nThe server reported:<pre>
 _t["Could not retrieve the list of remote projects.\nThe server reported:<pre>%%</pre>"] = "Kon de lijst met opgeslagen projecten niet ophalen. De server meldt:<pre>%%</pre>";
 _t["Could not retrieve the remote project.\nThe server reported:<pre>%%</pre>"] = "Kon het opgeslagen project niet ophalen. De server meldt:<pre>%%</pre>";
 _t["Could not share this action.\nThe server reported:<pre>%%</pre>"] = "Kon dit project niet delen.\nDe server meldt:<pre>%%</pre>";
-_t["Could not undo.\nThe server reported:<pre>%%</pre>"] = "Could not undo.\nThe server reported:<pre>%%</pre>";	//TRANSLATION NEEDED
+_t["Could not undo.\nThe server reported:<pre>%%</pre>"] = "Ongedaan maken is mislukt.\nThe server meldt:<pre>%%</pre>";
 _t["Create a copy of the current project."] = "Maak een kopie van het huidige project.";
 _t["Create new cluster"] = "Maak nieuw cluster";
 _t["create new cluster"] = "maak nieuw cluster";
