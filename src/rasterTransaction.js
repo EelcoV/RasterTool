@@ -70,7 +70,11 @@ var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=fa
 	 */
 	let S1, S2, S3, S4;
 	if (Transaction.debug) {
-		checkForErrors();
+		/* We would like to be able to do checkForErrors() here, but that isn't possible. When two transactions
+		 * are chained, the result of the first (and thus the starting position of the second) may be an
+		 * invalid state. The only thing we do know is that at the end of a transaction with this.chain==false
+		 * must be in a valid state. Hence the checkForErrors() further below.
+		 */
 		S1 = exportProject(Project.cid);
 	}
 
@@ -86,15 +90,13 @@ var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=fa
 	};
 	
 	if (Transaction.debug) {
-		pf();
+		pf.bind(this)();
 		console.log("+" + (this.chain?"↓":" ") + " " + this.kind + "  (do data "+JSON.stringify(do_data).length+" bytes, undo data "+JSON.stringify(undo_data).length+" bytes)");
-		checkForErrors();
 		S2 = exportProject(Project.cid);
 		this.rollback();
-		checkForErrors();
 		S3 = exportProject(Project.cid);
 		this.perform();
-		checkForErrors();
+		if (!this.chain)  checkForErrors();
 		S4 = exportProject(Project.cid);
 		if (S1!=S3) {
 			logdiff(S1,S3,"in new: perform + undo != initial situation");
@@ -107,7 +109,7 @@ var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=fa
 	}
 };
 
-Transaction.debug = false;
+Transaction.debug = true;
 
 Transaction.undo = function(num=1,remote=false) {
 	let p = Project.get(Project.cid);
@@ -119,11 +121,11 @@ Transaction.undo = function(num=1,remote=false) {
 
 	lengthy(function() {
 		let n=0;
-		let S2;
+		let S2; // Needed in the ajax call
+		if (Transaction.debug)  checkForErrors();
 		do {
 			let S1, S3, S4;
 			if (Transaction.debug) {
-				checkForErrors();
 				S1 = exportProject(Project.cid);
 			}
 
@@ -132,12 +134,9 @@ Transaction.undo = function(num=1,remote=false) {
 
 			S2 = exportProject(Project.cid);
 			if (Transaction.debug) {
-				checkForErrors();
 				p.TransactionCurrent.perform();
-				checkForErrors();
 				S3 = exportProject(Project.cid);
 				p.TransactionCurrent.rollback();
-				checkForErrors();
 				S4 = exportProject(Project.cid);
 				if (S1!=S3) {
 					logdiff(S1,S3,"in undo: undo,redo != nil");
@@ -149,6 +148,7 @@ Transaction.undo = function(num=1,remote=false) {
 			p.TransactionCurrent = p.TransactionCurrent.prev;
 			if (!p.TransactionCurrent.chain) num--;
 		} while (num>0);
+		if (Transaction.debug)  checkForErrors();
 		p.updateUndoRedoUI();
 		if (p.shared && !remote) {
 			stopWatching();
@@ -191,10 +191,10 @@ Transaction.redo = function(num=1,remote=false) {
 	if (p.TransactionCurrent==p.TransactionHead)  return;
 
 	lengthy(function() {
+		if (Transaction.debug)  checkForErrors();
 		do {
 			let S1, S2, S3, S4;
 			if (Transaction.debug) {
-				checkForErrors();
 				S1 = exportProject(Project.cid);
 			}
 			
@@ -204,13 +204,15 @@ Transaction.redo = function(num=1,remote=false) {
 			if (!remote) p.appendCurrentTransaction();
 #endif
 			if (Transaction.debug) {
-				checkForErrors();
 				S2 = exportProject(Project.cid);
 				p.TransactionCurrent.rollback();
-				checkForErrors();
-				S3 = exportProject(Project.cid);
+				{
+					// Careful, as the currrent transaction is included in the export of the project.
+					p.TransactionCurrent = p.TransactionCurrent.prev;
+					S3 = exportProject(Project.cid);
+					p.TransactionCurrent = p.TransactionCurrent.next;
+				}
 				p.TransactionCurrent.perform();
-				checkForErrors();
 				S4 = exportProject(Project.cid);
 				if (S1!=S3) {
 					logdiff(S1,S3,"in redo: redo,undo != nil");
@@ -221,6 +223,7 @@ Transaction.redo = function(num=1,remote=false) {
 			}
 			if (!p.TransactionCurrent.chain) num--;
 		} while(num>0);
+		if (Transaction.debug)  checkForErrors();
 		p.updateUndoRedoUI();
 		if (!remote) transactionCompleted(_("Redo"),false);
 	});
