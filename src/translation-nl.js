@@ -138,6 +138,7 @@ _t["Custom vulnerabilities"] = "Eigen kwetsbaarheden";
 _t["Customers, employees"] = "Klanten, medewerkers";
 _t["Debugging functions"] = "Gereedschap voor foutoplossing";
 _t["Delete"] = "Verwijder";
+_t["Delete all?"] = "Alles verwijderen?";
 _t["Delete %% %%"] = "Verwijder %% %%";
 _t["Delete %% %% in selection?"] = "Verwijder %% geselecteerde %%?";
 _t["Delete element node?"] = "Component verwijderen?";

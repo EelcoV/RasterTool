@@ -5,10 +5,7 @@ See LICENSE.md
 BUGS
 Adding a custom vulnerability to two nodes (using the clipboard copy & paste) does not paint (create?) a cluster.
 Duplicating a shared project gives a server error about the project unexpectedly being removed from the server.
-Deleting common Vulnerabilities does not work anymore. <-- delete, cannot reproduce
-Do not switch toolbars automatically unless absolutely useful.
 Bug: "No or too many node clusters" in "common vulnerability delete"
-Bug: Cmd-A will select way too much text.
 When changing WPA, only redo Assessments for malicious Vulnerabilities, and repaint Components containing those. Speedups!!!!
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.

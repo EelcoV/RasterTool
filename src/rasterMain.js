@@ -740,7 +740,7 @@ function initProjectsToolbar() {
 	});
 	// Zap! --------------------
 	$('#buttzap').on('click',  function(){
-		rasterConfirm('Delete all?',
+		rasterConfirm(_('Delete all?'),
 			_H("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
 			_("Erase everything"),_("Cancel"),
 			function() {
