@@ -58,7 +58,10 @@ option:checked {
 
 /* Make sure model dialogs are above all other elements. */
 .ui-widget-overlay { z-index: 4000 !important; }
-.ui-tabs-nav { z-index: 150; }
+.ui-tabs-nav {
+	z-index: 150;
+	user-select: none;
+}
 .ui-tabs-nav li a {
 	width: 9em;
 	overflow: hidden;
@@ -123,6 +126,7 @@ body.waiting * {
 	margin: 0;
 	background: var(--toolbarbg);
 	border-top: 1px solid black;
+	user-select: none;
 }
 #vtabs {
 	grid-area: vtab;
