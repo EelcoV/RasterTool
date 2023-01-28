@@ -41,7 +41,7 @@ Not sure about modules yet. First check whether they impede debugging in the Dev
 * Use single quotes for all strings, except for English/translated strings that will be visible to the user (e.g. any strings inside `_("...")`).
 * Opening brace on the same line as the statement that starts the block. Closing brace at the same indent as that statement.
 * There is no need for braces inside case-blocks of switch-statements.
-* If-statements without else and followed by a single statement may be written on a single line. In this case do not use braces.
+* If-statements without else and followed by a single statement must be written on a single line. In this case do not use braces.
 
 For example, place braces like this:
 

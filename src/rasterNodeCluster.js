@@ -501,10 +501,21 @@ NodeCluster.prototype = {
 			}
 		}
 
-		var rc = NodeCluster.get(this.root());
-		if (!rc) {
-			errors += offender+" does not have proper root.\n";
+		var rc = null;
+		if (this.parentcluster && !NodeCluster.get(this.parentcluster)) {
+			errors += offender+" parent cluster does not exist.\n";
+		} else {
+			rc = this.root();
+			if (!rc) {
+				errors += offender+" does not have proper root.\n";
+			} else {
+			rc = NodeCluster.get(rc);
+				if (!rc) {
+					errors += offender+" root cluster does not exist.\n";
+				}
+			}
 		}
+		
 		var ta = Assessment.get(this.assmnt);
 		if (!ta) {
 			errors += offender+" contains an nonexisting assessment "+this.assmnt+".\n";
@@ -512,8 +523,7 @@ NodeCluster.prototype = {
 			if (ta.cluster!=this.id)	errors += offender+" has a member assessment "+ta.id+" that doesn't refer back.\n";
 			if (ta.component)			errors += offender+" has a member assessment "+ta.id+" that also refers to a component.\n";
 			if (ta.type!=this.type)		errors += offender+" has a member assessment "+ta.id+" with a non-matching type.\n";
-			let v = Vulnerability.get(ta.vulnerability);
-			if (ta.vulnerability && v && !isSameString(ta.title,this.title))  errors += offender+"has a member assessment "+ta.id+" with a different title.\n";
+			if (ta.vulnerability && !this.isroot())  errors += offender+" is not root but does have a assessment "+ta.id+" with vulnerability.\n";
 		}
 		if (this.isroot()) {
 			let vid = ta.vulnerability;
@@ -557,7 +567,7 @@ NodeCluster.prototype = {
 					errors += offender+" has a child node "+rn.id+" with an assessment of a non-existing Vulnerability ("+ta.vulnerability+").\n";
 					break;
 				}
-				if (ta && isSameString(ta.title,rc.title) && ta.type==rc.type) {
+				if (ta && rc && isSameString(ta.title,rc.title) && ta.type==rc.type) {
 					break;
 				}
 			}

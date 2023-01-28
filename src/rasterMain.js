@@ -699,12 +699,14 @@ function initProjectsToolbar() {
 			_("Merge"),_("Cancel"),
 			lengthyFunction(function() {
 				currentproject.merge(otherproject.id);
+				currentproject.updateUndoRedoUI();
 				let it = new ServiceIterator({project: Project.cid});
 				it.forEach( (s) => {
 					if (s._loaded) return;
 					s.load();
 					paintSingleFailures(s);
 				});
+				PaintAllClusters();
 			})
 		);
 	});
@@ -935,8 +937,12 @@ function initHomeToolbar() {
 	$('#redobutton').attr('title', _("Redo"));
 	$('#findbutton').attr('title', _("Locate nodes"));
 	$('#helpbutton').attr('title', _("Assistance"));
-	$('#undobutton').on('click', Transaction.undo);
-	$('#redobutton').on('click', Transaction.redo);
+	$('#undobutton').on('click', function() {
+		Transaction.undo();
+	});
+	$('#redobutton').on('click', function() {
+		Transaction.redo();
+	});
 	$('#findbutton').on('click', StartFind);
 	$('#helpbutton').on('click',  function() {
 		$('#helppanel').dialog('open');
@@ -1579,7 +1585,7 @@ function ShowDetails() {
 					let fdescr = $('#field_projectdescription').val();
 					let fwpa = $('#wpalist').val();
 					let fset = $('#iconsetlist').val();
-					$(this).dialog('close');
+					dialog.dialog('close');
 					
 					p.settitle(fname);
 					$('.projectname').text(p.title);
@@ -2671,13 +2677,6 @@ function loadFromString(str,options) {
 					};
 					lVuln.push(vln);
 					lVulnlen++;
-					// Find the right project, and add vln as a non-common Vulnerability
-					for (j=0; j<lProjectlen; j++) {
-						let lp = lProject[j];
-						if (lp.id!=vln.p) continue;
-						lp.t.push(vln.id);
-						break;
-					}
 				}
 			}
 			lAssmnt.push({
@@ -2733,7 +2732,7 @@ function loadFromString(str,options) {
 			for (j=i+1; j<lVulnlen; j++) {
 				if (lv.p==lVuln[j].p && lv.t==lVuln[j].t && isSameString(lv.l,lVuln[j].l)) {
 					var oldtitle, newtitle;
-					oldtitle = lThreat[j].l;
+					oldtitle = lVuln[j].l;
 					newtitle = titleincrement(oldtitle);
 					lVuln[j].l = newtitle;
 					// Now change this title too in the Assessments of all top-level NodeClusters of this project.
@@ -3108,7 +3107,6 @@ function checkForErrors(verbose) {
 		rasterAlert(_("Checked all projects"), _H("There were no errors; all projects are OK.\n"));
 	}
 	if (errors!='') {
-		console.log(errors);
 		rasterAlert(_("Your projects contain errors:"), errors);
 	}
 }
@@ -4162,7 +4160,7 @@ function arrayJoinAsString(a,str) {		// eslint-disable-line no-unused-vars
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
-/* * * * * * * * * * * * * * * * *|	  Single Faults	  |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|	  Single Faults         |* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

@@ -43,6 +43,7 @@ P: Project
 .labels[i]		(internal)				.c						extra label for version>=2
 .iconset		seticonset(str)			.i						version>=4
 .wpa			setwpa(str)				.q						version>=4: worst plausible attacker
+-				-						.r		Transaction		version>=4, current transaction in undo-list
 
 T: Threat 														version<=3, removed in version 4
 .id				creator(p.id,type,th.id)						changed in version 3
@@ -121,8 +122,7 @@ A: Assessment 													version>=4, added in version 4
 .vulnerability	setvulnerability(vid)	.v		Vulnerability
 .component		setcomponent(n.id)		.m		Component
 .cluster		setcluster(f.id)		.u		NodeCluster
-.title			settitle(str)			.l
-.description	setdescription(str)		.d
+._title			settitle(str)			.l
 .freq			setfreq(str)			.p
 .impact			setimpact(str)			.i
 .remark			setremark(str)			.r

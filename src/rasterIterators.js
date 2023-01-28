@@ -13,10 +13,10 @@
  * intended usage:
  * 		var it = new «ObjectIterator»({options...});
  *		it.sortByType();
- * 		for (const obj of it) {
- *			console.log(obj.id);
- *	 		:
- *		}
+ * 		for (const obj of it) {		OR		it.forEach( obj => {
+ *			console.log(obj.id);				console.log(obj.id);
+ *	 		:									:
+ *		}									});
  *
  * Methods:
  *	isEmpty(): boolean, true iff no matches were found

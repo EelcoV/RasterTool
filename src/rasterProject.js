@@ -359,47 +359,78 @@ Project.prototype = {
 	destroy: function() {
 		this.unload();
 		for (const sid of this.services) Service.get(sid).destroy();
-		var it = new NodeClusterIterator({project: this.id});
+		let it = new NodeClusterIterator({project: this.id});
 		it.forEach(nc => nc.destroy());
-		for (const vid of this.vulns) Vulnerability.get(vid).destroy();
+		it = new VulnerabilityIterator({project: this.id});
+		it.forEach(v => v.destroy());
 		localStorage.removeItem(LS+'P:'+this.id);
 		Project._all.delete(this.id);
 		if (Project.cid==this.id) Project.cid=null;
 	},
 	
 	merge: function(pid) {
-		let it, it2;
 		let newpid = loadFromString(exportProject(pid),{strsource:'Merge', duplicate: true});
 		if (newpid==null) {
 			bugreport(`Failed to re-import project ${pid}`, "Project.merge");
 			return;
 		}
 		let otherproject = Project.get(newpid);
-		
-		it = new VulnerabilityIterator({project: newpid});
-		it2 = new VulnerabilityIterator({project: this.id});
+		let ita = new AssessmentIterator({project: newpid});
+		let it = new VulnerabilityIterator({project: newpid});
+		let it2 = new VulnerabilityIterator({project: this.id});
 		let vrenumber = [];
+
 		for (const v of it) {
 			// If this project already contains a vulnerability with the same name and type,
 			// we can suffice by renumbering assessments from otherproject. Otherwise, we need
 			// to move the vulnerability over to this project
 			it2.forEach( (tv) => {
-				if (tv.type==v.type && tv.title==v.title) {
+				if (tv.type==v.type && isSameString(tv.title,v.title)) {
 					// renumbering required
 					vrenumber[v.id] = tv.id;
 				}
 			});
 			if (vrenumber[v.id]==undefined) {
 				// move into this project
-				this.addvulnerability(v.id,null,null,null,v.common);
+				v.project = this.id;
+				v.setcommon(false);
 				let loc = otherproject.vulns.indexOf(v.id);
 				otherproject.vulns.splice(loc,1);
 			}
 		}
 		
 		// renumber vulnerabilities now
-		it = new AssessmentIterator({project: newpid});
-		it.forEach( a => {if (vrenumber[a.vulnerability]!=undefined)  a.vulnerability = vrenumber[a.vulnerability]; });
+		ita.forEach( a => {
+			let oldvid = a.vulnerability;
+			if (vrenumber[a.vulnerability]!=undefined)  a.vulnerability = vrenumber[a.vulnerability];
+			if (a.cluster==null) return;
+			
+			let cl = NodeCluster.get(a.cluster);
+			// Cluster is root, for a vulnerability that is new to this project (vrenumber[oldvid]==undefined)
+			//		-> move it over into this project (the vulnerability has already been moved)
+			// Cluster is root, for a vulnerability already known to this project (vrenumber[oldvid]!=undefined)
+			//		-> make the cluster a childcluster of the existing root in this project, then normalize
+			// Cluster is not root
+			//		-> move it over into this project
+			//
+			cl.setproject(this.id);
+			if (cl.isroot() && vrenumber[oldvid]) {
+				// cl becomes a child cluster. Child clusters have no vulnerability associated with them
+				a._title = `${cl.title} from project "${otherproject.title}"`;
+				cl.title = a._title;
+				a.vulnerability = null;
+				// Find the existing cluster for this vulnerability
+				let it2 = new NodeClusterIterator({project: this.id, isroot: true});
+				for (const thiscl of it2) {
+					let thista = Assessment.get(thiscl.assmnt);
+					if (thista.vulnerability==vrenumber[oldvid]) {
+						thiscl.addchildcluster(cl.id);
+						thiscl.normalize();
+						break;
+					}
+				}
+			}
+		});
 		
 		// Move each of the services over, one by one
 		for (const sid of otherproject.services) {
@@ -424,7 +455,7 @@ Project.prototype = {
 				}
 			}
 			
-			// All nodes in this service need to be added to the proper NodeCluster in intoproject
+/*			// All nodes in this service need to be added to the proper NodeCluster in intoproject
 			it = new NodeIterator({service: s.id});
 			for (const rn of it) {
 				if (rn.type=='tACT' || rn.type=='tNOT') continue;
@@ -441,6 +472,8 @@ Project.prototype = {
 					NodeCluster.addnode_threat(this.id,rn.id,ta.title,ta.type,true);
 				}
 			}
+*/
+
 		}
 
 		this.store();
@@ -716,17 +749,16 @@ Project.prototype = {
 		this.store();
 	},
 
-	addvulnerability: function(vid,clid,thrid,idx,cmn) {
+	addvulnerability: function(vid,clid,thrid,idx) {
 		if (!clid)  clid = createUUID();
 		if (!thrid)  thrid = createUUID();
 		if (idx==null)  idx = this.vulns.length;
-		if (cmn==null)  cmn = true;
 		if (this.vulns.indexOf(vid)!=-1) {
 			bugreport("vulnerability already added","Project.addvulnerability");
 		}
 		let vln = Vulnerability.get(vid);
 		vln.project = this.id;
-		vln.setcommon(cmn);
+		vln.setcommon(true);
 		this.vulns.splice(idx,0,vln.id);
 		this.store();
 
@@ -1617,6 +1649,9 @@ Project.prototype = {
 			if (v.project != this.id) {
 				errors += "Vulnerability "+v.id+" belongs to a different project.\n";
 			}
+			if (!v.common) {
+				errors += "Project "+this.id+" contains vulnerability "+v.id+" that is not common.\n";
+			}
 			let it = new NodeClusterIterator({project: this.id, title: v.title, type: v.type, isroot: true});
 			if (it.isEmpty()) {
 				errors += "Vulnerability "+v.id+" does not have a corresponding node cluster.\n";
@@ -1634,11 +1669,11 @@ Project.prototype = {
 		// Check all vulnerabilities
 		it = new VulnerabilityIterator({project: this.id});
 		if (this.stub && it.count()>0) {
-			errors += "Project "+this.id+" is marked as a stub, but does have common vulnerabilities.\n";
+			errors += "Project "+this.id+" is marked as a stub, but does have vulnerabilities.\n";
 		}
 		for (const v of it) {
-			if (this.vulns.indexOf(v.id)==-1) {
-				errors += "Vulnerability "+v.id+" claims to belong to project "+this.id+" but is not known as a member.\n";
+			if (v.common && this.vulns.indexOf(v.id)==-1) {
+				errors += "Common vulnerability "+v.id+" claims to belong to project "+this.id+" but is not known as a member.\n";
 			}
 			errors += v.internalCheck();
 		}

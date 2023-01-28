@@ -231,8 +231,6 @@ class Service {
 		jsp.setSuspendDrawing(false, true);
 		it.forEach(rn => rn.setmarker());
 		RefreshNodeReportDialog();
-console.log(`Setting Service.cid to ${this.id}. This may be incorrect.`);
-		Service.cid = this.id;
 		this._loaded=true;
 		SizeDOMElements();	// to size the scroller and it's parts
 	}
@@ -260,7 +258,7 @@ console.log(`Setting Service.cid to ${this.id}. This may be incorrect.`);
 		snippet = snippet.replace(/_T_/g, H(this.title));
 		snippet = snippet.replace(/_I_/g, this.id);
 		snippet = snippet.replace(/_PF_/g, tabprefix);
-		if (idx==null) {
+		if (idx==null || idx>$('#'+tabprefix+' .ui-tabs-nav li').length) {
 			$('#'+tabprefix+' .ui-tabs-nav').append(snippet);
 		} else if (idx==0) {
 			$('#'+tabprefix+' .ui-tabs-nav').prepend(snippet);
