@@ -1059,8 +1059,8 @@ function initHomeToolbar() {
 	$('#ana_failsort_type').checkboxradio('option', 'label', _("by Type"));
 	$('label[for=ana_failsort_alph]').attr('title', _("List columns by title A-Z"));
 	$('label[for=ana_failsort_type]').attr('title', _("Group columns by type"));
-	$('#ana_nodesort_alph').prop('checked',true);
-	$('#ana_failsort_type').prop('checked',true);
+	$('#ana_nodesort_'+FailureThreatSortOpt.node).prop('checked',true);
+	$('#ana_failsort_'+FailureThreatSortOpt.threat).prop('checked',true);
 	$('input[name=ana_nodesort]').checkboxradio('refresh');
 	$('input[name=ana_failsort]').checkboxradio('refresh');
 	$('#anavexcludesection>div:first-child').text(_("Click cells to include/exclude them"));

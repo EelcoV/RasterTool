@@ -115,7 +115,7 @@ var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=fa
 	}
 };
 
-Transaction.debug = true;
+Transaction.debug = false;
 
 Transaction.undo = function(num=1,remote=false) {
 	let p = Project.get(Project.cid);
