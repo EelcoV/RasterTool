@@ -3,7 +3,6 @@ See LICENSE.md
 
 
 BUGS
-Adding a custom vulnerability to two nodes (using the clipboard copy & paste) does not paint (create?) a cluster.
 Duplicating a shared project gives a server error about the project unexpectedly being removed from the server.
 Bug: "No or too many node clusters" in "common vulnerability delete"
 When changing WPA, only redo Assessments for malicious Vulnerabilities, and repaint Components containing those. Speedups!!!!

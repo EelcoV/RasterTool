@@ -2,7 +2,7 @@
  * See LICENSE.md
  */
 
-/* globals _, paintSingleFailures, AssessmentIterator, Component, NodeCluster, NodeClusterIterator, Project, RefreshNodeReportDialog, Service, Vulnerability, Assessment, VulnerabilityIterator, bugreport, checkForErrors, exportProject, nid2id, repaintCluster, randomrot, CurrentCluster, repaintClusterDetails, repaintCCFDetailsIfVisible, repaintAnalysisIfVisible, TabAnaVulnOverview, TabAnaNodeCounts, lengthy, createUUID, Preferences, rasterAlert, _H, H, urlEncode, stopWatching, startWatching, escapeNewlines
+/* globals _, _H, Assessment, AssessmentIterator, bugreport, checkForErrors, Component, createUUID, CurrentCluster, escapeNewlines, exportProject, H, lengthy, nid2id, NodeCluster, NodeClusterIterator, PaintAllClusters, paintSingleFailures, Preferences, Project, randomrot, rasterAlert, RefreshNodeReportDialog, repaintAnalysisIfVisible, repaintCCFDetailsIfVisible, repaintCluster, repaintClusterDetails, Service, startWatching, stopWatching, TabAnaNodeCounts, TabAnaVulnOverview, urlEncode, Vulnerability, VulnerabilityIterator
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -109,7 +109,7 @@ var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=fa
 	}
 };
 
-Transaction.debug = false;
+Transaction.debug = true;
 
 Transaction.undo = function(num=1,remote=false) {
 	let p = Project.get(Project.cid);
@@ -950,6 +950,7 @@ Transaction.prototype = {
 						nc.addassessment(d.cla);
 						Assessment.get(d.cla).setvulnerability(d.id);
 					}
+					PaintAllClusters();
 				} else {
 					// Remove a vulnerability and its (emtpy) root cluster
 					let it = new AssessmentIterator({vuln: d.id, ofcomponent: true});
@@ -1006,6 +1007,7 @@ Transaction.prototype = {
 					Component.get(a.component).repaint();
 				}
 			}
+			PaintAllClusters(); // Since the sort order may have changed, repaint everything; this is slow :-(
 			repaintAnalysisIfVisible(TabAnaNodeCounts);
 			break;
 		}
