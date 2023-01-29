@@ -801,7 +801,7 @@ Node.prototype = {
 		this.store();
 	},
 
-	paint: function(effect) {
+	paint: function() {
 		let p = Project.get(this.project);
 		let idir = p.icondata.dir;
 		let icn;
@@ -867,11 +867,7 @@ Node.prototype = {
 
 		this.settitle(this.title);
 
-		if (effect==undefined || effect==true) {
-			$(this.jnid).fadeIn(500);
-		} else {
-			$(this.jnid).css('display', 'block');
-		}
+		$(this.jnid).css('display', 'block');
 		this.setposition(this.position.x, this.position.y, true);
 
 		var jsP = Service.get(this.service)._jsPlumb;

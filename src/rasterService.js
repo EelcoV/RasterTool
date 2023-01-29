@@ -210,7 +210,7 @@ class Service {
 		jsp.setSuspendDrawing(true);
 		/* First paint all the nodes, before drawing the connectors */
 		var it = new NodeIterator({service: this.id});
-		it.forEach(rn => rn.paint(false));
+		it.forEach(rn => rn.paint());
 		
 		/* All nodes exist, now draw connectors. When node X is connected to
 		 * node Y, then also node Y is connected to node X. However, we must

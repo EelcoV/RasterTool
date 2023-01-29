@@ -503,7 +503,7 @@ Transaction.prototype = {
 				rn.setposition(d.x,d.y);
 				rn.store();
 // Change to true when not debugging
-				rn.paint(false);
+				rn.paint();
 				if (d.type=='tNOT' || d.type=='tACT')  continue;
 
 				let cm = Component.get(d.component);
