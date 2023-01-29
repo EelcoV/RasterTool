@@ -163,14 +163,17 @@ function CurrentProjectAsString() {
  */
 $( initAllAndSetup );
 
+/* Perform a lengthy action. Change the cursor to a wait-cursor,
+ * then defer to the main thread for that to take effect. This will take some
+ * time. Wait too long, and it will be noticeable. Wait not long enough, and
+ * the cursor won't change (?!).
+ */
 function lengthy(func) {
 	$('body').addClass('waiting');
 	window.setTimeout(function() {
 		func();
 		$('body').removeClass('waiting');
-	},300);
-	// In Chrome, when the timout value is too small, the cursor does not change.
-	// Firefox sometimes seems to need this, too. For both, 300 ms seems to work and is not noticeable.
+	},150);
 }
 
 function lengthyFunction(func) {
