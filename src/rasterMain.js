@@ -3185,11 +3185,11 @@ function initTabDiagrams() {
 			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
 			$('#dthadddia').button({label: _("+ Add vulnerability")});
 			// Copy button
-			$(`<div id="dthcopydia" class="titlebaricon" title="${_("Copy")}"><img src="../img/ccopy.png"></div>`)
+			$(`<div id="dthcopydia" class="titlebaricon" title="${_("Copy")}"><img src="../img/ccopy.png" alt="${_("Copy")}"></div>`)
 			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
 			$('#dthcopydia').button();
 			// Paste button
-			$(`<div id="dthpastedia" class="titlebaricon" title="${_("Paste")}"><img src="../img/cpaste.png"></div>`)
+			$(`<div id="dthpastedia" class="titlebaricon" title="${_("Paste")}"><img src="../img/cpaste.png" alt="${_("Paste")}"></div>`)
 			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
 			$('#dthpastedia').button();
 		}
@@ -4239,8 +4239,8 @@ function paintSingleFailures(s) {
 			<h3><a href="#">_LSF_ "_TI_" (_TY__AP_) _LB_<span id="sfamark_SV___ID_"></span></a></h3>\n\
 			<div>\n\
 			 <div class="topbuttons donotprint"><div id="sfaadd_SV___ID_" class="addthreatbutton titlebarbutton">_BA_</div>\n\
-			 <div id="sfacopy_SV___ID_" class="copybutton titlebaricon" title="_BC_"><img src="../img/ccopy.png"></div>\n\
-			 <div id="sfapaste_SV___ID_" class="pastebutton titlebaricon" title="_BP_"><img src="../img/cpaste.png"></div></div>\n\
+			 <div id="sfacopy_SV___ID_" class="copybutton titlebaricon" title="_BC_"><img src="../img/ccopy.png" alt="_BC_"></div>\n\
+			 <div id="sfapaste_SV___ID_" class="pastebutton titlebaricon" title="_BP_"><img src="../img/cpaste.png" alt="_BP_"></div></div>\n\
 			 <div id="sfa_SV___ID_">\n\
 			  <div class="threat">\n\
 			   <div class="th_mal th_col thr_header">_LC_</div>\n\
@@ -4725,7 +4725,7 @@ function PaintAllClusters() {
 		<p id="noccf" class="firstp">_N1_\
 		_N2_\
 		_N3_</p>\
-		<div id="outerimpacthint" style="display:none"><div id="hintpoint"></div><img src="../img/hint.png"><div id="impacthint"></div></div>\
+		<div id="outerimpacthint" style="display:none"><div id="hintpoint"></div><img src="../img/hint.png" alt="?"><div id="impacthint"></div></div>\
 		<div id="ccfacclist">\
 		</div>\
 	';
@@ -5214,7 +5214,7 @@ function appendAllThreats(nc,domid,prefix) {
 		var spaces = "";
 		spaces += '<span class="linechar">';
 		for (var i=0; i<nc.depth(); i++) {
-			spaces += '<img src="../img/_KIND_.png" class="lineimg">';
+			spaces += '<img src="../img/_KIND_.png" class="lineimg" alt="">';
 			switch (SpacesMakeup[Spaces_row][i]) {
 			case 0:
 				spaces = spaces.replace(/_KIND_/, 'barB');
@@ -5625,6 +5625,7 @@ function paintSFTable() {
 		<table style="width:_TW_em">\n\
 		<colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
 		<colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
+		<colgroup><col span="1" style="width:_WR_em"></colgroup>\n\
 		<thead>\n\
 		 <tr>\n\
 		  <td></td>\n\
@@ -5635,12 +5636,13 @@ function paintSFTable() {
 	snippet = snippet.replace(/_SF_/, _H("Single failures"));
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
-	snippet = snippet.replace(/_TW_/, 20+1.7*(numvulns+1));
+	snippet = snippet.replace(/_WR_/, 6);
+	snippet = snippet.replace(/_TW_/, 20+1.7*(numvulns+1)+6);
 	snippet = snippet.replace(/_NT_/, numvulns+1);
 	for (const nc of tit) {
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}
-	snippet += '<td class="headercell"><b>_OV_</b></td>\n\
+	snippet += '<td class="headercell"><b>_OV_</b></td><td></td>ana_ccftable\n\
 		 </tr>\n\
 		</thead>\n\
 		<tbody>\n\
@@ -5659,7 +5661,7 @@ function paintSFTable() {
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
 			if (ta.title==nc.title && ta.type==nc.type) {
-				snippet += '<td class="nodecell _EX_ M_CL_" component="_NO_" threat="_TH_" title="_TI_">_TO_</td>';
+				snippet += '<td class="nodecell _EX_ M_CL_" data-component="_NO_" data-threat="_TH_" title="_TI_">_TO_</td>';
 				snippet = snippet.replace(/_CL_/g, Assessment.valueindex[ta.total]);
 				snippet = snippet.replace(/_TO_/g, ta.total);
 				snippet = snippet.replace(/_TI_/g, H(cm.title)+" / "+H(ta.title)+" ("+Rules.nodetypes[ta.type]+")");
@@ -5691,8 +5693,8 @@ function paintSFTable() {
 	$('#ana_nodethreattable').html(snippet);
 
 	$('.nodecell').on('click',  function(evt){
-		var cmid = $(evt.currentTarget).attr('component');
-		var tid = $(evt.currentTarget).attr('threat');
+		var cmid = $(evt.currentTarget).data('component');
+		var tid = $(evt.currentTarget).data('threat');
 		if (exclusionsContains(ComponentExclusions,cmid,tid)) {
 			exclusionsRemove(ComponentExclusions,cmid,tid);
 			$('#clearexclusions').button('option','disabled',exclusionsIsEmpty(ComponentExclusions));
@@ -5744,6 +5746,7 @@ function paintCCFTable() {
 	<table style="width:_TW_em">\n\
 	<colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
 	<colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
+	<colgroup><col span="1" style="width:_WR_em"></colgroup>\n\
 	<thead>\n\
 	<tr><td></td>\n\
 	';
@@ -5753,12 +5756,13 @@ function paintCCFTable() {
 	// numvulns = number of vulnerability columns
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
-	snippet = snippet.replace(/_TW_/, 20+1.7*(numvulns+1));
+	snippet = snippet.replace(/_WR_/, 6);
+	snippet = snippet.replace(/_TW_/, 20+1.7*(numvulns+1)+6);
 	snippet = snippet.replace(/_NT_/, numvulns+1);
 	for (const nc of tit) {
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}
-	snippet += '<td class="headercell"><b>_OV_</b></td>\n\
+	snippet += '<td class="headercell"><b>_OV_</b></td><td></td>\n\
 		 </tr>\n\
 		</thead>\n\
 		<tbody>\n\
@@ -5789,7 +5793,7 @@ function paintCCFTable() {
 	$('#ana_ccftable').html(snippet);
 
 	$('.clustercell').on('click',  function(evt){
-		var cid = parseInt($(evt.currentTarget).attr('cluster'),10);
+		var cid = $(evt.currentTarget).data('cluster');
 		if (exclusionsContains(ClusterExclusions,cid,0)) {
 			exclusionsRemove(ClusterExclusions,cid,0);
 		} else {
@@ -5807,7 +5811,7 @@ function addCCFTableRow(col,numvulns,ta,cl,indent) {
 	var snippet = '<tr><td class="nodetitlecell">'+H(cl.title)+suffix+'&nbsp;</td>\n';
 	for (var i=0; i<numvulns; i++) {
 		if (i==col &&cl.childnodes.length>1) {
-			snippet += '<td class="clustercell _EX_ M_CL_" cluster="_CI_" title="_TI_">_TO_</td>';
+			snippet += '<td class="clustercell _EX_ M_CL_" data-cluster="_CI_" title="_TI_">_TO_</td>';
 			snippet = snippet.replace(/_CL_/g, Assessment.valueindex[ta.total]);
 			snippet = snippet.replace(/_TO_/g, ta.total);
 			snippet = snippet.replace(/_TI_/g, _("CCF for ")+cl.title+" ("+Rules.nodetypes[cl.type]+")");

@@ -16,7 +16,7 @@ See LICENSE.md
 	--warn: #d76f00;
 	--toolbar_height: 94px;	/* rasterMain.js: const toolbar_height  */
 	--tab_height: 31px;		/* rasterMain.js: const tab_height  */
-	--servaddwidth: 40px;		/* Width of the 'add a service' button */
+	--servaddwidth: 40px;	/* Width of the 'add a service' button */
 	--fancyheight: 1500px;	/* fancyworkspace is --fancyheight * 1.414 by --fancyheight (A4 proportions) */
 }
 
@@ -297,9 +297,6 @@ body.waiting * {
 	display: inline-block;
 	vertical-align: top;
 }
-.toolbarlabel > div {
-	display: relative;
-}
 .toolbarlabel > div:first-child {
 	position: absolute;
 	bottom: 0;
@@ -559,6 +556,14 @@ textarea.inplace_field {
 }
 #helppanel ul {
 	border-radius: 8px 8px 0 0;
+}
+.helptable {
+	border-top: 2pt solid black;
+	border-collapse: collapse;
+}
+.helptable td {
+	border-bottom: 1pt solid black;
+	vertical-align: top;
 }
 #helptabs td { padding: 2px; }
 #helptabs table p { margin: 0; }

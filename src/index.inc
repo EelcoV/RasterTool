@@ -10,47 +10,45 @@ See LICENSE.md
 <meta name="group" content="<?= GROUP ?>">
 #endif
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-<meta charset="UTF-8"> 
 <title>Raster - Risk Assessment of Telecoms Services</title>
-<!-- First stylesheet must be the one that is a custom setting. -->
 <link rel="stylesheet" href="../css/theme/jquery-ui.min.css" class="ui-theme">
 <link rel="stylesheet" href="../css/raster.css" type="text/css" id="maincssfile">
 <link rel="stylesheet" href="../css/raster-print.css" type="text/css">
 <link rel="shortcut icon" href="../img/Raster.png">
 #ifdef STANDALONE
-  <script type="text/javascript">if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 #endif
-<script type="text/javascript" src="../js/jquery-3.6.0.min.js"></script>
-<script type="text/javascript" src="../js/jquery-ui-1.13.0.min.js"></script>
+<script src="../js/jquery-3.6.0.min.js"></script>
+<script src="../js/jquery-ui-1.13.0.min.js"></script>
 #ifdef SERVER
-<script type="text/javascript" src="../js/jquery.localisation.js"></script>
+<script src="../js/jquery.localisation.js"></script>
 #endif
-<script type="text/javascript" src="../js/jsplumb-2.12.0.min.js"></script>
-<script type="text/javascript" src="../js/jquery.editinplace-2.2.1.js"></script>
-<script type="text/javascript" src="../js/encodedecode.js"></script>
+<script src="../js/jsplumb-2.12.0.min.js"></script>
+<script src="../js/jquery.editinplace-2.2.1.js"></script>
+<script src="../js/encodedecode.js"></script>
 #ifdef SERVER
-<script type="text/javascript">$.localise('../js/translation', {async: false, language: "<?= LANGUAGE ?>".replace(/(;.+)/,'').replace(/,.+/,'')});</script>
+<script>$.localise('../js/translation', {async: false, language: "<?= LANGUAGE ?>".replace(/(;.+)/,'').replace(/,.+/,'')});</script>
 #else
 #ifdef LANG_NL
   <script src="../js/translation-nl.js"></script>
 #endif
 #endif
-<script type="text/javascript" src="../js/rasterMain.js"></script>
-<script type="text/javascript" src="../js/rasterTransaction.js"></script>
-<script type="text/javascript" src="../js/rasterProject.js"></script>
-<script type="text/javascript" src="../js/rasterService.js"></script>  
-<script type="text/javascript" src="../js/rasterVulnerability.js"></script>
-<script type="text/javascript" src="../js/rasterAssessment.js"></script>
-<script type="text/javascript" src="../js/rasterComponent.js"></script>
-<script type="text/javascript" src="../js/rasterNode.js"></script>  
-<script type="text/javascript" src="../js/rasterNodeCluster.js"></script>
-<script type="text/javascript" src="../js/rasterIterators.js"></script>
-<script type="text/javascript" src="../js/rasterPreferencesObject.js"></script>
+<script src="../js/rasterMain.js"></script>
+<script src="../js/rasterTransaction.js"></script>
+<script src="../js/rasterProject.js"></script>
+<script src="../js/rasterService.js"></script>
+<script src="../js/rasterVulnerability.js"></script>
+<script src="../js/rasterAssessment.js"></script>
+<script src="../js/rasterComponent.js"></script>
+<script src="../js/rasterNode.js"></script>
+<script src="../js/rasterNodeCluster.js"></script>
+<script src="../js/rasterIterators.js"></script>
+<script src="../js/rasterPreferencesObject.js"></script>
 #ifdef STANDALONE
-  <script type="text/javascript">if (window.module) module = window.module;</script>
+  <script>if (window.module) module = window.module;</script>
 #endif
 
-<style type="text/css">
+<style>
 .fullscreen {
     position: absolute;
     width: 100%;
@@ -86,18 +84,18 @@ See LICENSE.md
 	</ul>
 
 	<div id="tb_projects" class="toolbar">
-		<!-- Creating a new project -->
+		<!-- Tools that create a new project -->
 		<div class="toolbarspacer"></div>
 		<div id="buttadd" class="toolbarlargeiconbutton"></div>
 		<input id="fileElem" type="file">
 		<div id="buttimport" class="toolbarlargeiconbutton"></div>
-		<!-- On current project -->
+		<!-- Tools that act on the current project -->
 		<div class="toolbarsection">
 			<div id="buttexport" class="toolbarlargeiconbutton"></div>
 			<div id="buttduplicate" class="toolbarlargeiconbutton"></div>
 			<div id="projectprops" class="toolbarlargeiconbutton"></div>
 		</div>
-		<!-- On selected project -->
+		<!-- Tools that act on the selected project -->
 		<div id="projselected" class="toolbarsection">
 			<div id="projlistsection" class="toolbarlabel">
 				<div>xyz</div>
@@ -111,6 +109,7 @@ See LICENSE.md
 			<div id="buttdel" class="toolbarlargeiconbutton"></div>
 			<div id="buttmerge" class="toolbarlargeiconbutton"></div>
 		</div>
+		<!-- Tools for debugging -->
 		<div id="projdebug" class="toolbarsection">
 			<div id="projdebugsection" class="toolbarlabel">
 				<div>xyz</div>
@@ -134,6 +133,7 @@ See LICENSE.md
 		<div class="toolbarspacer"></div>
 		<div id="findbutton" class="toolbariconbutton"></div>
 		<div id="helpbutton" class="toolbariconbutton"></div>
+
 		<!-- Diagrams tab -->
 		<div id="projectpropsection" class="toolbarsection">
 			<div class="toolbarspacer"></div>
@@ -165,6 +165,7 @@ See LICENSE.md
 				</div>
 			</div>
 		 </div>
+
 		<!-- Common cause failures tab -->
 		<div id="ccfopts" class="toolbarsection">
 			<div id="ccffoldsection" class="toolbarlabel">
@@ -187,6 +188,7 @@ See LICENSE.md
 				</div>
 			</div>
 		</div>
+
 		<!-- Analysis tab - Failures and Vulnerabilities -->
 		<div id="anavulnopts" class="toolbarsection">
 			<div id="anavnsortsection" class="toolbarlabel">
@@ -309,7 +311,7 @@ See LICENSE.md
 	<div id="tab_diagrams" class="workbody tabs-bottom">
 		<!-- div id="mask-collection" class="donotprint"></div -->
 		<div id="selectrect">
-			<img id="selectrectC" class="nodeC" src="../img/dropdown.png">
+			<img id="selectrectC" class="nodeC" src="../img/dropdown.png" alt="dropdown menu">
 		</div>
 		<input id="servaddbuttondia" class="servplusbutton" type="button" value=" + ">
 		<ul id="bottomtabsdiagrams">
@@ -395,9 +397,9 @@ See LICENSE.md
 <ul id="nodemenu">
 	<li class="lcT"><div><span>xyz</span></div></li>
 	<li id="mi_th"><div><span>xyz</span></div></li>
-	<li id="mi_cc"><div><span>xyz</span><span class="ui-icon ui-icon-tag"></div>
+	<li id="mi_cc"><div><span>xyz</span><span class="ui-icon ui-icon-tag"></span></div>
 		<ul id="mi_ccsm">
-			<li id="mi_ccnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span>xyz</span></div></li>
+			<li id="mi_ccnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png" alt="no label"></div><span>xyz</span></div></li>
 			<li id="mi_ccred"><div><div class="smallblock Bred"></div><span>xyz</span></div></li>
 			<li id="mi_ccorange"><div><div class="smallblock Borange"></div><span>xyz</span></div></li>
 			<li id="mi_ccyellow"><div><div class="smallblock Byellow"></div><span>xyz</span></div></li>
@@ -409,7 +411,7 @@ See LICENSE.md
 			<li id="mi_ccedit"><div><span>xyz</span></div></li>
 		</ul>
 		</li>
-	<li id="mi_ci"><div><span>xyz</span><span class="ui-icon ui-icon-image"></div>
+	<li id="mi_ci"><div><span>xyz</span><span class="ui-icon ui-icon-image"></span></div>
 		<ul id="mi_cism"></ul>
 		</li>
 	<li id="mi_cl"><div><span>xyz</span></div>
@@ -419,7 +421,7 @@ See LICENSE.md
 			<li id="mi_sm"><div><span>xyz</span></div></li>
 		</ul>
 		</li>
-	<li id="mi_ct"><div><span>xyz</span><span class="ui-icon ui-icon-transfer-e-w"></div>
+	<li id="mi_ct"><div><span>xyz</span><span class="ui-icon ui-icon-transfer-e-w"></span></div>
 		<ul id="mi_ctsm">
 			<li id="mi_cttWLS"><div><span>xyz</span></div></li>
 			<li id="mi_cttWRD"><div><span>xyz</span></div></li>
@@ -429,14 +431,14 @@ See LICENSE.md
 		</ul>
 		</li>
 	<li>-</li>
-	<li id="mi_du"><div><span>xyz</span><span class="ui-icon ui-icon-newwin"></div></li>
-	<li id="mi_de"><div><span>xyz</span><span class="ui-icon ui-icon-trash"></div></li>
+	<li id="mi_du"><div><span>xyz</span><span class="ui-icon ui-icon-newwin"></span></div></li>
+	<li id="mi_de"><div><span>xyz</span><span class="ui-icon ui-icon-trash"></span></div></li>
 </ul>
 <ul id="selectmenu">
     <li class="lcT"><div><span>xyz</span></div></li>
 	<li id="mi_sc"><div><span>xyz</span></div>
 		<ul id="mi_scsm">
-			<li id="mi_scnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png"></div><span>xyz</span></div></li>
+			<li id="mi_scnone"><div><div class="noneblock Bnone"><img src="../img/nolabel.png" alt="no label"></div><span>xyz</span></div></li>
 			<li id="mi_scred"><div><div class="smallblock Bred"></div><span>xyz</span></div></li>
 			<li id="mi_scorange"><div><div class="smallblock Borange"></div><span>xyz</span></div></li>
 			<li id="mi_scyellow"><div><div class="smallblock Byellow"></div><span>xyz</span></div></li>
@@ -448,7 +450,7 @@ See LICENSE.md
 			<li id="mi_scedit"><div><span>xyz</span></div></li>
 		</ul>
 	</li>
-	<li id="mi_sd"><div><span>xyz</span><span class="ui-icon ui-icon-trash"></div></li>
+	<li id="mi_sd"><div><span>xyz</span><span class="ui-icon ui-icon-trash"></span></div></li>
 </ul>
 <ul id="ccfmenu">
     <li class="lcT"><div><span>xyz</span></div></li>

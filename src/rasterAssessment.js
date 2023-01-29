@@ -404,8 +404,8 @@ Assessment.prototype = {
 		var snippet = '<div id="dth_PF___TI_" class="threat">\
 			<div id="dth__PF_mal_TI_" class="th_mal th_col">\
 				<fieldset class="malset">\
-					<input type="radio" id="_PF_thmal_TI_-off" name="_PF_labelthmal_TI_"><label for="_PF_thmal_TI_-off" title="_LN_"><img src="../img/natural.png"></label>\
-					<input type="radio" id="_PF_thmal_TI_-on"  name="_PF_labelthmal_TI_"><label for="_PF_thmal_TI_-on" title="_LM_"><img src="../img/malice.png"></label>\
+					<input type="radio" id="_PF_thmal_TI_-off" name="_PF_labelthmal_TI_"><label for="_PF_thmal_TI_-off" title="_LN_"><img src="../img/natural.png" alt="_LN_"></label>\
+					<input type="radio" id="_PF_thmal_TI_-on"  name="_PF_labelthmal_TI_"><label for="_PF_thmal_TI_-on" title="_LM_"><img src="../img/malice.png" alt="_LM_"></label>\
 				</fieldset>\
 			</div>\
 			<div id="dth__PF_name_TI_" class="th_name th_col">_BS_<span id="dthE__PF_name_TI_">_TT_</span>_AS_</div>\

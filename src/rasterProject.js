@@ -1030,9 +1030,9 @@ Project.prototype = {
 					<div class="template">
 						<div class="ui-widget templatelabel">${Rules.shortnodetypes[icn.type]}</div>
 						<div id="${icn.type}" class="templatebg">
-							<img class="templateicon" src="${idir}/${icn.template}">
+							<img class="templateicon" src="${idir}/${icn.template}" alt="${Rules.shortnodetypes[icn.type]}">
 						</div>
-						<img id="tC_${icn.type}" class="tC" src="../img/dropedit.png">
+						<img id="tC_${icn.type}" class="tC" src="../img/dropedit.png" alt="edit">
 					<div>
 				`);
 				break;
@@ -1042,7 +1042,7 @@ Project.prototype = {
 			<div class="template">
 				<div class="ui-widget templatelabel">${_("note")}</div>
 				<div id="tNOT" class="templatebg">
-					<img class="templateicon" src="../img/tNOTicon.png">
+					<img class="templateicon" src="../img/tNOTicon.png" alt="${_("note")}">
 				</div>
 			<div>
 		`);

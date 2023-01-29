@@ -813,7 +813,7 @@ Node.prototype = {
 					<div id="nodeheader${this.id}" class="nodeheader headertopleft H${(Preferences.label?this.color:'none')}">
 					  <div id="nodetitle${this.id}" class="titletopleft"><span id="titlemain${this.id}"></span><span></span></div>
 					</div>
-					<img id="nodeC${this.id}" class="nodeC" src="../img/dropdown.png">
+					<img id="nodeC${this.id}" class="nodeC" src="../img/dropdown.png" alt="dropdown menu">
 				</div>
 			`);
 			// Random rotation between -1 and 1 degree
@@ -831,12 +831,12 @@ Node.prototype = {
 			var str = `
 				<div id="node${this.id}" class="node node${this.type}" tabindex="2">
 					<div id="nodecolorbackground${this.id}" class="nodecolorbackground B${(Preferences.label?this.color:'none')}"></div>
-					<img id="nodeimg${this.id}" src="${idir}/${icn.image}" class="contentimg I${(Preferences.label?this.color:'none')}">
+					<img id="nodeimg${this.id}" src="${idir}/${icn.image}" class="contentimg I${(Preferences.label?this.color:'none')}" alt="">
 					<div id="nodeheader${this.id}" class="nodeheader _HB_ H${(Preferences.label?this.color:'none')}">
 					  <div id="nodetitle${this.id}" class="_TB_"><span id="titlemain${this.id}"></span><span id="titlesuffix${this.id}"></span></div>
 					</div>
-					<img id="nodeC${this.id}" class="nodeC" src="../img/dropdown.png">
-					<img id="nodeW${this.id}" class="nodeW" src="../img/warn.png">
+					<img id="nodeC${this.id}" class="nodeC" src="../img/dropdown.png" alt="dropdown menu">
+					<img id="nodeW${this.id}" class="nodeW" src="../img/warn.png" alt="warning">
 					<div id="nodeMagnitude${this.id}" class="nodeMagnitude"></div>
 				</div>
 			`;
@@ -1191,7 +1191,7 @@ Node.prototype = {
 			let idir = p.icondata.dir;
 			$('#mi_cism').empty().append(`<li class="lcT">${H(p.icondata.setDescription)} - ${H(Rules.nodetypes[this.type])}</li>`);
 			icns.forEach(ic => {
-				$('#mi_cism').append(`<li class="iconli" foricon="${ic.image}" title="${ic.name}"><div><img class="menuimage" src="${idir}/${ic.image}"></div></li>`);
+				$('#mi_cism').append(`<li class="iconli" foricon="${ic.image}" title="${ic.name}"><div><img class="menuimage" src="${idir}/${ic.image}" alt="${ic.image}"></div></li>`);
 			});
 			$('#nodemenu').menu('refresh');
 		} else {

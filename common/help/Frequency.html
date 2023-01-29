@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
  -->
@@ -13,7 +13,7 @@ See LICENSE.md
 		<td class="tdend">
 			identical nodes, and
 		</td>
-	<tr>
+	</tr>
 	<tr>
 		<td class="tdaright">
 			every
@@ -28,7 +28,7 @@ See LICENSE.md
 			  <input id="rYear" type=radio name="period" value="pyear"><label for="rYear">year</label>
 			</fieldset>
 		</td>
-	<tr>
+	</tr>
 	<tr>
 		<td class="tdaright">
 
@@ -39,8 +39,10 @@ See LICENSE.md
 		<td class="tdend">
 			are affected.
 		</td>
-	<tr>
+	</tr>
 </table>
+
+
 <div id="resultarea">
 	<div id="result"></div>
 </div>
@@ -60,107 +62,53 @@ See LICENSE.md
 </div>
 
 
-<TABLE BORDER=1 BORDERCOLOR="#000000" CELLPADDING=0 CELLSPACING=0 FRAME=HSIDES RULES=ROWS>
-	<TR VALIGN=TOP>
-		<TD>
-			<P><B>Class</B></P>
-		</TD>
-		<TD>
-			<P><B>Value</B></P>
-		</TD>
-		<TD>
-			<P ALIGN=CENTER><B>Symbol</B></P>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>High</P>
-		</TD>
-		<TD>
-			<P>Once in 5 years.</P>
-			<P>For 100 identical components, each month 1 or 2 will experience an incident.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M5">H</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Medium</P>
-		</TD>
-		<TD>
-			<P>Once in 50 years.</P>
-			<P>For 100 identical components, each year 2 will experience an incident.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M4">M</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Low</P>
-		</TD>
-		<TD>
-			<P>Once in 500 years.</P>
-			<P>For 100 identical components, one incident will occur every five years.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M3">L</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Extremely high</P>
-		</TD>
-		<TD>
-			<P>Routine event. Very often.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M6">V</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Extremely low</P>
-		</TD>
-		<TD>
-			<P>Very rare, but not physically impossible.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M2">U</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Ambiguous</P>
-		</TD>
-		<TD>
-			<P>Indicates lack of consensus between analysts.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M1">A</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Unknown</P>
-		</TD>
-		<TD>
-			<P>Indicates lack of knowledge or data.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M7">X</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Not yet analysed</P>
-		</TD>
-		<TD>
-			<P>Default. Indicates that no assessment has been done yet.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M0">-</div>
-		</TD>
-	</TR>
-</TABLE>
+<table class="helptable">
+	<tr>
+		<td><p><b>Class</b></p></td>
+		<td><p><b>Value</b></p></td>
+		<td><p style="text-align:center"><b>Symbol</b></p></td>
+	</tr>
+	<tr>
+		<td><p>High</p></td>
+		<td><p>Once in 5 years.</p>
+			<p>For 100 identical components, each month 1 or 2 will experience an incident.</p></td>
+		<td><div class="exampleMagnitude M5">H</div></td>
+	</tr>
+	<tr>
+		<td><p>Medium</p></td>
+		<td><p>Once in 50 years.</p>
+			<p>For 100 identical components, each year 2 will experience an incident.</p></td>
+		<td><div class="exampleMagnitude M4">M</div></td>
+	</tr>
+	<tr>
+		<td><p>Low</p></td>
+		<td><p>Once in 500 years.</p>
+			<p>For 100 identical components, one incident will occur every five years.</p></td>
+		<td><div class="exampleMagnitude M3">L</div></td>
+	</tr>
+	<tr>
+		<td><p>Extremely high</p></td>
+		<td><p>Routine event. Very often.</p></td>
+		<td><div class="exampleMagnitude M6">V</div></td>
+	</tr>
+	<tr>
+		<td><p>Extremely low</p></td>
+		<td><p>Very rare, but not physically impossible.</p></td>
+		<td><div class="exampleMagnitude M2">U</div></td>
+	</tr>
+	<tr>
+		<td><p>Ambiguous</p></td>
+		<td><p>Indicates lack of consensus between analysts.</p></td>
+		<td><div class="exampleMagnitude M1">A</div></td>
+	</tr>
+	<tr>
+		<td><p>Unknown</p></td>
+		<td><p>Indicates lack of knowledge or data.</p></td>
+		<td><div class="exampleMagnitude M7">X</div></td>
+	</tr>
+	<tr>
+		<td><p>Not yet analysed</p></td>
+		<td><p>Default. Indicates that no assessment has been done yet.</p></td>
+		<td><div class="exampleMagnitude M0">-</div></td>
+	</tr>
+</table>
