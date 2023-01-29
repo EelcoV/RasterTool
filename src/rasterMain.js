@@ -1011,6 +1011,9 @@ function initHomeToolbar() {
 	$('#sfsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
 	$('#sfsort_type').checkboxradio('option', 'label', _("by Type"));
 	$('#sfsort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
+	$('label[for=sfsort_alph]').attr('title', _("List by title A-Z"));
+	$('label[for=sfsort_type]').attr('title', _("Group by type"));
+	$('label[for=sfsort_thrt]').attr('title', _("Most vulnerable first, least vulnerable last"));
 	$('#sfsort_alph').prop('checked',true);
 	$('input[name=sfsort]').checkboxradio('refresh');
 	$('#sfsortsection input').on('change', function() {
@@ -1035,6 +1038,9 @@ function initHomeToolbar() {
 	$('#ccfsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
 	$('#ccfsort_type').checkboxradio('option', 'label', _("by Type"));
 	$('#ccfsort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
+	$('label[for=ccfsort_alph]').attr('title', _("List by title A-Z"));
+	$('label[for=ccfsort_type]').attr('title', _("Group by type"));
+	$('label[for=ccfsort_thrt]').attr('title', _("Most vulnerable first, least vulnerable last"));
 	$('#ccfsort_alph').prop('checked',true);
 	$('input[name=ccfsort]').checkboxradio('refresh');
 	$('#ccfsortsection input').on('change', function(){
@@ -1047,8 +1053,13 @@ function initHomeToolbar() {
 	$('#ana_nodesort_alph').checkboxradio('option', 'label', _("Alphabetically"));
 	$('#ana_nodesort_type').checkboxradio('option', 'label', _("by Type"));
 	$('#ana_nodesort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
+	$('label[for=ana_nodesort_alph]').attr('title', _("List rows by title A-Z"));
+	$('label[for=ana_nodesort_type]').attr('title', _("Group rows by type"));
+	$('label[for=ana_nodesort_thrt]').attr('title', _("Most vulnerable top, least vulnerable bottom"));
 	$('#ana_failsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
 	$('#ana_failsort_type').checkboxradio('option', 'label', _("by Type"));
+	$('label[for=ana_failsort_alph]').attr('title', _("List columns by title A-Z"));
+	$('label[for=ana_failsort_type]').attr('title', _("Group columns by type"));
 	$('#ana_nodesort_alph').prop('checked',true);
 	$('#ana_failsort_type').prop('checked',true);
 	$('input[name=ana_nodesort]').checkboxradio('refresh');
@@ -1108,6 +1119,9 @@ function initSettingsToolbar() {
 	$('#em_none').checkboxradio('option', 'label', _("None"));
 	$('#em_small').checkboxradio('option', 'label', _("Small"));
 	$('#em_large').checkboxradio('option', 'label', _("Large"));
+	$('label[for=em_none]').attr('title', _("Hide vulnerability of nodes in diagrams"));
+	$('label[for=em_small]').attr('title', _("Show vulnerability of nodes using small color square"));
+	$('label[for=em_large]').attr('title', _("Show vulnerability of nodes using large color square and letter"));
 	$('#'+Preferences.emsize).prop('checked',true);
 	$('input[name=emblem_size]').checkboxradio('refresh');
 	$('#vulnlevelsection input').on('change', function() {
@@ -1119,6 +1133,8 @@ function initSettingsToolbar() {
 	$('#labelsection>div:first-child').text(_("Label colors"));
 	$('#label_off').checkboxradio('option', 'label', _("hide"));
 	$('#label_on').checkboxradio('option', 'label', _("show"));
+	$('label[for=label_off]').attr('title', _("Paint nodes in white"));
+	$('label[for=label_on]').attr('title', _("Paint nodes using the color of their label"));
 	$('#label_off').prop('checked',!Preferences.label);
 	$('#label_on').prop('checked',Preferences.label);
 	$('input[name=labelonoff]').checkboxradio('refresh');
@@ -1131,6 +1147,8 @@ function initSettingsToolbar() {
 	$('#mapsection>div:first-child').text(_("Mini-map"));
 	$('#showmap_off').checkboxradio('option', 'label', _("off"));
 	$('#showmap_on').checkboxradio('option', 'label', _("on"));
+	$('label[for=showmap_off]').attr('title', _("Hide the miniature overview of the workspace"));
+	$('label[for=showmap_on]').attr('title', _("Show a miniature overview of the workspace"));
 	$('#showmap_off').prop('checked',!Preferences.showmap);
 	$('#showmap_on').prop('checked',Preferences.showmap);
 	$('input[name=showmap]').checkboxradio('refresh');
@@ -1159,6 +1177,8 @@ function initSettingsToolbar() {
 	$('#onlinelabel>div:first-child').text(_("Server synchronisation"));
 	$('#online_off').checkboxradio('option', 'label', _("offline"));
 	$('#online_on').checkboxradio('option', 'label', _("online"));
+	$('label[for=online_off]').attr('title', _("Do not synchronise changes to the server"));
+	$('label[for=online_on]').attr('title', _("Synchronize all changes to the server for instant collaboration"));
 	$('#online_off').prop('checked',!Preferences.online);
 	$('#online_on').prop('checked',Preferences.online);
 	$('input[name=onlineonoff]').checkboxradio('refresh');
@@ -5642,7 +5662,7 @@ function paintSFTable() {
 	for (const nc of tit) {
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}
-	snippet += '<td class="headercell"><b>_OV_</b></td><td></td>ana_ccftable\n\
+	snippet += '<td class="headercell"><b>_OV_</b></td><td></td>\n\
 		 </tr>\n\
 		</thead>\n\
 		<tbody>\n\
