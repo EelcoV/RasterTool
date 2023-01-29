@@ -102,7 +102,7 @@ class Service {
 			this.unload();
 		}
 		var it = new NodeIterator({service: this.id});
-		it.forEach(rn => rn.destroy(false));
+		it.forEach(rn => rn.destroy());
 		localStorage.removeItem(LS+'S:'+this.id);
 		Service._all.delete(this.id);
 	}

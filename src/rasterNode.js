@@ -182,7 +182,7 @@ Node.prototype = {
 		return Service.get(this.service).project;
 	},
 
-	destroy: function(effect) {
+	destroy: function() {
 		var jsP = Service.get(this.service)._jsPlumb;
 		if (this.centerpoint) jsP.deleteEndpoint(this.centerpoint);
 		if (this.dragpoint) jsP.deleteEndpoint(this.dragpoint);
@@ -212,16 +212,9 @@ Node.prototype = {
 		this.hidemarker();  // Make it disappear before the animation starts
 		$('#tinynode'+this.id).remove();
 		Node._all.delete(this.id);
-		if (effect==undefined || effect==true) {
-			$(this.jnid).effect('explode', 500, function() {
-				var id = nid2id(this.id);
-				jsP.remove('node'+id);
-			});
-		} else {
-			// Prevent an error when jsPlumb is asked to remove a node that is not part of the DOM (anymore)
-			var node = $(this.jnid);
-			if (node.length>0)  jsP.remove(this.nid);
-		}
+		// Prevent an error when jsPlumb is asked to remove a node that is not part of the DOM (anymore)
+		var node = $(this.jnid);
+		if (node.length>0)  jsP.remove(this.nid);
 	},
 
 	setposition: function(px,py,snaptogrid) {

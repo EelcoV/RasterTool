@@ -488,7 +488,7 @@ Transaction.prototype = {
 // Change to true when not debugging
 					let rn = Node.get(d.id);
 					repaintservices.add(rn.service);
-					rn.destroy(false);
+					rn.destroy();
 					continue;
 				}
 
@@ -502,7 +502,6 @@ Transaction.prototype = {
 				if (d.height!=null)  rn.position.height = d.height;
 				rn.setposition(d.x,d.y);
 				rn.store();
-// Change to true when not debugging
 				rn.paint();
 				if (d.type=='tNOT' || d.type=='tACT')  continue;
 
