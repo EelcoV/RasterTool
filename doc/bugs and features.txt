@@ -4,7 +4,6 @@ See LICENSE.md
 
 BUGS
 Duplicating a shared project gives a server error about the project unexpectedly being removed from the server.
-Bug: "No or too many node clusters" in "common vulnerability delete"
 When changing WPA, only redo Assessments for malicious Vulnerabilities, and repaint Components containing those. Speedups!!!!
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.
@@ -55,6 +54,7 @@ Set description on added threats.
 Consistency report for the entire diagram, plus UI.
 
 CANNOT REPRODUCE
+Bug: "No or too many node clusters" in "common vulnerability delete"
 Fixed? Sometimes when moving a node localStorage is not up to date with the node's properties.
 
 OTHER / WON'T FIX

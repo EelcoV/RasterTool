@@ -622,7 +622,7 @@ function initProjectsToolbar() {
 			// Activating a stub project.
 			// Make sure that there is no local project with that name
 			if (Project.withTitle(p.title)!=null) {
-				rasterAlert(_('That project name is used already'),
+				rasterAlert(_("That project name is used already"),
 					_H("There is already a project called '%%'. Please rename that project first.", p.title)
 				);
 			} else {
@@ -740,11 +740,11 @@ function initProjectsToolbar() {
 	});
 	// Zap! --------------------
 	$('#buttzap').on('click',  function(){
-		rasterConfirm(_('Delete all?'),
+		rasterConfirm(_("Delete all?"),
 			_H("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
 			_("Erase everything"),_("Cancel"),
 			function() {
-				rasterConfirm(_('Delete all?'),
+				rasterConfirm(_("Delete all?"),
 					_("Really sure? You will lose <b>all private</b> projects!\n"),
 					_("Yes, really erase all"),_("Cancel"),
 					Zap
