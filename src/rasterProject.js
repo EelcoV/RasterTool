@@ -3,7 +3,12 @@
  */
 
 /* global
-_, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, H, isSameString, loadFromString, LS, newRasterConfirm, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, paintSingleFailures, Preferences, prettyDate, ProjectIterator, rasterAlert, refreshStubList, Rules, Service, ServiceIterator, SizeDOMElements, startWatchingCurrentProject, switchToProject, ToolGroup, Transaction, urlEncode, Vulnerability, VulnerabilityIterator, TabAnaVulnOverview, TabAnaAssOverview, TabAnaLonglist, repaintAnalysisIfVisible, reasonableString
+#ifdef SERVER
+_H, H, newRasterConfirm, prettyDate, ProjectIterator, rasterAlert, refreshStubList, startWatchingCurrentProject, switchToProject, urlEncode,
+#else
+prefsDir,
+#endif
+_, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, createUUID, exportProject, GroupSettings, isSameString, loadFromString, LS, nid2id, NodeCluster, NodeCluster, NodeClusterIterator, paintSingleFailures, Preferences, Rules, Service, ServiceIterator, SizeDOMElements, ToolGroup, Transaction, Vulnerability, VulnerabilityIterator, TabAnaVulnOverview, TabAnaAssOverview, TabAnaLonglist, repaintAnalysisIfVisible, reasonableString
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -83,7 +88,7 @@ _, _H, Assessment, AssessmentIterator, bugreport, Component, ComponentIterator, 
  *  getNewTransactionsFromServer: retrieve all transactions more recent than this.TransactionHead from the server, and apply.
  *  askForConflictResolution: make private, overrule (everyone uses our version), or adopt (we use the server version)
  */
-var Project = function(id=createUUID(),asstub=false) {
+var Project = function(id=createUUID(),asstub=false) {		// eslint-disable-line no-unused-vars
 	if (Project._all.has(id)) {
 		bugreport("Project with id "+id+" already exists","Project.constructor");
 	}
@@ -899,7 +904,7 @@ Project.prototype = {
 #ifdef SERVER
 		res = trydir('../img',this) || trydir('.',this) ;
 #else
-		res = trydir('../img',this) || trydir(prefsDir,this);		// eslint-disable-line no-undef
+		res = trydir('../img',this) || trydir(prefsDir,this);
 #endif
 		if (!res) {
 			console.log(`Failed to load iconset ${setname}`);
@@ -1748,6 +1753,7 @@ Project.prototype = {
 
 };
 
+#ifdef SERVER
 function escapeNewlines(s) {
 	// Change backslash to "backslash-!" and newlines to "backslash-n"
 	return s.replace(/\\/g,'\\!').replace(/\n/g,'\\n');
@@ -1756,6 +1762,7 @@ function escapeNewlines(s) {
 function unescapeNewlines(s) {
 	return s.replace(/\\n/g,'\n').replace(/\\!/g,'\\');
 }
+#endif
 
 /* mylang(obj): retrieve language specific element from obj.
  *  obj = {'EN': 'English', 'NL': 'Not English'}

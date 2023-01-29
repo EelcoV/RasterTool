@@ -8,7 +8,6 @@ When changing WPA, only redo Assessments for malicious Vulnerabilities, and repa
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.
 Do away with the online/offline setting?
-Set title attributes on all checkboxradio options
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
 The How to use help-panel is useless. Either improve or remove.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.

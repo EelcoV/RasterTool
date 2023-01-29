@@ -33,7 +33,6 @@ Not sure about modules yet. First check whether they impede debugging in the Dev
 
 * Check all ECMAScript source files using `eslint`. See the `eslintrc` file for further details. Running `eslint` should not produce any errors or warnings.
 	Sometimes functions are defined in one script file but used only in other script files. Mark these function definitions with `// eslint-disable-line no-unused-vars`.
-	When using functions only inside `#ifdef ... #endif`, then mark that line with `// eslint-disable-line no-undef`. Otherwise, enumerate functions in the `/* globals ... */` section at the top of the file.
 * Indent using tabs. Tab size is 4.
 * A single space before and after `=` in assignments.
 * No space around comparison operators or other operators, except to make the structure of very long expressions clear.

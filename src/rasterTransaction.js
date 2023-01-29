@@ -2,7 +2,13 @@
  * See LICENSE.md
  */
 
-/* globals _, _H, Assessment, AssessmentIterator, bugreport, checkForErrors, Component, createUUID, CurrentCluster, escapeNewlines, exportProject, H, lengthy, nid2id, NodeCluster, NodeClusterIterator, PaintAllClusters, paintSingleFailures, Preferences, Project, randomrot, rasterAlert, RefreshNodeReportDialog, repaintAnalysisIfVisible, repaintCCFDetailsIfVisible, repaintCluster, repaintClusterDetails, Service, startWatching, stopWatching, TabAnaNodeCounts, TabAnaVulnOverview, urlEncode, Vulnerability, VulnerabilityIterator
+/* globals
+#ifdef SERVER
+saveThenStartWatching,
+#else
+setModified,
+#endif
+_, _H, Assessment, AssessmentIterator, bugreport, checkForErrors, Component, createUUID, CurrentCluster, escapeNewlines, exportProject, H, lengthy, nid2id, NodeCluster, NodeClusterIterator, PaintAllClusters, paintSingleFailures, Preferences, Project, randomrot, rasterAlert, RefreshNodeReportDialog, repaintAnalysisIfVisible, repaintCCFDetailsIfVisible, repaintCluster, repaintClusterDetails, Service, startWatching, stopWatching, TabAnaNodeCounts, TabAnaVulnOverview, urlEncode, Vulnerability, VulnerabilityIterator
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -35,7 +41,7 @@
  *  perform(data): perform the action using data; data defaults to this.do_data
  *  rollback: perform the action using this.undo_data.
  */
-var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=false,id=createUUID(),pid=Project.cid,createonly=false) {
+var Transaction = function(knd,undo_data,do_data,descr=knd,chain=false,remote=false,id=createUUID(),pid=Project.cid,createonly=false) {//eslint-disable-line no-unused-vars
 	this.id = id;
 	this.kind = knd;
 	this.descr = descr;
@@ -1132,12 +1138,12 @@ function rebuildCluster(c) {
 	cl.store();
 }
 
-function transactionCompleted(str,dosave=true) {
+function transactionCompleted(str,dosave=true) {		//eslint-disable-line no-unused-vars
 	if (Transaction.debug) console.log(`Completed ${str}`);
 #ifdef SERVER
-	if (dosave) saveThenStartWatching();			// eslint-disable-line no-undef
+	if (dosave) saveThenStartWatching();
 #else
-	setModified();				// eslint-disable-line no-undef
+	setModified();
 #endif
 }
 

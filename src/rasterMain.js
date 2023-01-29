@@ -3,14 +3,17 @@
  */
 
 /* globals
-AssessmentIterator, Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, urlDecode, urlEncode
+#ifdef SERVER
+urlEncode,
+#endif
+AssessmentIterator, Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, urlDecode
 */
 
 "use strict";
 /* Global preferences */
 const DEBUG = true;  // set to false for production version
 let Preferences;
-let ToolGroup;
+let ToolGroup;		// eslint-disable-line no-unused-vars
 /* GroupSettings: an object with these properties:
  * classroom: the classroom setting from group.json
  * template: idem
@@ -26,7 +29,9 @@ let GroupSettings;
  */
 const LS_prefix = 'raster';
 const LS_version = 4;
+#ifdef SERVER
 const LS = LS_prefix+':'+LS_version+':';
+#endif
 
 const tab_height = 31;		// See CSS definition of <body>
 //const toolbar_height = 94;	// See CSS definition of <body>
@@ -38,9 +43,9 @@ const MaxStringLen = 5000;	// Limit on object titles, descriptions, etc.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 let WindowID = null;
-let prefsDir = null;
+let prefsDir = null;		// eslint-disable-line no-unused-vars
 let ipc = require('electron').ipcRenderer;
-let Modified = false;
+let Modified = false;		// eslint-disable-line no-unused-vars
 
 ipc.on('window-id', function(event,id) {
 	WindowID = id;
@@ -876,17 +881,13 @@ function refreshStubList(dorepaint=false) {
 }
 #endif
 
+#ifdef SERVER
 function getGroupSettingsAtInitialisation() {
 	$.ajax({
-#ifdef SERVER
 		url: 'group.json',
-#else
-		url: prefsDir+'/group.json',
-#endif
 		async: false,
 		dataType: 'json',
 		success: function(data) {
-#ifdef SERVER
 			if (data.classroom===true) {
 				GroupSettings.classroom = true;
 				$("#classroom").text(_("Classroom version")).show();
@@ -898,13 +899,11 @@ function getGroupSettingsAtInitialisation() {
 				GroupSettings.localonly = true;
 				GroupSettings.classroom = true;
 			}
-#endif
 			if (typeof data.iconsets==='object' && Array.isArray(data.iconsets) && data.iconsets.every(s => typeof s==='string') ) {
 				GroupSettings.iconsets = data.iconsets;
 			}
 		}
 	});
-#ifdef SERVER
 	if (GroupSettings.template=='') return;
 	// Try to fetch the template.
 	Project.UpdateStubs(false,false); // async, and do not repaint
@@ -928,8 +927,8 @@ function getGroupSettingsAtInitialisation() {
 			GroupSettings.templatestring = data;
 		}
 	});
-#endif
 }
+#endif
 
 function initHomeToolbar() {
 	$("a[href^='#tb_home']").text(_("Home"));
@@ -1809,11 +1808,11 @@ function loadEmptyProject() {
 	transactionCompleted("Project add");
 }
 
+#ifdef SERVER
 /* Load a fresh default project. If a template is defined and exists, then start a new project based on
  * that template. Otherwise, start an empty project with builtin default labels and vulnerabilities.
  */
 function loadDefaultProject() {
-#ifdef SERVER
 	if (GroupSettings.templatestring) {
 		let pid = loadFromString(GroupSettings.templatestring, {
 			showerrors: false,
@@ -1835,10 +1834,9 @@ function loadDefaultProject() {
 		loadEmptyProject();
 	}
 	populateProjectList();
-#else
 	loadEmptyProject();
-#endif
 }
+#endif
 
 // Remove menus, but *not* the selectrect
 function removetransientwindows(/*evt*/) {
@@ -2014,6 +2012,7 @@ function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
 	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 }
 
+#ifdef SERVER
 function newRasterConfirm(title,msg,buttok,buttcancel) {
 	var dfd = $.Deferred();
 	let modaldialog = $('<div id="modaldialog"></div>');
@@ -2041,6 +2040,7 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 	return dfd.promise();
 }
+#endif
 
 /* bugreport: Notify the user of a bug, save the project and block the UI.
  */
@@ -2923,6 +2923,7 @@ function checkUpgradeDone() {
 //	return lu;
 //}
 
+#ifdef SERVER
 /* singleProjectExport(p): save all data into a local file.
  */
 function singleProjectExport(p) {
@@ -2932,6 +2933,7 @@ function singleProjectExport(p) {
 //	$('#exp_contents').val(s);
 //	$('#exp_form').submit();
 }
+#endif
 
 function exportProject(pid) {
 	let p = Project.get(pid);
