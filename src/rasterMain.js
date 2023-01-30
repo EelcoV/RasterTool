@@ -29,9 +29,7 @@ let GroupSettings;
  */
 const LS_prefix = 'raster';
 const LS_version = 4;
-#ifdef SERVER
-const LS = LS_prefix+':'+LS_version+':';
-#endif
+const LS = LS_prefix+':'+LS_version+':';		// eslint-disable-line no-unused-vars
 
 const tab_height = 31;		// See CSS definition of <body>
 //const toolbar_height = 94;	// See CSS definition of <body>
@@ -76,6 +74,9 @@ ipc.on('document-start-open', function(event,str) {
 	lengthy(function() {
 		var newp = loadFromString(str,{strsource: _("File")});
 		if (newp!=null) {
+			let p = Project.get(newp);
+			p.shared = false;
+			p.store();
 			switchToProject(newp);
 			checkForErrors(false);
 			checkUpgradeDone();
