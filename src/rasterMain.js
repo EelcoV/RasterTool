@@ -1837,7 +1837,6 @@ function loadDefaultProject() {
 		loadEmptyProject();
 	}
 	populateProjectList();
-	loadEmptyProject();
 }
 #endif
 
