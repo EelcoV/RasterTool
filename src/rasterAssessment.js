@@ -450,12 +450,14 @@ Assessment.prototype = {
 			$('#dth_'+prefix+'name'+this.id).attr('title', this.description);
 		}
 		
-		$(`#dth_${prefix}mal${this.id} input`).checkboxradio({icon: false});
-		$(`#dth_${prefix}mal${this.id} fieldset`).controlgroup();
-		$(`#dth_${prefix}mal${this.id} input`).eq(0).prop('checked',!this.malice);
-		$(`#dth_${prefix}mal${this.id} input`).eq(1).prop('checked',this.malice);
-		$(`#dth_${prefix}mal${this.id} input`).checkboxradio('option','disabled',true);
-		$(`#dth_${prefix}mal${this.id} input`).checkboxradio('refresh');
+		let cbs = $(`#dth_${prefix}mal${this.id}`);
+		let inp = $('input',cbs);
+		inp.checkboxradio({icon: false});
+		$('fieldset',cbs).controlgroup();
+		inp.eq(0).prop('checked',!this.malice);
+		inp.eq(1).prop('checked',this.malice);
+		inp.checkboxradio('option','disabled',true);
+		inp.checkboxradio('refresh');
 
 		let selectoptions = '';
 		for (let i=0; i<Assessment.values.length; i++) {
@@ -662,8 +664,8 @@ Assessment.prototype = {
 		});
 	
 		if (interact) {
-			$(`#dth_${prefix}mal${this.id} input`).checkboxradio('option','disabled',false);
-			$(`#dth_${prefix}mal${this.id} input`).on('change', function() {
+			inp.checkboxradio('option','disabled',false);
+			inp.on('change', function() {
 				let val = $(`#dth_${prefix}mal${assmnt.id} input`).eq(1).prop('checked');
 				new Transaction('vulnDetails',
 					[{vuln: vln.id, malice: vln.malice}],

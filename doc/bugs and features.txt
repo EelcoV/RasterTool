@@ -27,6 +27,7 @@ Filter on Single Failures, including on overall threat score.
 Sort vulns for a component on name/freq/impact/total/remark
 
 OTHER TODO
+Find panel should search through Clusters as well.
 Hide the URL mouseover popup in the bottom left corner of the window. They are in the way of bottom tabs.
 Make use of the bind() function when useful (a number of functions use a local variable to store the 'this' value).
 Simplify the UI for menuitem 'Make single'. Renamiong to 'Make one component' is not clear either, as the thing is still presented as a class.

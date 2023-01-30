@@ -95,7 +95,7 @@ var Node = function(type, serv, id) {
 	this.suffix = 'a';
 	// Sticky notes are traditionally yellow
 	this.color = (this.type=='tNOT' ? "yellow" : "none");
-
+	this._jnid = null; 	// Cached version of $(this.jnid)
 	this.store();
 	Node._all.set(this.id,this);
 };
@@ -213,8 +213,7 @@ Node.prototype = {
 		$('#tinynode'+this.id).remove();
 		Node._all.delete(this.id);
 		// Prevent an error when jsPlumb is asked to remove a node that is not part of the DOM (anymore)
-		var node = $(this.jnid);
-		if (node.length>0)  jsP.remove(this.nid);
+		if (this._jnid.length>0)  jsP.remove(this.nid);
 	},
 
 	setposition: function(px,py,snaptogrid) {
@@ -245,14 +244,22 @@ Node.prototype = {
 		this.position.x = px;
 		this.position.y = py;
 		this.store();
-		$(this.jnid).css('left',px+'px').css('top',py+'px');
-		$(this.jnid).css('width',this.position.width+'px').css('height',this.position.height+'px');
+		if (this._jnid) {
+			this._jnid.css({
+				'left': px+'px',
+				'top': py+'px',
+				'width': this.position.width+'px',
+				'height': this.position.height+'px'
+			});
+		}
 		jsP.revalidate(this.nid);
 
 		dO.left = (px * ow)/fw;
 		dO.top = (py * oh)/fh;
-		$('#tinynode'+this.id).css('left', dO.left);
-		$('#tinynode'+this.id).css('top', dO.top);
+		$('#tinynode'+this.id).css({
+			'left': dO.left,
+			'top': dO.top
+		});
 	},
 	
 	setcomponent: function(c) {
@@ -686,9 +693,9 @@ Node.prototype = {
 	},
 
 	iscontainedin: function(left,top,w,h) {
-		var no = $(this.jnid).offset();
-		var nw = $(this.jnid).width();
-		var nh = $(this.jnid).height();
+		var no = this._jnid.offset();
+		var nw = this._jnid.width();
+		var nh = this._jnid.height();
 		return (no.left>=left && no.left+nw<=left+w
 			&& no.top>=top && no.top+nh<=top+h);
 	},
@@ -809,8 +816,9 @@ Node.prototype = {
 					<img id="nodeC${this.id}" class="nodeC" src="../img/dropdown.png" alt="dropdown menu">
 				</div>
 			`);
+			this._jnid = $(this.jnid);
 			// Random rotation between -1 and 1 degree
-			$(this.jnid).css('transform', `rotate(${randomrot()}deg)`);
+			this._jnid.css('transform', `rotate(${randomrot()}deg)`);
 		} else {
 			this.iconinit(this.icon);
 			icn = p.icondata.icons[this._idx];
@@ -844,14 +852,17 @@ Node.prototype = {
 				str = str.replace(/_TB_/g, 'titleinside');
 			}
 			$('#diagrams_workspace'+this.service).append(str);
+			this._jnid = $(this.jnid);
 			this.setmarker();
 			// Set a variable, to be used or not in the styles that define the placement of the title
 			$('#nodeheader'+this.id).css('--margin', icn.margin+'%');
 			// See comments in raster.css at nodecolorbackground
 //			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url(${idir}/iconset/${p.iconset}/${icn.mask})`);
 //			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `-moz-element(#${icn.maskid})`);
-			$(`#nodecolorbackground${this.id}`).css('mask-image', `url("${idir}/${icn.mask}")`);
-			$(`#nodecolorbackground${this.id}`).css('-webkit-mask-image', `url("${idir}/${icn.mask}")`);
+			$(`#nodecolorbackground${this.id}`).css({
+				'mask-image': `url("${idir}/${icn.mask}")`,
+				'-webkit-mask-image': `url("${idir}/${icn.mask}")`
+			});
 		}
 		
 		str = '<div id="tinynode_ID_" class="tinynode"></div>\n';
@@ -860,14 +871,14 @@ Node.prototype = {
 
 		this.settitle(this.title);
 
-		$(this.jnid).css('display', 'block');
+		this._jnid.css('display', 'block');
 		this.setposition(this.position.x, this.position.y, true);
 
 		var jsP = Service.get(this.service)._jsPlumb;
 		/* This is *not* jQuery's draggable, but Katavorio's!
 		 * See https://github.com/jsplumb/katavorio/wiki
 		 */
-		jsP.draggable($(this.jnid), {
+		jsP.draggable(this._jnid, {
 			containment: 'parent',
 			distance: 10,	// prevent drags when clicking the menu activator
 			opacity: 0.8,
@@ -956,7 +967,7 @@ Node.prototype = {
 			});
 		}
 
-		$(this.jnid).on('mouseenter', function(evt) {
+		this._jnid.on('mouseenter', function(evt) {
 			// If a mouse button is down, then Firefox will set .buttons to nonzero.
 			// Google Chrome does not set .buttons, but uses .which; when a mouse button is down
 			// .which will be non-zero.
@@ -1045,8 +1056,7 @@ Node.prototype = {
 //			var offset = $(this).offset();
 			rn._showpopupmenu(evt);
 			return false;
-		});
-		$('#nodeC'+this.id).on('click',  function(/*event*/){ return false; });
+		}).on('click',  function(/*event*/){ return false; });
 		
 		$('#nodeW'+this.id).on('click', function(e) {
 			// this.id is like "nodeWxxx", where xxx is the node id number
@@ -1109,7 +1119,7 @@ Node.prototype = {
 		 * though aspectRatio=true. Obtain the current values, and allow double
 		 * for maximum
 		 */
-		$(this.jnid).resizable({
+		this._jnid.resizable({
 			handles: 'se',
 			autoHide: true,
 			aspectRatio: (this.type=='tNOT' ? false : true),
@@ -1153,6 +1163,7 @@ Node.prototype = {
 		jsP.remove(this.nid);
 		this.centerpoint=null;
 		this.dragpoint=null;
+		this._jnid = null;
 
 		if (this.id==$('#nodereport').data('DialogNode')) {
 			$('#nodereport').dialog('close');

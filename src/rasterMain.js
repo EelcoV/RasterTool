@@ -163,17 +163,17 @@ function CurrentProjectAsString() {
  */
 $( initAllAndSetup );
 
-/* Perform a lengthy action. Change the cursor to a wait-cursor,
- * then defer to the main thread for that to take effect. This will take some
- * time. Wait too long, and it will be noticeable. Wait not long enough, and
- * the cursor won't change (?!).
+/* Perform a lengthy action. Change the cursor to a wait-cursor, then defer to the main thread
+ * for that to take effect. In the next cycle of the event loop execute the function, and reset
+ * the cursor.
+ * The small wait time is necessary; otherwise the cursor sometimes does not change?!
  */
 function lengthy(func) {
 	$('body').addClass('waiting');
 	window.setTimeout(function() {
 		func();
 		$('body').removeClass('waiting');
-	},150);
+	},50);
 }
 
 function lengthyFunction(func) {
@@ -733,7 +733,7 @@ function initProjectsToolbar() {
 	$('#projdebugsection>div:first-child').text(_("Debugging functions"));
 	$('#buttcheck').text(_("Check"));
 	$('#buttexportall').text(_("Export all"));
-	$('#buttzap').text(_("Zap library"));
+	$('#buttzap').text(_("Wipe library"));
 	$('#buttcheck').attr('title',_("Check the projects for internal consistency."));
 	$('#buttexportall').attr('title',_("Save all projects into a single file."));
 	$('#buttzap').attr('title',_("Permanently remove all projects."));
@@ -4796,14 +4796,14 @@ function ccfsVisible(vis) {
 		$('#ccfs_details').show();
 		$('#ccfexpandall').button('enable');
 		$('#ccfcollapseall').button('enable');
-		$('input[name=ccfsort]').checkboxradio('enable');
+		$('#ccfsortsection input[name=ccfsort]').checkboxradio('enable');
 	} else {
 		$('#noccf').show();
 		$('#someccf').hide();
 		$('#ccfs_details').hide();
 		$('#ccfexpandall').button('disable');
 		$('#ccfcollapseall').button('disable');
-		$('input[name=ccfsort]').checkboxradio('disable');
+		$('#ccfsortsection input[name=ccfsort]').checkboxradio('disable');
 	}
 }
 
@@ -5632,13 +5632,13 @@ function paintSFTable() {
 			+ _H("Since all service diagrams are empty, there is nothing to see here yet. ")
 			+ _H("Add some nodes to the diagrams first.")
 		);
-		$('input[name=ana_nodesort]').checkboxradio('option','disabled',true);
-		$('input[name=ana_failsort]').checkboxradio('option','disabled',true);
+		$('#anavnsortsection input[name=ana_nodesort]').checkboxradio('option','disabled',true);
+		$('#anavnsortsection input[name=ana_failsort]').checkboxradio('option','disabled',true);
 		$('#quickwinslink').button('option','disabled',true);
 		return;
 	}
-	$('input[name=ana_nodesort]').checkboxradio('option','disabled',false);
-	$('input[name=ana_failsort]').checkboxradio('option','disabled',false);
+	$('#anavnsortsection input[name=ana_nodesort]').checkboxradio('option','disabled',false);
+	$('#anavnsortsection input[name=ana_failsort]').checkboxradio('option','disabled',false);
 	$('#quickwinslink').button('option','disabled',false);
 	
 	// Initialise to '-'
@@ -5686,13 +5686,7 @@ function paintSFTable() {
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
 			if (ta.title==nc.title && ta.type==nc.type) {
-				snippet += '<td class="nodecell _EX_ M_CL_" data-component="_NO_" data-threat="_TH_" title="_TI_">_TO_</td>';
-				snippet = snippet.replace(/_CL_/g, Assessment.valueindex[ta.total]);
-				snippet = snippet.replace(/_TO_/g, ta.total);
-				snippet = snippet.replace(/_TI_/g, H(cm.title)+" / "+H(ta.title)+" ("+Rules.nodetypes[ta.type]+")");
-				snippet = snippet.replace(/_NO_/g, cm.id);
-				snippet = snippet.replace(/_TH_/g, ta.id);
-				snippet = snippet.replace(/_EX_/g, exclusionsContains(ComponentExclusions,cm.id,ta.id)?"excluded":"" );
+				snippet += `<td class="nodecell ${exclusionsContains(ComponentExclusions,cm.id,ta.id)?"excluded":""} M${Assessment.valueindex[ta.total]}" data-component="${cm.id}" data-threat="${ta.id}" title="${H(cm.title)} / ${H(ta.title)} (${Rules.nodetypes[ta.type]})">${ta.total}</td>`;
 				if (!exclusionsContains(ComponentExclusions,cm.id,ta.id)) {
 					Nodesum[cm.id] = Assessment.sum(Nodesum[cm.id], ta.total);
 				}
@@ -5700,15 +5694,11 @@ function paintSFTable() {
 				snippet += '<td class="blankcell">&thinsp;</td>';
 			}
 		}
-		snippet += '<td class="M_CL_" title="_TI_">_TO_</td><td>_ZZ_</td></tr>\n';
-		snippet = snippet.replace(/_CL_/g, Assessment.valueindex[Nodesum[cm.id]]);
-		snippet = snippet.replace(/_TO_/g, Nodesum[cm.id]);
-		snippet = snippet.replace(/_TI_/g, H(cm.title)+" / overall vulnerability level");
-		if (cm.magnitude==Nodesum[cm.id]) {
-			snippet = snippet.replace(/_ZZ_/g, '');
-		} else {
-			snippet = snippet.replace(/_ZZ_/g, '<span class="reduced">' + _("reduced") + '</span>');
+		let reduced = '';
+		if (cm.magnitude!=Nodesum[cm.id]) {
+			reduced = '<span class="reduced">' + _("reduced") + '</span>';
 		}
+		snippet += `<td class="M${Assessment.valueindex[Nodesum[cm.id]]}" title="${H(cm.title)} /  ${_H("overall vulnerability level")}">${Nodesum[cm.id]}</td><td>${reduced}</td></tr>\n`;
 	}
 	// Do the ending/closing
 	snippet += '\n\
@@ -5717,7 +5707,7 @@ function paintSFTable() {
 	';
 	$('#ana_nodethreattable').html(snippet);
 
-	$('.nodecell').on('click',  function(evt){
+	$('#ana_nodethreattable .nodecell').on('click',  function(evt){
 		var cmid = $(evt.currentTarget).data('component');
 		var tid = $(evt.currentTarget).data('threat');
 		if (exclusionsContains(ComponentExclusions,cmid,tid)) {
