@@ -18,8 +18,8 @@ See LICENSE.md
 #ifdef STANDALONE
   <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 #endif
-<script src="../js/jquery-3.6.0.min.js"></script>
-<script src="../js/jquery-ui-1.13.0.min.js"></script>
+<script src="../js/jquery-3.6.3.min.js"></script>
+<script src="../js/jquery-ui-1.13.2.min.js"></script>
 #ifdef SERVER
 <script src="../js/jquery.localisation.js"></script>
 #endif

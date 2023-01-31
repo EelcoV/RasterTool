@@ -669,7 +669,7 @@ Project.prototype = {
 		this.settitle(_("New project"));
 	},
 
-	setshared: function(b,updateServer) {
+	setshared: function(b,updateServer) {	// eslint-disable-line no-unused-vars
 #ifdef SERVER
 		if (GroupSettings.localonly) {
 			this.shared = false;
