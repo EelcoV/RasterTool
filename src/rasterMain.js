@@ -6117,13 +6117,13 @@ function paintNodeTypeStats() {
 	snippet = snippet.replace(/_LD_/g, _("Node counts") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
-	for (var typ in Rules.nodetypes) tStats[typ] = 0;
+	for (var typ of Rules.types) tStats[typ] = 0;
 	for (const s of sit) {
 		var sStats = {};
 		var sTot = 0;
 		var nit = new NodeIterator({service: s.id});
 
-		for (typ in Rules.nodetypes) sStats[typ] = 0;
+		for (typ of Rules.types) sStats[typ] = 0;
 		snippet += '<div id="servicestats_SI_" class="servicestats">\n\
 		<b>_SN_</b><br>\n\
 		<table class="statstable">\n\

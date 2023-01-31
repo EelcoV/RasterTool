@@ -488,7 +488,7 @@ Node.prototype = {
 		}
 		var mustadd = [];
 		var mustremove = [];
-		for (var j in C) {
+		for (var j of Object.keys(C)) {
 			if (C[j]<Rules.edgeMin[this.type][j]) {
 				mustadd.push( Rules.nodetypes[j] );
 			}
@@ -516,7 +516,7 @@ Node.prototype = {
 		var C = this._edgecount();
 		if (C['TOTAL']<Rules.totaledgeMin[this.type])  return false;
 		if (C['TOTAL']>Rules.totaledgeMax[this.type] && Rules.totaledgeMax[this.type]>-1)  return false;
-		for (var j in C) {
+		for (var j of Object.keys(C)) {
 			if (C[j]<Rules.edgeMin[this.type][j])  return false;
 			if (C[j]>Rules.edgeMax[this.type][j] && Rules.edgeMax[this.type][j]>-1)  return false;
 		}
@@ -1130,7 +1130,7 @@ Node.prototype = {
 			start: function(/*event,ui*/) {
 				let rn = Node.get( nid2id(this.id) );
 				rn.undo_data = {};
-				for (let i in rn.position)  rn.undo_data[i] = rn.position[i];
+				for (let i of Object.keys(rn.position))  rn.undo_data[i] = rn.position[i];
 			},
 			resize: function(event,ui) {
 				let rn = Node.get( nid2id(this.id) );
@@ -1144,9 +1144,9 @@ Node.prototype = {
 				let rn = Node.get( nid2id(this.id) );
 				let newposition = {};
 				// Save new geometry
-				for (let i in rn.position)  newposition[i] = rn.position[i];
+				for (let i of Object.keys(rn.position))  newposition[i] = rn.position[i];
 				// Restore starting geometry
-				for (let i in rn.undo_data)  rn.position[i] = rn.undo_data[i];
+				for (let i of Object.keys(rn.undo_data))  rn.position[i] = rn.undo_data[i];
 				rn.store();
 				new Transaction('nodeGeometry',
 					[{id: rn.id, x: rn.undo_data.x, y: rn.undo_data.y, width: rn.undo_data.width, height: rn.undo_data.height}],
@@ -1359,6 +1359,8 @@ function RefreshNodeReportDialog() {
  * Rules.consistent() must return true, and should be checked at startup.
  */
 var Rules = {
+	/* Set of all types */
+	types: new Set(['tWLS','tWRD','tEQT','tACT','tUNK','tNOT']),
 	/* English translations of node types.
 	 * Can also be used as enumerator:   for (var t in Rules.nodetypes) { ... }
 	 */
@@ -1418,12 +1420,12 @@ var Rules = {
 		var i;
 		if (!t) {
 			var rv = true;
-			for (i in Rules.nodetypes) rv = rv && Rules.consistent(i);
+			for (i of Rules.types) rv = rv && Rules.consistent(i);
 			return rv;
 		}
 		
 		if (Rules.totaledgeMin[t] > Rules.totaledgeMax[t])  return false;
-		for (i in Rules.nodetypes) {
+		for (i of Rules.types) {
 			if (Rules.edgeMin[t][i] > Rules.edgeMax[t][i])  return false;
 			if (Rules.edgeMax[t][i] > Rules.totaledgeMax[t])  return false;
 			if ((Rules.edgeMax[t][i]==0 || Rules.edgeMax[i][t]==0) &&
@@ -1433,7 +1435,7 @@ var Rules = {
 		}
 			
 		var edgeMinT = 0;
-		for (i in Rules.nodetypes) edgeMinT += Rules.edgeMin[t][i];
+		for (i of Rules.types) edgeMinT += Rules.edgeMin[t][i];
 		if (edgeMinT > Rules.totaledgeMin[t])  return false;
 
 		var edgeMaxT = 0;

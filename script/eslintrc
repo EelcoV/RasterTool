@@ -32,6 +32,7 @@
 			"imports": "never",
 			"exports": "never",
 			"functions": "never"
-		}]
+		}],
+		"guard-for-in": ["error"]
 	}
 }
