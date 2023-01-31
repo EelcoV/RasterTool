@@ -1965,6 +1965,7 @@ function prettyDate(d) {
 function rasterAlert(title,msg) {
 	let modaldialog = $('<div id="modaldialog"></div>');
 
+	$('body').removeClass('waiting');
 	modaldialog.dialog({
 		title: String(title),
 		classes: {"ui-dialog-titlebar": "ui-corner-top"},
@@ -1994,6 +1995,7 @@ function rasterAlert(title,msg) {
 function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
 	let modaldialog = $('<div id="modaldialog"></div>');
 
+	$('body').removeClass('waiting');
 	modaldialog.dialog({
 		title: String(title),
 		classes: {"ui-dialog-titlebar": "ui-corner-top"},
@@ -2022,6 +2024,7 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 	var dfd = $.Deferred();
 	let modaldialog = $('<div id="modaldialog"></div>');
 
+	$('body').removeClass('waiting');
 	modaldialog.dialog({
 		title: String(title),
 		classes: {"ui-dialog-titlebar": "ui-corner-top"},
