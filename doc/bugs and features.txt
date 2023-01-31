@@ -3,7 +3,6 @@ See LICENSE.md
 
 
 BUGS
-Duplicating a shared project gives a server error about the project unexpectedly being removed from the server.
 When changing WPA, only redo Assessments for malicious Vulnerabilities, and repaint Components containing those. Speedups!!!!
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.

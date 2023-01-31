@@ -563,9 +563,10 @@ function initProjectsToolbar() {
 	$('#buttduplicate').on('click',  lengthyFunction(() => {
 			let p = Project.get(Project.cid);
 			let clone = p.duplicate();
+			clone.setshared(false,false);
 			clone.settitle(p.title+_(" (copy)"));
 			populateProjectList();
-			switchToProject(clone.id,true);
+			switchToProject(clone.id,false);
 		})
 	);
 	// Import --------------------

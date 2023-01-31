@@ -669,8 +669,8 @@ Project.prototype = {
 		this.settitle(_("New project"));
 	},
 
-#ifdef SERVER
 	setshared: function(b,updateServer) {
+#ifdef SERVER
 		if (GroupSettings.localonly) {
 			this.shared = false;
 			this.store;
@@ -692,8 +692,8 @@ Project.prototype = {
 		this.shared = newstatus;
 		this.store();
 		startWatchingCurrentProject();
-	},
 #endif
+	},
 
 	setdescription: function(s) {
 		s = reasonableString(s);
