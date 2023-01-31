@@ -1093,17 +1093,17 @@ function initHomeToolbar() {
 	$('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
 		var exclCm = computeComponentQuickWins();
 		var exclCl = computeClusterQuickWins();
-		ComponentExclusions = { };
-		ClusterExclusions = { };
-		for (const id of exclCm) ComponentExclusions[id] = true;
-		for (const id of exclCl) ComponentExclusions[id] = true;
+		ComponentExclusions.clear();
+		ClusterExclusions.clear();
+		for (const id of exclCm) ComponentExclusions.add(id);
+		for (const id of exclCl) ClusterExclusions.add(id);
 		paintSFTable();
 		paintCCFTable();
 		$('#clearexclusions').button('option','disabled', (exclCm.length==0 && exclCl.length==0));
 	});
 	$('#clearexclusions').button().button('option','disabled',true).on('click',  function() {
-		ComponentExclusions = { };
-		ClusterExclusions = { };
+		ComponentExclusions.clear();
+		ClusterExclusions.clear();
 		paintSFTable();
 		paintCCFTable();
 		$('#clearexclusions').button('option','disabled',true);
@@ -5496,8 +5496,8 @@ function repaintAnalysisIfVisible(anatab) {		// eslint-disable-line no-unused-va
 var FailureThreatSortOpt = {node: 'thrt', threat: 'type'};
 
 function paintVulnerabilityOverview() {
-	ComponentExclusions = {};
-	ClusterExclusions = {};
+	ComponentExclusions.clear();
+	ClusterExclusions.clear();
 
 	$('#at1').empty();
 	var snippet = '\
@@ -5521,34 +5521,17 @@ function paintVulnerabilityOverview() {
 	paintCCFTable();
 }
 
-// Two associative arrays that record the single failures and CCFs that have been
+// Two Sets that record the single failures and CCFs that have been
 // marked as disabled/excluded. These failures will not contribute to the total
 // vulnerability score for that item. This allows simple "what if" analysis.
-// Keys are strings; when a key is present its value is always 'true'.
-// ComponentExclusions: component ID + '_' + threatassessment ID
-// ClusterExclusions: cluster ID + '_0'
+// ComponentExclusions values: component ID + '_' + threatassessment ID
+// ClusterExclusions values: cluster ID'
 // These two values are also recorded on the <TD> table cells, as the attributes
 // 'component', 'threat', and 'cluster'. These attributes are inspected in
 // the click-event handler on $('.nodecell') and $('.clustercell').
 //
-var ComponentExclusions = {};
-var ClusterExclusions = {};
-
-// Returns true iff Node id nid and Assessment id tid are in the exclusions list
-function exclusionsContains(list,nid,tid) {
-	return list[nid+"_"+tid];
-}
-function exclusionsRemove(list,nid,tid) {
-	delete list[nid+"_"+tid];
-}
-function exclusionsAdd(list,nid,tid) {
-	list[nid+"_"+tid] = true;
-}
-function exclusionsIsEmpty(list) {
-	var x;
-	for (x in list) { return false; }
-	return true;
-}
+var ComponentExclusions = new Set();
+var ClusterExclusions = new Set();
 
 // Returns an array contaiing keys for ComponentExclusions
 function computeComponentQuickWins() {
@@ -5588,10 +5571,10 @@ function computeClusterQuickWins() {
 
 		var candidates = cl.allclusters();
 		for (const clid of candidates) {
-			var aarr = {};
-			exclusionsAdd(aarr,clid,0);
+			var aarr = new Set();
+			aarr.add(clid);
 			if (ClusterMagnitudeWithExclusions(cl,aarr) != cl.magnitude){
-				suggestions.push(clid+'_0');
+				suggestions.push(clid);
 			}
 		}
 	}
@@ -5692,8 +5675,8 @@ function paintSFTable() {
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
 			if (ta.title==nc.title && ta.type==nc.type) {
-				snippet += `<td class="nodecell ${exclusionsContains(ComponentExclusions,cm.id,ta.id)?"excluded":""} M${Assessment.valueindex[ta.total]}" data-component="${cm.id}" data-threat="${ta.id}" title="${H(cm.title)} / ${H(ta.title)} (${Rules.nodetypes[ta.type]})">${ta.total}</td>`;
-				if (!exclusionsContains(ComponentExclusions,cm.id,ta.id)) {
+				snippet += `<td class="nodecell ${ComponentExclusions.has(cm.id+'_'+ta.id)?"excluded":""} M${Assessment.valueindex[ta.total]}" data-component="${cm.id}" data-threat="${ta.id}" title="${H(cm.title)} / ${H(ta.title)} (${Rules.nodetypes[ta.type]})">${ta.total}</td>`;
+				if (!ComponentExclusions.has(cm.id+'_'+ta.id)) {
 					Nodesum[cm.id] = Assessment.sum(Nodesum[cm.id], ta.total);
 				}
 			} else {
@@ -5716,11 +5699,11 @@ function paintSFTable() {
 	$('#ana_nodethreattable .nodecell').on('click',  function(evt){
 		var cmid = $(evt.currentTarget).data('component');
 		var tid = $(evt.currentTarget).data('threat');
-		if (exclusionsContains(ComponentExclusions,cmid,tid)) {
-			exclusionsRemove(ComponentExclusions,cmid,tid);
-			$('#clearexclusions').button('option','disabled',exclusionsIsEmpty(ComponentExclusions));
+		if (ComponentExclusions.has(cmid+'_'+tid)) {
+			ComponentExclusions.delete(cmid+'_'+tid);
+			$('#clearexclusions').button('option','disabled',ComponentExclusions.size==0 && ClusterExclusions.size==0);
 		} else {
-			exclusionsAdd(ComponentExclusions,cmid,tid);
+			ComponentExclusions.add(cmid+'_'+tid);
 			$('#clearexclusions').button('option','disabled',false);
 		}
 		paintSFTable();
@@ -5815,10 +5798,12 @@ function paintCCFTable() {
 
 	$('.clustercell').on('click',  function(evt){
 		var cid = $(evt.currentTarget).data('cluster');
-		if (exclusionsContains(ClusterExclusions,cid,0)) {
-			exclusionsRemove(ClusterExclusions,cid,0);
+		if (ClusterExclusions.has(cid)) {
+			ClusterExclusions.delete(cid);
+			$('#clearexclusions').button('option','disabled',ComponentExclusions.size==0 && ClusterExclusions.size==0);
 		} else {
-			exclusionsAdd(ClusterExclusions,cid,0);
+			ClusterExclusions.add(cid);
+			$('#clearexclusions').button('option','disabled',false);
 		}
 		paintCCFTable();
 	});
@@ -5837,7 +5822,7 @@ function addCCFTableRow(col,numvulns,ta,cl,indent) {
 			snippet = snippet.replace(/_TO_/g, ta.total);
 			snippet = snippet.replace(/_TI_/g, _("CCF for ")+cl.title+" ("+Rules.nodetypes[cl.type]+")");
 			snippet = snippet.replace(/_CI_/g, cl.id);
-			snippet = snippet.replace(/_EX_/g, exclusionsContains(ClusterExclusions,cl.id,0)?"excluded":"" );
+			snippet = snippet.replace(/_EX_/g, ClusterExclusions.has(cl.id)?"excluded":"" );
 		} else {
 			snippet += '<td class="'+(indent>0?'continuationcell':'blankcell')+'">&thinsp;</td>';
 		}
@@ -5868,7 +5853,7 @@ function addCCFTableRow(col,numvulns,ta,cl,indent) {
 function ClusterMagnitudeWithExclusions(cl,list) {
 	if (cl.assmnt==null)  return '-';
 	var ta = Assessment.get(cl.assmnt);
-	var mag = exclusionsContains(list,cl.id,0) ? "U" : ta.total;
+	var mag = list.has(cl.id) ? "U" : ta.total;
 	for (const clid of cl.childclusters) {
 		var cc = NodeCluster.get(clid);
 		mag = Assessment.sum(mag,ClusterMagnitudeWithExclusions(cc,list));
@@ -6508,7 +6493,7 @@ function listSelectedRisks() {
 				ta: r.title,
 				cm: (nc.isroot() ? _("All nodes") : nc.title),
 				ccf: true,
-				qw: (exclCl.indexOf(nc.id+'_0')>=0),
+				qw: (exclCl.indexOf(nc.id)>=0),
 				v: Assessment.valueindex[ta.total]
 			});
 		}
