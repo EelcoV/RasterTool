@@ -5,6 +5,7 @@ See LICENSE.md
 BUGS
 When changing WPA, only redo Assessments for malicious Vulnerabilities, and repaint Components containing those. Speedups!!!!
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
+	Defaulting to renumbering will do away with the "Project cannot be imported twice" error.
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.
 Do away with the online/offline setting?
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
@@ -13,7 +14,7 @@ Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on 
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
 When printing CCF, the accordions are not always all expanded.
 Change details of a project on the server but not active: function not implemented.
-Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data.
+Should retain UI state (accordion SF/CCF open/close, tab seelcted, service selected) independent of project data. <-- how is this a bug?
 
 IDEAS FOR FUTURE FEATURES
 Add a Duplicate function for a selection of nodes. This would duplicate each of the nodes, then duplicate the connections between selected nodes.
@@ -24,14 +25,14 @@ Exclude entire vulnerabilities in Analysis|Failures and Vulnerabilities tab.
 Select multiple nodes using Ctrl/Cmd-click (and have multiple selectrects)
 Filter on Single Failures, including on overall threat score.
 Sort vulns for a component on name/freq/impact/total/remark
+	Perhaps as a reworking using tables with resizeable colimns. Does a suitable plugin exist?
 
 OTHER TODO
 Find panel should search through Clusters as well.
+	It is difficult to locate a node inside a large cluster-subclusture structure.
 Hide the URL mouseover popup in the bottom left corner of the window. They are in the way of bottom tabs.
 Make use of the bind() function when useful (a number of functions use a local variable to store the 'this' value).
 Simplify the UI for menuitem 'Make single'. Renamiong to 'Make one component' is not clear either, as the thing is still presented as a class.
-Change cursor to hourglass during rollback/redo.
-Remove all uses of for..in, so that we can add an eslint rule preventing its use (to detect accidental typing for..in instead of for..of).
 Emit a Ctrl-Z or Cmd-Z when using the Undo/Redo menuitems in the standalone app while a textfield has focus.
 Some functions take an object as parameter, others take an ID. Allow both: if (typeof(param)=='string') param=Node.get(param);. Alternatively change all functions to take objects as parameter. Any conversion is then on the caller (which may already have the correct object).
 Use show()/hide() iso using css('visibility',...)
@@ -49,7 +50,6 @@ When adding a threat to a Unknown node, the type of the new threat is always tEQ
 Have separate Paste functions for merging and overwriting?
 Change from accordion widget to the Collapser plugin?
 Better handling of redundancy in telecom services.
-Set description on added threats.
 Consistency report for the entire diagram, plus UI.
 
 CANNOT REPRODUCE

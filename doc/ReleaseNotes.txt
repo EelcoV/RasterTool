@@ -1,9 +1,9 @@
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
 
-XXXX 2022
-=========
-* Release as 4.0.0 - XXX
+Winter 2023
+===========
+* Release as 4.0.0 - Winter 2023
 * Undo and Redo are now implemented on all actions.
 * A refresh of the entire user interface.
 * Support for different iconsets. A new Default set is provided in addition to the Classic
