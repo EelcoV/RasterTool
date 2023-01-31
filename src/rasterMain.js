@@ -676,13 +676,13 @@ function initProjectsToolbar() {
 				refreshProjectToolbar(Project.cid);
 			}
 		};
-		newRasterConfirm(_("Delete project?"),
+		newRasterConfirm(_("Delete project %%?", p.title),
 		_("Are you sure you want to remove project <i>'%%'</i>?\n<strong>This cannot be undone.</strong>", H(p.title)),
 		_("Remove"),_("Cancel")
 		).done(function() {
 			var t=p.totalnodes();
 			if (t>3) {
-				newRasterConfirm(_("Delete project?"),
+				newRasterConfirm(_("Delete project %%?", p.title),
 					_("This project has %% nodes.\nAre you <i>really</i> sure you want to discard these?", t),
 					_("Yes, really remove"),_("Cancel"))
 				.done(lengthyFunction(dokill));

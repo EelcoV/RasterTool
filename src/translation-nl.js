@@ -143,7 +143,7 @@ _t["Delete %% %% in selection?"] = "Verwijder %% geselecteerde %%?";
 _t["Delete all?"] = "Alles verwijderen?";
 _t["Delete element node?"] = "Component verwijderen?";
 _t["Delete node"] = "Verwijder component";
-_t["Delete project?"] = "Wis project?";
+_t["Delete project %%?"] = "Verwijder project %%?";
 _t["Delete selection"] = "Verwijder selectie";
 _t["Delete service?"] = "Verwijder dienst?";
 _t["Delete vulnerability?"] = "Verwijder kwetsbaarheid?";
@@ -470,3 +470,4 @@ _t["|short|note"] = "notite";
 _t["|short|unknown link"] = "onverkend";
 _t["|short|wired link"] = "kabel";
 _t["|short|wireless link"] = "draadloos";
+
