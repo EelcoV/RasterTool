@@ -1608,6 +1608,9 @@ function ShowDetails() {
 					let fdescr = $('#field_projectdescription').val();
 					let fwpa = $('#wpalist').val();
 					let fset = $('#iconsetlist').val();
+#ifdef SERVER
+					let becomesShared = $('#sh_on').prop('checked');
+#endif
 					dialog.dialog('close');
 					
 					p.settitle(fname);
@@ -1619,7 +1622,6 @@ function ShowDetails() {
 					p.setwpa(fwpa);
 					p.seticonset(fset);
 #ifdef SERVER
-					let becomesShared = $('#sh_on').prop('checked');
 					if (!GroupSettings.localonly) {
 						if (!p.shared && becomesShared) {
 							// Before changing the sharing status from 'private' to 'shared', first
