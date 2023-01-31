@@ -213,7 +213,7 @@ Node.prototype = {
 		$('#tinynode'+this.id).remove();
 		Node._all.delete(this.id);
 		// Prevent an error when jsPlumb is asked to remove a node that is not part of the DOM (anymore)
-		if (this._jnid.length>0)  jsP.remove(this.nid);
+		if (this._jnid && this._jnid.length>0)  jsP.remove(this.nid);
 	},
 
 	setposition: function(px,py,snaptogrid) {
