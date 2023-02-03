@@ -9,7 +9,6 @@ Share a project, then share it again under a different name. Now the server has 
 Mini-map "on" should move it into sight; or fix what we had: fix minimap at top-right corner.
 Do away with the online/offline setting?
 Add a warning (in the intranet version) before leaving the page; or simply intercept the Back action and ignore it.
-The How to use help-panel is useless. Either improve or remove.
 Under Windows, using Chrome or standalone, a horizontal scrollbar is visible on generated PDFs / printouts.
 In a deeply nested tree, the inplace editor for a cluster's name may not fit. Solution: implement inplace editor using a balloon popup.
 When printing CCF, the accordions are not always all expanded.

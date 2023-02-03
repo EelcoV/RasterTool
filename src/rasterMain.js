@@ -952,6 +952,13 @@ function initHomeToolbar() {
 		$('#helppanel').dialog('open');
 	});
 
+	let rsfunc = function(/*event,ui*/) {
+		$('#helptabs ul').width($('#helppanel').width()-14);
+		let hp = $('#helppanel').height();
+		let tb = $('#helppanel ul').height();
+		let padding = 36;
+		$('#helppanel iframe').height(hp-tb-padding);
+	};
 	$('#helppanel').dialog({
 		title: _("Information on using this tool"),
 		autoOpen: false,
@@ -961,20 +968,18 @@ function initHomeToolbar() {
 		minWidth: 470,
 		maxWidth: 800,
 		classes: {"ui-dialog-titlebar": "ui-corner-top"},
-		open: function(/*event*/) {
-			initFrequencyTool();
-			$('#helptabs ul').width($('#helppanel').width()-14);
-		},
-		resize: function(/*event,ui*/) {
-			$('#helptabs ul').width($('#helppanel').width()-14);
-		}
+//		open: function(/*event*/) {
+//			initFrequencyTool();
+//			rsfunc();
+//		},
+		resize: rsfunc
 	});
-	$('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
+	$('#helppanel').dialog('widget').addClass('donotprint');
 
 	$('#helptabs a').eq(0).text( _("Frequency") );
 	$('#helptabs a').eq(1).text( _("Impact") );
 	$('#helptabs a').eq(2).text( _("Shortcuts") );
-	$('#helptabs a').eq(3).text( _("How to use") );
+	$('#helptabs a').eq(3).text( _("Manual") );
 	$('#helptabs a').eq(4).text( _("About") );
 	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
 	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
@@ -985,8 +990,11 @@ function initHomeToolbar() {
 	$('#helptabs').tabs({
 		heightStyle: 'content',
 		load: function(/*event,ui*/) {
-			if ($('#helptabs').tabs('option','active')==0) {
+			let tb = $('#helptabs').tabs('option','active');
+			if (tb==0) {
 				initFrequencyTool();
+			} else if (tb==3) {
+				rsfunc();
 			}
 		}
 	});

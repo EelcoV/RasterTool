@@ -551,8 +551,13 @@ textarea.inplace_field {
 	text-decoration: underline;
 }
 
-#helppanel {
-	width: auto;
+#helptabs {
+	min-height: calc(100% - 1ex);
+}
+#helppanel iframe {
+	width: 100%;
+	height: 100%;
+	border: none;
 }
 #helppanel ul {
 	border-radius: 8px 8px 0 0;
