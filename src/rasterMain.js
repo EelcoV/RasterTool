@@ -2028,8 +2028,7 @@ function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
 	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 }
 
-#ifdef SERVER
-function newRasterConfirm(title,msg,buttok,buttcancel) {
+function newRasterConfirm(title,msg,buttok,buttcancel) {  //eslint-disable-line no-unused-vars
 	var dfd = $.Deferred();
 	let modaldialog = $('<div id="modaldialog"></div>');
 
@@ -2057,7 +2056,7 @@ function newRasterConfirm(title,msg,buttok,buttcancel) {
 	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 	return dfd.promise();
 }
-#endif
+
 
 /* bugreport: Notify the user of a bug, save the project and block the UI.
  */
