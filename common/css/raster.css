@@ -808,7 +808,7 @@ div.nodereport p { margin-bottom: 0.5ex; }
 div.thr_header {
 	font-weight: bold;
 	border-bottom: 1px solid gray;
-	border-top: 1px solid gray;
+/*	border-top: 1px solid gray; */
 }
 div.threat {
 	display: table-row;
@@ -1309,6 +1309,9 @@ for checklists and threat evaluations.
 }
 .sfaccordion h3.ui-state-active {
 	border-bottom: none !important;
+}
+#tab_singlefs .ui-accordion-content {
+	overflow: hidden;
 }
 .incomplete {
 	margin-left: 2em;
