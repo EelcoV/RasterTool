@@ -808,7 +808,7 @@ div.nodereport p { margin-bottom: 0.5ex; }
 div.thr_header {
 	font-weight: bold;
 	border-bottom: 1px solid gray;
-/*	border-top: 1px solid gray; */
+	/*	border-top: 1px solid gray; */
 }
 div.threat {
 	display: table-row;

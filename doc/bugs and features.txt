@@ -3,6 +3,7 @@ See LICENSE.md
 
 
 BUGS
+Standalone apps: show hide labels does not work. Switching labels seems to fix it. Cannot reproduce.
 When changing WPA, only redo Assessments for malicious Vulnerabilities, and repaint Components containing those. Speedups!!!!
 Share a project, then share it again under a different name. Now the server has two project using the same UUIDs. You cannot import them anymore. Solution: renumber project on renaming??
 	Defaulting to renumbering will do away with the "Project cannot be imported twice" error.

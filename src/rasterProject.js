@@ -953,9 +953,9 @@ Project.prototype = {
 		Preferences.setcurrentproject(this.title);
 
 		this.updateUndoRedoUI();
-		// Fetch and load the icons and templates. Fall back to 'default' if the iconset cannot be found
+		// Fetch and load the icons and templates. Fall back to 'Default' if the iconset cannot be found
 		if (!this.retrieveicondata(this.iconset)) {
-			this.iconset = 'default';
+			this.iconset = 'Default';
 			this.store();
 			this.retrieveicondata(this.iconset);
 		}
