@@ -1,0 +1,295 @@
+Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
+See LICENSE.md
+
+
+Testcases for manual testing.
+
+All tests start with a clean app. Zap the library before testing.
+
+=======
+Test 1:
+=======
+Create two Wireless links, give them the same name by removing the trailing "(1)".
+Create two Wired links, give them the same name by removing the trailing "(1)".
+Create two Equipment nodes, give them the same name by removing the trailing "(1)".
+Create two Actors, give them the same name by removing the trailing "(1)".
+Create two Unknown links, give them the same name by removing the trailing "(1)".
+
+	--> for each node type a single node class should have been created, except for Actors.
+	Actors should defy any attempt to given them an identical name.
+	--> there should be 4 sets of single failures, each containing the default threats, except
+	for Unknown links which should have the combined set.
+	--> There should be the full set of Common Cause failures, each containing the two clouds plus
+	two of the other components (no actors).
+
+Reload the browser
+	--> No information should be lost.
+	
+Create a new service, and do the same thing (single elements will suffice).
+	--> Names should remain unique across services, with a single node class for all except Actors
+
+Create a new project, and do the same thing
+
+Reload the browser
+	--> No information should be lost.
+	
+Export the second project, twice.
+	--> No information should be lost, and the two exported files should be identical.
+	
+View the node report for a wireless link.
+Check all connection combinations, and make sure that the node report is accurate, both for underflows
+and overflows, and that the warning triangle appears and disappears as it should.
+Do the same for:
+- wired links,
+- equipment,
+- actors,
+- unknown links.
+
+Check that the node report title is updated when the node title changes.
+
+=======
+Test 2:
+=======
+Add two wireless nodes. 
+Open the threat list from the popup menu. Change one freq, impact, remark on each.
+	--> In single failures view the same changes should be visible.
+Open the threat list from the popup menu. Add a threat using the "+Add threat" button
+	--> Changes should be reflected in Single Failures view.
+Open the threat list from the popup menu. Delete a threat
+	--> Changes should be reflected in Single Failures view.
+Open the threat lists in Single Failures view. Copy from one, then paste into the other node.
+	--> Threat assessments should be merged, identical threats will be retain the worst value
+	for frequency and impact, new threats will be added.
+	Results should not change, even then clicking the Paste button multiple times.
+	
+Rename one node, so that the names are identical (creating a node class)
+
+=======
+Test 3:
+=======
+Create two services. Add a node to each (same type) and join them into a node class.
+In the Single Failure view, change the threat assessment on the class in one service.
+	--> The assessment in the other service should have changed accordingly.
+
+=======
+Test 4:
+=======
+Create a wireless node, and set some of its default threats.
+Open the wireless checklist, and copy the set.
+Paste the set into the node's threat list.
+	--> There should be no change; all assessments should be preserved.
+Open the wired link checklist, and make sure that at least one of the threats has the same name as
+for wireless links.
+Make sure that the assessment for that threat is completed on the wireless link.
+Copy the wired checklist into the (wireless) node.
+	--> There should be no change; all assessments should be preserved.
+	Also, the common threat should not be duplicated.
+Create an Unknown link node, and remove all its threats.
+Copy the threats from the wireless link into the (empty) Unknown link.
+	--> All types on the unknown link should be set to wireless.
+
+=======
+Test 5:
+=======
+Open wired and wireless checklists.
+Create an Unknown link node, and remove all its threats.
+Add a new, unique threat to the wireless list
+Copy wireless threats into the node
+	--> type should be set to wireless
+Copy wireless threats into wired checklist
+Add a new, unique threat to the wired list.
+Copy wired checklist onto node
+	--> all new threats should be set to wired, including the ex-wireless threats.
+Remove the added threats from the wired list.
+Reload the browser.
+	--> All should function without errors.
+
+=======
+Test 6:
+=======
+Create a second service.
+Switch to Single Failures view.
+Switch to the second service.
+Switch back to the Diagrams view.
+Drag a node into the workspace.
+	--> The node should be assigned to the diagram service that was visible,
+	not the other service.
+
+=======
+Test 7:
+=======
+Create two wireless nodes
+	--> Each threat should appear in Common Cause Failures, showing both nodes inside
+One node, add a new Threat using the threat window in Diagrams view
+	--> No new shared failure should have been created
+Other node, add a new Threat using the Single Failures tab
+	--> No new shared failure should have been created
+In Single Failure view, rename one new threat to make their names identical.
+	--> A new shared failure should have been created
+
+Zap the Library.
+Create two wireless nodes.
+Add a new (non-identical, non-existing, unique) threat to both.
+	--> No new shared failures should have been created
+In Diagram View, rename one of the new threats to the other new one.
+	--> A new shared failure should have been created.
+Rename one of the standard threats, in Diagram view
+	--> the corresponding shared failure should disappear
+Rename one of the standard threats, in Single Failure view
+	--> the corresponding shared failure should disappear
+
+Zap the library.
+Create two wireless nodes.
+Add a new threat to one.
+In Diagrams view, copy the threatlist from the one to the other.
+	--> A new shared failure should have been created.
+Delete one node
+	--> All shared failures disappear
+Create two equipment nodes.
+Add a new threat to one.
+In Diagrams view, copy the threatlist from the one to the other.
+	--> A new shared failure should have been created.
+
+Zap the library.
+Create two wired nodes
+Add a new default threat to the wired checklist.
+Paste that default threatlist to one nodes
+	--> No changes to shared failures yet
+Paste into the other nodes
+	--> New shared failure created.
+
+========
+Test 7a:
+========
+(copy/paste between projects)
+
+=======
+Test 8:
+=======
+Create a wireless node and a wired link.
+From each, remove all but one threat.
+Add an unknown link.
+	--> Two shared failures should be visible.
+In Single Failure view, copy the wired threat into wireless node.
+	--> No change should be observed.
+
+Zap the library
+Add two wireless nodes, and put them into a node class.
+	--> shared failures should appear for each threat
+Add a third wireless node
+	--> all three appear in nshared failures
+Add a new threat to the third wireless node, and copy/paste that into the node class
+	--> a new shared failure appears
+Remove a threat from the third wireless node
+	--> that node disappears from the shared failures
+
+=======
+Test 9:
+=======
+Add three equipment nodes.
+Pick a threat, and in shared failures place two nodes into a subdomain for that threat.
+Delete one of those two nodes in Diagrams view.
+	--> the shared failure is normalised; the subdomain has disappeared.
+Add more equipment nodes so that you have four.
+Pick a threat, and place two nodes in a sub-subdomain.
+Delete a node that is in the sub-subdomain
+	--> the subsubdomain has been assimilated into the subdomain
+Add more equipment nodes so that you have four.
+Pick a threat, and place two nodes in a sub-subdomain.
+Delete the node that is in the subdomain
+	--> the subsubdomain is assimilated into the topdomain
+Add more equipment nodes so that you have four.
+Pick a threat, and place two nodes in a sub-subdomain.
+Delete the node that is in the topdomain
+	--> the sub-domain is assimilated in the topdomain
+
+========
+Test 10:
+========
+Add four equipment nodes.
+Pick a threat, and place two nodes in a sub-subdomain.
+Delete that threat from a node that is in the sub-subdomain
+	--> the subsubdomain has been assimilated into the subdomain
+Add more equipment nodes so that you have four.
+Pick a threat, and place two nodes in a sub-subdomain.
+Delete that threat from the node that is in the subdomain
+	--> the subsubdomain is assimilated into the topdomain
+Add more equipment nodes so that you have four.
+Pick a threat, and place two nodes in a sub-subdomain.
+Delete that threat from the node that is in the topdomain
+	--> the sub-domain is assimilated in the topdomain
+
+========
+Test 11:
+========
+Add five equipment nodes.
+Switch to Common Cause Failures view, and pick a threat.
+:
+
+========
+Test 12:
+========
+Add a wireless link.
+Create a new service, and add a wireless link to it.
+Rename the second wireless link to create a node class.
+	--> Node clusters should be visible
+	--> Check the analysis tab. Values for two nodes should be calculated.
+Switch the node class to a 'singular' node class.
+	--> node titles should be updated
+	--> Node clusters should disappear
+	--> The analysis tab should show values for a single node only.
+Reload
+	--> no information should be lost
+Rename one of the vulns
+	--> No node clusters should be visible
+Add an unknown link.
+	--> Node clusters should be present, but only a single wireless link should be shown
+Add a third service. Add a wireless link to it, and rename it to the node class.
+	--> Node clusters should only show a single wireless link.
+	--> The analysis tab should show values for a single wireless link only.
+Remove the wireless link from the *first* service.
+	--> Node clusters should only show a single wireless link.
+	--> The analysis tab should show values for a single wireless link only.
+Switch the singular node class to a regular node class
+	--> node titles should be updated
+	--> Node clusters should show two wireless links.
+	--> The analysis tab should show values for two wireless links.
+
+========
+Test 13:
+========
+Add a wired link and call it "asdf". Set some threats.
+Add a second service. Add a wireless link to it, and call it "asdf". Set some threats.
+Change the wired link's type into 'wireless link'.
+	--> a node class should be created
+	--> only the threats of the original wireless link should be retained
+Change the class to 'singular'.
+Add a third service, and add a cloud to it. Call it "asdf".
+Change the type of the cloud to "wireless link"
+	--> a single node should be present
+	--> no node clusters should be presented.
+
+========
+Test 13:
+========
+Create two services, and create a 'singular' node class (wireless link) across both, named "abc".
+Create a plain node class (wired link), named "xyz".
+Add a single equipment item, called "Equipment".
+Create a second project, and make it an exact duplicate: create the same services, nodes, and classes, with identical names.
+In the 1st project, give "abc" the threats "abc", "abc1a" and "abc1b", and assign low values.
+In the 2nd project, give "abc" the threats "abc", "abc2a" and "abc2b", and assign high values.
+In the 1st project, give "xyz" the threats "xyz", "xyz1a" and "xyz1b", and assign low values.
+In the 2nd project, give "xyz" the threats "xyz", "xyz2a" and "xyz2b", and assign high values.
+In the 1st project, give "equipment" the threats "asdf", "asdf1a", and "asdf1b", and assign high/low/high values respectively.
+In the 2nd project, give "equipment" the threats "asdf", "asdf2a", and "asdf2b", and assign low/low/high values respectively.
+Merge the second project into the first project
+	--> there should be a 'singular' node class "abc" with 4 nodes.
+	--> there should be a normal node class "xyz" with 4 nodes.
+	--> there should be a normal node class "equipment" with 2 nodes.
+	--> Analysis tab should show the right counts
+	--> Node clusters should not show duplicates for "abc".
+	--> 'abc' should have 5 threats, all high except abc1a and abc1b.
+	--> 'xyz' should have 5 threats, all high except xyz1a and xyz1b.
+	--> Equipment should have 5 threats, all high except asdf1a and asdf2a.
+	
+

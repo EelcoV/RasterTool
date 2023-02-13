@@ -2,41 +2,45 @@
  * See LICENSE.md
  */
 
-/* global nid2id, AddAllClusters, DefaultIconset, bugreport, trimwhitespace, _, ProjectIterator, refreshProjectList, startAutoSave, LS */
+/* global bugreport, _, ProjectIterator, refreshStubList, startWatchingCurrentProject, LS, ToolGroup, Service */
 
 /*
  *
  */
-var PreferencesObject = function() {
-	this.settheme = function(theme) {
-		/* Obsolete */
-	};
-	
+var PreferencesObject = function() {		// eslint-disable-line no-unused-vars
 	this.setlabel = function(labelonoff) {
 		this.label = (labelonoff===true);
 		if (this.label) {
-			$('.nodeheader').removeClass('Chide');
-			$('.contentimg').each(function(){
-				var rn = Node.get(nid2id(this.parentElement.id));
-				var src=$(this).attr('src');
-				src = src.replace(/\/img\/iconset\/(\w+)\/.+\//, '/img/iconset/$1/'+rn.color+'/');
-				$(this).attr('src', src);
-			});
+			$('.nodeheader').removeClass('Hhide');
+			$('.nodecolorbackground').removeClass('Bhide');
+			$('.ncontentimg').removeClass('Ihide');
 		} else {
-			$('.nodeheader').addClass('Chide');
-			$('.contentimg').each(function(){
-				var src=$(this).attr('src');
-				src = src.replace(/\/img\/iconset\/(\w+)\/.+\//, '/img/iconset/$1/none/');
-				$(this).attr('src', src);
-			});
+			$('.nodeheader').addClass('Hhide');
+			$('.nodecolorbackground').addClass('Bhide');
+			$('.ncontentimg').addClass('Ihide');
 		}
-		if (this.tab==2) {
-			$('#ccfs_body').empty();
-			AddAllClusters();
-		}
+		$('#label_off').prop('checked',!this.label);
+		$('#label_on').prop('checked',this.label);
+		$('input[name=labelonoff]').checkboxradio('refresh');
+//		let p = Project.get(Project.cid);
+//		p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
+//		PaintAllClusters();
 		this.store();
 	};
 	
+	this.setmap = function(maponoff) {
+		this.showmap = (maponoff===true);
+		if (this.showmap) {
+			$('#scroller_overview'+Service.cid).show();
+		} else {
+			$('.scroller_overview').hide();
+		}
+		$('#showmap_off').prop('checked',!this.showmap);
+		$('#showmap_on').prop('checked',this.showmap);
+		$('input[name=showmap]').checkboxradio('refresh');
+		this.store();
+	};
+
 	this.setemblem = function(emsize) {
 		this.emsize = emsize;
 		/* Find a CSS-rule with the exact name 'div.nodeMagnitude', then
@@ -44,9 +48,9 @@ var PreferencesObject = function() {
 		 */
 		var css=document.getElementById('maincssfile').sheet;
 		var rule=null;
-		for (var i=0; i<css.cssRules.length; i++) {
-			if (css.cssRules[i].selectorText=='div.nodeMagnitude') {
-				rule = css.cssRules[i];
+		for (const r of css.cssRules) {
+			if (r.selectorText=='div.nodeMagnitude') {
+				rule = r;
 				break;
 			}
 		}
@@ -58,24 +62,26 @@ var PreferencesObject = function() {
 			rule.style.visibility='visible';
 			rule.style.width='8px';
 			rule.style.height='8px';
-			rule.style.top='-3px';
-			rule.style.left='1px';
+			rule.style.top='-4px';
+			rule.style.left='-4px';
 			rule.style.color='transparent';
 		} else if (this.emsize=='em_large') {
 			rule.style.visibility='visible';
 			rule.style.width='20px';
 			rule.style.height='15px';
-			rule.style.top='-9px';
-			rule.style.left='0px';
+			rule.style.top='-10px';
+			rule.style.left='-15px';
 			rule.style.color='black';
 		} else if (this.emsize=='em_none') {
 			rule.style.visibility='hidden';
 		}
+		$('#'+this.emsize).prop('checked',true);
+		$('input[name=emblem_size]').checkboxradio('refresh');
 		this.store();
 	};
 
 	this.setcurrentproject = function(projectname) {
-		this.currentproject = String(projectname);
+		this.currentproject = projectname;
 		this.store();
 	};
 
@@ -90,7 +96,7 @@ var PreferencesObject = function() {
 	};
 
 	this.setcreator = function(cr) {
-		this.creator = trimwhitespace(String(cr)).substr(0,100);
+		this.creator = String(cr).trim().substr(0,100);
 		if (this.creator=='') {
 			this.creator=_("Anonymous");
 		}
@@ -106,19 +112,16 @@ var PreferencesObject = function() {
 		if (!this.online) {
 			$('#networkactivity').removeClass('activityyes activityno').addClass('activityoff');
 			// Remove all current stub projects
-			var it = new ProjectIterator({stubsonly: true});
-			for (it.first(); it.notlast(); it.next()) {
-				it.getproject().destroy();
-			}
-			refreshProjectList();
+			var it = new ProjectIterator({group: ToolGroup, stub: true});
+			it.forEach(p => p.destroy());
+			refreshStubList();
 		}
 		this.store();
-		startAutoSave();
+		startWatchingCurrentProject();
 	};
 	
 	this.store = function() {
 		var data = {};
-		data.theme=this.theme;
 		data.label=this.label;
 		data.emsize =this.emsize;
 		data.currentproject=this.currentproject;
@@ -126,6 +129,7 @@ var PreferencesObject = function() {
 		data.service=this.service;
 		data.creator=this.creator;
 		data.online=this.online;
+		data.showmap=this.showmap;
 		localStorage[LS+'R:0'] = JSON.stringify(data);
 	};
 
@@ -134,23 +138,24 @@ var PreferencesObject = function() {
 	 * loaded.
 	 */
 	this.currentproject = '';
-	this.theme = 'smoothness';
 	this.label=true;
-	this.emsize = 'small';
+	this.emsize = 'em_small';
 	this.tab = 0;
-	this.service = 0;
+	this.service = '';
 	this.creator = _("Anonymous");
 	this.online = true;
+	this.showmap = true;
 	try {
 		if (localStorage[LS+'R:0']!=null) {
 			var pr = JSON.parse(localStorage[LS+'R:0']);
-			if (pr.label!=null) this.setlabel(pr.label);
-			if (pr.emsize!=null) this.setemblem(pr.emsize);
-			if (pr.currentproject!=null) this.setcurrentproject(pr.currentproject);
-			if (pr.tab!=null) this.settab(pr.tab);
-			if (pr.service!=null) this.setservice(pr.service);
-			if (pr.creator!=null) this.setcreator(pr.creator);
-			if (pr.online!=null) this.setonline(pr.online);
+			if (pr.label!=null) this.label = pr.label;
+			if (pr.emsize!=null) this.emsize = pr.emsize;
+			if (pr.currentproject!=null) this.currentproject = pr.currentproject;
+			if (pr.tab!=null) this.tab = pr.tab;
+			if (pr.service!=null) this.service = pr.service;
+			if (pr.creator!=null) this.creator = pr.creator;
+			if (pr.online!=null) this.online = pr.online;
+			if (pr.showmap!=null) this.showmap = pr.showmap;
 		}
 	} catch(e) {
 		// silently ignore

@@ -1,46 +1,39 @@
-<!-- 
+<!--
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
- -->
+-->
 <table id="freqcontrols">
 	<tr>
-		<td class="tdaright">
-			Ik heb
-		</td>
+		<td class="tdaright">Ik heb</td>
 		<td>
-			<input id="fNum" type=text><div id="sNum" class="range"></div>
+			<input id="fNum" type="text">
+			<div id="sNum" class="range"></div>
 		</td>
-		<td class="tdend">
-			identieke componenten, en
-		</td>
+		<td class="tdend">identieke componenten, en</td>
+	</tr>
 	<tr>
-	<tr>
-		<td class="tdaright">
-			elke
-		</td>
+		<td class="tdaright">elke</td>
 		<td>
-			<input id="fNPd" type=text><div id="sNPd" class="range"></div>
+			<input id="fNPd" type="text">
+			<div id="sNPd" class="range"></div>
 		</td>
 		<td class="tdend">
 			<fieldset>
-			  <input id="rWeek" type=radio name="period" value="pweek"><label for="rWeek">week</label>
-			  <input id="rMnth" type=radio name="period" value="pmnth"><label for="rMnth">maand</label>
-			  <input id="rYear" type=radio name="period" value="pyear"><label for="rYear">jaar</label>
+				<input id="rWeek" type="radio" name="period" value="pweek"><label for="rWeek">week</label> <input id="rMnth" type="radio" name="period" value="pmnth"><label for="rMnth">maand</label> <input id="rYear" type="radio" name="period" value="pyear"><label for="rYear">jaar</label>
 			</fieldset>
 		</td>
+	</tr>
 	<tr>
-	<tr>
-		<td class="tdaright">
-			ondervinden
-		</td>
+		<td class="tdaright">ondervinden</td>
 		<td>
-			<input id="fInc" type=text><div id="sInc" class="range"></div>
+			<input id="fInc" type="text">
+			<div id="sInc" class="range"></div>
 		</td>
-		<td class="tdend">
-			daarvan een incident.
-		</td>
-	<tr>
+		<td class="tdend">daarvan een incident.</td>
+	</tr>
 </table>
+
+
 <div id="resultarea">
 	<div id="result"></div>
 </div>
@@ -54,112 +47,57 @@ See LICENSE.md
 	<div id="bU" class="box"></div>
 </div>
 <div id="boxlabels">
-	<span id="lH" class="label">Hoog</span>
-	<span id="lM" class="label">Matig</span>
-	<span id="lL" class="label">Laag</span>
+	<span id="lH" class="label">Hoog</span> <span id="lM" class="label">Matig</span> <span id="lL" class="label">Laag</span>
 </div>
 
-<TABLE BORDER=1 BORDERCOLOR="#000000" CELLPADDING=0 CELLSPACING=0 FRAME=HSIDES RULES=ROWS>
-	<TR VALIGN=TOP>
-		<TD>
-			<P><B>Klasse</B></P>
-		</TD>
-		<TD>
-			<P><B>Waarde</B></P>
-		</TD>
-		<TD>
-			<P ALIGN=CENTER><B>Symbool</B></P>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Hoog</P>
-		</TD>
-		<TD>
-			<P>Eens per 5 jaar, of:</P>
-			<P>met 100 identieke componenten, 1 à 2 incidenten per maand.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M5">H</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Matig</P>
-		</TD>
-		<TD>
-			<P>Eens per 50 jaar, of:</P>
-			<P>met 100  identieke componenten, 2 incidenten per jaar.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M4">M</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Laag</P>
-		</TD>
-		<TD>
-			<P>Eens per 500 jaar, of:</P>
-			<P>met 100 identieke componenten, 1 incidenten per 5 jaar.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M3">L</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Extreem hoog</P>
-		</TD>
-		<TD>
-			<P>Normale gang van zaken. Zeer vaak.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M6">V</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Extreem laag</P>
-		</TD>
-		<TD>
-			<P>Zeer zeldzaam, maar niet fysiek onmogelijk.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M2">U</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Tegenstrijdig</P>
-		</TD>
-		<TD>
-			<P>Ontbreken van consensus.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M1">A</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Onzeker</P>
-		</TD>
-		<TD>
-			<P>Onvoldoende gegevens of kennis.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M7">X</div>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD>
-			<P>Nog niet beoordeeld</P>
-		</TD>
-		<TD>
-			<P>Beginwaarde. Geeft aan dat nog geen beoordeling is gedaan.</P>
-		</TD>
-		<TD>
-			<div class="exampleMagnitude M0">-</div>
-		</TD>
-	</TR>
-</TABLE>
+
+<table class="helptable">
+	<tr>
+		<td><p><strong>Klasse</strong></p></td>
+		<td><p><strong>Waarde</strong></p></td>
+		<td><p style="text-align:center"><strong>Symbool</strong></p></td>
+	</tr>
+	<tr>
+		<td><p>Hoog</p></td>
+		<td><p>Eens per 5 jaar, of:</p>
+			<p>met 100 identieke componenten, 1 à 2 incidenten per maand.</p></td>
+		<td><div class="exampleMagnitude M5">H</div></td>
+	</tr>
+	<tr>
+		<td><p>Matig</p></td>
+		<td><p>Eens per 50 jaar, of:</p>
+			<p>met 100 identieke componenten, 2 incidenten per jaar.</p></td>
+		<td><div class="exampleMagnitude M4">M</div></td>
+	</tr>
+	<tr>
+		<td><p>Laag</p></td>
+		<td><p>Eens per 500 jaar, of:</p>
+			<p>met 100 identieke componenten, 1 incidenten per 5 jaar.</p></td>
+		<td><div class="exampleMagnitude M3">L</div></td>
+	</tr>
+	<tr>
+		<td><p>Extreem hoog</p></td>
+		<td><p>Normale gang van zaken. Zeer vaak.</p></td>
+		<td><div class="exampleMagnitude M6">V</div></td>
+	</tr>
+	<tr>
+		<td><p>Extreem laag</p></td>
+		<td><p>Zeer zeldzaam, maar niet fysiek onmogelijk.</p></td>
+		<td><div class="exampleMagnitude M2">U</div></td>
+	</tr>
+	<tr>
+		<td><p>Tegenstrijdig</p></td>
+		<td><p>Ontbreken van consensus.</p></td>
+		<td><div class="exampleMagnitude M1">A</div></td>
+	</tr>
+	<tr>
+		<td><p>Onzeker</p></td>
+		<td><p>Onvoldoende gegevens of kennis.</p></td>
+		<td><div class="exampleMagnitude M7">X</div></td>
+	</tr>
+	<tr>
+		<td><p>Nog niet beoordeeld</p></td>
+		<td><p>Beginwaarde. Geeft aan dat nog geen beoordeling is gedaan.</p></td>
+		<td><div class="exampleMagnitude M0">-</div></td>
+	</tr>
+</table>

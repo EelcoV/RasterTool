@@ -8,122 +8,170 @@ See LICENSE.md
 */
 
 @media print {
+	body {
+		overflow: auto;
+		margin: 0;
+		-webkit-print-color-adjust: exact;
+		background: white !important;
+		display: block; /* Do away with grid layout */
+	}
 
-body {
-	overflow: auto;
-	margin: 0;
-	-webkit-print-color-adjust: exact;
-}
+	.printonly {
+		display: block;
+		color: grey;
+		z-index: 0;
+	}
+	.printonlycell { display: table-cell; }
+	.donotprint { display: none !important; }
 
-.printonly { display: block; }
-.printonlycell { display: table-cell; }
-.donotprint { display: none !important; }
+	.workbody {
+		height: auto !important;
+		width: auto !important;
+		border: 0 none !important;
+	}
 
-.underlay {
-	color: grey;
-	z-index: 0;
-}
+	.workspace {
+		position: static;
+		background: white !important;
+	}
 
-.workbody {
-	height: auto !important;
-	width: auto !important;
-	border: 0 none !important;
-}
+	.plainworkspace {
+		height: auto !important;
+		width: auto !important;
+		margin: 0 !important;
+	}
 
-.workspace {
-	position: static;
-	background: white !important;
-}
+	.fancyworkspace {
+		position: relative;
+		background: transparent !important;
+	}
 
-.workouter {
-	position: static;
-}
+	.ui-state-default {
+		background: transparent !important;
+	}
 
-.plainworkspace {
-	height: auto !important;
-	width: auto !important;
-	margin: 0 !important;
-}
+	.connbutton { display: none !important; }
+	.jtk-endpoint { visibility: hidden !important; }
 
-.fancyworkspace {
-	position: relative;
-	background: transparent !important;
-}
+	.nodetNOT {
+		transform: none !important;
+		box-shadow: none !important;
+		height: auto !important;
+	}
 
-.ui-state-default {
-	background: transparent !important;
-}
+	h3 { background: transparent !important; }
 
-.connbutton { display: none !important; }
-.jtk-endpoint { visibility: hidden !important; }
+	#tab_ccfs {
+		display: block;
+	}
+	.sfaccordion {
+		break-inside: avoid;
+		width: auto !important;
+	}
+	.ccfaccordion { break-inside: avoid; }
+	.ccfaccordionbody { break-inside: avoid; }
+	.tlist .tlist { break-inside: avoid; }
+	.sfaccordion h3 { break-after: avoid; }
+	.ccfaccordion h3 { break-after: avoid; }
+	.threat { break-after: avoid; }
 
-.sfaccordion { page-break-inside: avoid; }
-/*.ccfaccordion { page-break-inside: avoid; }*/
-.ccfaccordion { page-break-after: always; }
-.tlist .tlist { page-break-inside: avoid; }
-.sfaccordion h3 { page-break-after: avoid; }
-.ccfaccordion h3 { page-break-after: avoid; }
-.threat { page-break-after: avoid; }
+	.ui-accordion-content {
+		margin-bottom: 2px !important;
+	}
 
-.ui-accordion-content {
-	margin-bottom: 2px !important;
-}
+	#tab_analysis h1 {
+		break-before: avoid;
+		break-after: avoid;
+	}
+	#tab_analysis h2 {
+		break-before: avoid;
+		break-after: avoid;
+	}
+	#tab_analysis tr {
+		break-inside: avoid;
+		break-after: auto;
+		break-before: auto;
+	}
+	.ana_nodeccfblock {
+		display: block;
+		break-after: page;
+	}
 
-#ana_ccftable { page-break-inside: avoid; }
-#ana_nodethreattable { page-break-inside: avoid; }
-.SFvulnstable { page-break-inside: avoid; }
-#ccfs_details { display: none !important; }
-.ccfhighlight .ui-accordion-header { background: transparent !important; }
+	.SFvulnstable { break-inside: avoid; }
+	#ccfs_details { display: none !important; }
+	.ccfhighlight .ui-accordion-header { background: transparent !important; }
 
-#analysis_body h3 {
-	padding: 0 0 !important;
-	font-size: 16px;
-}
+	#tab_analysis h3 {
+		break-before: avoid;
+		break-after: avoid;
+		padding: 0 !important;
+		font-size: 16px;
+		color: grey;
+	}
 
-.ui-tabs-nav {
-	visibility: hidden;
-}
+	#freq_acc,
+	#impact_acc,
+	#total_acc {
+		display: block !important;
+		margin-bottom: 2em;
+	}
 
-.ui-tabs {
-	height: auto !important;
-	width: auto !important;
-	border: 0 none !important;
-	padding: 0 !important;
-}
+	#at3 {
+		width: 100vw !important;
+	}
 
-.ui-tabs-panel {
-	height: auto !important;
-	width: auto !important;
-	padding: 0 !important;
-}
+	.checklistreport {
+		display: block;
+		break-after: page;
+	}
 
-.ui-button {
-	display: none !important;
-}
+	.ui-tabs-nav {
+		display: none;
+	}
 
-.nodeMagnitude { box-shadow: 0 0 !important; }
+	.ui-tabs {
+		height: auto !important;
+		width: auto !important;
+		border: 0 none !important;
+		padding: 0 !important;
+	}
 
-div.ui-widget { background: transparent !important; }
-div.ui-widget-content { background: transparent !important; }
-div.th_name { background: transparent !important; }
-div.th_descr { background: transparent !important; }
-div.th_freq { background: transparent !important; }
-div.th_impact { background: transparent !important; }
-div.th_total { background: transparent !important; }
-div.th_remark { background: transparent !important; }
-h3 { background: transparent !important; }
-div.tACTheader { background: white !important; border: 0; }
+	.ui-tabs-panel {
+		height: auto !important;
+		width: auto !important;
+		padding: 0 !important;
+	}
 
-.servplusbutton { visibility: hidden; }
-#templates { display: none !important; }
-#selectrect { display: none !important; }
-.activator { display: none !important; }
-.actpanel { display: none !important; }
-.checklist { display: none !important; }
-.scroller_overview { display: none !important; }
-.nodeC { display: none !important; }
-.ui-resizable-handle { display: none !important; }
-.ui-widget-overlay { display: none !important; }
-.ui-dialog.ui-draggable { display: none !important; }
+	.ui-button {
+		display: none !important;
+	}
+
+	.nodeMagnitude { box-shadow: 0 0 !important; }
+
+	div.ui-widget,
+	div.ui-widget-content,
+	div.th_mal,
+	div.th_name,
+	div.th_descr,
+	div.th_freq,
+	div.th_impact,
+	div.th_total,
+	div.th_remark { background: transparent !important; }
+
+	div.tACTheader {
+		background: white !important;
+		border: 0;
+	}
+
+	.servplusbutton { visibility: hidden; }
+
+	#templates,
+	#selectrect,
+	.checklist,
+	.scroller_overview,
+	.nodeC,
+	.ui-resizable-handle,
+	.ui-widget-overlay,
+	.ui-dialog.ui-draggable { display: none !important; }
 
 }

@@ -3,76 +3,93 @@
  */
 
 /* globals
-Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Threat, ThreatAssessment, ThreatIterator, _t, unescapeNewlines, urlDecode, urlEncode
+#ifdef SERVER
+urlEncode,
+#endif
+AssessmentIterator, Component, ComponentIterator, NodeCluster, NodeClusterIterator, PreferencesObject, Project, ProjectIterator, Rules, Service, ServiceIterator, Vulnerability, Assessment, VulnerabilityIterator, Transaction, _t, transactionCompleted, urlDecode
 */
 
 "use strict";
-//const DEBUG = true;  // set to false for production version
-var DEBUG = true;  // set to false for production version
+/* Global preferences */
+const DEBUG = true;  // set to false for production version
+let Preferences;
+let ToolGroup;		// eslint-disable-line no-unused-vars
+/* GroupSettings: an object with these properties:
+ * classroom: the classroom setting from group.json
+ * template: idem
+ * iconset: idem
+ * localonly: idem
+ * templatestring: the Raster details of the template project, as stored on the server at startup
+*/
+let GroupSettings;
 
 /* LS is prefixed to all keys of data entered into localStorage. The prefix
  * is versioned. In future, the app can check for presence of keys from
  * previous versions and perform an upgrade.
  */
-var LS_prefix = 'raster';
-var LS_version = 2;
-var LS = LS_prefix+':'+LS_version+':';
+const LS_prefix = 'raster';
+const LS_version = 4;
+const LS = LS_prefix+':'+LS_version+':';		// eslint-disable-line no-unused-vars
 
-/* Global preferences */
-var Preferences;
-var ToolGroup;
-var GroupSettings;
-//var UserLanguage;
+const tab_height = 31;		// See CSS definition of <body>
+//const toolbar_height = 94;	// See CSS definition of <body>
+const MaxStringLen = 5000;	// Limit on object titles, descriptions, etc.
 
 #ifdef STANDALONE
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Glue code for Electron
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-var WindowID = null;
+let WindowID = null;
+let prefsDir = null;		// eslint-disable-line no-unused-vars
+let ipc = require('electron').ipcRenderer;
+let Modified = false;		// eslint-disable-line no-unused-vars
 
-localStorage.clear();
-
-var ipc=null, url=null;
-if (typeof(process)=='object') {
-	ipc = require('electron').ipcRenderer;
-	url = require('url');
-}
-
-var Modified = false;
-
-ipc && ipc.on('window-id', function(event,id) {
+ipc.on('window-id', function(event,id) {
 	WindowID = id;
 });
-ipc && ipc.on('document-start-save', function() {
-	var s = CurrentProjectAsString();
-	ipc && ipc.send('document-save',WindowID,s);
+ipc.on('prefs-dir', function(event,dir) {
+	prefsDir = dir;
 });
-ipc && ipc.on('document-start-saveas', function() {
+ipc.on('document-start-save', function() {
 	var s = CurrentProjectAsString();
-	ipc && ipc.send('document-saveas',WindowID,s);
+	ipc.send('document-save',WindowID,s);
 });
-ipc && ipc.on('document-save-success', function(event,docname) {
+ipc.on('document-finalsave', function() {
+	var s = CurrentProjectAsString();
+	ipc.send('document-save-then-close',WindowID,s);
+});
+ipc.on('document-start-saveas', function() {
+	var s = CurrentProjectAsString();
+	ipc.send('document-saveas',WindowID,s);
+});
+ipc.on('document-save-success', function(event,docname) {
 	clearModified();
 	if (!docname)  return;
 	docname = docname.replace(/\.raster$/,"");
-	$('.projectname').html(H(docname));
+	$('.projectname').text(docname);
 	Project.get(Project.cid).settitle(docname);
 });
-ipc && ipc.on('document-start-open', function(event,str) {
-	var newp = loadFromString(str,true,false,_("File"));
-	if (newp!=null) {
-		switchToProject(newp);
-		checkForErrors(false);
-		checkUpgradeDone();
-	}
-	clearModified();
+ipc.on('document-start-open', function(event,str) {
+	lengthy(function() {
+		var newp = loadFromString(str,{strsource: _("File")});
+		if (newp!=null) {
+			let p = Project.get(newp);
+			p.shared = false;
+			p.store();
+			switchToProject(newp);
+			checkForErrors(false);
+			checkUpgradeDone();
+		}
+		clearModified();
+	});
 });
-ipc && ipc.on('options', function(event,option,val) {
-	if (option=='labels') {
+ipc.on('options', function(event,option,val) {
+	switch (option) {
+	case 'labels':
 		Preferences.setlabel(val);
-	}
-	if (option=='vulnlevel') {
+		break;
+	case 'vulnlevel':
 		if (val==0) {
 			Preferences.setemblem('em_none');
 		} else if (val==1) {
@@ -80,15 +97,30 @@ ipc && ipc.on('options', function(event,option,val) {
 		} else {
 			Preferences.setemblem('em_large');
 		}
+		break;
+	case 'minimap':
+		Preferences.setmap(val);
+		break;
+	case 'iconsets': {
+		const obj = JSON.parse(val);
+		if (Array.isArray(obj)) GroupSettings.iconsets = obj;
+		break;
+		}
 	}
 });
-ipc && ipc.on('help-show', function() {
+ipc.on('props-show', function() {
+	ShowDetails();
+});
+ipc.on('labeledit-show', function() {
+	showLabelEditForm();
+});
+ipc.on('help-show', function() {
 	$('#helppanel').dialog('open');
 });
-ipc && ipc.on('find-show', function() {
+ipc.on('find-show', function() {
 	StartFind();
 });
-ipc && ipc.on('pdf-settings-show', function(event,pdfoptions) {
+ipc.on('pdf-settings-show', function(event,pdfoptions) {
 	if (pdfoptions.pdforientation==0) {
 		$('#paperorientation_portrait').prop('checked',true);
 	} else {
@@ -103,10 +135,19 @@ ipc && ipc.on('pdf-settings-show', function(event,pdfoptions) {
 	$('#pdfoptions fieldset').controlgroup('refresh');
 	$('#pdfoptions').dialog('open');
 });
+ipc.on('edit-undo', function() {
+	// When we are editing text, emit a keyboard event. Otherwise perform an undo
+	if ($(':focus').length>0) return;
+	simulateClick('#undobutton');
+});
+ipc.on('edit-redo', function() {
+	if ($(':focus').length>0) return;
+	simulateClick('#redobutton');
+});
 
 function setModified() {
 	Modified = true;
-	ipc && ipc.send('document-modified',WindowID);
+	ipc.send('document-modified',WindowID);
 }
 
 function clearModified() {
@@ -116,7 +157,6 @@ function clearModified() {
 function CurrentProjectAsString() {
 	return exportProject(Project.cid);
 }
-
 #endif
 
 /* This jQuery function executes when the document is ready, but before all
@@ -124,126 +164,161 @@ function CurrentProjectAsString() {
  */
 $( initAllAndSetup );
 
+/* Perform a lengthy action. Change the cursor to a wait-cursor, then defer to the main thread
+ * for that to take effect. In the next cycle of the event loop execute the function, and reset
+ * the cursor.
+ * The small wait time is necessary; otherwise the cursor sometimes does not change?!
+ */
+function lengthy(func) {
+	$('body').addClass('waiting');
+	window.setTimeout(function() {
+		func();
+		$('body').removeClass('waiting');
+	},50);
+}
+
+function lengthyFunction(func) {
+	return function() {lengthy(func);};
+}
+
 function initAllAndSetup() {
 	$.ajaxSetup({
 		timeout: 10000	// Cancel each AJAX request after 10 seconds
 	});
+#ifdef SERVER
+	if (!testLocalStorage()) {
+		// The splash screen is still visible, and will obscure any interaction.
+		$('#splashstatus').html( _("Error: no local storage available.<br>Adjust cookie or privacy settings?") );
+		return;
+	}
+#endif
+	// Load preferences
+	Preferences = new PreferencesObject();
+	var remembertab = Preferences.tab;
 
 #ifdef SERVER
 	ToolGroup = $('meta[name="group"]').attr('content');
-	getGroupSettings();
+	// Initialise default values, then attempt to retrieve settings from the server
+	GroupSettings = {
+		classroom: false,
+		template: 'Project Template',
+		iconsets: ['Default'],
+		localonly: false,
+		templatestring: ''
+	};
+	getGroupSettingsAtInitialisation();
+	if (GroupSettings.localonly) {
+		$('#onlinesection').hide();
+	}
 #else
+	Preferences.online = false;
 	ToolGroup = '_%standalone%_';
+	GroupSettings = {
+		classroom: false,
+		template: '',
+		iconsets: ['Default'],
+		localonly: true,
+		templatestring: ''
+	};
 	// Prevent file drops
 	document.addEventListener('dragover', function(event) {event.preventDefault();} );
 	document.addEventListener('drop', function(event) {event.preventDefault();} );
 
 	// Some CSS tweaks for the standalone version
-	$('.activator').hide();
 	$('#currentProject').hide();
-	$('#helpbutton').hide();
-	$('.workouter').css('top', '0px');
-
+//	$('#toolbars li:first-child').hide();
+//	$('#tb_projects').hide();
+	$('#onlinesection').hide();
+	
 	// PDF print options dialog
-	$('#pdf_orientation span').html(_("Orientation:"));
-	$('#label_portrait').html(_("Portrait"));
-	$('#label_landscape').html(_("Landscape"));
-	$('#pdf_papersize span').html(_("Paper size:"));
-	$('#pdf_scale span').html(_("Scale:"));
+	$('#pdf_orientation span').text(_("Orientation:"));
+	$('#label_portrait').text(_("Portrait"));
+	$('#label_landscape').text(_("Landscape"));
+	$('#pdf_papersize span').text(_("Paper size:"));
+	$('#pdf_scale span').text(_("Scale:"));
 
-	$('[for=paperorientation_portrait]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdforientation',0); });
-	$('[for=paperorientation_landscape]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdforientation',1); });
-	$('[for=papersize_a3]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfsize',3); });
-	$('[for=papersize_a4]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfsize',4); });
-	$('[for=pdfscale_40]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',40); });
-	$('[for=pdfscale_50]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',50); });
-	$('[for=pdfscale_60]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',60); });
-	$('[for=pdfscale_70]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',70); });
-	$('[for=pdfscale_80]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',80); });
-	$('[for=pdfscale_90]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',90); });
-	$('[for=pdfscale_100]').on('click',  function() { ipc && ipc.send('pdfoption-modified',WindowID,'pdfscale',100); });
+	$('[for=paperorientation_portrait]').on('click',  function() { ipc.send('option-modified',WindowID,'pdforientation',0); });
+	$('[for=paperorientation_landscape]').on('click',  function() { ipc.send('option-modified',WindowID,'pdforientation',1); });
+	$('[for=papersize_a3]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfsize',3); });
+	$('[for=papersize_a4]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfsize',4); });
+	$('[for=pdfscale_40]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',40); });
+	$('[for=pdfscale_50]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',50); });
+	$('[for=pdfscale_60]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',60); });
+	$('[for=pdfscale_70]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',70); });
+	$('[for=pdfscale_80]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',80); });
+	$('[for=pdfscale_90]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',90); });
+	$('[for=pdfscale_100]').on('click',  function() { ipc.send('option-modified',WindowID,'pdfscale',100); });
 
 	$('#pdfoptions').dialog({
-		title: _("Settings for PDF"),
+		title: _("Save as PDF"),
 		autoOpen: false,
 		modal: false,
 		width: 420,
 		resizable: false,
-		buttons: [{ text: _("Done"),
-			click: function() {$('#pdfoptions').dialog('close');}
-		}]
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		buttons: [
+			{ text: _("Cancel"),
+				click: function() {$('#pdfoptions').dialog('close');}
+			},
+			{ text: _("Save as PDF"),
+				click: function() {
+					$('#pdfoptions').dialog('close');
+					ipc.send('do-saveaspdf',WindowID);
+				}
+			}
+		]
 	});
 	// Don't print the settings dialog. This means you can leave it open while saving a PDF. Convenient!
 	$('#pdfoptions').parent().addClass('donotprint');
 #endif
+
+	// General UI
+	$('input[type=button]').button();
+	$('input[type=submit]').button();
+	$('input[type=radio]').checkboxradio({icon: false});
+	$('fieldset').controlgroup();
+	// Toolbar items
+	$('.toolbarlargebutton,.toolbarbutton,.toolbarlargeiconbutton,.toolbariconbutton').addClass('ui-widget ui-button ui-corner-all');
+	$('.toolbarlabel').addClass('ui-widget');
 
 	initTabDiagrams();
 	initTabSingleFs();
 	initTabCCFs();
 	initTabAnalysis();
 
-	$('#tabs').tabs({activate: vertTabSelected});
-	$('#tabs').addClass('ui-tabs-vertical-sw ui-helper-clearfix');
-	$('#tabs > ul').addClass('rot-neg-90');
+	$('#toolbars').tabs({
+		beforeActivate: toolbartabselected
+	});
 
-	$('input[type=radio]').checkboxradio({icon: false});
-	$('fieldset').controlgroup();
+	initProjectsToolbar();
+	initHomeToolbar();
+	initSettingsToolbar();
+	$('#toolbars').tabs('option','active',TabTBHome);
 
-	$('input[type=button]').button();
-	$('input[type=submit]').button();
-	$('input[type=button]').css('padding','2px 11px');
-	$('input[type=submit]').css('padding','2px 11px');
-
-	$('#modaldialog').dialog({ autoOpen:false, modal:true, width: 400 });
-
-	$('#tab_singlefs').on('click', removetransientwindows);
-	$('#tab_ccfs').on('click', removetransientwindows);
-	$('#tab_analysis').on('click', removetransientwindows);
-
-	// tab_diagrams, tab_singlefs, tab_ccfs
+	// Vertical tabs
+	$('#workspace').tabs({heightStyle: 'fill', activate: vertTabSelected});
+	$('#workspace').addClass('ui-tabs-vertical-sw ui-helper-clearfix');
+	$('#workspacetabs').addClass('rot-neg-90');
+	
 	$("a[href^='#tab_diagrams']").attr('title', _("Draw diagrams for the services."));
 	$("a[href^='#tab_singlefs']").attr('title', _("Assess all single failures."));
 	$("a[href^='#tab_ccfs']").attr('title', _("Assess all common cause failures."));
 	$("a[href^='#tab_analysis']").attr('title', _("Reporting and analysis tools."));
-	$("a[href^='#tab_diagrams']").html(_("Diagrams"));
-	$("a[href^='#tab_singlefs']").html(_("Single failures"));
-	$("a[href^='#tab_ccfs']").html(_("Common cause failures"));
-	$("a[href^='#tab_analysis']").html(_("Analysis"));
+	$("a[href^='#tab_diagrams']").text(_("Diagrams"));
+	$("a[href^='#tab_singlefs']").text(_("Single failures"));
+	$("a[href^='#tab_ccfs']").text(_("Common cause failures"));
+	$("a[href^='#tab_analysis']").text(_("Analysis"));
+	
+	$('#tab_singlefs').on('click', removetransientwindows);
+	$('#tab_ccfs').on('click', removetransientwindows);
+	$('#tab_analysis').on('click', removetransientwindows);
 
 	// Make sure that each tool window has a unique name
 	if (!window.name.match(/^RasterTool\d+$/)) {
 		window.name = 'RasterTool'+String(Math.random()).substring(2);
 	}
 
-#ifdef SERVER
-	if (!testLocalStorage()) {
-		// The splash screen is still visible, and will obscure any interaction.
-		$('#splashstatus').html( _("Error: no local storage available.<br>Adjust cookie or privacy settings?") );
-		rasterAlert(_("Cannot continue"),
-			_("HTML5 local storage is not supported by this browser or configuration. ")
-			+ _("This app will not work properly. ")
-			+ "<p>" + _("Try adjusting your cookie or privacy settings."));
-	}
-#endif
-
-	// Load preferences
-	Preferences = new PreferencesObject();
-#ifdef STANDALONE
-	Preferences.online = false;
-#endif
-	var remembertab = Preferences.tab;
-
-#ifdef SERVER
-	initLibraryPanel();
-	initOptionsPanel();
-
-	if (GroupSettings.classroom) {
-		$("#classroom").html(_("Classroom version")).show();
-	}
-#endif
-
-	SizeDOMElements();
-
+	var p;
 #ifdef SERVER
 	/* Loading data from localStorage. Tweaked for perfomance.
 	 */
@@ -263,24 +338,23 @@ function initAllAndSetup() {
 		localStorage.removeItem(todelete[i]);
 	}
 	var str = strArr.join("");
-	if (
-		loadFromString(str,true,true,"Browser local storage")!=null) {
+	if (loadFromString(str,{allowempty: true, strsource: _("Browser local storage")})!=null) {
 		// Loading from localStorage succeeded. Try to active the project
 		// indicated by Preferences.currentproject, or take any one project
 		// if that one does not exist.
 		i = Project.withTitle(Preferences.currentproject);
-		var p = (i==null ? Project.firstProject() : Project.get(i) );
-		if (p===0) {
+		p = (i==null ? Project.firstProject() : Project.get(i) );
+		if (p==null) {
 			loadDefaultProject();
 		} else {
 			p.load();
 			p.dorefresh(false); // Check for update on the server
-			var it = new ServiceIterator(p.id);
+			var it = new ServiceIterator({project: p.id});
 			var found = false;
 			var s;
-			for (it.first(); !found && it.notlast(); it.next()) {
-				s = it.getservice();
+			for (s of it) {
 				found = (s.title == Preferences.service);
+				if (found) break;
 			}
 			if (found) {
 				Service.cid = s.id;
@@ -289,103 +363,47 @@ function initAllAndSetup() {
 	} else {
 		loadDefaultProject();
 	}
-	startAutoSave();
+	startWatchingCurrentProject();
+	populateProjectList();
 #else
-	loadDefaultProject();
+	localStorage.clear();
+	loadEmptyProject();
 #endif
 
-	// May be necessary to wait and resize
-	window.setTimeout(SizeDOMElements, 1000);
+	// Diagrams have already been painted on Project.load()
+	p = Project.get(Project.cid);
+	p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
+	PaintAllClusters();
+	repaintCurrentAnalysis();
+	SizeDOMElements();
 
+	// Set/perform all preferences with side effects
+	Preferences.setlabel(Preferences.label);
+	Preferences.setemblem(Preferences.emsize);
 	Preferences.settab(remembertab);
 	forceSelectVerticalTab(Preferences.tab);
 
-	$('#helptabs a').eq(0).html( _("Frequency") );
-	$('#helptabs a').eq(1).html( _("Impact") );
-	$('#helptabs a').eq(2).html( _("How to use") );
-	$('#helptabs a').eq(3).html( _("About") );
-	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
-	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
-	$('#helptabs a').eq(2).attr('href', _("../help/Process.html") );
-	$('#helptabs a').eq(3).attr('href', _("../help/About.html") );
-	$('#helptabs li:last-of-type').css("margin-left","10px");
-
-	$('#helppanel').dialog({
-		title: _("Information on using this tool"),
-		autoOpen: false,
-		height: 450,
-		minHeight: 120,
-		width: 600,
-		minWidth: 470,
-		maxWidth: 800,
-		open: function(/*event*/) {
-			initFrequencyTool();
-			$('#helptabs ul').width($('#helppanel').width()-14);
-		},
-		resize: function(/*event,ui*/) {
-			$('#helptabs ul').width($('#helppanel').width()-14);
-		}
-	});
-	$('#helppanel').dialog('widget').css('overflow','visible').addClass('donotprint');
-	$('#helptabs').tabs({
-		heightStyle: 'content',
-		load: function(/*event,ui*/) {
-			if ($('#helptabs').tabs('option','active')==0) {
-				initFrequencyTool();
-			}
-		}
-	});
-	$('#helpbutton').on('click',  function() {
-		$('#helppanel').dialog('open');
-	});
-
-#ifdef SERVER
-	$('#findbutton').on('click', StartFind);
-
-	var flashTimer;
-	$(document).ajaxSend(function(){
-		window.clearTimeout(flashTimer);
-		$('#networkactivity').removeClass('activityoff activityno').addClass('activityyes');
-	});
-	$(document).ajaxStop(function(){
-		// Make sure that the activity light flashes at least some small time
-		flashTimer = window.setTimeout(function(){
-			$('#networkactivity').removeClass('activityoff activityyes').addClass('activityno');
-		},200);
-	});
-#endif
-
 	$('body').on('keydown', function(evt){
 		// Backspace, unfortunately, is bound in the browser to 'Return to previous page'
-		if (evt.key=='Backspace') {
+		if (evt.key=='Delete' || evt.key=='Backspace') {
 			if (!$(evt.target).is('input:not([readonly]):not([type=radio]):not([type=checkbox]), textarea, [contentEditable], [contentEditable=true]')) {
 				// Only when focus is NOT on input or textarea
+				$('#mi_sd').trigger('mouseup');
 				evt.preventDefault();
 				return;
 			}
 		}
+
 #ifdef SERVER
 		// F1 (mostly for Windows): to trigger the Help panel
 		if (evt.key=='F1') {
-			$('#helpbutton img').trigger('click');
+			simulateClick('#helpbutton');
 			evt.preventDefault();
 			return;
 		}
 		// Cmd-F for MacOS or Ctrl-F for Windows: to trigger the Find panel
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='f') {
-			$('#findbutton img').trigger('click');
-			evt.preventDefault();
-			return;
-		}
-		// Cmd-L for MacOS or Ctrl-L for Windows: to trigger the Library panel
-		if ((evt.ctrlKey || evt.metaKey) && evt.key=='l') {
-			$('#libraryactivator').trigger('click');
-			evt.preventDefault();
-			return;
-		}
-		// Cmd-O for MacOS or Ctrl-O for Windows: to trigger the Options panel
-		if ((evt.ctrlKey || evt.metaKey) && evt.key=='o') {
-			$('#optionsactivator').trigger('click');
+			simulateClick('#findbutton');
 			evt.preventDefault();
 			return;
 		}
@@ -396,23 +414,65 @@ function initAllAndSetup() {
 			evt.preventDefault();
 			return;
 		}
-		// Cmd-2 for MacOS or Ctrl-2 for Windows: to trigger the Diagrams screen
+		// Cmd-2 for MacOS or Ctrl-2 for Windows: to trigger the Single Failures screen
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='2') {
 			forceSelectVerticalTab(1);
 			evt.preventDefault();
 			return;
 		}
-		// Cmd-3 for MacOS or Ctrl-3 for Windows: to trigger the Diagrams screen
+		// Cmd-3 for MacOS or Ctrl-3 for Windows: to trigger the Common cause failures screen
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='3') {
 			forceSelectVerticalTab(2);
 			evt.preventDefault();
 			return;
 		}
-		// Cmd-4 for MacOS or Ctrl-4 for Windows: to trigger the Diagrams screen
+		// Cmd-4 for MacOS or Ctrl-4 for Windows: to trigger the Analsys screen
 		if ((evt.ctrlKey || evt.metaKey) && evt.key=='4') {
 			forceSelectVerticalTab(3);
 			evt.preventDefault();
 			return;
+		}
+
+		// Cmd-Z for MacOS or Ctrl-Z for Windows: to trigger Undo
+		if ((evt.ctrlKey || evt.metaKey) && !evt.shiftKey && evt.key=='z') {
+			// Make sure no element has focus, to not interfere with text editing
+			if ($(':focus').length>0) return;
+			simulateClick('#undobutton');
+			evt.preventDefault();
+			return;
+		}
+		// Shift-Cmd-Z for MacOS or Ctrl-Y for Windows: to trigger Redo
+		if ((evt.metaKey && evt.shiftKey && evt.key=='z')
+		 || (evt.ctrlKey && evt.key=='y')) {
+			// Make sure no element has focus, to not interfere with text editing
+			if ($(':focus').length>0) return;
+			simulateClick('#redobutton');
+			evt.preventDefault();
+			return;	// eslint-disable-line no-useless-return
+		}
+		// Cmd-L for MacOS or Ctrl-L for Windows: to show Label editor
+		if ((evt.ctrlKey || evt.metaKey) && !evt.shiftKey && evt.key=='l') {
+			// Make sure no element has focus, to not interfere with text editing
+			simulateClick('#buttlabels');
+			evt.preventDefault();
+			return;
+		}
+		// tab: cycle the toolbars
+		if (!evt.ctrlKey && !evt.metaKey && !evt.shiftKey && evt.key=='Tab') {
+			// Make sure no element has focus, to not interfere with text editing
+			switch ($('#toolbars').tabs('option','active')) {
+			case TabTBProjects:
+				$('#toolbars').tabs('option','active',TabTBHome);
+				break;
+			case TabTBHome:
+				$('#toolbars').tabs('option','active',TabTBSettings);
+				break;
+			case TabTBSettings:
+				$('#toolbars').tabs('option','active',TabTBProjects);
+				break;
+			}
+			evt.preventDefault();
+			return;	// eslint-disable-line no-useless-return
 		}
 //		console.log("key pressed: "
 //			+ (evt.metaKey ? "Cmd-" : "")
@@ -431,7 +491,6 @@ function initAllAndSetup() {
 			return;
 		}
 		$('#splash').hide();
-		sizeworkspace();
 #ifdef SERVER
 		if (
 			localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded!=window.name) {
@@ -460,13 +519,15 @@ function initAllAndSetup() {
 #ifdef SERVER
 	$(window).on('unload', (function() {
 		stopWatching(null);
-		$('#goodbye').show();
 		if (localStorage.RasterToolIsLoaded && localStorage.RasterToolIsLoaded==window.name) {
 			localStorage.removeItem('RasterToolIsLoaded');
 		}
 	}));
 #endif
-	$(window).on('resize', SizeDOMElements);
+	$(window).on('resize', function(evt) {
+		if ($(evt.target).hasClass('ui-dialog')) return;
+		SizeDOMElements();
+	});
 
 	// The onbeforeprint handler is supported by IE and Firefox only.
 	window.onbeforeprint = function() {
@@ -474,8 +535,8 @@ function initAllAndSetup() {
 		case 0:
 			var os = $('#scroller_overview'+Service.cid).offset();
 			$('#scroller_region'+Service.cid).offset( {top: os.top+1, left: os.left+1});
-			$('#diagrams'+Service.cid).scrollTop(0);
-			$('#diagrams'+Service.cid).scrollLeft(0);
+			$('#tab_diagrams'+Service.cid).scrollTop(0);
+			$('#tab_diagrams'+Service.cid).scrollLeft(0);
 			break;
 		case 1:
 			expandAllSingleF(Service.cid);
@@ -497,13 +558,360 @@ function initAllAndSetup() {
 	}, 500);
 }
 
-function getGroupSettings() {
-	// Initialise default values, then attempt to retrieve settings from the server
-	GroupSettings = {
-		classroom: false,
-		template: 'Project Template',
-		iconset: 'default'
-	};
+// Make a button appear active, wait 50ms, click, wait 100ms, make inactive
+function simulateClick(elem) {
+	$(elem).addClass('ui-state-active');
+	window.setTimeout(function() {
+		$(elem).trigger('click');
+		window.setTimeout(function() {
+			$(elem).removeClass('ui-state-active');
+		}, 100);
+	}, 50);
+}
+
+function initProjectsToolbar() {
+	$("a[href^='#tb_projects']").text(_("Projects"));
+	$('#buttadd').attr('title',_("Add a new default project to the library."));
+	$('#buttimport').attr('title',_("Load a project from a file."));
+	$('#buttexport').attr('title',_("Save the current project to a file."));
+	$('#buttduplicate').attr('title',_("Create a copy of the current project."));
+	$('#projectprops').attr('title',_("Inspect and modify the current project."));
+	// Props ------------------
+	$('#projectprops').on('click',  ShowDetails);
+	// Add --------------------
+#ifdef SERVER
+	$('#buttadd').on('click',function() {
+		lengthy(loadDefaultProject);
+	});
+	// Duplicate --------------------
+	$('#buttduplicate').on('click',  lengthyFunction(() => {
+			let p = Project.get(Project.cid);
+			let clone = p.duplicate();
+			clone.setshared(false,false);
+			clone.settitle(p.title+_(" (copy)"));
+			populateProjectList();
+			switchToProject(clone.id,false);
+		})
+	);
+	// Import --------------------
+	$('#buttimport').on('click',  function() {
+		$('#buttimport').removeClass('ui-state-hover');
+		$('#body').off('click');
+		$('#fileElem').trigger('click');
+		$('#body').on('click',  function(){ return false; });
+	});
+	$('#fileElem').on('change',  function(event) {
+		var files = event.target.files;
+		if (files.length==null || files.length==0)  return;
+		var reader = new FileReader();
+		reader.onload = function(evt) {
+			lengthy(function() {
+				var newp = loadFromString(evt.target.result,{strsource:`File "${files[0].name}"`});
+				if (newp!=null) {
+					// Make sure the newly imported project is indeed private
+					var p = Project.get(newp);
+					p.setshared(false,false);
+					switchToProject(newp);
+					populateProjectList();
+				}
+				// Remove the default project, as long as it is still unmodified??
+				transactionCompleted("Project add");
+				// Import checks are not as thorough as the internal consistency checks on components.
+				// Therefore, force a check after load.
+				checkForErrors(false);
+				checkUpgradeDone();
+			});
+		};
+		reader.readAsText(files[0]);
+	});
+	// Export --------------------
+	$('#buttexport').on('click',  function() {
+		singleProjectExport(Project.cid);
+	});
+
+	$('#projlistsection>div:first-child').text(_("Project library"));
+	$('#projlist').selectmenu({
+		open: showProjectList,
+		select: function(event,data) {
+			// data.item.value = id of selected project
+			// data.item.label = name of selected project
+			refreshSelProjectButtons(data.item.value);
+		}
+	});
+	$('#selector').attr('title',_("Library of all projects."));
+	$('#buttactivate').attr('title',_("Switch to the selected project."));
+	$('#buttdel').attr('title',_("Permanently remove the selected project."));
+	$('#buttmerge').attr('title',_("Join the selected project into the current one."));
+	// Project list
+	// Activate --------------------
+	$('#buttactivate').on('click',  function() {
+		let p = Project.get( $('#projlist').val() );
+		if (!p) return;
+		if (!p.stub) {
+			lengthy(function() {
+				switchToProject(p.id,true);
+				refreshProjectToolbar(Project.cid);
+			});
+		} else {
+			// Activating a stub project.
+			// Make sure that there is no local project with that name
+			if (Project.withTitle(p.title)!=null) {
+				rasterAlert(_("That project name is used already"),
+					_H("There is already a project called '%%'. Please rename that project first.", p.title)
+				);
+			} else {
+				lengthy(function() {
+					// Do a retrieve operation, and switch to that new project, if successful.
+					Project.asyncRetrieveStub(p.id,function(newpid){
+						populateProjectList();
+						switchToProject(newpid);
+						Project.get(newpid).updateUndoRedoUI();
+						startWatchingCurrentProject();
+					});
+					refreshProjectToolbar(Project.cid);
+				});
+			}
+		}
+	});
+	// Delete --------------------
+	$('#buttdel').on('click',  function(/*evt*/){
+		let p = Project.get( $('#projlist').val() );
+		if (p==null) {
+			bugreport('No project selected','buttdel click handler');
+		}
+		let dokill = function() {
+			if (p.shared || p.stub) {
+				// Disable the project watch. Otherwise a notification would be triggered.
+				stopWatching(p.id);
+				// remove from the server
+				p.deleteFromServer();
+				populateProjectList();
+			}
+			if (p.id==Project.cid) {
+				p.destroy();
+				p = Project.firstProject();
+				// Add a blank project if none would be left
+				if (p==null) {
+					loadDefaultProject();
+				} else {
+					switchToProject(p.id);
+				}
+			} else {
+				p.destroy();
+				refreshProjectToolbar(Project.cid);
+			}
+		};
+		newRasterConfirm(_("Delete project %%?", p.title),
+		_("Are you sure you want to remove project <i>'%%'</i>?\n<strong>This cannot be undone.</strong>", H(p.title)),
+		_("Remove"),_("Cancel")
+		).done(function() {
+			var t=p.totalnodes();
+			if (t>3) {
+				newRasterConfirm(_("Delete project %%?", p.title),
+					_("This project has %% nodes.\nAre you <i>really</i> sure you want to discard these?", t),
+					_("Yes, really remove"),_("Cancel"))
+				.done(lengthyFunction(dokill));
+			} else {
+				lengthy(dokill);
+			}
+		});
+	});
+	// Merge --------------------
+	$('#buttmerge').on('click',  function() {
+		var otherproject = Project.get( $('#projlist').val() );
+		if (otherproject.stub) {
+			rasterAlert(_("Cannot merge a remote project"),_H("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
+			return;
+		}
+		var currentproject = Project.get( Project.cid );
+		rasterConfirm(_("Merge '%%' into '%%'?",otherproject.title,currentproject.title),
+			_("Are you sure you want to fold project '%%' into the current project? <strong>This cannot be undone.</strong><br>",
+				H(otherproject.title))
+			+'<br>\n'+
+			_H("This will copy the diagrams of '%%' into '%%'.",
+				otherproject.title,currentproject.title),
+			_("Merge"),_("Cancel"),
+			lengthyFunction(function() {
+				currentproject.merge(otherproject.id);
+				currentproject.updateUndoRedoUI();
+				let it = new ServiceIterator({project: Project.cid});
+				it.forEach( (s) => {
+					if (s._loaded) return;
+					s.load();
+					paintSingleFailures(s);
+				});
+				PaintAllClusters();
+			})
+		);
+	});
+#else
+	// Hide stuff for standalone version
+	$('#projselected').hide();
+	$('#buttduplicate').hide();
+	$('#buttadd').on('click',function() { ipc.send('document-new',WindowID); });
+	$('#buttimport').on('click',function() { ipc.send('document-import',WindowID); });
+	$('#buttexport').on('click',function() {
+		let s = CurrentProjectAsString();
+		ipc.send('document-save',WindowID,s);
+	});
+#endif
+
+	$('#projdebugsection>div:first-child').text(_("Debugging functions"));
+	$('#buttcheck').text(_("Check"));
+	$('#buttexportall').text(_("Export all"));
+	$('#buttzap').text(_("Wipe library"));
+	$('#buttcheck').attr('title',_("Check the projects for internal consistency."));
+	$('#buttexportall').attr('title',_("Save all projects into a single file."));
+	$('#buttzap').attr('title',_("Permanently remove all projects."));
+	$('#networkactivity').attr('title',_("Flashes on network activity."));
+	// Check --------------------
+	$('#buttcheck').on('click',  function() {
+		checkForErrors(true);
+	});
+	// Export all --------------------
+	$('#buttexportall').on('click',  function() {
+		exportAll();
+	});
+	// Zap! --------------------
+	$('#buttzap').on('click',  function(){
+		rasterConfirm(_("Delete all?"),
+			_H("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
+			_("Erase everything"),_("Cancel"),
+			function() {
+				rasterConfirm(_("Delete all?"),
+					_("Really sure? You will lose <b>all private</b> projects!\n"),
+					_("Yes, really erase all"),_("Cancel"),
+					Zap
+				);
+			}
+		);
+	});
+
+#ifdef SERVER
+	var flashTimer;
+	$(document).ajaxSend(function(){
+		window.clearTimeout(flashTimer);
+		$('#networkactivity').removeClass('activityoff activityno').addClass('activityyes');
+	});
+	$(document).ajaxStop(function(){
+		// Make sure that the activity light flashes at least some small time
+		flashTimer = window.setTimeout(function(){
+			$('#networkactivity').removeClass('activityoff activityyes').addClass('activityno');
+		},200);
+	});
+#endif
+}
+
+#ifdef SERVER
+function refreshProjectToolbar(pid) {
+	$('#projlist').val(pid).selectmenu('refresh');
+	refreshSelProjectButtons(pid);
+}
+
+function refreshSelProjectButtons(pid) {
+	if (pid==Project.cid) {
+		$('#buttactivate').addClass('ui-state-disabled');
+		$('#buttmerge').addClass('ui-state-disabled');
+	} else {
+		$('#buttactivate').removeClass('ui-state-disabled');
+		$('#buttmerge').removeClass('ui-state-disabled');
+	}
+}
+
+/* populateProjectList: Fill the project list using current stubs
+ */
+function populateProjectList() {
+	var snippet = "";
+	var newoptions = "";
+	var it = new ProjectIterator({group: ToolGroup});
+	it.sortByTitle();
+
+	// First all private projects
+	for (const p of it) {
+		if (p.stub || p.shared) continue;
+		if (snippet=="") {
+			snippet = '<optgroup class="optgroup" label="'+_H("Private projects")+'">\n';
+		}
+		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
+	}
+	if (snippet!="") {
+		snippet += '</optgroup>\n';
+	}
+	newoptions += snippet;
+	//	 Then all shared projects, if they belong to group ToolGroup
+	if (!GroupSettings.localonly) {
+		snippet = "";
+		for (const p of it) {
+			if (p.stub || !p.shared) continue;
+			if (snippet=="") {
+				snippet = '<optgroup class="optgroup" label="'+_H("Shared projects")+'">\n';
+			}
+			snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
+		}
+		if (snippet!="") {
+			snippet += '</optgroup>\n';
+		}
+		newoptions += snippet;
+	}
+	$('#projlist').html(newoptions);
+	// Finally all stubs projects
+	refreshStubList(true); // Add current stubs, possibly outdated wrt server status
+}
+
+/* showProjectList: Show project list using current stubs, and do fire periodic updates
+ */
+function showProjectList() {
+	populateProjectList();
+	if (!GroupSettings.localonly && Preferences.online) {
+		startPeriodicStubListRefresh(); // Update stubs from server and refresh
+	}
+}
+
+var ProjectListTimer = null;
+
+function startPeriodicStubListRefresh() {
+	if (ProjectListTimer!=null)  return;
+	// Update very 2 seconds. Updates in progress will not be interrupted
+	Project.UpdateStubs();
+	ProjectListTimer = window.setInterval(function() {
+		if ($('#projlist-menu').parent().css('display')=='none') {
+			window.clearInterval(ProjectListTimer);
+			ProjectListTimer=null;
+			return;
+		}
+		Project.UpdateStubs();
+	},2000);
+}
+
+
+function refreshStubList(dorepaint=false) {
+	if (GroupSettings.localonly) return;
+	let snippet = '';
+	let it = new ProjectIterator({group: ToolGroup, stub: true});
+	it.sortByTitle();
+	let str = (GroupSettings.classroom ? _("Exercises") : _("Other projects on the server"));
+	for (const p of it) {
+		if (snippet=='') {
+			snippet = `<optgroup id="stubgroup" class="optgroup" label="${str}">\n`;
+		}
+		snippet += `<option value="${p.id}" title="${H(p.description)}">${H(p.title)}, by ${H(p.creator)} on ${prettyDate(p.date)}</option>\n`;
+	}
+	if (snippet!='') {
+		snippet += '</optgroup>\n';
+	}
+	$('#stubgroup').remove();
+	$('#projlist').append(snippet);
+	if (dorepaint) {
+		refreshProjectToolbar(Project.cid);
+	}
+	// This hack will ensure that the item under the pointer, that is currently highlighted,
+	// will not change its color after the menu has been refreshed.
+	$('#projlist-menu li').trigger('mousemove');
+}
+#endif
+
+#ifdef SERVER
+function getGroupSettingsAtInitialisation() {
 	$.ajax({
 		url: 'group.json',
 		async: false,
@@ -511,15 +919,332 @@ function getGroupSettings() {
 		success: function(data) {
 			if (data.classroom===true) {
 				GroupSettings.classroom = true;
+				$("#classroom").text(_("Classroom version")).show();
 			}
 			if (typeof data.template==='string') {
 				GroupSettings.template = data.template;
 			}
-			if (typeof data.iconset==='string') {
-				GroupSettings.iconset = data.iconset;
+			if (data.localonly===true) {
+				GroupSettings.localonly = true;
+				GroupSettings.classroom = true;
+			}
+			if (typeof data.iconsets==='object' && Array.isArray(data.iconsets) && data.iconsets.every(s => typeof s==='string') ) {
+				GroupSettings.iconsets = data.iconsets;
 			}
 		}
 	});
+	if (GroupSettings.template=='') return;
+	// Try to fetch the template.
+	Project.UpdateStubs(false,false); // async, and do not repaint
+	let stubproj=null;
+	// Check for a template
+	for (const idobj of Project._all) {
+		let p = idobj[1]; // idobj[0]=key, idobj[1]=value
+		if (p.group!=ToolGroup) continue;
+		if (p.stub && isSameString(p.title,GroupSettings.template)) stubproj = p;
+	}
+	if (!stubproj) return;
+	// Try to fetch it
+	$.ajax({
+		url: 'share.php?op=get'+
+			'&name=' + urlEncode(stubproj.title) +
+			'&creator=' + urlEncode(stubproj.creator) +
+			'&date=' + urlEncode(stubproj.date),
+		async: false,
+		dataType: 'text',
+		success: function (data) {
+			GroupSettings.templatestring = data;
+		}
+	});
+}
+#endif
+
+function initHomeToolbar() {
+	$("a[href^='#tb_home']").text(_("Home"));
+	$('#undobutton').attr('title', _("Undo"));
+	$('#redobutton').attr('title', _("Redo"));
+	$('#findbutton').attr('title', _("Locate nodes"));
+	$('#helpbutton').attr('title', _("Assistance"));
+	$('#undobutton').on('click', function() {
+		Transaction.undo();
+	});
+	$('#redobutton').on('click', function() {
+		Transaction.redo();
+	});
+	$('#findbutton').on('click', StartFind);
+	$('#helpbutton').on('click',  function() {
+		$('#helppanel').dialog('open');
+	});
+
+	let rsfunc = function(/*event,ui*/) {
+		$('#helptabs ul').width($('#helppanel').width()-14);
+		let hp = $('#helppanel').height();
+		let tb = $('#helppanel ul').height();
+		let padding = 36;
+		$('#helppanel iframe').height(hp-tb-padding);
+	};
+	$('#helppanel').dialog({
+		title: _("Information on using this tool"),
+		autoOpen: false,
+		height: 450,
+		minHeight: 120,
+		width: 700,
+		minWidth: 470,
+		maxWidth: 800,
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+//		open: function(/*event*/) {
+//			initFrequencyTool();
+//			rsfunc();
+//		},
+		resize: rsfunc
+	});
+	$('#helppanel').dialog('widget').addClass('donotprint');
+
+	$('#helptabs a').eq(0).text( _("Frequency") );
+	$('#helptabs a').eq(1).text( _("Impact") );
+	$('#helptabs a').eq(2).text( _("Shortcuts") );
+	$('#helptabs a').eq(3).text( _("Manual") );
+	$('#helptabs a').eq(4).text( _("About") );
+	$('#helptabs a').eq(0).attr('href', _("../help/Frequency.html") );
+	$('#helptabs a').eq(1).attr('href', _("../help/Impact.html") );
+	$('#helptabs a').eq(2).attr('href', _("../help/Shortcuts.html") );
+	$('#helptabs a').eq(3).attr('href', _("../help/Process.html") );
+	$('#helptabs a').eq(4).attr('href', _("../help/About.html") );
+	$('#helptabs li:last-of-type').css("margin-left","10px");
+	$('#helptabs').tabs({
+		heightStyle: 'content',
+		load: function(/*event,ui*/) {
+			let tb = $('#helptabs').tabs('option','active');
+			if (tb==0) {
+				initFrequencyTool();
+			} else if (tb==3) {
+				rsfunc();
+			}
+		}
+	});
+
+	// Home toolbar | label section
+	$('#buttlabels').attr('title', _("Edit labels"));
+	$('#buttlabels').on('click', showLabelEditForm);
+
+	// Home toolbar | Diagram items: templates are set up in Project.load()
+
+	// Home toolbar | SF items
+	$('#sffoldsection>div:first-child').text(_("Fold"));
+	$('#sfexpandall').text(_("Expand all"));
+	$('#sfcollapseall').text(_("Collapse all"));
+	$('#sfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
+	$('#sfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
+	$('#sfexpandall').on('click',  function(){
+		$('#singlefs_workspace'+Service.cid).scrollTop(0);
+		expandAllSingleF(Service.cid);
+	});
+	$('#sfcollapseall').on('click',  function(){
+		$('#singlefs_workspace'+Service.cid).scrollTop(0);
+		collapseAllSingleF(Service.cid);
+	});
+	$('#sfsortsection>div:first-child').text(_("Sort"));
+	$('#sfsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
+	$('#sfsort_type').checkboxradio('option', 'label', _("by Type"));
+	$('#sfsort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
+	$('label[for=sfsort_alph]').attr('title', _("List by title A-Z"));
+	$('label[for=sfsort_type]').attr('title', _("Group by type"));
+	$('label[for=sfsort_thrt]').attr('title', _("Most vulnerable first, least vulnerable last"));
+	$('#sfsort_alph').prop('checked',true);
+	$('input[name=sfsort]').checkboxradio('refresh');
+	$('#sfsortsection input').on('change', function() {
+		paintSingleFailures(Service.get(Service.cid));
+	});
+
+	// Home toolbar | CCF items
+	$('#ccffoldsection>div:first-child').text(_("Fold"));
+	$('#ccfexpandall').text(_("Expand all"));
+	$('#ccfcollapseall').text(_("Collapse all"));
+	$('#ccfexpandall').button({icon: 'ui-icon-arrowthickstop-1-s'});
+	$('#ccfcollapseall').button({icon: 'ui-icon-arrowthickstop-1-n'});
+	$('#ccfexpandall').on('click', function(){
+		$('#ccfs_body').scrollTop(0);
+		expandAllCCF();
+	});
+	$('#ccfcollapseall').on('click', function(){
+		$('#ccfs_body').scrollTop(0);
+		collapseAllCCF();
+	});
+	$('#ccfsortsection>div:first-child').text(_("Sort"));
+	$('#ccfsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
+	$('#ccfsort_type').checkboxradio('option', 'label', _("by Type"));
+	$('#ccfsort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
+	$('label[for=ccfsort_alph]').attr('title', _("List by title A-Z"));
+	$('label[for=ccfsort_type]').attr('title', _("Group by type"));
+	$('label[for=ccfsort_thrt]').attr('title', _("Most vulnerable first, least vulnerable last"));
+	$('#ccfsort_alph').prop('checked',true);
+	$('input[name=ccfsort]').checkboxradio('refresh');
+	$('#ccfsortsection input').on('change', function(){
+		PaintAllClusters();
+	});
+
+	// Home toolbar | Analysis items
+	$('#anavnsortsection>div:first-child').text(_("Sort nodes and clusters"));
+	$('#anavfsortsection>div:first-child').text(_("Sort vulnerabilities"));
+	$('#ana_nodesort_alph').checkboxradio('option', 'label', _("Alphabetically"));
+	$('#ana_nodesort_type').checkboxradio('option', 'label', _("by Type"));
+	$('#ana_nodesort_thrt').checkboxradio('option', 'label', _("by Vulnerability level"));
+	$('label[for=ana_nodesort_alph]').attr('title', _("List rows by title A-Z"));
+	$('label[for=ana_nodesort_type]').attr('title', _("Group rows by type"));
+	$('label[for=ana_nodesort_thrt]').attr('title', _("Most vulnerable top, least vulnerable bottom"));
+	$('#ana_failsort_alph').checkboxradio('option', 'label', _("Alphabetically"));
+	$('#ana_failsort_type').checkboxradio('option', 'label', _("by Type"));
+	$('label[for=ana_failsort_alph]').attr('title', _("List columns by title A-Z"));
+	$('label[for=ana_failsort_type]').attr('title', _("Group columns by type"));
+	$('#ana_nodesort_'+FailureThreatSortOpt.node).prop('checked',true);
+	$('#ana_failsort_'+FailureThreatSortOpt.threat).prop('checked',true);
+	$('input[name=ana_nodesort]').checkboxradio('refresh');
+	$('input[name=ana_failsort]').checkboxradio('refresh');
+	$('#anavexcludesection>div:first-child').text(_("Click cells to include/exclude them"));
+	$('#quickwinslink').text(_("Quick wins"));
+	$('#clearexclusions').text(_("Clear exclusions"));
+	var create_ananode_sortfunc = function(opt) {
+		return function() {
+			FailureThreatSortOpt.node = opt;
+			paintSFTable();
+			paintCCFTable();
+		};
+	};
+	$('[for=ana_nodesort_alph]').on('click', create_ananode_sortfunc('alph'));
+	$('[for=ana_nodesort_type]').on('click', create_ananode_sortfunc('type'));
+	$('[for=ana_nodesort_thrt]').on('click', create_ananode_sortfunc('thrt'));
+	var create_anafail_sortfunc = function(opt) {
+		return function() {
+			FailureThreatSortOpt.threat = opt;
+			paintSFTable();
+			paintCCFTable();
+		};
+	};
+	$('[for=ana_failsort_alph]').on('click', create_anafail_sortfunc('alph'));
+	$('[for=ana_failsort_type]').on('click', create_anafail_sortfunc('type'));
+	$('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
+		var exclCm = computeComponentQuickWins();
+		var exclCl = computeClusterQuickWins();
+		ComponentExclusions.clear();
+		ClusterExclusions.clear();
+		for (const id of exclCm) ComponentExclusions.add(id);
+		for (const id of exclCl) ClusterExclusions.add(id);
+		paintSFTable();
+		paintCCFTable();
+		$('#clearexclusions').button('option','disabled', (exclCm.length==0 && exclCl.length==0));
+	});
+	$('#clearexclusions').button().button('option','disabled',true).on('click',  function() {
+		ComponentExclusions.clear();
+		ClusterExclusions.clear();
+		paintSFTable();
+		paintCCFTable();
+		$('#clearexclusions').button('option','disabled',true);
+	});
+	
+	$('#anallincsection>div:first-child').text(_("Include"));
+	$('#anallminsection>div:first-child').text(_("Minimum value"));
+	$('#anallincsection label[for=incX]').text(_("Undetermined"));
+	$('#anallincsection label[for=incA]').text(_("Ambiguous"));
+}
+
+function initSettingsToolbar() {
+	$("a[href^='#tb_settings']").text(_("Settings"));
+	// Options toolbar | diagrams options
+	$('#vulnlevelsection>div:first-child').text(_("Vulnerability levels"));
+
+	$('#em_none').checkboxradio('option', 'label', _("None"));
+	$('#em_small').checkboxradio('option', 'label', _("Small"));
+	$('#em_large').checkboxradio('option', 'label', _("Large"));
+	$('label[for=em_none]').attr('title', _("Hide vulnerability of nodes in diagrams"));
+	$('label[for=em_small]').attr('title', _("Show vulnerability of nodes using small color square"));
+	$('label[for=em_large]').attr('title', _("Show vulnerability of nodes using large color square and letter"));
+	$('#'+Preferences.emsize).prop('checked',true);
+	$('input[name=emblem_size]').checkboxradio('refresh');
+	$('#vulnlevelsection input').on('change', function() {
+		Preferences.setemblem($('input[name=emblem_size]:checked').val());
+#ifdef STANDALONE
+		ipc.send('option-modified',WindowID,'vulnlevel',(Preferences.emsize=='em_none' ? 0 : (Preferences.emsize=='em_small' ? 1 : 2 )));
+#endif
+	});
+	$('#labelsection>div:first-child').text(_("Label colors"));
+	$('#label_off').checkboxradio('option', 'label', _("hide"));
+	$('#label_on').checkboxradio('option', 'label', _("show"));
+	$('label[for=label_off]').attr('title', _("Paint nodes in white"));
+	$('label[for=label_on]').attr('title', _("Paint nodes using the color of their label"));
+	$('#label_off').prop('checked',!Preferences.label);
+	$('#label_on').prop('checked',Preferences.label);
+	$('input[name=labelonoff]').checkboxradio('refresh');
+	$('#labelsection input').on('change', function() {
+		Preferences.setlabel($('#label_on').prop('checked'));
+#ifdef STANDALONE
+		ipc.send('option-modified',WindowID,'labels',Preferences.label);
+#endif
+	});
+	$('#mapsection>div:first-child').text(_("Mini-map"));
+	$('#showmap_off').checkboxradio('option', 'label', _("off"));
+	$('#showmap_on').checkboxradio('option', 'label', _("on"));
+	$('label[for=showmap_off]').attr('title', _("Hide the miniature overview of the workspace"));
+	$('label[for=showmap_on]').attr('title', _("Show a miniature overview of the workspace"));
+	$('#showmap_off').prop('checked',!Preferences.showmap);
+	$('#showmap_on').prop('checked',Preferences.showmap);
+	$('input[name=showmap]').checkboxradio('refresh');
+	$('#mapsection input').on('change', function() {
+		Preferences.setmap($('#showmap_on').prop('checked'));
+#ifdef STANDALONE
+		ipc.send('option-modified',WindowID,'minimap',Preferences.showmap);
+#endif
+	});
+
+#ifdef SERVER
+	// Creator name
+	if (!Preferences.creator) Preferences.creator = _("Anonymous");
+	$('#creatorlabel>div:first-child').text(_("Your name"));
+	$('#creatorf').prop('placeholder',Preferences.creator);
+	$('#creatorf').attr('title',_("The author's name on projects that you share."));
+	$('#creatorf').on('click', function() {
+		$(this).val(Preferences.creator);
+	});
+	$('#creatorf').on('keypress', (e) => {if (e.which == 13) $('#creatorf').trigger('blur');});
+	$('#creatorf').on('blur', function() {
+		Preferences.setcreator($(this).val());
+		$('#creatorf').val("").prop('placeholder',Preferences.creator);
+	});
+	// Online / offline settings
+	$('#onlinelabel>div:first-child').text(_("Server synchronisation"));
+	$('#online_off').checkboxradio('option', 'label', _("offline"));
+	$('#online_on').checkboxradio('option', 'label', _("online"));
+	$('label[for=online_off]').attr('title', _("Do not synchronise changes to the server"));
+	$('label[for=online_on]').attr('title', _("Synchronize all changes to the server for instant collaboration"));
+	$('#online_off').prop('checked',!Preferences.online);
+	$('#online_on').prop('checked',Preferences.online);
+	$('input[name=onlineonoff]').checkboxradio('refresh');
+	$('#onlinesection input').on('change', function() {
+		Preferences.setonline($('#online_on').prop('checked'));
+	});
+#endif
+}
+
+const TabTBProjects = 0;
+const TabTBHome = 1;
+const TabTBSettings = 2;
+
+function toolbartabselected(/*evt,ui*/) {
+	let p;
+	switch ($('#toolbars').tabs('option','active')) {
+	case TabTBProjects:
+		break;
+	case TabTBHome:
+		break;
+	case TabTBSettings:
+		p = Project.get(Project.cid);
+		$('#projname').text(p.title);
+		$('#projdescr').text(p.description);
+		$('#sharing_off').prop('checked',!p.shared);
+		$('#sharing_on').prop('checked',p.shared);
+		break;
+	default:
+		bugreport('unknown tab encountered','toolbartabselected');
+	}
 }
 
 var findTimer;
@@ -527,50 +1252,69 @@ var nodeFindString = "";
 var FindScrollPos = 0;
 
 var updateFind = function() {
-	var str = $('#field_find').val();
+	let str = $('#field_find').val();
 	if (str==nodeFindString) {
 		findTimer = window.setTimeout(updateFind,500);
 		return;
 	}
 	nodeFindString = str;
+	
 	// A negative scroll position means that we need to save it, otherwise reset the position
 	if (FindScrollPos<0) {
 		FindScrollPos = -FindScrollPos;
 	} else {
 		FindScrollPos = 0;
 	}
-	var res = "";
-	var currtype='';
+	
+	let res = "";
+	let currtype='';
+	let p = Project.get(Project.cid);
 	if (nodeFindString!='') {
-		var it = new NodeIterator({project: Project.cid});
+		let it = new NodeIterator({project: Project.cid});
 		it.sortByType();
-		for (it.first(); it.notlast(); it.next()) {
-			var rn = it.getnode();
-			var s = Service.get(rn.service);
-			if (rn.title.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1
-				|| (rn.suffix!='' && rn.suffix.toUpperCase().indexOf(nodeFindString.toUpperCase())!=-1)
-			) {
+		for (const rn of it) {
+			let s = Service.get(rn.service);
+			let cm = null;
+			if (rn.component) cm=Component.get(rn.component);
+			// Several text fields can give a match with the search string:
+			// - node title or suffix
+			// - node label
+			// - custom vulnerabilities on the node
+			// - remarks on the node's assessments
+			// We concatenate all these text fields into one single searchstring. Elements are separated
+			// by the string _%_%_ (which is unlikely to appear in the elements), to prevent the case whereby
+			// the nodeFindStrings happens across two elements.
+			let sep = '_%_%_';
+			let searchstring = rn.title+sep+rn.suffix+sep;
+			if (Preferences.label && rn.color && rn.color!='none') searchstring += rn.color+sep;
+			if (cm) {
+				for (const aid of cm.assmnt) {
+					let a = Assessment.get(aid);
+					let vln = Vulnerability.get(a.vulnerability);
+					if (!vln.common)  searchstring += vln.title+sep;
+					searchstring += a.remark+sep;
+				}
+			}
+			if (searchstring.toLocaleUpperCase().indexOf(nodeFindString.toLocaleUpperCase())!=-1) {
 				if (rn.type!=currtype) {
 					if (res!='') res += '<br>\n';
 					res += '<b>'+H(Rules.nodetypes[rn.type])+'</b><br>\n';
 					currtype = rn.type;
 				}
 				// Show a small circle in the label color, if any.
-				if (Preferences.label) {
-					var p = Project.get(Project.cid);
+//				if (Preferences.label) {
 					if (rn.color && rn.color!='none') {
 						res += '<div class="tinyblock B' + rn.color + '" title="' + H(p.strToLabel(rn.color)) + '"></div>';
 					} else {
 						res += '<div class="tinyblock" style="border: 1px solid white;"></div>';
 					}
-				}
+//				}
 				// Show a small square in the overall vulnerability level, if any
-				if (rn.component) {
-					var cm = Component.get(rn.component);
+				if (cm) {
 					if (cm.magnitude!='-') {
 						res += '<div class="tinysquare M'
-						+ ThreatAssessment.valueindex[cm.magnitude]
-						+ '" title="' + H(ThreatAssessment.descr[ThreatAssessment.valueindex[cm.magnitude]])
+						+ Assessment.valueindex[cm.magnitude]
+						+ '" title="' + H(Assessment.descr[Assessment.valueindex[cm.magnitude]])
 						+ '"></div>';
 					} else {
 						res += '<div class="tinysquare" style="border: 1px solid white;"></div>';
@@ -583,11 +1327,11 @@ var updateFind = function() {
 				res += ' svc="' + s.id + '"';
 				res += '>';
 				res += rn.htmltitle();
-				res += '</span>';
 				res += ' <span style="color:grey;">'
 				+ _("in service")
 				+ '</span> '
 				+ H(s.title);
+				res += '</span>';
 				res += '<br>\n';
 			}
 		}
@@ -605,42 +1349,60 @@ var updateFind = function() {
 		}
 		FindScrollPos = $('#field_found').scrollTop();
 		// Activate the Diagrams tab
-		$('#tabs').tabs('option','active',0);
-		// Activate the right service
+		$('#workspace').tabs('option','active',TabWorkDia);
+		// Activate the right service. Since this will remove dialogs, including the Find window, restore the Find window after activation.
 		if (svc_id != Service.cid) {
-			$('#diaservicetab'+svc_id+' a').click();
+			$('#tab_diagramstabtitle'+svc_id).trigger('click');
 			FindScrollPos = -FindScrollPos;
 			StartFind(nodeFindString);
 		}
 		// Scroll the node into view
 		var scrolldist_l = 0;
 		var scrolldist_t = 0;
-		var view_l = $('#diagrams'+svc_id).scrollLeft();
-		var view_t = $('#diagrams'+svc_id).scrollTop();
-		var view_o = $('#diagrams'+svc_id).offset();
-		var view_w = $('#diagrams'+svc_id).width();
-		var view_h = $('#diagrams'+svc_id).height();
+//		var view_l = $('#tab_diagrams'+svc_id).scrollLeft();
+//		var view_t = $('#tab_diagrams'+svc_id).scrollTop();
+		var view_o = $('#tab_diagrams'+svc_id).offset();
+		var view_w = $('#tab_diagrams'+svc_id).width();
+		var view_h = $('#tab_diagrams'+svc_id).height();
 		var nodepos = $(node.jnid).offset();
 		if (nodepos.left < view_o.left)  scrolldist_l = view_o.left - nodepos.left + 100;
 		if (nodepos.left > view_o.left+view_w)  scrolldist_l = view_w - nodepos.left - view_o.left - 100;
 		if (nodepos.top < view_o.top)    scrolldist_t = view_o.top - nodepos.top + 100;
 		if (nodepos.top > view_o.top+view_h)  scrolldist_t = view_h - nodepos.top - view_o.top - 100;
-		// The node may be behind the Find window
+		// The node may be behind the Find window, or the scroller
 		$('#findpanel').dialog('widget').stop().fadeTo('slow', 0.5);
-		$('#findpanel').one('mousemove', function() {
-			// Immediately show when we wiggle the mouse
-			$('#findpanel').dialog('widget').stop().css('opacity',1);
-		});
-		$('#diagrams'+svc_id).animate({
-			scrollLeft: '-='+scrolldist_l,
-			scrollTop: '-='+scrolldist_t
-		});
-		// Draw a selection around the node
-		var o = $('#diagrams_workspace'+svc_id).offset();
-		$('#selectrect').show().offset({
-			left: node.position.x-15+o.left, top: node.position.y-15+o.top}
-		).width(node.position.width+25).height(node.position.height+25);
-		$('#selectrect').effect('shake',{distance:10, times:8},1000);
+		$('#scroller_overview'+svc_id).stop().fadeTo('slow', 0.5);
+		
+		var draw_and_wiggle = function() {
+			let o = $('#tab_diagrams'+svc_id).offset();
+			let scrollp = $('#diagrams_workspace'+svc_id).position();
+			$('#selectrectC').hide();
+			$('#selectrect')
+			.show()
+			.offset({left: node.position.x-15+o.left+scrollp.left, top: node.position.y-15+o.top+scrollp.top})
+			.width(node.position.width+30)
+			.height(node.position.height+30)
+			.effect('shake',{distance:10, times:8},1000, function() {
+				$('body').one('mousemove', function() {
+					// Immediately show when we wiggle the mouse
+					$('#findpanel').dialog('widget').stop().css('opacity',1);
+					$('#scroller_overview'+svc_id).stop().css('opacity', 1);
+					$('#selectrect').hide();
+				});
+			});
+		};
+
+		if (scrolldist_l==0 && scrolldist_t==0) {
+			// No scrolling, just wiggle
+			draw_and_wiggle();
+		} else {
+			// First scroll the workspace, then wiggle the target
+			$('#selectrect').hide();
+			$('#tab_diagrams'+svc_id).animate({
+				scrollLeft: '-='+scrolldist_l,
+				scrollTop: '-='+scrolldist_t
+			}, 400, 'swing', draw_and_wiggle);
+		}
 	});
 	findTimer = window.setTimeout(updateFind,500);
 };
@@ -663,6 +1425,7 @@ function StartFind(str) {
 		title: _("Find nodes"),
 		width: 405,
 		resizable: true,
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		buttons: [{ text: _("Done"),
 			click: function() {dialog.dialog('close');}
 		}],
@@ -810,12 +1573,154 @@ function freqIndicatorUpdate(anim) {
 	}
 }
 
+/* ShowDetails: a dialog to edit the current project's properties
+ */
+function ShowDetails() {
+#ifdef SERVER
+	Project.UpdateStubs(true,false); // async, no need to repaint
+#endif
+	let p = Project.get(Project.cid);
+	let snippet =`<form id="form_projectprops">
+		${_H("Title:")}<br><input id="field_projecttitle" name="fld" type="text" value="${H(p.title)}"><br>
+		`;
+	if (!GroupSettings.localonly && p.shared) { //For standalone .localonly==true
+		snippet += `<div>${_H("Creator:")} ${p.stub ? p.creator : Preferences.creator}, ${_("last stored on")} ${H(prettyDate(p.date))}.<br><br></div>`;
+	}
+	snippet +=`${_H("Description:")}<br><textarea id="field_projectdescription" rows="3">${H(p.description)}</textarea><br>`;
+	snippet += '<div id="psettings">';
+	// Private or Shared
+	if (!GroupSettings.localonly) { //For standalone .localonly==false
+		snippet += `<div class="psitem">${_H("Sharing: ")}<br>
+		<fieldset>
+			<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">${_H("Private")}</label>
+			<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">${_H("Shared")}</label>
+		</fieldset>
+		</div>
+		`;
+	} else {
+		snippet += '<div class="psitem" style="margin:0"></div>';
+	}
+	// Worst Plausible Actor
+	snippet += `<div class="psitem">${_H("Worst plausible attacker: ")}<br>
+		<select name="wpalist" id="wpalist">
+			<option value="A">${_H("Customers, employees")}</option>
+			<option value="B">${_H("Activists")}</option>
+			<option value="C">${_H("Criminals")}</option>
+			<option value="D">${_H("Competitors")}</option>
+			<option value="E">${_H("State actors")}</option>
+		</select>
+		</div>`;
+	// Iconset
+	if (GroupSettings.iconsets.length>1) { //For standalone .localonly==false
+		snippet += `<div class="psitem">${_H("Iconset: ")}<br>
+			<select name="iconsetlist" id="iconsetlist">`;
+		GroupSettings.iconsets.forEach(is => snippet += `<option value="${H(is)}">${H(is)}</option>` );
+		snippet += '</select></div>';
+	} else {
+		snippet += '<div class="psitem"></div>';
+	}
+	snippet += '</div">';
+	
+	snippet += '</form>';
+	let dialog = $('<div></div>');
+	dialog.append(snippet);
+	$('#wpalist').selectmenu();
+	$('#iconsetlist').selectmenu();
+
+	let dbuttons = [];
+	dbuttons.push({
+		text: _("Cancel"),
+		click: function() {
+				$(this).dialog('close');
+			}
+	});
+	dbuttons.push({
+		text: _("Change properties"),
+		click: lengthyFunction(function() {
+					let fname = $('#field_projecttitle').val();
+					let fdescr = $('#field_projectdescription').val();
+					let fwpa = $('#wpalist').val();
+					let fset = $('#iconsetlist').val();
+#ifdef SERVER
+					let becomesShared = $('#sh_on').prop('checked');
+#endif
+					dialog.dialog('close');
+					
+					p.settitle(fname);
+					$('.projectname').text(p.title);
+					document.title = "Raster - " + p.title;
+					Preferences.setcurrentproject(p.title);
+					
+					p.setdescription(fdescr);
+					p.setwpa(fwpa);
+					p.seticonset(fset);
+#ifdef SERVER
+					if (!GroupSettings.localonly) {
+						if (!p.shared && becomesShared) {
+							// Before changing the sharing status from 'private' to 'shared', first
+							// check if there already is a project with this name. If so, refuse to rename.
+							let it = new ProjectIterator({title: p.title, group: ToolGroup, stub: true});
+							if (it.count()>0) {
+								rasterAlert(_("Cannot share this project yet"),
+									_H("There is already a project named '%%' on the server. You must rename this project before it can be shared.", p.title)
+								);
+							} else {
+								// transactionCompleted() will take care of the server, if project p is the current project.
+								p.setshared(becomesShared,false);
+							}
+						} else if (p.shared && !becomesShared) {
+							// Stop watching the project, or we will notify ourselves about its deletion
+							stopWatching(p.id);
+							p.setshared(becomesShared,true);
+						} else if (p.shared && becomesShared) {
+							p.storeOnServer();
+						}
+					}
+					showProjectList();
+#endif
+					transactionCompleted("Project props change");
+			})
+	});
+	dialog.dialog({
+		title: _("Properties for project '%%'", p.title),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		modal: true,
+		width: 540, maxWidth: 540, minWidth: 540,
+		buttons: dbuttons,
+		open: function() {
+#ifdef SERVER
+			if (!GroupSettings.localonly) {
+				$('#form_projectprops input[type=radio]').checkboxradio({icon: false});
+				$('#form_projectprops fieldset').controlgroup();
+				$('#sh_off').prop('checked',!p.shared);
+				$('#sh_on').prop('checked',p.shared);
+				$('input[name="sh_onoff"]').checkboxradio('refresh');
+			}
+			if (GroupSettings.classroom) {
+				$('input[name="sh_onoff"]').checkboxradio('option','disabled',true);
+			}
+#endif
+			$('#wpalist').val(p.wpa);
+			$('#iconsetlist').val(p.iconset);
+			$('#field_projecttitle').focus().select();
+			$('#form_projectprops').submit(function() {
+				// Ignore, must close with dialog widgets
+				return false;
+			});
+		},
+		close: function(/*event, ui*/) {
+			dialog.remove();
+		}
+	});
+}
+
+
 function log10(x) { return Math.LOG10E * Math.log(x); }
 
 
-/* In the code, use _("blue sky") instead of "blue sky"
+/* In the code, use ⎽("blue sky") instead of "blue sky"
  * Use
- *		_("I have %% potatoes!", num)
+ *		⎽("I have %% potatoes!", num)
  * to get (in EN)
  *		"I have 15 potatoes!"
  * and (in NL)
@@ -828,6 +1733,14 @@ function log10(x) { return Math.LOG10E * Math.log(x); }
  * _t["I have %1 %2."] = "Van %2 heb ik er %1.";	<-- not used yet
  *
  * If no translation is provided, the default is to show the unlocalised English version.
+ *
+ * Note: any label |...| at the start will be deleted. This is necessary for rare cases where
+ * the same English string used in different contexts requires a different translation.
+ * For example, "wired link" is normally translated as "kabelverbinding", but can be translated as "kabel"
+ * when space is limited. Use "wired link" -> "kabelverbinding", and "|short|wired link" -> "kabel"
+ * The label 'short' indicates the type of translation requested.
+ *
+ * Not that we trust the translation to be safe HTML. Still, it is good practice use _H().
  */
 function _(s) {
 	var str;
@@ -841,7 +1754,7 @@ function _(s) {
 			console.log("_t[\"" + s + "\"] = \"" + s + "\";");
 		}
 #endif
-		str=s;
+		str=s.replace(/^\|[^|]+\|/,'');	// strip leading |...|
 	} else {
 		str=_t[s];
 	}
@@ -857,39 +1770,18 @@ function _(s) {
 	return str;
 }
 
-/* mylang(obj): retrieve language specific element from obj.
- *  obj = {'EN': 'English', 'NL': 'Not English'}
- *  mylang('EN') --> 'English'
- *  mylang('NL') --> 'Not English'
- *  mylang('ES') --> undefined
+/* Return an HTML-escaped version of _(s)
  */
-function mylang(obj) {
-#ifdef SERVER
-	var lang = $.localise.defaultLanguage.toUpperCase();
-#else
-	var lang = 'EN'; // default
-#ifdef LANG_NL
-	lang = 'NL';
-#endif
-#endif
-
-	if (obj[lang]) {
-		return obj[lang];
-	} else {
-		// Fallback from 'en-US' to 'EN'
-		lang = lang.replace(/([^_]+)-.+/, "$1");
-		return obj[lang];
-	}
+function _H() {
+	return H(_(...arguments));
 }
 
 /* testLocalStorage(): returns boolean
  * Checks whether the browser supports storing values in localStorage.
  */
+#ifdef SERVER
 function testLocalStorage() {
 	try {
-		if (window.location.href.match(/^file/i)) {
-			rasterAlert('Warning',"Warning: Firefox discards your work on page reload.\nYou will lose your work unless you export your project.");
-		}
 		if (!localStorage) {
 			throw('noLocalStorage');
 		}
@@ -906,131 +1798,85 @@ function testLocalStorage() {
 		return false;
 	}
 }
-
-function loadDefaultProject() {
-	var s = new Service();
-	var p = new Project();
-	p.adddefaultthreats();
-	p.addservice(s.id);
-	s.autosettitle();
-	p.autosettitle();
-	p.load();
-	s.paintall();
-}
-
-//function modifyCSS(selector,property,newvalue) {
-//	/* Find a CSS-rule for the given selector, then set the rule
-//	 * for property to newvalue.
-//	 */
-//	var css=document.getElementById('maincssfile').sheet;
-//	var rule=null;
-//	for (var i=0; i<css.cssRules.length; i++) {
-//		if (css.cssRules[i].selectorText==selector) {
-//			rule = css.cssRules[i];
-//			break;
-//		}
-//	}
-//	if (!rule) {
-//		bugreport('cannot locate css rule for '+selector,'modifyCSS');
-//	} else {
-//		rule.style[property] = newvalue;
-//	}
-//}
+#endif
 
 /* SizeDOMElements()
  * Set the size of various containers, based on the size of the browser window.
+ *  - the rotation of the vertical tabs
+ *  - the size of the region within the mini map
+ *  - the position of the mini maps
  */
 function SizeDOMElements() {
-	var ww = $(window).width();
-	var wh = $(window).height();
-	// Overall browser window / DOM body
-	$('#tabs').width(ww-7);
-	$('#tabs').height(wh-7);
-	// Vertical navigation tabs
-	$('.ui-tabs-nav').width(wh-11);
-	var s = "";
-	s += 'rotate(-90deg) translateX(-';
-	s += wh-6;
-	s += 'px)';
-	$('.rot-neg-90').css('transform',s);
-	$('.rot-neg-90').css('-ms-transform',s);
-	$('.rot-neg-90').css('-moz-transform',s);
-	$('.rot-neg-90').css('-webkit-transform',s);
-	$('.rot-neg-90').css('-o-transform',s);
-	$('.rot-neg-90').css('border-bottom-left-radius','0px');
-	$('.rot-neg-90').css('border-bottom-right-radius','0px');
+	let ww = $('#workspace').width();
+	let wh = $('#workspace').height();
 
-	$('.workbody').width(ww-43);
-#ifdef SERVER
-	$('.workbody').height(wh-50);
-#else
-	$('.workbody').height(wh-8);
-#endif
+	$('.rot-neg-90').css('transform',
+		`rotate(-90deg) translateX(-${ ww-tab_height+5 }px)`	// top-right becomes top-left, bottom-right becomes top-right
+	);
 
-	$('#servaddbuttondia').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('.tabs-bottom > .ui-tabs-nav').width(ww-82);
-	// special setting for tab "Analysis"
-	$('#analysis_body > .ui-tabs-nav').width(ww-44);
-	$('.tabs-bottom').width(ww-47);
-#ifdef SERVER
-	$('.tabs-bottom').height(wh-54);
-#else
-	$('.tabs-bottom').height(wh-12);
-#endif
-	sizeworkspace();
+	let fw = $('.fancyworkspace').width();
+	let fh = $('.fancyworkspace').height();
+	let scroller_w = $('.scroller_overview').width();
+	let scroller_h = $('.scroller_overview').height();
+	$('.scroller_region').width( (ww/fw) * scroller_w -3);	// -3 to stay within the border
+	$('.scroller_region').height( (wh/fh) * scroller_h -3);
 
-	var fh = $('.fancyworkspace').height();
-	var fw = $('.fancyworkspace').width();
-	var wsh = wh-72;
-	var wsw = ww-48;
-	var scroller_h = $('.scroller_overview').height();
-	var scroller_w = $('.scroller_overview').width();
-	$('.scroller_region').height( (wsh/fh) * scroller_h );
-	$('.scroller_region').width( (wsw/fw) * scroller_w );
-
-	var scroller = $('#scroller_overview'+Service.cid);
-	var o = scroller.offset();
-	// Make sure that we only touch the top and right attributes and not the left attribute,
-	// so that the scroller remains fixed relative to the upper-right corner of the workspace.
-	if (o && o.left>0 && o.left<50) {
-		scroller.css('right', (wsw-60) + 'px');
+	let scroller = $('#scroller_overview'+Service.cid);
+	let o = scroller.offset();
+	if (!o || !o.left || !o.top) return;
+	let wo = $('#workspace').offset();
+	
+	if (o.left+scroller_w>wo.left+ww-30) {
+		let t = wo.left+ww-scroller_w-30;
+		scroller.css('left', (t<wo.left+15 ? wo.left+15 : t) + 'px');
 	}
-	if (o && o.top>0 && o.top>wsh-30) {
-		var t = wsh-30;
-		scroller.css('top', (t<15 ? 15 : t) + 'px');
+	if (o.top+scroller_h>wo.top+wh-30) {
+		let t = wo.top+wh-scroller_h-30;
+		scroller.css('top', (t<wo.top+15 ? wo.top+15 : t) + 'px');
 	}
 }
 
-function sizeworkspace() {
-	// Adjust the workspace height
-	// #bottomtabsdia or #bottomtabssf height is 27px per row. Double rows possible with many services
-	// and/or a narrow window.
-	var wh = $(window).height();
-	var bh;
-#ifdef SERVER
-	var adj = 77;
-#else
-	var adj = 35;
-#endif
-
-	bh = $('#bottomtabsdia').height();
-	if (bh>0) {
-		$('#diagrams_body .workspace').height(wh-adj+27-bh);
-		$('#diagrams_body .servplusbutton').height(bh-4);
-	}
-
-	bh = $('#bottomtabssf').height();
-	if (bh>0) {
-		$('#singlefs_body .workspace').height(wh-adj+27-bh);
-		$('#singlefs_body .servplusbutton').height(bh-4);
-	}
-
-	bh = $('#bottomtabsana').height();
-	if (bh>0) {
-		$('#analysis_body .workspace').height(wh-adj+27-bh);
-	}
+function loadEmptyProject() {
+	var p = new Project();
+	var s = new Service(p.id);
+	p.adddefaultvulns();
+	p.addservice(s.id);
+	s.autosettitle();
+	p.autosettitle();
+	switchToProject(p.id);
+	transactionCompleted("Project add");
 }
 
+#ifdef SERVER
+/* Load a fresh default project. If a template is defined and exists, then start a new project based on
+ * that template. Otherwise, start an empty project with builtin default labels and vulnerabilities.
+ */
+function loadDefaultProject() {
+	if (GroupSettings.templatestring) {
+		let pid = loadFromString(GroupSettings.templatestring, {
+			showerrors: false,
+			duplicate: true,
+			strsource: _("Template project '%%'", GroupSettings.teplate)
+		});
+		if (pid) {
+			let p = Project.get(pid);
+			p.autosettitle();
+			p.shared = false;
+			p.stub = false;
+			p.store();
+			switchToProject(pid);
+		} else {
+			loadEmptyProject();
+		}
+	} else {
+		// Blank project
+		loadEmptyProject();
+	}
+	populateProjectList();
+}
+#endif
+
+// Remove menus, but *not* the selectrect
 function removetransientwindows(/*evt*/) {
 	$('#nodemenu').hide();
 	$('#selectmenu').hide();
@@ -1044,30 +1890,29 @@ function removetransientwindowsanddialogs(/*evt*/) {
 
 function switchToProject(pid,dorefresh) {
 	if (pid==Project.cid)  return;
-	$('#nodereport').dialog('close');
-	$('#componentthreats').dialog('close');
-	$('#checklist_tWLS').dialog('close');
-	$('#checklist_tWRD').dialog('close');
-	$('#checklist_tEQT').dialog('close');
+#ifdef SERVER
+	stopWatching();
+#endif
 	removetransientwindowsanddialogs();
 	$('#ccfs_details').empty();
 	CurrentCluster = null;
 
 	if (Project.get(Project.cid)!=null) {
-		// Project might have been deleted by libdel button
+		// Project might have been deleted by buttdel button
 		Project.get(Project.cid).unload();
 	}
 	var p = Project.get(pid);
 	p.load();
-	var it = new ServiceIterator(pid);
-	var found = false;
-	var s;
-	for (it.first(); !found && it.notlast(); it.next()) {
-		s = it.getservice();
-		found = (s.title == Preferences.service);
-	}
-	if (found) {
-		Service.cid = s.id;
+#ifdef SERVER
+	refreshProjectToolbar(Project.cid);
+#endif
+	p.services.forEach(sid => paintSingleFailures(Service.get(sid)));
+	PaintAllClusters();
+	repaintCurrentAnalysis();
+
+	var it = new ServiceIterator({project: pid, title: Preferences.service});
+	if (!it.isEmpty()) {
+		Service.cid = it.first().id;
 	}
 	forceSelectVerticalTab(Preferences.tab);
 	if (dorefresh) {
@@ -1075,20 +1920,31 @@ function switchToProject(pid,dorefresh) {
 	}
 }
 
-/* nid2id: translate a DOM id to a numeric id
+//const NilUUID = '00000000-0000-0000-0000-000000000000';
+
+/* createUUID: return a new "unique" random UUID.
+ * There are different UUID-versions; version 4 is randomly generated.
+ * Use the crypto library, as Math.random() is insufficiently random.
+ */
+/* eslint-disable no-bitwise */
+function createUUID() {
+  return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c /4).toString(16)
+  );
+}
+/* eslint-enable no-bitwise */
+
+/* nid2id: translate a DOM id to a UUID
+ * DOM ids are a string followed by a UUID, return the trailing UUID
  */
 function nid2id(nid) {
-	/* Remove all but the trailing digits, then parse the remainder as an integer.
-	 */
-	return parseInt(nid.replace(/^.*\D/i,""),10);
+	return nid.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/)[1];
 }
 
-/* trimwhitespace: remove leading & trailing white space
- */
-function trimwhitespace(str) {
-	str = str.replace(/^\s+/,'');
-	str = str.replace(/\s+$/,'');
-	return str;
+/* H: make a string safe to use inside HTML code */
+function H(str) {
+//	return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+	return $('<div></div>').text(str)[0].innerHTML;
 }
 
 /* Use singular or plural phrase, depending on an integer number.
@@ -1101,9 +1957,9 @@ function plural(singular,plural,num) {
 
 /* Prepend string 'a' to 'b' and join with a space, unless 'a' already occurs within 'b'.
 */
-function prependIfMissing(a,b) {
-	a = trimwhitespace(a);
-	b = trimwhitespace(b);
+function prependIfMissing(a,b) {		// eslint-disable-line no-unused-vars
+	a = a.trim();
+	b = b.trim();
 	if (b=="") {
 		return a;
 	} else {
@@ -1111,28 +1967,24 @@ function prependIfMissing(a,b) {
 	}
 }
 
-/* Test whether two strings are identical in a case-insensitive way.
+/* reasonableString: fix str to something of reasonable length and without leading or trailing whitespace
+ */
+function reasonableString(str) {	// eslint-disable-line no-unused-vars
+	return String(str).substr(0,MaxStringLen).trim();
+}
+
+/* Test whether two strings are identical in a locale and case-insensitive way.
 */
 function isSameString(a,b) {
-	return a.toUpperCase()===b.toUpperCase();
+	return a.toLocaleUpperCase().localeCompare(b.toLocaleUpperCase())==0;
 }
-
-/* nextUnusedIndex: return first index that doesn't exist or is null
- */
-function nextUnusedIndex(arr) {
-	for (var i=0,alen=arr.length; i<alen && arr[i]!=null; i++) { /* Do nothing */ }
-	return i;
-}
-
-/* H: make a string safe to use inside HTML code
- * MOVED TO BOTTOM OF THIS FILE.
- */
 
 /* prettyDate: reformat the timestamp string for server projects.
+ * prettyDate("20210516 1435 22") = "16-05-2021 14:35"
  */
 function prettyDate(d) {
 	// Format is: YYYYMMDD HHMM SS
-	//			1   2 3  4 5  6
+	//            1   2 3  4 5  6
 	var r = d.match(/^(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d) (\d\d)$/);
 	return (r==null ? d : r[3]+'-'+r[2]+'-'+r[1]+' '+r[4]+':'+r[5]);
 }
@@ -1140,22 +1992,28 @@ function prettyDate(d) {
 /* Replacement for the standard Javascript alert() function. Several differences:
  * - it won't block the browser (only this tab)
  * - it is themeable
- * - it will take HTML content
- * - you can set the title
+ * - the msg will take HTML content
+ * - you can set the title (text only, no need to HTML-escape)
  */
 function rasterAlert(title,msg) {
-	$('#modaldialog').dialog('option', 'buttons', [
-	{text: _("Close"), click: function(){
-		$(this).dialog('close');
-	} }
-	]);
-	$('#modaldialog').dialog({
+	let modaldialog = $('<div id="modaldialog"></div>');
+
+	$('body').removeClass('waiting');
+	modaldialog.dialog({
 		title: String(title),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		modal:true,
+		width: 400,
 		height: 'auto',
 		maxHeight: 600
 	});
-	$('#modaldialog').html( String(msg) );
-	$('#modaldialog').dialog('open');
+	modaldialog.html( String(msg) );
+	modaldialog.dialog('option', 'buttons', [
+		{text: _("Close"), click: function(){
+			modaldialog.remove();
+		} }
+	]);
+	console.log(String(msg));
 }
 
 /* Replacement for the standard Javascript confirm() function. Several differences:
@@ -1163,48 +2021,96 @@ function rasterAlert(title,msg) {
  * - themeable, you can set the title, the buttons and the HTML content
  * - does not return true/false, but takes a callback function as its last parameter
  *   (and optionally a function to call on Cancel/deny)
+ *
+ * Title and buttons are text-only and do not need to be HTML-escaped.
+ * The msg can contain HTML code; use H() whenever possible.
  */
 function rasterConfirm(title,msg,buttok,buttcancel,funcaction,funcnoaction) {
-	$('#modaldialog').dialog('option', 'buttons', [
-	{text: buttcancel, click: function(){
-		$(this).dialog('close');
-		if (funcnoaction) funcnoaction();
-	} },
-	{text: buttok, click: function(){
-		$(this).dialog('close');
-		funcaction();
-	} }
+	let modaldialog = $('<div id="modaldialog"></div>');
+
+	$('body').removeClass('waiting');
+	modaldialog.dialog({
+		title: String(title),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		modal:true,
+		width: 400,
+		height: 'auto',
+		maxHeight: 600,
+		close: function(/*event, ui*/) { modaldialog.remove(); }
+	});
+	modaldialog.html( String(msg) );
+	modaldialog.dialog('option', 'buttons', [
+		{text: buttcancel, click: function(){
+			$(this).dialog('close');
+			if (funcnoaction) funcnoaction();
+		} },
+		{text: buttok, click: function(){
+			$(this).dialog('close');
+			funcaction();
+		} }
 	]);
-	$('#modaldialog').dialog( 'option', 'title', String(title) );
-	$('#modaldialog').html( String(msg) );
-	$('#modaldialog').dialog('open');
-	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
+	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 }
 
-function newRasterConfirm(title,msg,buttok,buttcancel) {
+function newRasterConfirm(title,msg,buttok,buttcancel) {  //eslint-disable-line no-unused-vars
 	var dfd = $.Deferred();
-	$('#modaldialog').dialog('option', 'buttons', [
-	{text: buttcancel, click: function(){
-		$(this).dialog('close');
-		dfd.reject(false);
-	} },
-	{text: buttok, click: function(){
-		$(this).dialog('close');
-		dfd.resolve(true);
-	} }
+	let modaldialog = $('<div id="modaldialog"></div>');
+
+	$('body').removeClass('waiting');
+	modaldialog.dialog({
+		title: String(title),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		modal:true,
+		width: 400,
+		height: 'auto',
+		maxHeight: 600,
+		close: function(/*event, ui*/) { modaldialog.remove(); }
+	});
+	modaldialog.html( String(msg) );
+	modaldialog.dialog('option', 'buttons', [
+		{text: buttcancel, click: function(){
+			$(this).dialog('close');
+			dfd.reject(false);
+		} },
+		{text: buttok, click: function(){
+			$(this).dialog('close');
+			dfd.resolve(true);
+		} }
 	]);
-	$('#modaldialog').dialog( 'option', 'title', String(title) );
-	$('#modaldialog').html( String(msg) );
-	$('#modaldialog').dialog('open');
-	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus');
+	$('.ui-dialog-buttonpane button').removeClass('ui-state-focus').blur();
 	return dfd.promise();
 }
 
+
+/* bugreport: Notify the user of a bug, save the project and block the UI.
+ */
 function bugreport(mess,funcname) {
 	console.log('bugreport: "'+mess+'" in function "'+funcname+'".');
-	if (DEBUG) {
-		rasterAlert('Please report this bug','You found a bug in this program.\n("'+mess+'" in function "'+funcname+'").');
-	}
+#ifdef SERVER
+	stopWatching();
+#endif
+	let dialog = $('<div id="bugreport"></div>').dialog({
+  		title: _H("Please report this bug"),
+		dialogClass: "no-close",
+		closeOnEscape: false,
+		classes: {"ui-dialog-titlebar": "ui-corner-top no-close"},
+		buttons: [{
+			text: _("Close"),
+			click: function() {
+				$(this).dialog('close');
+				exportAll();
+				$('#splash').show();
+				$('#splashstatus').html( _("Halted on error: %% in function %%.",mess,funcname) );
+			}
+		}]
+	});
+	$('#bugreport').html(_H("You found a bug in this program.")
+		+ '<br><br><i>'
+		+ _H("%% in function %%.", mess, funcname)
+		+ '</i><br><br>'
+		+ _H("This program will save your work, then halt to prevent further damage to the database.")
+	);
+	dialog.dialog('open');
 }
 
 #ifdef SERVER
@@ -1242,7 +2148,7 @@ var SSEClient = null;
  *		Switch project to private. Issue a warning to the user. Tool remains online.
  *
  * Whenever we start periodic checks for local changes to be stored on the server,
- * we must als periodically check for server changes using startWatching().
+ * we must also periodically check for server changes using startWatching().
  * When the remote project is deleted by another client, watching will stop. It must
  * be restarted whenever a local change is propagated to the server again.
  *
@@ -1250,12 +2156,8 @@ var SSEClient = null;
  * changed, then the local project will be shown as 'shared' without a server version
  * being present.
  *
- * NOTE: There should be a smarter way of noticing changes to the project. Perhaps
- * the concept of 'actions' should be introduced, with each action signifying a single
- * change to the project. This would also make it easier to implement an Undo capability.
  */
-function startAutoSave() {
-	stopWatching(null);
+function startWatchingCurrentProject() {
 	var p = Project.get(Project.cid);
 	if (p==null || !p.shared || !Preferences.online) {
 		if (Preferences!=null && !Preferences.online) {
@@ -1266,6 +2168,7 @@ function startAutoSave() {
 	startWatching(p);
 }
 
+let SSERetriesHack = 0;
 /* We use Server-Sent Events (), to prevent polling over the network. With SSE,
  * the server is doing the periodic checks locally, notifying the client when changes
  * have been made.
@@ -1275,58 +2178,72 @@ function startWatching(p) {
 		SSEClient.close();
 	}
 	SSEClient = new EventSource('sse_projmon.php?name=' + urlEncode(p.title));
-
+	
 	SSEClient.onmessage = function(msg) {
 		if (msg.data=="NO PROJECT") {
 			// Project is not on the server. It probably has not been saved yet.
 			// Wait a bit, then try again.
 			SSEClient.close();
 			SSEClient=null;
-			window.setTimeout(function(){
-				startWatching(p);
-			},500);
+			if (SSERetriesHack<3) {
+console.log(`SSE_PROJMON RETRIES = ${SSERetriesHack}`);
+				SSERetriesHack++;
+				window.setTimeout(function(){
+					startWatching(p);
+				},500);
+			} else {
+				SSERetriesHack = 0;
+			}
 		} else if (msg.data=="NOP") {
 			// Sent periodically for testing connectivity. No action required
-			/*jsl:pass*/
+			SSERetriesHack = 0;
 		} else  if (msg.data=="DELETED") {
+			SSERetriesHack = 0;
 			// Project has been deleted from the server
-			var pp = Project.get(Project.cid);
+			let pp = Project.get(Project.cid);
 			stopWatching(Project.cid);
 			pp.setshared(false,false);
 			removetransientwindows();
 			rasterAlert( _("Project has been made private"),
-				_("Project '%%' has been deleted from the server by someone. ", H(pp.title))+
-				_("Your local version of the project will now be marked as private. ")+
-				_("If you wish to share your project again, you must set it's details to 'Shared' yourself.")+
+				_H("Project '%%' has been deleted from the server by someone. ", pp.title)+
+				_H("Your local version of the project will now be marked as private. ")+
+				_H("If you wish to share your project again, you must set its details to 'Shared' yourself.")+
 				"<br><p><i>"+
-				_("Your changes are not shared with others anymore.")+
+				_H("Your changes are not shared with others anymore.")+
 				"</i>"
 			);
 		} else {
-			var xdetails = JSON.parse(msg.data);
-			pp = Project.get(Project.cid);
-			var newpid = loadFromString(xdetails.contents);
-			if (newpid!=null) {
-				var newp = Project.get(newpid);
-				newp.shared = true;
-				newp.creator = xdetails.creator;
-				newp.date = xdetails.date;
-				newp.description = unescapeNewlines(xdetails.description);
-				var t = pp.title;
-				pp.destroy();
-				newp.settitle(t);
-				switchToProject(newpid);
+			SSERetriesHack = 0;
+			// msg.data is the id of the last transaction on the server
+			let p = Project.get(Project.cid);
+			// First check for Undo/Redo: does a Transaction with id==msg.data exist behind/in front of TransactionCurrent?
+			let undo=false, numundo=0;
+			let tr=p.TransactionCurrent.prev;
+			while (!undo && tr!=null) {
+				undo = tr.id==msg.data;
+				tr = tr.prev;
+				if (tr==null || !tr.chain) numundo++;
+			}
+			let redo=false, numredo=0;
+			tr=p.TransactionCurrent.next;
+			while (!redo && tr!=null) {
+				if (!tr.chain) numredo++;
+				redo = tr.id==msg.data;
+				tr = tr.next;
+			}
+			// All the following actions are either lengthy() or async ajax calls
+			if (undo) {
+				Transaction.undo(numundo,true);
+			} else if (redo) {
+				Transaction.redo(numredo,true);
+			} else if (msg.data!=p.TransactionCurrent.id) {
+				// Only fetch updates if this project is out of sync (no fetch if we caused the SSEvent outselves).
+				p.getNewTransactionsFromServer();
 			} else {
-				rasterAlert(_("Project has been made private"),
-					'The server version of project "'+H(pp.title)+'" is damaged. '+
-					'The project  will now be marked as private. '+
-					'<p><i>Your changes are not shared with others anymore.</i>'
-				);
-				pp.setshared(false,false);
+				// We are already up to date.
 			}
 		}
 	};
-
 }
 
 /* Stop monitoring a project using Server-Sent Events. Either stop a specific
@@ -1339,7 +2256,9 @@ function stopWatching(pid) {
 	}
 }
 
-function autoSaveFunction() {
+/* saveThenStartWatching: save current project on server, then begin monitoring from transactions posted by other clients
+ */
+function saveThenStartWatching() {		// eslint-disable-line no-unused-vars
 	var p = Project.get(Project.cid);
 	if (!p.shared || !Preferences.online) {
 		if (!Preferences.online) {
@@ -1347,36 +2266,45 @@ function autoSaveFunction() {
 		}
 		return;
 	}
-	var exportstring = exportProject(p.id);
 	// First, stop watching the file so that we do not notify ourselves
-	stopWatching(p.id);
-	p.storeOnServer(false,exportstring,{
-		onUpdate: function() {
-			startWatching(p);
-		}
-	});
+//	stopWatching(p.id);
+	p.storeOnServer({auto: false});
 }
 #endif
 
-function transactionCompleted(/*transaction*/) {
-#ifdef SERVER
-	autoSaveFunction();
-#else
-	setModified();
-#endif
-}
-
-/* loadFromString(str): with string 'str' containing an entire file, try to
+/* loadFromString(str,options): with string 'str' containing an entire file, try to
  *		read and create the objects in it.
- * Shows error messages, unless 'showerrors' is false.
- * Throws an error if the string does not contain any projects, unless 'allowempty' is true.
+ * options is an object containing these properties (all optional):
+ *	showerrors: (bool, default true) Show errors in a modal dialog.
+ *	allowempty: (bool, default false) Allow input with no projects without error.
+ *	strsource: (string, default "input") Name of the source, used in error messages.
+ *	duplicate: (bool, default false) Renumber all objects, create fresh UUIDs.
  *
+ * Side effects:
+ *	- creates new objects
+ *	- sets Flag_Upgrade_Done and Upgrade_Description
  * Returns the id of one of the projects loaded, or null on failure.
+ *
+ * Version 0 is ancient, and is not supported anymore.
+ * To upgrade from version 1:
+ *  - Names/titles of nodes, services and clusters are now case-insensitive. When upgrading from
+ *    version 1, it may be necessary to add a sequence number to titles (or increase the one that
+ *    is already there).
+ *  - There is one additional label (Pink).
+ *  - Plus all the upgrades necessary for version 2 and 3.
+ * To upgrade from version 2:
+ *  - ID's are no longer simple numbers but UUIDs. This simplifies the loading of projects, because
+ *    it is not necessary to check whether an id is already in use. The use of UUID virtually guarantees
+ *    that no collisions occur.
+ *  - Plus all the upgrades from version 3
+ * To upgrade from version 3:
+ *  - Change Threat to Vulnerability; change ThreatAssessment to Assessment
+ *  - Create extra Vulnerability for custom ThreatAssessments.
  */
 var Flag_Upgrade_Done = false;
 var Upgrade_Description = "";
 
-function loadFromString(str,showerrors,allowempty,strsource) {
+function loadFromString(str,options) {
 	var lProject = [];
 	var lService = [];
 	var lThreat = [];
@@ -1384,9 +2312,19 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	var lNode = [];
 	var lNodeCluster = [];
 	var lThrEval = [];
+	var lAssmnt = [];
+	var lVuln = [];
 
 	var res, key, val;
 	var upgrade_1_2 = false;
+	var upgrade_2_3 = false;
+	var upgrade_3_4 = false;
+
+	if (options==null) options={};
+	if (options.showerrors==null) options.showerrors=true;
+	if (options.allowempty==null) options.allowempty=false;
+	if (options.strsource==null) options.strsource="input";
+	if (options.duplicate==null) options.duplicate=false;
 
 	Flag_Upgrade_Done = false;
 	Upgrade_Description = "";
@@ -1399,14 +2337,24 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			if (!key || key[0]!=LS_prefix) throw new Error('Invalid key');
 			if (key[1]!=LS_version) {
 				if (key[1]==1) {
-					// Can upgrade from version 1 to version 2
+					// Can upgrade from version 1 to version 4
 					upgrade_1_2 = true;
+					upgrade_2_3 = true;
+					upgrade_3_4 = true;
+				} else if (key[1]==2) {
+					// Can upgrade from version 2 to version 4
+					upgrade_2_3 = true;
+					upgrade_3_4 = true;
+				} else if (key[1]==3) {
+					// Can upgrade from version 3 to version 4
+					upgrade_3_4 = true;
 				} else {
 					throw new Error("The file has version ("+key[1]+"); expected version ("+LS_version+"). You must use a more recent version of the Raster tool.");
 				}
 			}
 			val = JSON.parse(urlDecode(res[2]));
-			val.id = parseInt(key[3],10);
+			// Integer in version 1 and 2, string in version 3 and up
+			val.id = ( key[1]<3 ? parseInt(key[3],10) : key[3]);
 			switch (key[2]) {
 			case 'P':
 				lProject.push(val);
@@ -1429,6 +2377,12 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			case 'E':
 				lThrEval.push(val);
 				break;
+			case 'A':
+				lAssmnt.push(val);
+				break;
+			case 'V':
+				lVuln.push(val);
+				break;
 			case 'R':
 				// Ignore all preferences for purposes of loading projects
 				break;
@@ -1438,29 +2392,30 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			str = str.substr(res[0].length);
 			res=patt.exec(str);
 		}
-		str = jQuery.trim(str);
+		str = str.trim();
 		if (str.length!=0) throw new Error("Invalid text");
-		if (lProject.length==0 && allowempty)  return null;
-	}
+		if (lProject.length==0 && options.allowempty)  return null;
+	}		// eslint-disable-line brace-style
 	catch(e) {
-		if (!showerrors)  return null;
+		if (!options.showerrors)  return null;
+		$('#splash').hide();
 		var errdialog = $('<div></div>');
 		var s = str.substr(0,40);
-		s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\s+/g," ");
-		errdialog.append('<p>' + strsource + ' contains an error:</p>\
+		s = H(s).replace(/\s+/g," ");
+		errdialog.append('<p>' + options.strsource + ' contains an error:</p>\
 			<blockquote>' + e.message + '</blockquote>\
 			<p>The incorrect text is:</p>\
 			<blockquote>' + s + '...</blockquote>');
 		errdialog.dialog({
-			title: strsource + " contains an error",
+			title: options.strsource + " contains an error",
 			modal: true,
 			width: 500,
 			close: function(/*event, ui*/) { errdialog.remove(); }
 		});
 		return null;
 	}
-
 	/* File has been read. Now check for consistency */
+
 	// Returns:
 	//  there exists j, 0<=j<arr.length, such that arr[j].id == id
 	function containsID(arr,id) {
@@ -1482,7 +2437,7 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		return forall;
 	}
 
-	var i,j,k,n;
+	var i,j,k;
 	var lProjectlen=lProject.length;
 	var lThreatlen=lThreat.length;
 	var lServicelen=lService.length;
@@ -1490,23 +2445,36 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	var lNodeClusterlen=lNodeCluster.length;
 	var lComponentlen=lComponent.length;
 	var lThrEvallen=lThrEval.length;
+	var lAssmntlen=lAssmnt.length;
+	var lVulnlen=lVuln.length;
 
 	try {
-		if (lProjectlen==0) throw new Error("There are no projects; there must be at least one");
-		if (lServicelen==0) throw new Error("There are no services; there must be at least one");
+		if (lProjectlen==0) throw new Error('There are no projects; there must be at least one');
+		if (lServicelen==0) throw new Error('There are no services; there must be at least one');
+		if (lThreatlen>0 && lVulnlen>0) throw new Error('Cannot contain old-style and new-style Vulnerabilities.');
+		if (lThrEvallen>0 && lAssmntlen>0) throw new Error('Cannot contain old-style and new-style Assessments.');
 		for (i=0; i<lProjectlen; i++) {
 			/* lProject[i].s[] must contain IDs of services */
 			if (!containsAllIDs(lService,lProject[i].s)) throw new Error('Project '+lProject[i].id+' has an invalid service.');
 			/* lProject[i].s must not be empty */
 			if (lProject[i].s.length==0) throw new Error('Project '+lProject[i].id+' does not contain any services.');
-			/* lProject[i].t[] must contain IDs of threats */
-			if (!containsAllIDs(lThreat,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid checklist vulnerability.');
+			/* lProject[i].t[] must contain IDs of threats/vulnerabilities */
+			if (lThreatlen>0 && !containsAllIDs(lThreat,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid checklist.');
+			if (lVulnlen>0 && !containsAllIDs(lVuln,lProject[i].t)) throw new Error('Project '+lProject[i].id+' has an invalid common vulnerability.');
+			// Check at least for the projects (not for other objects) whether their id's are unique
+			if (Project.get(lProject[i].id)!=null && !options.duplicate) throw new Error('Projects cannot be imported twice.');
 		}
 		for (i=0; i<lThreatlen; i++) {
 			/* lThreat[i].p must be the ID of a project */
 			if (!containsID(lProject,lThreat[i].p)) throw new Error('Vulnerability '+lThreat[i].id+' does not belong to a valid project.');
 			/* lThreat[i].t must be a valid type */
 			if (Rules.nodetypes[lThreat[i].t]==null) throw new Error('Vulnerability '+lThreat[i].id+' has an invalid type.');
+		}
+		for (i=0; i<lVulnlen; i++) {
+			/* lVuln[i].p must be the ID of a project */
+			if (!containsID(lProject,lVuln[i].p)) throw new Error('Vulnerability '+lVuln[i].id+' does not belong to a valid project.');
+			/* lVuln[i].t must be a valid type */
+			if (Rules.nodetypes[lVuln[i].t]==null) throw new Error('Vulnerability '+lVuln[i].id+' has an invalid type.');
 		}
 		for (i=0; i<lServicelen; i++) {
 			/* lService[i].p must be the ID of a project */
@@ -1527,8 +2495,9 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			if (Rules.nodetypes[lComponent[i].t]==null) throw new Error('Component '+lComponent[i].id+' has an invalid type.');
 			/* lComponent[i].p must be the ID of a project */
 			if (!containsID(lProject,lComponent[i].p)) throw new Error('Component '+lComponent[i].id+' does not belong to a valid project.');
-			/* lComponent[i].e[] must contain IDs of threat evaluations */
-			if (!containsAllIDs(lThrEval,lComponent[i].e)) throw new Error('Component '+lComponent[i].id+' has an invalid vulnerability evaluation.');
+			/* lComponent[i].e[] must contain IDs of threat evaluations / assessments*/
+			if (lThrEvallen>0 && !containsAllIDs(lThrEval,lComponent[i].e)) throw new Error('Component '+lComponent[i].id+' has an invalid vulnerability evaluation.');
+			if (lAssmntlen>0 && !containsAllIDs(lAssmnt,lComponent[i].e)) throw new Error('Component '+lComponent[i].id+' has an invalid assessment.');
 			/* lComponent[i].n[] must contain IDs of Nodes */
 			if (!containsAllIDs(lNode,lComponent[i].n)) throw new Error('Component '+lComponent[i].id+' contains an invalid node.');
 			/* lComponent[i].n must not be empty */
@@ -1542,9 +2511,22 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			/* lThrEval[i].u, if non-null, must be the ID of a NodeCluster */
 			if (lThrEval[i].u!=null && !containsID(lNodeCluster,lThrEval[i].u)) throw new Error('Vulnerability assessment '+lThrEval[i].id+' does not belong to a valid cluster.');
 			/* lThrEval[i].p must be a valid frequency/impact string */
-			if (ThreatAssessment.values.indexOf(lThrEval[i].p)==-1) throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid frequency.');
+			if (Assessment.values.indexOf(lThrEval[i].p)==-1) throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid frequency.');
 			/* lThrEval[i].i must be a valid frequency/impact string */
-			if (ThreatAssessment.values.indexOf(lThrEval[i].i)==-1) throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid impact.');
+			if (Assessment.values.indexOf(lThrEval[i].i)==-1) throw new Error('Vulnerability assessment '+lThrEval[i].id+' has an invalid impact.');
+		}
+		for (i=0; i<lAssmntlen; i++) {
+			/* lAssmnt[i].t must be a valid type */
+			if (Rules.nodetypes[lAssmnt[i].t]==null) throw new Error('Assessment '+lAssmnt[i].id+' has an invalid type.');
+			/* lAssmnt[i].m, if non-null, must be the ID of a Component */
+			if (lAssmnt[i].m!=null && !containsID(lComponent,lAssmnt[i].m)) throw new Error('Assessment '+lAssmnt[i].id+' does not belong to a valid component.');
+			/* lAssmnt[i].u, if non-null, must be the ID of a NodeCluster */
+			if (lAssmnt[i].u!=null && !containsID(lNodeCluster,lAssmnt[i].u)) throw new Error('Assessment '+lAssmnt[i].id+' does not belong to a valid cluster.');
+			/* lAssmnt[i].v, if non-null, must be the ID of a Vulnerability */
+			if (lAssmnt[i].v!=null && !containsID(lVuln,lAssmnt[i].v)) throw new Error('Assessment '+lAssmnt[i].id+' does not belong to a valid Vulnerability.');
+			/* lAssmnt[i].p must be a valid frequency/impact string */
+			if (Assessment.values.indexOf(lAssmnt[i].p)==-1) throw new Error('Assessment '+lAssmnt[i].id+' has an invalid frequency.');
+			if (Assessment.values.indexOf(lAssmnt[i].i)==-1) throw new Error('Assessment '+lAssmnt[i].id+' has an invalid impact.');
 		}
 		for (i=0; i<lNodeClusterlen; i++) {
 			/* lNodeCluster[i].t must be a valid type */
@@ -1557,18 +2539,20 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 			if (!containsAllIDs(lNodeCluster,lNodeCluster[i].c)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid child cluster.');
 			/* lNodeCluster[i].n[] must contain IDs of Nodes */
 			if (!containsAllIDs(lNode,lNodeCluster[i].n)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid node.');
-			/* lNodeCluster[i].e must be the ID of a threat assessment */
-			if (!containsID(lThrEval,lNodeCluster[i].e)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid vulnerability evaluation.');
+			/* lNodeCluster[i].e must be the ID of a threat evaluation / assessment */
+			if (lThrEvallen>0 && !containsID(lThrEval,lNodeCluster[i].e)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid vulnerability evaluation.');
+			if (lAssmntlen>0 && !containsID(lAssmnt,lNodeCluster[i].e)) throw new Error('Node cluster '+lNodeCluster[i].id+' contains an invalid assessment.');
 		}
-	}
+	}		// eslint-disable-line brace-style
 	catch (e) {
 		if (DEBUG) console.log("Error: "+e.message);
-		if (!showerrors)  return null;
+		if (!options.showerrors)  return null;
+		$('#splash').hide();
 		errdialog = $('<div></div>');
-		errdialog.append('<p>' + strsource + ' contains an error:</p>\
-			<blockquote>' + e.message + '</blockquote>');
+		errdialog.append('<p>' + options.strsource + ' contains an error:</p>\
+			<blockquote>' + H(e.message) + '</blockquote>');
 		errdialog.dialog({
-			title: strsource + " is not valid",
+			title: options.strsource + " is not valid",
 			modal: true,
 			width: 500,
 			close: function(/*event, ui*/) { errdialog.remove(); }
@@ -1576,265 +2560,256 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		return null;
 	}
 
-	/* We loaded data into arrays lProject lService lThreat lNode lNodeCluster lThrEval
-	 * that seems to make sense.
-	 *
-	 * In order to merge these objects into the existing sets, we must make
-	 * sure that IDs of the new objects do not conflict with existing ones.
-	 * The way we execute this:
-	 * a) create a combined list of all IDs, both current and new.
-	 * b) step through the new objects
-	 *   c) if the ID of the new object conflicts with an existing one:
-	 *	 d) find the lowest unused ID in the combined list
-	 *	 e) rekey the new object to use the ID thus found (change the id of this
-	 *		  object, and all other objects that might refer to this one).
-	 *	 f) add the new ID to the combined list
-	 * Rekeying means that we must also rekey the relevant properties in this
-	 * and other objects.
-	 */
-	/* a) */
-	combined = [];
-	for (i=0; i<lProjectlen; i++) combined.push(lProject[i].id);
-	for (i=0; i<Project._all.length; i++) {
-		if (Project._all[i]) combined.push(Project._all[i].id);
+	// To replace the value '7' in some array A by '77777', we use A[ A.indexOf(7) ] = 7777
+	// If A does not contain the value 7, then indexOf evaluates to -1. This does not give a error message,
+	// but creates a "-1" property on the array.
+	// This only works if the value to be replaced occurs at most once, which is the case here.
+	function arrayReplace(A,oldval,newval) {
+		A[ A.indexOf(oldval) ] = newval;
 	}
-	/* b) */
-	for (i=0; i<lProjectlen; i++) {
-		/* c) */
-		if (Project._all[lProject[i].id]==null) continue;
-		/* d) */
-		lu = lowestunused(combined);
-		/* e) Rekey from .id to lu
-		 * Threat.project, Service.project, NodeCluster.project, Component.project, and this Project.id
+
+	if (upgrade_2_3 || options.duplicate) {
+		/* Before version 3, IDs were numerical instead of UUIDs, so replace those.
+		 * Also replace IDs when options.duplicate==true
+		 * We replace the id by a UUID, but do remember the old id because it is used in cross-references.
+		 * First correct all IDs, then fix the crossreferences.
 		 */
-		for (k=0; k<lThreatlen; k++) {
-			if (lThreat[k].p==lProject[i].id) lThreat[k].p=lu;
+		for (i=0; i<lProjectlen; i++) {
+			lProject[i].oldid = lProject[i].id;
+			lProject[i].id = createUUID();
 		}
-		for (k=0; k<lServicelen; k++) {
-			if (lService[k].p==lProject[i].id) lService[k].p=lu;
+		for (i=0; i<lThreatlen; i++) {
+			lThreat[i].oldid = lThreat[i].id;
+			lThreat[i].id = createUUID();
 		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			if (lNodeCluster[k].p==lProject[i].id) lNodeCluster[k].p=lu;
+		for (i=0; i<lServicelen; i++) {
+			lService[i].oldid = lService[i].id;
+			lService[i].id = createUUID();
 		}
-		for (k=0; k<lComponentlen; k++) {
-			if (lComponent[k].p==lProject[i].id) lComponent[k].p=lu;
+		for (i=0; i<lNodelen; i++) {
+			lNode[i].oldid = lNode[i].id;
+			lNode[i].id = createUUID();
 		}
-		lProject[i].id = lu;
-		/* f) */
-		combined.push(lu);
-	}
+		for (i=0; i<lComponentlen; i++) {
+			lComponent[i].oldid = lComponent[i].id;
+			lComponent[i].id = createUUID();
+		}
+		for (i=0; i<lThrEvallen; i++) {
+			lThrEval[i].oldid = lThrEval[i].id;
+			lThrEval[i].id = createUUID();
+		}
+		for (i=0; i<lNodeClusterlen; i++) {
+			lNodeCluster[i].oldid = lNodeCluster[i].id;
+			lNodeCluster[i].id = createUUID();
+		}
+		// These are not necessary for upgrade_2_3, but for options.duplicate
+		for (i=0; i<lVulnlen; i++) {
+			lVuln[i].oldid = lVuln[i].id;
+			lVuln[i].id = createUUID();
+		}
+		for (i=0; i<lAssmntlen; i++) {
+			lAssmnt[i].oldid = lAssmnt[i].id;
+			lAssmnt[i].id = createUUID();
+		}
 
-	combined = [];
-	for (i=0; i<lThreatlen; i++) combined.push(lThreat[i].id);
-	for (i=0; i<Threat._all.length; i++) {
-		if (Threat._all[i]) combined.push(Threat._all[i].id);
-	}
-	for (i=0; i<lThreatlen; i++) {
-		if (Threat._all[lThreat[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// Project.threats[], and this Threat.id
-		for (k=0; k<lProjectlen; k++) {
-			for (n=0; n<lProject[k].t.length; n++) {
-				if (lProject[k].t[n]==lThreat[i].id) lProject[k].t[n]=lu;
+		for (i=0; i<lProjectlen; i++) {
+			// Replace Service and Threat/Vulnerability ids
+			if (upgrade_2_3) {
+				for (k=0; k<lThreatlen;  k++)  arrayReplace(lProject[i].t, lThreat[k].oldid, lThreat[k].id);
+			} else {
+				for (k=0; k<lVulnlen;  k++)  arrayReplace(lProject[i].t, lVuln[k].oldid, lVuln[k].id);
+			}
+			for (k=0; k<lServicelen; k++)  arrayReplace(lProject[i].s, lService[k].oldid, lService[k].id);
+		}
+		for (i=0; i<lThreatlen; i++) {
+			// Replace project id
+			for (k=0; k<lProjectlen; k++)  lThreat[i].p = (lThreat[i].p==lProject[k].oldid ? lProject[k].id : lThreat[i].p);
+		}
+		for (i=0; i<lServicelen; i++) {
+			// Replace project id
+			for (k=0; k<lProjectlen; k++)  lService[i].p = (lService[i].p==lProject[k].oldid ? lProject[k].id : lService[i].p);
+		}
+		for (i=0; i<lNodelen; i++) {
+			// Replace component, connects and service id
+			for (k=0; k<lComponentlen; k++)  lNode[i].m = (lNode[i].m==lComponent[k].oldid ? lComponent[k].id : lNode[i].m);
+			for (k=0; k<lNodelen;      k++)  arrayReplace(lNode[i].c, lNode[k].oldid, lNode[k].id);
+			for (k=0; k<lServicelen;   k++)  lNode[i].s = (lNode[i].s==lService[k].oldid ? lService[k].id : lNode[i].s);
+		}
+		for (i=0; i<lComponentlen; i++) {
+			// Replace project, nodes, and (threat)assessment ids
+			for (k=0; k<lProjectlen; k++)  lComponent[i].p = (lComponent[i].p==lProject[k].oldid ? lProject[k].id : lComponent[i].p);
+			for (k=0; k<lNodelen;    k++)  arrayReplace(lComponent[i].n, lNode[k].oldid, lNode[k].id);
+			if (upgrade_2_3) {
+				for (k=0; k<lThrEvallen; k++)  arrayReplace(lComponent[i].e, lThrEval[k].oldid, lThrEval[k].id);
+			} else {
+				for (k=0; k<lAssmntlen; k++)  arrayReplace(lComponent[i].e, lAssmnt[k].oldid, lAssmnt[k].id);
 			}
 		}
-		lThreat[i].id = lu;
-		combined.push(lu);
+		for (i=0; i<lThrEvallen; i++) {
+			// Replace component, cluster ids
+			for (k=0; k<lComponentlen;   k++)  lThrEval[i].m = (lThrEval[i].m==lComponent[k].oldid ? lComponent[k].id : lThrEval[i].m);
+			for (k=0; k<lNodeClusterlen; k++)  lThrEval[i].u = (lThrEval[i].u==lNodeCluster[k].oldid ? lNodeCluster[k].id : lThrEval[i].u);
+		}
+		for (i=0; i<lNodeClusterlen; i++) {
+			// Replace project, (threat)assessment, parentcluster, childclusters, nodes
+			for (k=0; k<lProjectlen;     k++)  lNodeCluster[i].p = (lNodeCluster[i].p==lProject[k].oldid ? lProject[k].id : lNodeCluster[i].p);
+			if (upgrade_2_3) {
+				for (k=0; k<lThrEvallen;     k++)  lNodeCluster[i].e = (lNodeCluster[i].e==lThrEval[k].oldid ? lThrEval[k].id : lNodeCluster[i].e);
+			} else {
+				for (k=0; k<lAssmntlen;     k++)  lNodeCluster[i].e = (lNodeCluster[i].e==lAssmnt[k].oldid ? lAssmnt[k].id : lNodeCluster[i].e);
+			}
+			for (k=0; k<lNodeClusterlen; k++)  lNodeCluster[i].u = (lNodeCluster[i].u==lNodeCluster[k].oldid ? lNodeCluster[k].id : lNodeCluster[i].u);
+			for (k=0; k<lNodeClusterlen; k++)  arrayReplace(lNodeCluster[i].c, lNodeCluster[k].oldid, lNodeCluster[k].id);
+			for (k=0; k<lNodelen;        k++)  arrayReplace(lNodeCluster[i].n, lNode[k].oldid, lNode[k].id);
+		}
+		for (i=0; i<lVulnlen; i++) {
+			// Replace project id
+			for (k=0; k<lProjectlen; k++)  lVuln[i].p = (lVuln[i].p==lProject[k].oldid ? lProject[k].id : lVuln[i].p);
+		}
+		for (i=0; i<lAssmntlen; i++) {
+			// Replace component, cluster ids
+			for (k=0; k<lVulnlen;        k++)  lAssmnt[i].v = (lAssmnt[i].v==lVuln[k].oldid ? lVuln[k].id : lAssmnt[i].v);
+			for (k=0; k<lComponentlen;   k++)  lAssmnt[i].m = (lAssmnt[i].m==lComponent[k].oldid ? lComponent[k].id : lAssmnt[i].m);
+			for (k=0; k<lNodeClusterlen; k++)  lAssmnt[i].u = (lAssmnt[i].u==lNodeCluster[k].oldid ? lNodeCluster[k].id : lAssmnt[i].u);
+		}
 	}
 
-	var combined = [];
-	var lu;
-	for (i=0; i<lServicelen; i++) combined.push(lService[i].id);
-	for (i=0; i<Service._all.length; i++) {
-		if (Service._all[i]) combined.push(Service._all[i].id);
+	function isroot(id) {
+		for (let i=0; i<lNodeClusterlen; i++) {
+			let nc = lNodeCluster[i];
+			if (nc.id==id && nc.u==null) return true;
+		}
+		return false;
 	}
-	for (i=0; i<lServicelen; i++) {
-		if (Service._all[lService[i].id]==null) continue;
-		lu = lowestunused(combined);
-		/* Project.services[], Node.service, and this Service.id */
-		for (k=0; k<lProjectlen; k++) {
-			for (n=0; n<lProject[k].s.length; n++) {
-				if (lProject[k].s[n]==lService[i].id) lProject[k].s[n]=lu;
-			}
+	function componentproject(id) {
+		for (let i=0; i<lComponentlen; i++) {
+			if (lComponent[i].id==id) return lComponent[i].p;
 		}
-		for (k=0; k<lNodelen; k++) {
-			if (lNode[k].s==lService[i].id) lNode[k].s=lu;
+		return null;
+	}
+	function clusterproject(id) {
+		for (let i=0; i<lNodeClusterlen; i++) {
+			if (lNodeCluster[i].id==id) return lNodeCluster[i].p;
 		}
-		lService[i].id = lu;
-		combined.push(lu);
+		return null;
 	}
 
-	combined = [];
-	for (i=0; i<lNodelen; i++) combined.push(lNode[i].id);
-	for (i=0; i<Node._all.length; i++) {
-		if (Node._all[i]) combined.push(Node._all[i].id);
-	}
-	for (i=0; i<lNodelen; i++) {
-		if (Node._all[lNode[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// Node.connect[], Component.nodes[], NodeCluster.childnodes[], and this Node.id
-		for (k=0; k<lNodelen; k++) {
-			for (n=0; n<lNode[k].c.length; n++) {
-				if (lNode[k].c[n]==lNode[i].id) lNode[k].c[n]=lu;
+	if (upgrade_3_4) {
+		// Give all projects the Classic iconset
+		for (i=0; i<lProjectlen; i++) {
+			lProject[i].i = 'Classic';
+		}
+		// Promote Threats to Vulnerabilities
+		for (i=0; i<lThreatlen; i++) {
+			let th = lThreat[i];
+			lVuln.push({
+				id: th.id,
+				p: th.p,
+				t: th.t,
+				l: th.l,
+				d: th.d,
+				c: true
+			});
+			lVulnlen = lVuln.length;
+		}
+		// Promote ThreatAssessments to Assessments
+		for (i=0; i<lThrEvallen; i++) {
+			let te = lThrEval[i];
+			let vln = null;
+			if (te.m!=null || isroot(te.u)) {
+				// Find an existing Vulnerability
+				for (let j=0; j<lVulnlen; j++) {
+					let v = lVuln[j];
+					if (v.l==te.l && v.t==te.t) {
+						vln = v;
+						break;
+					}
+				}
+				if (!vln) {
+					// Vulnerability did not exist; must be a custom vulnerability. Add it.
+					vln = {
+						id: createUUID(),
+						p: (te.m ? componentproject(te.m) : clusterproject(te.u)),
+						t: te.t,
+						l: te.l,
+						d: te.d,
+						c: false
+					};
+					lVuln.push(vln);
+					lVulnlen++;
+				}
 			}
+			lAssmnt.push({
+				id: te.id,
+				t: te.t,
+				v: (vln ? vln.id : null),
+				m: te.m,
+				u: te.u,
+				l: (vln ? null : te.l),
+				p: te.p,
+				i: te.i,
+				r: te.r
+			});
 		}
-		for (k=0; k<lComponentlen; k++) {
-			for (n=0; n<lComponent[k].n.length; n++) {
-				if (lComponent[k].n[n]==lNode[i].id) lComponent[k].n[n]=lu;
-			}
-		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			for (n=0; n<lNodeCluster[k].n.length; n++) {
-				if (lNodeCluster[k].n[n]==lNode[i].id) lNodeCluster[k].n[n]=lu;
-			}
-		}
-		lNode[i].id = lu;
-		combined.push(lu);
+		lAssmntlen = lAssmnt.length;
 	}
-
-	combined = [];
-	for (i=0; i<lComponentlen; i++) combined.push(lComponent[i].id);
-	for (i=0; i<Component._all.length; i++)  {
-		if (Component._all[i]) combined.push(Component._all[i].id);
+	
+	// Append a sequence number to the title of str,
+	// or increase the number it it already had one.
+	function titleincrement(str){
+		let seq = str.match(/^(.+) \((\d+)\)$/);
+		if (seq==null) {
+			return str + ' (1)';
+		} else {
+			seq[2]++;
+			return seq[1] + ' (' + seq[2] + ')';
+		}
 	}
-	for (i=0; i<lComponentlen; i++) {
-		if (Component._all[lComponent[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// Node.component, ThreatAssessment.component, and this Component.id
-		for (k=0; k<lNodelen; k++) {
-			if (lNode[k].m==lComponent[i].id) lNode[k].m=lu;
-		}
-		for (k=0; k<lThrEvallen; k++) {
-			if (lThrEval[k].m==lComponent[i].id) lThrEval[k].m=lu;
-		}
-		lComponent[i].id = lu;
-		combined.push(lu);
-	}
-
-	combined = [];
-	for (i=0; i<lThrEvallen; i++) combined.push(lThrEval[i].id);
-	for (i=0; i<ThreatAssessment._all.length; i++)  {
-		if (ThreatAssessment._all[i]) combined.push(ThreatAssessment._all[i].id);
-	}
-	for (i=0; i<lThrEvallen; i++) {
-		if (ThreatAssessment._all[lThrEval[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// Component.thrass[], NodeCluster.thrass and this ThreatAssessment.id
-		for (k=0; k<lComponentlen; k++) {
-			for (n=0; n<lComponent[k].e.length; n++) {
-				if (lComponent[k].e[n]==lThrEval[i].id) lComponent[k].e[n]=lu;
-			}
-		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			if (lNodeCluster[k].e==lThrEval[i].id) lNodeCluster[k].e=lu;
-		}
-		lThrEval[i].id = lu;
-		combined.push(lu);
-	}
-
-	combined = [];
-	for (i=0; i<lNodeClusterlen; i++) combined.push(lNodeCluster[i].id);
-	for (i=0; i<NodeCluster._all.length; i++)  {
-		if (NodeCluster._all[i]) combined.push(NodeCluster._all[i].id);
-	}
-	for (i=0; i<lNodeClusterlen; i++) {
-		if (NodeCluster._all[lNodeCluster[i].id]==null) continue;
-		lu = lowestunused(combined);
-		// ThreatAssessment.cluster, NodeCluster.parentcluster, NodeCluster.childclusters and NodeCluster.id
-		for (k=0; k<lThrEvallen; k++) {
-			if (lThrEval[k].u==lNodeCluster[i].id) lThrEval[k].u=lu;
-		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			if (lNodeCluster[k].u==lNodeCluster[i].id) lNodeCluster[k].u=lu;
-		}
-		for (k=0; k<lNodeClusterlen; k++) {
-			for (n=0; n<lNodeCluster[k].c.length; n++) {
-				if (lNodeCluster[k].c[n]==lNodeCluster[i].id) lNodeCluster[k].c[n]=lu;
-			}
-		}
-		lNodeCluster[i].id = lu;
-		combined.push(lu);
-	}
-
-	/* All lProject[], lService[] etc do have IDs that do not conflict with
-	 * existing Project, Service etc objects.
-	 * It is safe to create new objects now.
+	
+	/* It is safe to create new objects now.
 	 */
 	for (i=0; i<lServicelen; i++) {
 		var ls = lService[i];
-		s = new Service(ls.id);
-		s.project = ls.p;
+		s = new Service(ls.p,ls.id);
 		if (upgrade_1_2) {
 			// Check if there is another service in this project with the same case-insensitive name
 			for (j=i+1; j<lServicelen; j++) {
 				if (ls.p==lService[j].p && isSameString(ls.l,lService[j].l)) {
-					// Append a sequence number to the title of lService[j],
-					// or increase the number it it already had one.
-					var seq = lService[j].l.match(/^(.+) \((\d+)\)$/);
-					if (seq==null) {
-						lService[j].l = lService[j].l + ' (1)';
-					} else {
-						seq[2]++;
-						lService[j].l = seq[1] + ' (' + seq[2] + ')';
-					}
+					lService[j].l = titleincrement(lService[j].l);
 					Flag_Upgrade_Done = true;
-					Upgrade_Description += '<LI>' + _("Services '%%' and '%%'.", ls.l, lService[j].l);
+					Upgrade_Description += '<LI>' + _H("Services '%%' and '%%'.", ls.l, lService[j].l);
 				}
 			}
 		}
 		s.settitle(ls.l);
 	}
-	for (i=0; i<lThreatlen; i++) {
-		var lth = lThreat[i];
-		var th = new Threat(lth.t,lth.id);
-		th.setproject(lth.p);
-		th.setdescription(lth.d);
+	for (i=0; i<lVulnlen; i++) {
+		var lv = lVuln[i];
+		var vln = new Vulnerability(lv.p,lv.t,lv.id);
+		vln.setdescription(lv.d);
 		if (upgrade_1_2) {
-			// Check if there is another threat in this project with the same type and case-insensitive name
-			for (j=i+1; j<lThreatlen; j++) {
-				if (lth.p==lThreat[j].p && lth.t==lThreat[j].t && isSameString(lth.l,lThreat[j].l)) {
+			// Check if there is another Vulnerability in this project with the same type and case-insensitive name
+			for (j=i+1; j<lVulnlen; j++) {
+				if (lv.p==lVuln[j].p && lv.t==lVuln[j].t && isSameString(lv.l,lVuln[j].l)) {
 					var oldtitle, newtitle;
-					oldtitle = lThreat[j].l;
-					// Append a sequence number to the title of lThreat[j],
-					// or increase the number it it already had one.
-					seq = oldtitle.match(/^(.+) \((\d+)\)$/);
-					if (seq==null) {
-						newtitle = oldtitle + ' (1)';
-					} else {
-						seq[2]++;
-						newtitle = seq[1] + ' (' + seq[2] + ')';
-					}
-					lThreat[j].l = newtitle;
-
-					// Now change this title too in the ThreatAssessments of all Components in this project,
-					// and in all top-level NodeClusters of this project.
-					for (k=0; k<lComponentlen; k++) {
-						if (lComponent[k].p!=lth.p) continue;
-						for (n=0; n<lThrEvallen; n++) {
-							if (lComponent[k].e.indexOf(lThrEval[n].id)==-1) continue;
-							if (lThrEval[n].l==oldtitle) {
-								lThrEval[n].l = newtitle;
-							}
-						}
-					}
+					oldtitle = lVuln[j].l;
+					newtitle = titleincrement(oldtitle);
+					lVuln[j].l = newtitle;
+					// Now change this title too in the Assessments of all top-level NodeClusters of this project.
 					for (k=0; k<lNodeClusterlen; k++) {
-						if (lNodeCluster[k].p==lth.p && lNodeCluster[k].u==null && lNodeCluster[k].l==oldtitle) {
+						if (lNodeCluster[k].p==lv.p && lNodeCluster[k].u==null && lNodeCluster[k].l==oldtitle) {
 							lNodeCluster[k].l = newtitle;
-							// The evaluation of this cluster must have the same name as this cluster
-							for (n=0; n<lThrEvallen; n++) {
-								if (lThrEval[n].id==lNodeCluster[k].e) {
-									lThrEval[n].l = newtitle;
-								}
-							}
 						}
 					}
 
 					Flag_Upgrade_Done = true;
-					Upgrade_Description += '<LI>' + _("Vulnerabilities '%%' and '%%'.", oldtitle, newtitle);
+					Upgrade_Description += '<LI>' + _H("Vulnerabilities '%%' and '%%'.", oldtitle, newtitle);
 				}
 			}
 		}
-		th.settitle(lth.l);
+		vln.settitle(lv.l);
+		vln.setcommon(lv.c);
+		vln.setmalice(lv.m);
 	}
 	for (i=0; i<lProjectlen; i++) {
 		var lp = lProject[i];
@@ -1844,10 +2819,12 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 		if (lp.g) p.group = lp.g;
 		if (lp.d) p.description = lp.d;
 		if (lp.w) p.date = lp.w;
+		if (lp.i) p.iconset = lp.i;
+		if (lp.q) p.wpa = lp.q;
 		for (k=0; k<lp.s.length; k++) {
 			p.addservice(lp.s[k]);
 		}
-		p.threats = lp.t;
+		p.vulns = lp.t.slice(0); // Omit the "-1" property, if it exists
 		// Upgrade from version 1 to version 2: an additional color was added
 		if (upgrade_1_2 && lp.c && lp.c.length==7) {
 			lp.c[7] = lp.c[6];
@@ -1861,101 +2838,93 @@ function loadFromString(str,showerrors,allowempty,strsource) {
 	}
 	for (i=0; i<lNodelen; i++) {
 		var lrn = lNode[i];
-		var rn = new Node(lrn.t,lrn.id);
-		rn.title = trimwhitespace(lrn.l);
-		if (lrn.f) rn.suffix = trimwhitespace(lrn.f);
-		rn.service = lrn.s;
+		var rn = new Node(lrn.t,lrn.s,lrn.id);
+		rn.title = lrn.l.trim();
+		if (lrn.f) rn.suffix = lrn.f.trim();
 		rn.position = {x: lrn.x, y: lrn.y, width: lrn.w, height: lrn.h};
-		rn._normw = lrn.v;
-		rn._normh = lrn.g;
 		rn.component = lrn.m;
-		rn.connect = lrn.c;
-		if (lrn.o) {
-			rn.color = lrn.o;
-		}
+		rn.connect = lrn.c.slice(0);
+		if (lrn.o) rn.color = lrn.o;
+		if (lrn.i) rn.icon = lrn.i;
 		rn.store();
 	}
 	for (i=0; i<lComponentlen; i++) {
 		var lc = lComponent[i];
-		var cm = new Component(lc.t,lc.id);
-		cm.thrass = lc.e;
-		cm.nodes = lc.n;
+		var cm = new Component(lc.t,lc.p,lc.id);
+		cm.assmnt = lc.e.slice(0);
+		cm.nodes = lc.n.slice(0); // Omit the "-1" property, if it exists;
 		cm.single = (lc.s===true);
 		cm.accordionopened = (lc.o===true);
-//		if (!lc.p) {
-//			// project wasn't stored, because we upgraded from a version 1 localStorage.
-//			// Get the project of the service of the first node.
-//			// First, locate the first node
-//			for (j=0; j<lNodelen && lNode[j].id!=lc.n[0]; j++) { /*jsl:pass*/ }
-//			// Second, locate that node's service
-//			for (k=0; k<lServicelen && lService[k].id!=lNode[j].s; k++) { /*jsl:pass*/ }
-//			lc.p = lService[k].p;
-//		}
-		cm.project = lc.p;
 		if (upgrade_1_2) {
 			// Check if there is another Component in this project with the same case-insensitive name
 			for (j=i+1; j<lComponentlen; j++) {
 				if (lc.p==lComponent[j].p && isSameString(lc.l,lComponent[j].l)) {
 					// Append a sequence number to the title of lComponent[j],
-					// or increase the number it it already had one.
+					// or increase the number if it already had one.
 					oldtitle = lComponent[j].l;
-					seq = oldtitle.match(/^(.+) \((\d+)\)$/);
-					if (seq==null) {
-						newtitle = oldtitle + ' (1)';
-					} else {
-						seq[2]++;
-						newtitle = seq[1] + ' (' + seq[2] + ')';
-					}
+					newtitle = titleincrement(oldtitle);
 					lComponent[j].l = newtitle;
-					// Als change the title on all nodes sharing this component
 					Flag_Upgrade_Done = true;
-					Upgrade_Description += '<LI>' + _("Components '%%' and '%%'.", lc.l, lComponent[j].l);
+					Upgrade_Description += '<LI>' + _H("Components '%%' and '%%'.", lc.l, lComponent[j].l);
 				}
 			}
 		}
-		cm.settitle(lc.l);
-		// Delay calculation until ThrEvals have been loaded
+		cm.title = lc.l;
+		if (upgrade_1_2) {
+			// Component title may have been made unique case-insensitive
+			for (const n of cm.nodes) {
+				rn = Node.get(n);
+				rn.settitle(cm.title);
+				rn.store();
+			}
+		}
+		cm.store();
+		// Delay calculation until Assessments have been loaded
 		//cm.calculatemagnitude();
 	}
-	for (i=0; i<lThrEvallen; i++) {
-		var lte = lThrEval[i];
-		var te = new ThreatAssessment(lte.t,lte.id);
-		te.settitle(lte.l);
-		te.setdescription(lte.d);
-		te.freq=lte.p;
-		te.impact=lte.i;
-		te.description=lte.d;
-		te.remark=lte.r;
-		te.computetotal();
-		te.component=lte.m;
-		te.cluster=lte.u;
-		te.store();
+	for (i=0; i<lAssmntlen; i++) {
+		let lv = lAssmnt[i];
+		let assmnt = new Assessment(lv.t,lv.id);
+		if (lv.v) {
+			assmnt.vulnerability=lv.v;
+		} else {
+			assmnt.settitle(lv.l);
+		}
+		assmnt.freq=lv.p;
+		assmnt.impact=lv.i;
+		assmnt.remark=lv.r;
+		assmnt.computetotal();
+		assmnt.component=lv.m;
+		assmnt.cluster=lv.u;
+		assmnt.store();
 	}
 	for (i=0; i<lNodeClusterlen; i++) {
 		var lnc = lNodeCluster[i];
-		/* For some reason, some project contain empty cluster (root, no nodes and no subclusters).
-		 * Do not create such a useless cluster, and if its ThreatEvaluation has been created
-		 * already then delete that.
-		 */
-		if (lnc.u==null && lnc.c.length==0 && lnc.n.length==0) {
-			te = ThreatAssessment.get(lnc.e);
-			if (te && te.cluster==lnc.id) {
-				te.destroy();
-			}
-			continue;
-		}
-
 		var nc = new NodeCluster(lnc.t,lnc.id);
 		nc.title = lnc.l;
 		nc.project = lnc.p;
 		nc.parentcluster = lnc.u;
-		nc.childclusters = lnc.c;
-		nc.childnodes = lnc.n;
-		nc.thrass = lnc.e;
+		nc.childclusters = lnc.c.slice(0); // Omit the "-1" property, if it exists;
+		nc.childnodes = lnc.n.slice(0); // Omit the "-1" property, if it exists
+		nc.assmnt = lnc.e;
 		nc.accordionopened = (lnc.o===true);
 		//nc.calculatemagnitude(); // Not all childclusters may have been loaded
 		nc.store();
 	}
+
+	// As from version 3, there should be rootclusters for each Vulnerability
+	for (i=0; upgrade_2_3 && i<lVulnlen; i++) {
+		lv = lVuln[i];
+		let it = new NodeClusterIterator({project: lv.p, title: lv.l, type: lv.t, isroot: true});
+		// If the project has a rootcluster with that type and title, then OK.
+		if (it.count()>0)  continue;
+		// else make sure that a stub rootcluster exists, and has a threat assessment.
+		nc = new NodeCluster(lv.t);
+		nc.setproject(lv.p);
+		nc.settitle(lv.l);
+		nc.addassessment();
+	}
+
 	for (i=0; i<lComponentlen; i++) {
 		cm = Component.get( lComponent[i].id );
 		cm.calculatemagnitude();
@@ -1977,120 +2946,99 @@ function checkUpgradeDone() {
 #endif
 	rasterAlert(
 		_("Your project was updated"),
-		_("Your project was updated to a newer version. Some names of components and other items have been altered.")
+		_H("Your project was updated to a newer version. Some names of components and other items have been altered.")
 		+ '<UL>' + Upgrade_Description + '</UL>'
 	);
 }
 
-/* Find the lowest unused number in arr. Array arr must not contain negative numbers.
- */
-function lowestunused(arr) {
-	var lu = 0;
-	arr.sort(function(a,b){return a - b;});
-	for (var i=0,alen=arr.length; i<alen; i++) {
-		if (lu<arr[i]) break;
-		lu=arr[i]+1;
-	}
-	return lu;
-}
+///* Find the lowest unused number in arr. Array arr must not contain negative numbers.
+// */
+//function lowestunused(arr) {
+//	var lu = 0;
+//	arr.sort(function(a,b){return a - b;});
+//	for (var i=0,alen=arr.length; i<alen; i++) {
+//		if (lu<arr[i]) break;
+//		lu=arr[i]+1;
+//	}
+//	return lu;
+//}
 
+#ifdef SERVER
 /* singleProjectExport(p): save all data into a local file.
  */
-var NodeExported = [];
-var ComponentExported = [];
-//var ClusterExported = [];
-
 function singleProjectExport(p) {
-	var proj = Project.get(p);
-	var s = exportProject(p);
-//	var url = "data:text/x-raster;," + urlEncode(s);
-//	document.location.assign(url);
-
-	$('#exp_name').val(proj.title);
-	$('#exp_contents').val(s);
-	$('#exp_form').submit();
+	let proj = Project.get(p);
+	saveStringAsRasterFile(exportProject(p),proj.title);
+//	$('#exp_name').val(proj.title);
+//	$('#exp_contents').val(s);
+//	$('#exp_form').submit();
 }
+#endif
 
 function exportProject(pid) {
-	var p = Project.get(pid);
+	let p = Project.get(pid);
+	let s = "";
 	// We must ignore the date on export. It must be preserved in localStorage, but
 	// like the creator it is not part of the project data. It is metadata, stored
 	// and retrieved by the server separately from the project data.
-	var olddate = p.date;
+	let olddate = p.date;
 	p.date = "";
-	var s = p.exportstring();
+	s += p.exportstring(p.TransactionCurrent.id);
 	p.date = olddate;
-	NodeExported = [];
-	ComponentExported = [];
-	for (i=0; i<p.threats.length; i++) {
-		s += exportThreat(p.threats[i]);
-	}
-	for (var i=0; i<p.services.length; i++) {
-		s += exportService(p.services[i]);
-	}
-	var it = new NodeClusterIterator({project: pid});
-	for (it.first(); it.notlast(); it.next()) {
-		s += exportNodeCluster(it.getNodeClusterid());
-	}
+	let it;
+	it = new AssessmentIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new ComponentIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new NodeIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new NodeClusterIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new ServiceIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
+	it = new VulnerabilityIterator({project: pid});
+	it.forEach(obj => s+=obj.exportstring());
 	return s;
 }
 
-function exportThreat(th) {
-	var s = Threat.get(th).exportstring();
+/* dateAsAstring: returns the current datetime as string "YYYYMMDD HHMM SS"
+ */
+function dateAsAstring() {
+	let dt = new Date();
+	let x;
+	let s = '';
+	s += dt.getFullYear();
+	x = dt.getMonth()+1;
+	s += (x<10?'0':'')+x;
+	x = dt.getDate();
+	s += (x<10?'0':'')+x;
+	s += ' ';
+	x = dt.getHours();
+	s += (x<10?'0':'')+x;
+	x = dt.getMinutes();
+	s += (x<10?'0':'')+x;
+	s += ' ';
+	x = dt.getSeconds();
+	s += (x<10?'0':'')+x;
 	return s;
 }
 
-function exportService(sid) {
-	var s = Service.get(sid).exportstring();
-	var it = new NodeIterator({service: sid});
-	for (it.first(); it.notlast(); it.next()) {
-		s += exportNode( it.getnodeid() );
-	}
-	return s;
-}
-
-function exportNode(n) {
-	if (NodeExported.indexOf(n)>-1) {
-		return "";
-	}
-	var rn = Node.get(n);
-	var s = rn.exportstring();
-	NodeExported.push(n);
-	for (var i=0; i<rn.connect.length; i++) {
-		s += exportNode(rn.connect[i]);
-	}
-	if (rn.component!=null) {
-		s += exportComponent(rn.component);
-	}
-	return s;
-}
-
-function exportComponent(c) {
-	if (ComponentExported.indexOf(c)>-1) {
-		return "";
-	}
-	var cm = Component.get(c);
-	var s = cm.exportstring();
-	ComponentExported.push(c);
-	for (var i=0; i<cm.nodes.length; i++) {
-		s += exportNode(cm.nodes[i]);
-	}
-	for (i=0; i<cm.thrass.length; i++) {
-		s += exportThreatAssessment(cm.thrass[i]);
-	}
-	return s;
-}
-
-function exportThreatAssessment(te) {
-	var s = ThreatAssessment.get(te).exportstring();
-	return s;
-}
-
-function exportNodeCluster(ncid) {
-	var nc = NodeCluster.get(ncid);
-	var s = nc.exportstring();
-	s += exportThreatAssessment(nc.thrass);
-	return s;
+/* saveStringAsRasterFile: make the browser download a Raster file using a given filename
+ * s: (String) contents of the new file
+ * name: (String) filename in which to save string s
+ * append: (Boolean, default true) append a datetime string and extension to the filename
+ */
+function saveStringAsRasterFile(s,name, append=true) {
+	if (append) name += ` ${dateAsAstring()}.raster`;
+	let fileBlob = new Blob([s], {type: 'text/x-raster'});
+	let url = window.URL.createObjectURL(fileBlob);
+	let anchor = document.createElement('a');
+	anchor.href = url;
+	anchor.download = name;
+	anchor.click();
+	window.URL.revokeObjectURL(url);
+	// the line below gives a DOMException
+//	document.removeChild(anchor);
 }
 
 /* exportAll: save all data into a local file.
@@ -2102,12 +3050,18 @@ function exportAll() {
 		s+= key+'\t';
 		s+= localStorage[key]+'\n';
 	}
-	var url = 'data:text/x-raster;,' + urlEncode(s);
-	document.location.assign(url);
+//	var url = 'data:text/x-raster;,' + urlEncode(s);
+//	document.location.assign(url);
+	saveStringAsRasterFile(s,'exportall');
 }
 
+const TabWorkDia = 0;
+const TabWorkSF  = 1;
+const TabWorkCCF = 2;
+const TabWorkAna = 3;
+
 function forceSelectVerticalTab(n) {
-	$('#tabs').tabs('option','active',n);
+	$('#workspace').tabs('option','active',n);
 	vertTabSelected();
 }
 
@@ -2115,44 +3069,30 @@ function forceSelectVerticalTab(n) {
  * Event 'event' selects the vertical tab 'ui' of the main window.
  */
 function vertTabSelected(/*event, ui*/) {
-	removetransientwindows();
-
-	$('#nodereport').dialog('close');
-	$('#componentthreats').dialog('close');
-	$('#checklist_tWLS').dialog('close');
-	$('#checklist_tWRD').dialog('close');
-	$('#checklist_tEQT').dialog('close');
-
-	sizeworkspace();
-	switch ($('#tabs').tabs('option','active')) {
-	case 0:		// tab Services
-		$('#templates').show();
+	removetransientwindowsanddialogs();
+	$('#tb_home .toolbarsection').hide();
+	switch ($('#workspace').tabs('option','active')) {
+	case TabWorkDia:
+		$('#diaopts').show();
+		$('#projectpropsection').show();
 		// Switch to the right service. A new service may have been created while working
 		// in the Single Failures tab.
-		$('#diagramstabtitle'+Service.cid).trigger('click');
-		// Paint, if the diagram has not been painted already
-		Service.get(Service.cid).paintall();
+		$('#tab_diagramstabtitle'+Service.cid).trigger('click');
+		// The click won't do anything if that service was already selected, so make sure the repaint occurs.
+		Service.get(Service.cid)._jsPlumb.repaintEverything();
 		Preferences.settab(0);
 		break;
-	case 1:		// tab Single Failures
-		$('#selectrect').hide();
-		$('#templates').hide();
-		$('#singlefstabtitle'+Service.cid).trigger('click');
-		// Force repainting of that tab
-		paintSingleFailures( Service.get(Service.cid) );
+	case TabWorkSF:
+		$('#sfopts').show();
+		$('#tab_singlefstabtitle'+Service.cid).trigger('click');
 		Preferences.settab(1);
 		break;
-	case 2:		// tab Common Cause Failures
-		$('#selectrect').hide();
-		$('#templates').hide();
-		$('#ccfs_body').empty();
-		AddAllClusters();
+	case TabWorkCCF:
+		$('#ccfopts').show();
 		Preferences.settab(2);
 		break;
-	case 3:		// tab Analysis
-		$('#selectrect').hide();
-		$('#templates').hide();
-		AddAllAnalysis();
+	case TabWorkAna:
+		repaintCurrentAnalysis();
 		Preferences.settab(3);
 		break;
 	default:
@@ -2160,328 +3100,13 @@ function vertTabSelected(/*event, ui*/) {
 	}
 }
 
-function initLibraryPanel() {
-	$('#libraryactivator span').first().html(_("Library"));
-
-	$('#librarypanel').dialog({
-		title: _("Library"),
-		position: {my: 'left+50 top+50', at: 'bottom right', of: '#libraryactivator'},
-		modal: true,
-		width: 490,
-		resizable: false,
-		autoOpen: false,
-		close: function() {
-			$('#libraryactivator').removeClass('ui-state-hover');
-		}
-	});
-
-	$('#libactivate').attr('title',_("Continue working with the selected project."));
-	$('#libprops').attr('title',_("Change the name, description, and sharing status of the selected project."));
-	$('#libexport').attr('title',_("Save the selected project to a file."));
-	$('#libdel').attr('title',_("Permanently remove the selected project."));
-	$('#libmerge').attr('title',_("Join the selected project into the current one."));
-	$('#libadd').attr('title',_("Add a new, blank project to the library."));
-	$('#libimport').attr('title',_("Load a project from a file."));
-	$('#libexportall').attr('title',_("Save all projects into a single file."));
-	$('#libzap').attr('title',_("Permanently remove all projects."));
-	$('#libcheck').attr('title',_("Check the projects for internal consistency."));
-
-	$('#libactivate').val(_("Activate"));
-	$('#libprops').val(_("Details"));
-	$('#libexport').val(_("Export"));
-	$('#libdel').val(_("Delete"));
-	$('#libmerge').val(_("Merge"));
-	$('#libadd').val(_("New"));
-	$('#libimport').val(_("Import"));
-	$('#libexportall').val(_("Export all"));
-	$('#libzap').val(_("Zap library"));
-	$('#libcheck').val(_("?"));
-
-	// Activate --------------------
-	$('#libactivate').on('click',  function() {
-		var p = Project.get( $('#libselect option:selected').val() );
-		if (!p.stub) {
-			switchToProject(p.id,true);
-		} else {
-			// Activating a stub project.
-			// Make sure that there is no local project with that name
-			if (Project.withTitle(p.title)!=null) {
-				rasterAlert(_('That project name is used already'),
-					_("There is already a project called '%%'. Please rename that project first.", H(p.title))
-				);
-			} else {
-				// Do a retrieve operation, and switch to that new project, if successful.
-				Project.retrieve(p.id,function(newpid){
-					switchToProject(newpid);
-#ifdef SERVER
-					startAutoSave();
-#endif
-				});
-			}
-		}
-		$('#libactivate').removeClass('ui-state-hover');
-		$('#librarypanel').dialog('close');
-	});
-	// Details --------------------
-	$('#libprops').on('click', function() {
-		var p = Project.get( $('#libselect option:selected').val() );
-		ShowDetails(p);
-	});
-	// Export --------------------
-	$('#libexport').on('click',  function() {
-		var p = Project.get( $('#libselect option:selected').val() );
-#ifdef SERVER
-		if (!p.stub) {
-#endif
-			singleProjectExport($('#libselect option:selected').val());
-#ifdef SERVER
-		} else {
-			// First retrieve the project, then start exporting it
-			Project.retrieve(p.id,function(newpid){
-				if (newpid==null) {
-					rasterAlert(_("Invalid project received from server"),
-						_("The project '%%' was retrieved from the server but contained invalid data.", H(p.title))
-					);
-					return;
-				}
-				populateProjectList();
-				singleProjectExport(newpid);
-			});
-		}
-#endif
-		$('#libselect').focus();
-		$('#libexport').removeClass('ui-state-hover');
-	});
-	// Delete --------------------
-	$('#libdel').on('click',  function(/*evt*/){
-		var p = Project.get( $('#libselect option:selected').val() );
-		var dokill = function() {
-			$('#libdel').removeClass('ui-state-hover');
-#ifdef SERVER
-			if (p.shared || p.stub) {
-				// Disable the project watch. Otherwise a notification would be triggered.
-				stopWatching(p.id);
-				// remove from the server
-				p.deleteFromServer();
-			}
-#endif
-			if (p.id==Project.cid) {
-				p.destroy();
-				p = Project.firstProject();
-				// Add a blank project if none would be left
-				if (p===0) {
-					loadDefaultProject();
-				} else {
-					switchToProject(p.id);
-				}
-			} else {
-				p.destroy();
-			}
-			populateProjectList();
-		};
-		newRasterConfirm(_("Delete project?"),
-		_("Are you sure you want to remove project <i>'%%'</i>?\n<strong>This cannot be undone.</strong>", H(p.title)),
-		_("Remove"),_("Cancel")
-		).done(function() {
-			var t=p.totalnodes();
-			if (t>2) {
-				newRasterConfirm(_("Delete project?"),
-					_("This project has %% nodes.\nAre you <i>really</i> sure you want to discard these?", t),
-					_("Yes, really remove"),_("Cancel"))
-				.done(dokill);
-			} else {
-				dokill();
-			}
-			$('#librarypanel').dialog('close');
-		})
-		.fail(function () {
-			$('#libselect').focus();
-		});
-	});
-	// Merge --------------------
-	$('#libmerge').on('click',  function() {
-		var otherproject = Project.get( $('#libselect option:selected').val() );
-#ifdef SERVER
-		if (otherproject.stub) {
-			rasterAlert(_("Cannot merge a remote project"),_("This tool currently cannot merge remote projects. Activate that project first, then try to merge again."));
-			return;
-		}
-#endif
-		var currentproject = Project.get( Project.cid );
-		rasterConfirm(_("Merge '%%' into '%%'?",otherproject.title,currentproject.title),
-			_("Are you sure you want to fold project '%%' into the current project?",
-				H(otherproject.title))
-			+'<br>\n'+
-			_("This will copy the diagrams of '%%' into '%%'.",
-				H(otherproject.title),H(currentproject.title)),
-			_("Merge"),_("Cancel"),
-			function() {
-				Project.merge(currentproject,otherproject);
-				$('#librarypanel').dialog('close');
-		});
-	});
-
-	// select --------------------
-	$('#libselect').on('change', function(){
-		var p = Project.get( $('#libselect option:selected').val() );
-		$('#libactivate').button('option','disabled',p.id==Project.cid);
-		$('#libmerge').button('option','disabled',p.id==Project.cid);
-		$('#libselect option').css('background-image','');
-		$('#libselect option[value='+Project.cid+']').css('background-image','url(../img/selected.png)');
-	});
-	$('#libselect').on('dblclick',  function(){
-		$('#libactivate').trigger('click');
-	});
-
-	// Add --------------------
-	function addEmptyProject() {
-		var p = new Project();
-		var s = new Service();
-		p.adddefaultthreats();
-		p.addservice(s.id);
-		s.autosettitle();
-		p.autosettitle();
-		populateProjectList();
-		$('#libselect').val(p.id).focus().trigger('change').trigger('dblclick');
-		transactionCompleted("Project add");
-	}
-
-	$('#libadd').on('click',  function(){
-		// Check for a template
-		var p, template;
-		var found=false;
-		for (var i=0; !found && i<Project._all.length; i++) {
-			template = Project._all[i];
-			if (template==null) continue;
-			found=(isSameString(template.title,GroupSettings.template) && template.group==ToolGroup);
-		}
-
-		/* There are 4 possibilities:
-		   1. The template exists on the server (a stub locally): retrieve the template; when it fails create a blank project.
-		   2. The template exists on the server, and has been retrieved: duplicate the template.
-		   3. The template does exists as a private project: duplicate the template
-		   4. The template does not exists: create a blank project
-		 */
-		// Possibility 1
-		if (found && template.stub && Preferences.online) {
-			Project.retrieve(template.id, function(newpid) {
-				// Success
-				p = Project.get(newpid);
-				p.stub = false;
-				p.setshared(false,false);
-				p.autosettitle();
-				populateProjectList();
-				$('#libselect').val(newpid).focus().trigger('change').trigger('dblclick');
-				transactionCompleted("Project add");
-			}, function() {
-				// Error
-				addEmptyProject();
-			});
-		// Possibility 2 and 3
-		} else if (found) {
-			// To duplicate the template, export it into a string, then read & load that string
-			var savedcopy = exportProject(template.id);
-			i = loadFromString(
-				savedcopy,	// the string to parse
-				true,		// show errors
-				false,		// allow empty
-				'Project from template'		// Source of the string, used in error messages
-			);
-			if (i==null) {
-				// Some kind of error occurred. This is not normal, so return without doing anything else.
-				return;
-			}
-			p = Project.get(i);
-			p.stub = false;
-			p.setshared(false,false);
-			p.autosettitle();
-			populateProjectList();
-			$('#libselect').val(i).focus().trigger('change').trigger('dblclick');
-			transactionCompleted("Project add");
-		} else {
-			// Blank project
-			addEmptyProject();
-		}
-	});
-	// Import --------------------
-	$('#libimport').on('click',  function() {
-		$('#libimport').removeClass('ui-state-hover');
-		$('#body').off('click');
-		$('#fileElem').trigger('click');
-		$('#body').on('click',  function(){ return false; });
-	});
-	$('#fileElem').on('change',  function(event) {
-		var files = event.target.files;
-		if (files.length==null || files.length==0)  return;
-		var reader = new FileReader();
-		reader.onload = function(evt) {
-			var newp = loadFromString(evt.target.result,true,false,'File "'+files[0].name+'"');
-			if (newp!=null) {
-				// Make sure the newly imported project is indeed private
-				var p = Project.get(newp);
-				p.setshared(false,false);
-				switchToProject(newp);
-			}
-			// Remove the default project, as long as it is still unmodified??
-			transactionCompleted("Project add");
-			// Import checks are not as thorough as the internal consistency checks on components.
-			// Therefore, force a check after load.
-			checkForErrors(false);
-			checkUpgradeDone();
-		};
-		reader.readAsText(files[0]);
-	});
-	// Export all --------------------
-	$('#libexportall').on('click',  function() {
-		$('#libexportall').removeClass('ui-state-hover');
-		exportAll();
-	});
-	// Zap! --------------------
-	$('#libzap').on('click',  function(){
-		rasterConfirm('Delete all?',
-			_("This will delete all your projects and data.\n\nYou will lose all your unsaved work!\n\nAre you sure you want to proceed?"),
-			_("Erase everything"),_("Cancel"),
-			function() {
-				rasterConfirm(_('Delete all?'),
-					_("Really sure? You will lose <b>all private</b> projects!\n"),
-					_("Yes, really erase all"),_("Cancel"),
-					function() {
-						localStorage.clear();
-						// Preserve the user's preferences
-						Preferences.settab(0);
-						window.location.reload();
-					}
-				);
-			}
-		);
-	});
-	// Check --------------------
-	$('#libcheck').on('click',  function() {
-		checkForErrors(true);
-		$('#libcheck').removeClass('ui-state-hover');
-		$('#libselect').focus(); // Won't work, because the alert is still active.
-	});
-
-	// panel activator --------------------
-	$('#libraryactivator').on('mouseenter', function() {
-		$('#libraryactivator').addClass('ui-state-hover');
-	}).on('mouseleave', function() {
-		$('#libraryactivator').removeClass('ui-state-hover');
-	});
-	$('#libraryactivator').on('click',  function() {
-		var it = new ProjectIterator({group: ToolGroup, stubsonly: false});
-		var nump = it.number();
-		nump += 4; // Allow space for option group titles.
-		if (nump<8) nump=8;
-		if (nump>15) nump=15;
-		$('#libselect').attr("size",nump);
-		$('#librarypanel').dialog('open');
-		// Show project list using current stubs, but do fire an update
-		populateProjectList();
-#ifdef SERVER
-		Project.updateStubs(refreshProjectList);
-		startPeriodicProjectListRefresh();
-#endif
+/* Reset the tool. Useful from the CLI when debugging */
+function Zap() {
+	localStorage.clear();
+	// Preserve the user's preferences
+	Preferences.settab(0);
+	lengthy(function() {
+		window.location.reload();
 	});
 }
 
@@ -2491,311 +3116,84 @@ function initLibraryPanel() {
  * Therefore, it is a good idea to checkForErrors after importing a project.
  */
 function checkForErrors(verbose) {
-	var errors = "";
-	var it = new ProjectIterator();
+	let errors = '';
+	let projects = new Set();
+	let it = new ProjectIterator();
 	it.sortByTitle();
-	for (it.first(); it.notlast(); it.next()) {
-		var p = it.getproject();
-		var err = p.internalCheck();
-		if (err!="") {
+	for (const p of it) {
+		projects.add(p.id);
+		let err = p.internalCheck();
+		if (err!='') {
 			var e = err.split('\n');
-			e.sort();
-			if (errors!="") errors += "<p>";
+			//e.sort();
+			if (errors!='') errors += '<p>';
 			errors += _("Project <i>%%</i>:\n", H(p.title)) + e.join('<br>\n');
 		}
 	}
-	if (verbose && errors=="") {
-		rasterAlert(_("Checked all projects"), _("There were no errors; all projects are OK.\n"));
+	// Add checks for stuff outside projects
+	let err = '';
+	it = new VulnerabilityIterator();
+	for (const v of it) {
+		if (!projects.has(v.project)) {
+			err += _H("Vulnerability %% does not belong to any known project.", v.id);
+			err += '<br>';
+		}
 	}
-	if (errors!="") {
+	it = new ComponentIterator();
+	for (const cm of it) {
+		if (!projects.has(cm.project)) {
+			err += _H("Component %% does not belong to any known project.", cm.id);
+			err += '<br>';
+		}
+	}
+	it = new ServiceIterator();
+	for (const s of it) {
+		if (!projects.has(s.project)) {
+			err += _H("Service %% does not belong to any known project.", s.id);
+			err += '<br>';
+		}
+	}
+	it = new NodeClusterIterator();
+	for (const cl of it) {
+		if (!projects.has(cl.project)) {
+			err += _H("Cluster %% does not belong to any known project.", cl.id);
+			err += '<br>';
+		}
+	}
+	if (err!='') {
+		if (errors!="") errors += '<p>';
+		errors += err;
+	}
+
+	if (verbose && errors=='') {
+		rasterAlert(_("Checked all projects"), _H("There were no errors; all projects are OK.\n"));
+	}
+	if (errors!='') {
 		rasterAlert(_("Your projects contain errors:"), errors);
 	}
-}
-
-function ShowDetails(p) {
-	var dialog = $('<div></div>');
-#ifdef STANDALONE
-	var snippet ='\
-		<form id="form_projectprops">\n\
-		_LT_<br><input id="field_projecttitle" name="fld" type="text" value="_PN_"><br>\n\
-		_LD_<br><textarea id="field_projectdescription" rows="2">_PD_</textarea><br>\n\
-		</form>\
-	';
-#else
-	var snippet ='\
-		<form id="form_projectprops">\n\
-		_LT_<br><input id="field_projecttitle" name="fld" type="text" value="_PN_"><br>\n\
-		<div id="stubdetails" style="display:_DI_;">_LC_ _CR_, _STR_ _DA_.<br><br></div>\n\
-		_LD_<br><textarea id="field_projectdescription" rows="2">_PD_</textarea><br>\n\
-		<fieldset>\n\
-		<input type="radio" id="sh_off" value="off" name="sh_onoff"><label for="sh_off">_LP_</label>\n\
-		<input type="radio" id="sh_on" value="on" name="sh_onoff"><label for="sh_on">_LS_</label>\n\
-		</fieldset>\n\
-		</form>\
-	';
-#endif
-	snippet = snippet.replace(/_LT_/g, _("Title:"));
-	snippet = snippet.replace(/_LD_/g, _("Description:"));
-	snippet = snippet.replace(/_PN_/g, H(p.title));
-	snippet = snippet.replace(/_PD_/g, H(p.description));
-#ifdef SERVER
-	snippet = snippet.replace(/_LC_/g, _("Creator:"));
-	snippet = snippet.replace(/_LP_/g, _("Private"));
-	snippet = snippet.replace(/_LS_/g, _("Shared"));
-	snippet = snippet.replace(/_STR_/g, _("last stored on"));
-	snippet = snippet.replace(/_CR_/g, (p.shared && !p.stub ? H(Preferences.creator) : H(p.creator)));
-	snippet = snippet.replace(/_DA_/g, H(prettyDate(p.date)));
-	snippet = snippet.replace(/_DI_/g, (p.stub||p.shared ? 'block' : 'none'));
-#endif
-	dialog.append(snippet);
-	var dbuttons = [];
-	dbuttons.push({
-		text: _("Cancel"),
-		click: function() {
-				$(this).dialog('close');
-			}
-	});
-	dbuttons.push({
-		text: _("Change properties"),
-		click: function() {
-#ifdef SERVER
-				if (!p.stub) {
-#endif
-					var fname = $('#field_projecttitle');
-					p.settitle(fname.val());
-					if (Project.cid==p.id) {
-						$('.projectname').html(H(p.title));
-						document.title = "Raster - " + p.title;
-						Preferences.setcurrentproject(p.title);
-					}
-					fname = $('#field_projectdescription');
-					p.setdescription(fname.val());
-#ifdef SERVER
-					var becomesShared = $('#sh_on:checked').length>0;
-					if (!p.shared && becomesShared) {
-						// Before changing the sharing status from 'private' to 'shared', first
-						// check if there already is a project with this name. If so, refuse to rename.
-						var it = new ProjectIterator({title: p.title, group: ToolGroup, stubsonly: true});
-						if (it.notlast()) {
-							rasterAlert(_("Cannot share this project yet"),
-								_("There is already a project named '%%' on the server. You must rename this project before it can be shared.", H(p.title))
-							);
-						} else {
-							// transactionCompleted() will take care of the server, if project p is the current project.
-							p.setshared(becomesShared,(p.id!=Project.cid));
-//								if (p.id == Project.cid)
-//									startAutoSave();
-						}
-					} else if (p.shared && !becomesShared) {
-						// Stop watching the project, or we will notify ourselves about its deletion
-						stopWatching(p.id);
-						p.setshared(becomesShared,true);
-					} else if (p.shared && becomesShared) {
-						p.storeOnServer(false,exportProject(p.id),{});
-					}
-#endif
-					$(this).dialog('close');
-					populateProjectList();
-					transactionCompleted("Project props change");
-#ifdef SERVER
-				} else {
-					// Not implemented yet.
-					rasterAlert(_("Cannot change project on server"),_("This function is not implemented yet."));
-				}
-#endif
-			}
-	});
-	dialog.dialog({
-		title: _("Properties for project '%%'", p.title),
-		modal: true,
-		width: 490,
-#ifdef SERVER
-		height: 280,
-#endif
-		buttons: dbuttons,
-		open: function() {
-#ifdef SERVER
-			$('#form_projectprops input[type=radio]').checkboxradio({icon: false});
-			$('#form_projectprops fieldset').controlgroup();
-			$('#sh_off')[0].checked = !p.shared;
-			$('#sh_on')[0].checked = p.shared;
-			$('input[name="sh_onoff"]').checkboxradio("refresh");
-
-			if (GroupSettings.classroom) {
-				$('input[name="sh_onoff"]').checkboxradio({
-					disabled: true
-				});
-			}
-#endif
-			$('#field_projecttitle').focus().select();
-			$('#form_projectprops').submit(function() {
-				// Ignore, must close with dialog widgets
-				return false;
-			});
-		},
-		close: function(/*event, ui*/) {
-			dialog.remove();
-			$('#libselect').focus();
-		}
-	});
-}
-function populateProjectList() {
-	var snippet = "";
-	var newoptions = "";
-	var p;
-	var it = new ProjectIterator({group: ToolGroup});
-	it.sortByTitle();
-
-	// First all private projects
-	for (it.first(); it.notlast(); it.next()) {
-		p = it.getproject();
-		if (p.stub || p.shared) continue;
-		if (snippet=="") {
-			snippet = '<optgroup class="optgroup" label="'+_("Private projects")+'">\n';
-		}
-		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
-	}
-	if (snippet!="") {
-		snippet += '</optgroup>\n';
-	}
-	newoptions += snippet;
-#ifdef SERVER
-	//	 Then all shared projects, if they belong to group ToolGroup
-	snippet = "";
-	for (it.first(); it.notlast(); it.next()) {
-		p = it.getproject();
-		if (p.stub || !p.shared) continue;
-		if (snippet=="") {
-			snippet = '<optgroup class="optgroup" label="'+_("Shared projects")+'">\n';
-		}
-		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+'</option>\n';
-	}
-	if (snippet!="") {
-		snippet += '</optgroup>\n';
-	}
-	newoptions += snippet;
-#endif
-	$('#libselect').html(newoptions);
-	// Finally all stubs projects
-#ifdef SERVER
-	refreshProjectList();
-#endif
-	// Select the current project, and enable/disable the buttons
-	$('#libselect').val(Project.cid).focus().trigger('change');
-}
-
-#ifdef SERVER
-var ProjectListTimer;
-
-function startPeriodicProjectListRefresh() {
-	if (ProjectListTimer!=null)  return;
-	// Update very 6 seconds. Must be more than the default Ajax timeout is 5 seconds.
-	ProjectListTimer = window.setInterval(function() {
-		if ($('#librarypanel').css('display')=='none') {
-			window.clearInterval(ProjectListTimer);
-			ProjectListTimer=null;
-			return;
-		}
-		Project.updateStubs(refreshProjectList);
-	},6000);
-}
-
-function refreshProjectList() {
-	var prevselected = $('#libselect option:selected').val();
-	var snippet = "";
-	var it = new ProjectIterator({group: ToolGroup, stubsonly: true});
-	it.sortByTitle();
-	for (it.first(); it.notlast(); it.next()) {
-		var p = it.getproject();
-		if (snippet=="") {
-			snippet = '<optgroup id="stubgroup" class="optgroup" label="'+_("Other projects on the server")+'">\n';
-		}
-		snippet += '<option value="'+p.id+'" title="'+H(p.description)+'">'+H(p.title)+', by '+H(p.creator)+' on '+prettyDate(p.date)+'</option>\n';
-	}
-	if (snippet!="") {
-		snippet += '</optgroup>\n';
-	}
-	$('#stubgroup').remove();
-	$('#libselect').append(snippet);
-	$('#libselect').val(prevselected);
-}
-#endif
-
-function initOptionsPanel() {
-	$('#optionsactivator span').first().html(_("Options"));
-
-	$('#optionspanel').dialog({
-		title: _("Options"),
-		modal: true,
-		position: {my: 'left+50 top+50', at: 'bottom right', of: '#optionsactivator'},
-		width: 420,
-		resizable: false,
-		autoOpen: false,
-		close: function() {
-			$('#optionsactivator').removeClass('ui-state-hover');
-		}
-	});
-
-	$('#emblem_size span').first().html( _("Vulnerability levels:") );
-	$('#em_small').checkboxradio('option', 'label', _("Small"));
-	$('#em_large').checkboxradio('option', 'label', _("Large"));
-	$('#em_none').checkboxradio('option', 'label', _("None"));
-	$('[for=em_small]').on('click',  function() { Preferences.setemblem('em_small'); });
-	$('[for=em_large]').on('click',  function() { Preferences.setemblem('em_large'); });
-	$('[for=em_none]').on('click',  function() { Preferences.setemblem('em_none'); });
-
-	$('#labelonoff span').first().html( _("Labels:") );
-	$('#label_off').checkboxradio('option', 'label', _("Hide color"));
-	$('#label_on').checkboxradio('option', 'label', _("Show color"));
-	$('[for=label_off]').on('click',  function() { Preferences.setlabel(false); });
-	$('[for=label_on]').on('click',  function() { Preferences.setlabel(true); });
-
-#ifdef SERVER
-	$('#onlineonoff span').first().html( _("Network connection:") );
-	$('#online_off').checkboxradio('option', 'label', _("Offline"));
-	$('#online_on').checkboxradio('option', 'label', _("Online"));
-	$('[for=online_off]').on('click',  function() { Preferences.setonline(false); });
-	$('[for=online_on]').on('click',  function() { Preferences.setonline(true); });
-
-	$('#creator_name span').first().html( _("Your name:") );
-	$('#creator').on('change',  function(/*evt*/){
-		Preferences.setcreator($('#creator').val());
-		$('#creator').val(Preferences.creator);
-	});
-	$('#creator').val(Preferences.creator);
-#endif
-
-	$('#optionsactivator').on('mouseenter', function() {
-		$('#optionsactivator').addClass('ui-state-hover');
-	}).on('mouseleave', function() {
-		$('#optionsactivator').removeClass('ui-state-hover');
-	});
-	$('#optionsactivator').on('click',  function() {
-		removetransientwindows();
-		$('#optionspanel').dialog('open');
-		$('#'+Preferences.emsize).prop('checked',true);
-		$(Preferences.online?'#online_on':'#online_off').prop('checked',true);
-		$(Preferences.label?'#label_on':'#label_off').prop('checked',true);
-		$('#optionspanel fieldset').controlgroup('refresh');
-	});
 }
 
 function bottomTabsCloseHandler(event) {
 	var p = Project.get(Project.cid);
 	if (p.services.length==1) {
-		$('#diagrams_workspace'+p.services[0]).effect('pulsate', { times:2 }, 800);
+		$('#tab_diagrams'+p.services[0]).effect('pulsate', { times:2 }, 800);
 		return;
 	}
 	$('#selectrect').hide();
 	var s = Service.get(nid2id(event.target.id));
 	rasterConfirm(_("Delete service?"),
-		_("Are you sure you want to remove service '%%' from project '%%'?\nThis cannot be undone.", H(s.title), H(p.title)),
+		_H("Are you sure you want to remove service '%%' from project '%%'?", s.title, p.title),
 		_("Remove service"),_("Cancel"),
 		function() {
-			p.removeservice( s.id );
-			$('#diagrams_body').tabs('refresh');
-			$('#singlefs_body').tabs('refresh');
-			transactionCompleted("Service delete");
+			let nodes = [];
+			var it = new NodeIterator({service: s.id});
+			it.forEach(rn => nodes.push(rn.id));
+			if (nodes.length!=0) nodesDelete(nodes,_("Remove service %%", s.title),true);
+			new Transaction('serviceCreate',
+				[{id: s.id, project: s.project, title: s.title, index: p.services.indexOf(s.id)}],
+				[{id: s.id, project: s.project}],
+				_("Remove service %%", s.title)
+			);
 		}
 	);
 }
@@ -2805,100 +3203,149 @@ function bottomTabsShowHandlerDiagrams(event,ui) {
 	if (!ui.newPanel)  return;
 	var id = nid2id(ui.newPanel[0].id);
 	$('#selectrect').hide();
+	// Reattach the selectrect within this diagram
+	// Attach to diagrams_workspace *not* to tab_diagrams, because then the mousup event is sometimes not fired,
+	// probably because it happens to occur *on* the selectrect. Mousemoves over the selectrect also do not register
+	// on diagrams_workspace then.
+	$('#selectrect').detach().appendTo('#diagrams_workspace'+id);
 	removetransientwindowsanddialogs();
-	Service.get(id).paintall();
 	Service.cid = id;
+//	$('.scroller_overview').hide();
+//	if (Preferences.showmap) $('#scroller_overview'+id).show();
+	Service.get(id)._jsPlumb.repaintEverything();
 }
 
 function bottomTabsShowHandlerSFaults(event,ui) {
 	/* ui.newPanel.selector is the DOM object with id #tabtitle<nn> */
-	if (!ui.newPanel) {
-		// on creation of the tab, select the first tab.
-		return;
-	}
-	var id = nid2id(ui.newPanel[0].id);
+	if (!ui.newPanel) return;
+	let id = nid2id(ui.newPanel[0].id);
 	Service.cid = id;
-	paintSingleFailures(Service.get(id));
+	let s = Service.get(id);
+	let currorder = $('input[name=sfsort]:checked').val();
+	if (s.sfsortorder!=currorder) {
+		// Repaint if the sort order has changed
+		paintSingleFailures(s);
+	}
 }
 
 function initTabDiagrams() {
 	initChecklistsDialog('tWLS');
 	initChecklistsDialog('tWRD');
 	initChecklistsDialog('tEQT');
+	
+	$('#componentthreats').dialog({
+		closeOnEscape: false,
+		autoOpen: false,
+		minHeight: 180,
+		minWidth: 775,
+		maxWidth: 779,
+		width: 775,
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		create: function() {
+			// Add vulnerability
+			$('<div id="dthadddia" class="titlebarbutton"></div>')
+			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
+			$('#dthadddia').button({label: _("+ Add vulnerability")});
+			// Copy button
+			$(`<div id="dthcopydia" class="titlebaricon" title="${_("Copy")}"><img src="../img/ccopy.png" alt="${_("Copy")}"></div>`)
+			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
+			$('#dthcopydia').button();
+			// Paste button
+			$(`<div id="dthpastedia" class="titlebaricon" title="${_("Paste")}"><img src="../img/cpaste.png" alt="${_("Paste")}"></div>`)
+			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
+			$('#dthpastedia').button();
+		}
+	});
+	$('#dthadddia').on('click', function() {return addvulnhandler(Component.ThreatsComponent);} );
+	$('#dthcopydia').on('click',  function() {
+		var cm = Component.get(Component.ThreatsComponent);
+		Assessment.Clipboard = [];
+		for (const tid of cm.assmnt) {
+			var te = Assessment.get(tid);
+			Assessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
+		}
+	});
+	$('#dthpastedia').on('click',  function() {
+		var cm = Component.get(Component.ThreatsComponent);
+		cm.mergeclipboard();
+	});
 
-	$('#diagrams_body').tabs({
+	$('#tab_diagrams').tabs({
 		activate: bottomTabsShowHandlerDiagrams,
 		create: bottomTabsShowHandlerDiagrams,
 		classes: {
 			"ui-tabs": "ui-corner-bottom ui-corner-tl",
 			"ui-tabs-nav": "ui-corner-bottom",
-			"ui-tabs-tab": "ui-corner-bottom",
-			"ui-tabs-panel": "ui-corner-asdf"
+			"ui-tabs-tab": "ui-corner-bottom"
 		}
 	});
-	$('#diagrams_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
-	$('#bottomtabsdia').on('mouseenter', 'li', function(){
+	$('#tab_diagrams').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
+	$('#bottomtabsdiagrams').on('mouseenter', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
 	});
-	$('#bottomtabsdia').on('mouseleave', 'li', function(){
+	$('#bottomtabsdiagrams').on('mouseleave', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 
-	$('.th_name.thr_header').html( _("Name") );
-	$('.th_descr.thr_header').html( _("Description") );
+	$('.th_mal.thr_header').text( _("Cause") );
+	$('.th_name.thr_header').text( _("Name") );
+	$('.th_descr.thr_header').text( _("Description") );
 	$('.addthreatbutton').val( _("+ Add vulnerability"));
 	$('.copybutton').val( _("Copy"));
 	$('.pastebutton').val( _("Paste"));
 
-	$('#mi_th span.lc:first').html( _("Vulnerabilities") );
-	$('#mi_ct span.lc:first').html( _("Change type") );
-	$('#mi_cttWLS span.lc:first').html( _("Wireless link") );
-	$('#mi_cttWRD span.lc:first').html( _("Wired link") );
-	$('#mi_cttEQT span.lc:first').html( _("Equipment") );
-	$('#mi_cttACT span.lc:first').html( _("Actor") );
-	$('#mi_cttUNK span.lc:first').html( _("Unknown link") );
-	$('#mi_cl span.lc:first').html( _("Class") );
-	$('#mi_rc span.lc:first').html( _("Rename class") );
-	$('#mi_sx span.lc:first').html( _("Rename suffix") );
+	$('#mi_th span').text( _("Vulnerabilities...") );
+	$('#mi_ci span').text( _("Icon") );
+	$('#mi_ct span').text( _("Type") );
+	$('#mi_cttWLS span').text( _("Wireless link") );
+	$('#mi_cttWRD span').text( _("Wired link") );
+	$('#mi_cttEQT span').text( _("Equipment") );
+	$('#mi_cttACT span').text( _("Actor") );
+	$('#mi_cttUNK span').text( _("Unknown link") );
+	$('#mi_cl span').text( _("Class") );
+	$('#mi_rc span').text( _("Rename class") );
+	$('#mi_sx span').text( _("Rename suffix") );
 	// Menu item Similar/Identical is handled inside Nodecluster:_showpopupmenu()
-	$('#mi_du span.lc:first').html( _("Duplicate") );
-	$('#mi_de span.lc:first').html( _("Delete") );
-	$('#mi_ccnone  span.lc:first').html( _("No label") );
-	$('#mi_ccedit  span.lc:first').html( _("Edit labels ...") );
+	$('#mi_du span').text( _("Duplicate") );
+	$('#mi_de span').text( _("Delete") );
+	$('#mi_ccnone span').text( _("No label") );
+	$('#mi_ccedit span').text( _("Edit labels...") );
+//	$('#nodemenu li.lcT span').text(_("Node"));
 	$('#nodemenu').menu().hide();
 
-	$('#mi_sd span.lc:first').html( _("Delete selection") );
-	$('#mi_sc span.lc:first').html( _("Label") );
-	$('#mi_scnone span.lc:first').html( _("No label") );
-	$('#mi_scedit span.lc:first').html( _("Edit labels ...") );
+	$('#mi_sd span').text( _("Delete selection") );
+	$('#mi_sc span').text( _("Label") );
+	$('#mi_scnone span').text( _("No label") );
+	$('#mi_scedit span').text( _("Edit labels...") );
+	$('#selectmenu li.lcT span').text(_("Selection"));
 	$('#selectmenu').menu().hide();
+	$('#selectrect').on('contextmenu', showSelectMenu);
+	$('#selectrect').on('click', function(evt) {
+		if (evt.button==0)  $('#selectmenu').hide(); // left mousebutton
+	});
+	$('#selectrectC').on('click', showSelectMenu);
 
 	$('#nodereport').dialog({
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		autoOpen: false,
 		minHeight: 80
 	});
-	$('#componentthreats').dialog({
-		autoOpen: false,
-		minHeight: 180,
-		minWidth: 775,
-		maxWidth: 779,
-		width: 775
-	});
 
-	$('#servaddbuttondia').on('click', function() {
-		var p = Project.get( Project.cid );
-		var s = new Service();
-		p.addservice(s.id);
-		s.autosettitle();
-		s.load();
-		$('#diagramstabtitle'+s.id).trigger('click');
-		transactionCompleted("Service add");
+	// This wil set the behavior of the plus-button on the SF tab as well
+	$('.servplusbutton').on('click', function() {
+		let newid = createUUID();
+		let newtitle = Service.autotitle(Project.cid);
+		new Transaction('serviceCreate',
+			[{id: newid, project: Project.cid}],
+			[{id: newid, project: Project.cid, title: newtitle}],
+			_("Add a service")
+		);
 	});
 
 	$('#templates').on('mouseenter', function() {
-		$('.tC').css({visibility: 'visible'});
+		$('.tC').show();
 	}).on('mouseleave',function() {
-		$('.tC').css({visibility: 'hidden'});
+		$('.tC').hide();
 	});
 	$(document).on('mousedown', '.tC', function(/*event,ui*/){
 		// this.id is of the form "tC_YYY", and we need to know YYY
@@ -2913,38 +3360,84 @@ function initTabDiagrams() {
 		if (rn.type=='tACT' || rn.type=='tNOT') {
 			return;
 		}
-		displayThreatsDialog(rn.component,e);
+		displayComponentThreatAssessmentsDialog(rn.component,e);
 	});
-	$('#mi_cttWLS').on('mouseup', function() {
+	$('#mi_ci').on('click', 'li', function(evt) {
+		let icn = $(evt.currentTarget).attr('foricon');
+		let rn = Node.get( $('#nodemenu').data('menunode') );
 		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tWLS');
-		transactionCompleted("Node change type tWLS");
+		if (rn.component==null) {
+			new Transaction('nodeIconChange',[{id: rn.id, icon: rn.icon}],[{id: rn.id, icon: icn}], _("Change icon for %%",rn.title));
+		} else {
+			// Change all nodes for this component
+			let undo_data = [];
+			let do_data = [];
+			let cm = Component.get(rn.component);
+			cm.nodes.forEach(nid => {
+				let nd = Node.get(nid);
+				undo_data.push({id: nd.id, icon: nd.icon});
+				do_data.push({id: nd.id, icon: icn});
+			});
+			new Transaction('nodeIconChange',undo_data,do_data, _("Change icons for %%",rn.title));
+		}
 	});
-	$('#mi_cttWRD').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tWRD');
-		transactionCompleted("Node change type tWRD");
-	});
-	$('#mi_cttEQT').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tEQT');
-		transactionCompleted("Node change type tEQT");
-	});
-	$('#mi_cttACT').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tACT');
-		transactionCompleted("Node change type tACT");
-	});
-	$('#mi_cttUNK').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rn.changetype('tUNK');
-		transactionCompleted("Node change type tUNK");
-	});
+
+	function ctfunction(t) {
+		return function() {
+			$('#nodemenu').hide();
+			let rn = Node.get( $('#nodemenu').data('menunode') );
+			let newid = createUUID();
+			let newcmid = createUUID();
+			// Two simultaneous transactions, both for do and undo: create new node, destroy old node
+			// We first do the creation of the new node
+			let do_data={nodes: [], clusters: []}, undo_data={nodes: [], clusters: []};
+			do_data.nodes.push({
+				id: newid,
+				type: t,
+				title: Node.autotitle(t,rn.title),
+				suffix: 'a',
+				service: rn.service,
+				label: rn.color,
+				x: rn.position.x,
+				y: rn.position.y,
+				connect: rn.connect.slice(),
+				component: newcmid,
+				assmnt: Project.get(rn.project).defaultassessmentdata(t),
+				accordionopened: false
+			});
+			undo_data.nodes.push({id: newid});
+			// Now do the deletion of the old node
+			do_data.nodes.push({id: rn.id});
+			let ud = {
+				id: rn.id,
+				type: rn.type,
+				title: rn.title,
+				suffix: rn.suffix,
+				service: rn.service,
+				label: rn.color,
+				x: rn.position.x,
+				y: rn.position.y,
+				width: rn.position.width,
+				height: rn.position.height,
+				connect: rn.connect.slice()
+			};
+			if (rn.component) {
+				let cm = Component.get(rn.component);
+				ud.component = cm.id;
+				ud.accordionopened = cm.accordionopened;
+				ud.assmnt = cm.assessmentdata();
+			}
+			undo_data.nodes.push(ud);
+			undo_data.clusters = NodeCluster.structuredata(rn.project);
+			new Transaction('nodeCreateDelete', undo_data, do_data, _("Change type"));
+		};
+	}
+	$('#mi_cttWLS').on('mouseup', ctfunction('tWLS'));
+	$('#mi_cttWRD').on('mouseup', ctfunction('tWRD'));
+	$('#mi_cttEQT').on('mouseup', ctfunction('tEQT'));
+	$('#mi_cttACT').on('mouseup', ctfunction('tACT'));
+	$('#mi_cttUNK').on('mouseup', ctfunction('tUNK'));
+
 	$('#mi_rc').on('mouseup', function() {
 		$('#nodemenu').hide();
 		var rn = Node.get( $('#nodemenu').data('menunode') );
@@ -2971,9 +3464,8 @@ function initTabDiagrams() {
 			text: _("Change name"),
 			click: function() {
 					var name = $('#field_componentrename');
-					cm.changetitle(name.val());
+					cm.changeclasstitle(name.val());
 					$(this).dialog('close');
-					transactionCompleted("Component class rename");
 				}
 		});
 		dialog.dialog({
@@ -2983,13 +3475,13 @@ function initTabDiagrams() {
 			width: 350,
 			height: 130,
 			buttons: dbuttons,
+			classes: {"ui-dialog-titlebar": "ui-corner-top"},
 			open: function() {
 				$('#field_componentrename').focus().select();
 				$('#form_componentrename').submit(function() {
 					var name = $('#field_componentrename');
-					cm.changetitle(name.val());
+					cm.changeclasstitle(name.val());
 					dialog.dialog('close');
-					transactionCompleted("Component class rename");
 				});
 			},
 			close: function(/*event, ui*/) {
@@ -3024,7 +3516,6 @@ function initTabDiagrams() {
 					var name = $('#field_suffixrename');
 					rn.changesuffix(name.val());
 					$(this).dialog('close');
-					transactionCompleted("Node suffix rename");
 				}
 		});
 		dialog.dialog({
@@ -3034,13 +3525,13 @@ function initTabDiagrams() {
 			width: 350,
 			height: 130,
 			buttons: dbuttons,
+			classes: {"ui-dialog-titlebar": "ui-corner-top"},
 			open: function() {
 				$('#field_suffixrename').focus().select();
 				$('#form_suffixrename').submit(function() {
 					var name = $('#field_suffixrename');
 					rn.changesuffix(name.val());
 					dialog.dialog('close');
-					transactionCompleted("Node suffix rename");
 				});
 			},
 			close: function(/*event, ui*/) {
@@ -3050,48 +3541,100 @@ function initTabDiagrams() {
 	});
 	$('#mi_sm').on('mouseup', function() {
 		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
+		let rn = Node.get( $('#nodemenu').data('menunode') );
 		// Actors and notes don't have components
 		if (rn.component==null)  return;
 
-		var cm = Component.get(rn.component);
-		cm.setsingle(cm.single==false);
-		transactionCompleted("Component class single/multiple");
-	});
-	$('#mi_du').on('mouseup', function() {
-		$('#nodemenu').hide();
-		var rn = Node.get( $('#nodemenu').data('menunode') );
-		if (rn.component!=null) {
-			var cm = Component.get(rn.component);
-			if (cm.single) {
-				// A component marked 'single' cannot be duplicated, as it would create a second
-				// instance within the same diagram.
+		let cm = Component.get(rn.component);
+		if (!cm.single) {
+			// Only allow Class to become singular iff there is at most one member node per service
+			let count = {};
+			for (const s of Project.get(cm.project).services) count[s]=0;
+			for (const n of cm.nodes) count[Node.get(n).service]++;
+			for (const s in count) {
+				if(count[s]<2) continue;
+				// Flash the offending nodes
+				for (const n of cm.nodes) $('#node'+n).effect('pulsate', { times:2 }, 800);
 				return;
 			}
 		}
-		var nn = new Node(rn.type);
-		nn.changetitle(rn.title);
-		var fh = $('.fancyworkspace').height();
-		var fw = $('.fancyworkspace').width();
-		// Duplicate size and width, but offset the position
-		nn.position.width = rn.position.width;
-		nn.position.height = rn.position.height;
-		nn._normw = rn._normw;
-		nn._normh = rn._normh;
-		nn.paint();
-		nn.setposition(
-			(rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70),
-			(rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30)
+		new Transaction('classSingular',
+			[{id: cm.id, singular: cm.single}],
+			[{id: cm.id, singular: cm.single==false}],
+			_("singular/class")
 		);
-		nn.setlabel(rn.color);
-		transactionCompleted("Node duplicate");
+	});
+	$('#mi_du').on('mouseup', function() {
+		$('#nodemenu').hide();
+		let fh = $('.fancyworkspace').height();
+		let fw = $('.fancyworkspace').width();
+		var rn = Node.get( $('#nodemenu').data('menunode') );
+		let newid = createUUID();
+		let cm = Component.get(rn.component);
+
+		if (cm && cm.single) {
+			// A component marked 'single' cannot be duplicated, as it would create a second
+			// instance within the same diagram.
+			return;
+		}
+
+		if (rn.type=='tNOT' || rn.type=='tACT') {
+			new Transaction('nodeCreateDelete', {
+					nodes: [{id: newid}],
+					clusters: []
+				}, {
+					nodes: [{
+						id: newid,
+						type: rn.type,
+						service: rn.service,
+						title: Node.autotitle(rn.type,rn.title),
+						x: (rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70) + Math.random()*20 - 10,
+						y: (rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30) + Math.random()*20 - 10,
+						width: rn.position.width,
+						height: rn.position.height,
+						label: rn.color,
+						connect: []
+					}],
+					clusters: []
+				},
+				_("Duplicate node")
+			);
+			return;
+		}
+
+		new Transaction('nodeCreateDelete', {
+				nodes: [{id: newid}],
+				clusters: []
+			}, {
+				nodes: [{
+					id: newid,
+					type: rn.type,
+					service: rn.service,
+					title: rn.title,
+					suffix: cm.newsuffix(),
+					x: (rn.position.x > fw/2 ? rn.position.x-70 : rn.position.x+70) + Math.random()*20 - 10,
+					y: (rn.position.y > fh/2 ? rn.position.y-30 : rn.position.y+30) + Math.random()*20 - 10,
+					component: rn.component,
+					width: rn.position.width,
+					height: rn.position.height,
+					label: rn.color,
+					icon: rn.icon,
+					connect: []
+				}],
+				clusters: []
+			},
+			_("Duplicate")
+		);
 	});
 	function colorfunc(c) {
 		return function() {
 			$('#nodemenu').hide();
 			var rn = Node.get( $('#nodemenu').data('menunode') );
-			rn.setlabel(c);
-			transactionCompleted("Node change color "+c);
+			new Transaction('nodeLabel',
+				[{id: rn.id, label: rn.color}],
+				[{id: rn.id, label: c}],
+				_("Change color to %%",c)
+			);
 		};
 	}
 	$('#mi_ccnone').on('mouseup', colorfunc('none') );
@@ -3107,49 +3650,85 @@ function initTabDiagrams() {
 	$('#mi_de').on('mouseup', function() {
 		$('#nodemenu').hide();
 		var rn = Node.get( $('#nodemenu').data('menunode') );
-		rasterConfirm(_("Delete element node?"),
-			_("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
-			_("Delete"),_("Cancel"),
-			function() {
-				rn.destroy();
-				transactionCompleted("Node delete");
-			}
-			);
+//		rasterConfirm(_("Delete element node?"),
+//			_("Are you sure you want to delete %% '%%'?", (rn.type=='tNOT'? _("note") : _("node") ), rn.htmltitle()),
+//			_("Delete"),_("Cancel"),
+//			function() {
+				if (rn.type=='tNOT' || rn.type=='tACT') {
+					new Transaction('nodeCreateDelete', {
+							nodes: [{
+								id: rn.id,
+								type: rn.type,
+								service: rn.service,
+								title: rn.title,
+								x: rn.position.x,
+								y: rn.position.y,
+								width: rn.position.width,
+								height: rn.position.height,
+								label: rn.color,
+								connect: rn.connect.slice()
+								}],
+							clusters: []
+						}, {
+							nodes: [{id: rn.id}],
+							clusters: []
+						},
+						_("Delete node")
+					);
+					return;
+				}
+
+				let cm = Component.get(rn.component);
+				new Transaction('nodeCreateDelete', {
+						nodes: [{
+							id: rn.id,
+							type: rn.type,
+							service: rn.service,
+							title: rn.title,
+							suffix: rn.suffix,
+							x: rn.position.x,
+							y: rn.position.y,
+							component: rn.component,
+							assmnt: cm.assessmentdata(),
+							accordionopened: cm.accordionopened,
+							single: (cm.single ? cm.nodes[0] : false),
+							width: rn.position.width,
+							height: rn.position.height,
+							label: rn.color,
+							connect: rn.connect.slice()
+							}],
+						clusters: NodeCluster.structuredata(rn.project)
+					}, {
+						nodes: [{id: rn.id}],
+						clusters: []
+					},
+					_("Delete node")
+				);
+//			}
+//		);
 	});
 	$('#mi_sd').on('mouseup', function() {
-		var nodes = Node.nodesinselection();
-		var num = nodes.length;
+		let nodes = Node.nodesinselection();
+		let num = nodes.length;
 		$('#selectmenu').hide();
 		if (num==0) {
 			$('#selectrect').hide();
 			return;
 		}
 		// Start blinking
-		for (var i=0; i<num; i++) {
-			var rn = Node.get(nodes[i]);
-			$(rn.jnid).effect('pulsate', { times:10 }, 4000);
-		}
+		for (const n of nodes) $(Node.get(n).jnid).effect('pulsate', { times:10 }, 4000);
 		rasterConfirm(_("Delete %% %% in selection?", num, plural(_("node"),_("nodes"),num)),
-			_("Are you sure you want to delete all selected nodes?"),
+			_H("Are you sure you want to delete all selected nodes?"),
 			_("Delete %% %%", num, plural(_("node"),_("nodes"),num)),_("Cancel"),
 			function() {
 				// Stop any leftover pulsate effects
-				for (var i=0; i<num; i++) {
-					var rn = Node.get(nodes[i]);
-					$(rn.jnid).stop(true,true);
-				}
-				transactionCompleted("Node destroy selection");
-				Node.destroyselection();
+				for (const n of nodes) $(Node.get(n).jnid).stop(true,true);
+				nodesDelete(nodes, _("Delete selection"), false);
 				$('#selectrect').hide();
 			},
 			function() {
 				// Stop any leftover pulsate effects
-				for (var i=0; i<num; i++) {
-					var rn = Node.get(nodes[i]);
-					$(rn.jnid).stop(true,true);
-					$(rn.jnid).show().css("opacity","");
-				}
-				$('#selectrect').hide();
+				for (const n of nodes) $(Node.get(n).jnid).stop(true,true).show().css("opacity","");
 			});
 	});
 	$('#mi_sc').on('mouseenter',function(){
@@ -3160,20 +3739,20 @@ function initTabDiagrams() {
 	});
 	function selcolorfunc(c) {
 		return function() {
-			var nodes = Node.nodesinselection();
-			var num = nodes.length;
+			let nodes = Node.nodesinselection();
 			$('#selectmenu').hide();
-			if (num==0) {
+			if (nodes.length==0) {
 				$('#selectrect').hide();
 				return;
 			}
-			for (var i=0; i<num; i++) {
-				var rn = Node.get(nodes[i]);
-				if (rn.type!='tNOT') {
-					rn.setlabel(c);
-				}
+			let undo_data = [];
+			let data = [];
+			for (const n of nodes) {
+				let rn = Node.get(n);
+				undo_data.push({id: n, label: rn.color});
+				data.push({id: n, label: c});
 			}
-			transactionCompleted("Node change selection color "+c);
+			new Transaction('nodeLabel', undo_data, data, _("Change color to %%",c));
 		};
 	}
 	$('#mi_scnone').on('mouseup', selcolorfunc('none') );
@@ -3189,83 +3768,165 @@ function initTabDiagrams() {
 
 	var addhandler = function(typ) {
 		return function() {
-			var t = new Threat(typ);
-			var p = Project.get( Project.cid );
-			p.addthreat(t.id);
-			t.addtablerow("#"+typ+"threats");
-			// Apply the change to all components of matching type
-			var it = new ComponentIterator({project: p.id, match: typ});
-			for (it.first(); it.notlast(); it.next()) {
-				var cm = it.getcomponent();
-				var ta = new ThreatAssessment(typ);
-				ta.settitle(t.title);
-				ta.setdescription(t.description);
-				cm.addthrass(ta);
-			}
-			// Start editing the name of the new vulnerability
-			$('#thname'+t.id).click();
-			refreshThreatsDialog();
-			transactionCompleted("Checklist vuln add");
-		};
-	};
-	var copyhandler = function(typ) {
-		return function() {
-			ThreatAssessment.Clipboard = [];
-			var it = new ThreatIterator(Project.cid,typ);
-			for (it.first(); it.notlast(); it.next()) {
-				var th = it.getthreat();
-				ThreatAssessment.Clipboard.push({t: th.title, y: th.type, d: th.description, p: '-', i: '-', r: ''});
-			}
-		};
-	};
-	var pastehandler = function(typ) {
-		return function() {
-			var it = new ThreatIterator(Project.cid,typ);
-			var newth = [];
-			for (var j=0; j<ThreatAssessment.Clipboard.length; j++) {
-				// Check whether a threat with same title already exists
-				for (it.first(); it.notlast(); it.next()) {
-					var th = it.getthreat();
-					if (ThreatAssessment.Clipboard[j].t==th.title) break;
+			// To create a new common vulnerability:
+			// - create the vulnerability
+			// - add a corresponding assessment to all matching components for the vulnerability type
+			let vid = createUUID();
+			let clid = createUUID();
+			let claid = createUUID();
+			let p = Project.get(Project.cid);
+			let newtitle = Vulnerability.autotitle(p.id);
+			let it = new ComponentIterator({project: p.id, match: typ});
+			let chain = (it.count()>0);
+			new Transaction('vulnCreateDelete',[{
+					create: false,
+					id: vid
+				}],[{
+					create: true,
+					id: vid,
+					project: p.id,
+					type: typ,
+					title: newtitle,
+					description: "",
+					common: true,
+					cluster: clid,
+					cla: claid
+				}],_("Add vulnerability '%%'",newtitle),chain);
+			
+			if (chain) {
+				let do_data = {create: true, vuln: vid, assmnt: [], clid: clid};
+				let undo_data = {create: false, vuln: vid, assmnt: [], clid: clid};
+				for (const cm of it) {
+					let aid = createUUID();
+					do_data.assmnt.push({id: aid, component: cm.id});
+					undo_data.assmnt.push({id: aid});
 				}
-
-				if (it.notlast()) {
-					// Paste into existing threat
-					th.setdescription(ThreatAssessment.Clipboard[j].d);
-					$('#threat'+th.id).remove();
-					th.addtablerow('#'+typ+'threats');
-				} else {
-					// Create a new threat
-					th = new Threat(typ);  // Ignore the type in the Clipboard. Must always be typ.
-					th.settitle(ThreatAssessment.Clipboard[j].t);
-					th.setdescription(ThreatAssessment.Clipboard[j].d);
-					Project.get(Project.cid).addthreat(th.id);
-					newth.push(th.id);
-				}
+				new Transaction('assmCreateDelete', [undo_data], [do_data], _("Add vulnerability '%%'",newtitle));
 			}
-			for (var i=0; i<newth.length; i++) {
-				th = Threat.get(newth[i]);
-				th.addtablerow('#'+typ+'threats');
-			}
-			transactionCompleted("Checklist vuln paste");
 		};
 	};
+//	var copyhandler = function(typ) {
+//		return function() {
+//			ThreatAssessment.Clipboard = [];
+//			var it = new VulnerabilityIterator(Project.cid,typ);
+//			for (const th of it) {
+//				ThreatAssessment.Clipboard.push({t: th.title, y: th.type, d: th.description, p: '-', i: '-', r: ''});
+//			}
+//		};
+//	};
+//	var pastehandler = function(typ) {
+//		return function() {
+//			var it = new VulnerabilityIterator(Project.cid,typ);
+//			var newth = [];
+//			for (const clip of ThreatAssessment.Clipboard) {
+//				// Check whether a threat with same title already exists
+//				let th;
+//				let found = false;
+//				for (th of it) {
+//					if (clip.t==th.title) {
+//						found = true;
+//						break;
+//					}
+//				}
+//
+//				if (found) {
+//					// Paste into existing threat
+//					th.setdescription(clip.d);
+//					$('#threat'+th.id).remove();
+//					th.addtablerow('#'+typ+'threats');
+//				} else {
+//					// Create a new threat
+//					th = new Threat(Project.cid,typ);  // Ignore the type in the Clipboard. Must always be typ.
+//					th.settitle(clip.t);
+//					th.setdescription(clip.d);
+//					Project.get(Project.cid).addthreat(th.id);
+//					newth.push(th.id);
+//				}
+//			}
+//			for (const th of newth) Threat.get(th).addtablerow('#'+typ+'threats');
+//			transactionCompleted("Checklist vuln paste");
+//		};
+//	};
 
-	$('#tWLSaddthreat').on('click', addhandler('tWLS'));
-	$('#tWLScopythreat').on('click', copyhandler('tWLS'));
-	$('#tWLSpastethreat').on('click', pastehandler('tWLS'));
-
-	$('#tWRDaddthreat').on('click', addhandler('tWRD'));
-	$('#tWRDcopythreat').on('click', copyhandler('tWRD'));
-	$('#tWRDpastethreat').on('click', pastehandler('tWRD'));
-
-	$('#tEQTaddthreat').on('click', addhandler('tEQT'));
-	$('#tEQTcopythreat').on('click', copyhandler('tEQT'));
-	$('#tEQTpastethreat').on('click', pastehandler('tEQT'));
-
+	for (const t of ['tWLS','tWRD','tEQT']) {
+		$('#'+t+'addthreat').on('click', addhandler(t));
+//		$('#'+t+'copythreat').on('click', copyhandler(t));
+//		$('#'+t+'pastethreat').on('click', pastehandler(t));
+	}
 	if (DEBUG && !Rules.consistent()) {
 		bugreport('the rules are not internally consistent','initTabDiagrams');
 	}
+}
+
+function showSelectMenu(e) {
+	e.preventDefault();
+	$('#selectmenu').menu('collapseAll');
+	if (Node.nodesinselection().length==0) {
+		$('#mi_sc').addClass('ui-state-disabled');
+		$('#mi_sd').addClass('ui-state-disabled');
+	} else {
+		$('#mi_sc').removeClass('ui-state-disabled');
+		$('#mi_sd').removeClass('ui-state-disabled');
+	}
+	$('#selectmenu').show();
+	$('#selectmenu').position({
+		my: "left top",
+		at: "left+" + e.pageX + "px top+" + e.pageY + "px",
+		of: "body",
+		collision: "fit"
+	});
+	return false;
+}
+	
+/* nodesDelete: create a transaction to delete multiple nodes
+ * nodes: array of Node IDs
+ * descr: description of the transaction
+ * chain: the chain-attribute of the transaction
+ */
+function nodesDelete(nodes,descr,chain) {
+	let pid = Node.get(nodes[0]).project;
+	let do_data={nodes: [], clusters: []}, undo_data={nodes: [], clusters: []};
+	for (const n of nodes) {
+		let rn = Node.get(n);
+		if (rn.type=='tNOT' || rn.type=='tACT') {
+			undo_data.nodes.push({
+				id: rn.id,
+				type: rn.type,
+				service: rn.service,
+				title: rn.title,
+				x: rn.position.x,
+				y: rn.position.y,
+				width: rn.position.width,
+				height: rn.position.height,
+				label: rn.color,
+				connect: rn.connect.slice()
+			});
+			do_data.nodes.push({id: rn.id});
+			continue;
+		}
+
+		let cm = Component.get(rn.component);
+		undo_data.nodes.push({
+			id: rn.id,
+			type: rn.type,
+			service: rn.service,
+			title: rn.title,
+			suffix: rn.suffix,
+			x: rn.position.x,
+			y: rn.position.y,
+			component: rn.component,
+			assmnt: cm.assessmentdata(),
+			accordionopened: cm.accordionopened,
+			single: (cm.single ? cm.nodes[0] : false),
+			width: rn.position.width,
+			height: rn.position.height,
+			label: rn.color,
+			connect: rn.connect.slice()
+		});
+		do_data.nodes.push({id: rn.id});
+	}
+	undo_data.clusters = NodeCluster.structuredata(pid);
+	new Transaction('nodeCreateDelete', undo_data, do_data, descr, chain);
 }
 
 function initChecklistsDialog(type) {
@@ -3274,33 +3935,42 @@ function initChecklistsDialog(type) {
 	var offsets = {'tWLS': 100, 'tWRD': 130, 'tEQT': 160};
 	$('#checklist_'+type).dialog({
 		title: _("Common vulnerabilities for all nodes of type '%%'", Rules.nodetypes[type]),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		closeOnEscape: false,
-		minWidth: 725,
+		minWidth: 790,
 		minHeight: 180,
-		position: {my: 'left+'+(offsets[type]+50)+' top+'+offsets[type], at: 'left top', of: '#tabs', collision: 'fit'},
-		autoOpen: false
+		position: {my: 'left+'+(offsets[type]+50)+' top+'+offsets[type], at: 'left top', of: '#workspace', collision: 'fit'},
+		autoOpen: false,
+		create: function() {
+			// Add vulnerability
+			$(`<div id="${type}addthreat" class="titlebarbutton"></div>`)
+			.appendTo($(this).dialog('widget').children('.ui-dialog-titlebar'));
+			$(`#${type}addthreat`).button({label: _("+ Add vulnerability")});
+		},
+		close: function() {
+		}
 	});
 }
 
 function populateLabelMenu() {
 	var p = Project.get(Project.cid);
-	$('#mi_ccred span.lc:first').html( '"' + H(p.labels[0]) + '"' );
-	$('#mi_ccorange span.lc:first').html( '"' + H(p.labels[1]) + '"' );
-	$('#mi_ccyellow span.lc:first').html( '"' + H(p.labels[2]) + '"' );
-	$('#mi_ccgreen span.lc:first').html( '"' + H(p.labels[3]) + '"' );
-	$('#mi_ccblue span.lc:first').html( '"' + H(p.labels[4]) + '"' );
-	$('#mi_ccpink span.lc:first').html( '"' + H(p.labels[5]) + '"' );
-	$('#mi_ccpurple span.lc:first').html( '"' + H(p.labels[6]) + '"' );
-	$('#mi_ccgrey span.lc:first').html( '"' + H(p.labels[7]) + '"' );
+	$('#mi_ccred span').text( '"' + H(p.labels[0]) + '"' );
+	$('#mi_ccorange span').text( '"' + H(p.labels[1]) + '"' );
+	$('#mi_ccyellow span').text( '"' + H(p.labels[2]) + '"' );
+	$('#mi_ccgreen span').text( '"' + H(p.labels[3]) + '"' );
+	$('#mi_ccblue span').text( '"' + H(p.labels[4]) + '"' );
+	$('#mi_ccpink span').text( '"' + H(p.labels[5]) + '"' );
+	$('#mi_ccpurple span').text( '"' + H(p.labels[6]) + '"' );
+	$('#mi_ccgrey span').text( '"' + H(p.labels[7]) + '"' );
 
-	$('#mi_scred span.lc:first').html( '"' + H(p.labels[0]) + '"' );
-	$('#mi_scorange span.lc:first').html( '"' + H(p.labels[1]) + '"' );
-	$('#mi_scyellow span.lc:first').html( '"' + H(p.labels[2]) + '"' );
-	$('#mi_scgreen span.lc:first').html( '"' + H(p.labels[3]) + '"' );
-	$('#mi_scblue span.lc:first').html( '"' + H(p.labels[4]) + '"' );
-	$('#mi_scpink span.lc:first').html( '"' + H(p.labels[5]) + '"' );
-	$('#mi_scpurple span.lc:first').html( '"' + H(p.labels[6]) + '"' );
-	$('#mi_scgrey span.lc:first').html( '"' + H(p.labels[7]) + '"' );
+	$('#mi_scred span').text( '"' + H(p.labels[0]) + '"' );
+	$('#mi_scorange span').text( '"' + H(p.labels[1]) + '"' );
+	$('#mi_scyellow span').text( '"' + H(p.labels[2]) + '"' );
+	$('#mi_scgreen span').text( '"' + H(p.labels[3]) + '"' );
+	$('#mi_scblue span').text( '"' + H(p.labels[4]) + '"' );
+	$('#mi_scpink span').text( '"' + H(p.labels[5]) + '"' );
+	$('#mi_scpurple span').text( '"' + H(p.labels[6]) + '"' );
+	$('#mi_scgrey span').text( '"' + H(p.labels[7]) + '"' );
 }
 
 function showLabelEditForm() {
@@ -3338,27 +4008,31 @@ function showLabelEditForm() {
 	dbuttons.push({
 		text: _("Done"),
 		click: function() {
-				p.labels[0] = trimwhitespace(String($('#field_red').val())).substr(0,50);
-				p.labels[1] = trimwhitespace(String($('#field_orange').val())).substr(0,50);
-				p.labels[2] = trimwhitespace(String($('#field_yellow').val())).substr(0,50);
-				p.labels[3] = trimwhitespace(String($('#field_green').val())).substr(0,50);
-				p.labels[4] = trimwhitespace(String($('#field_blue').val())).substr(0,50);
-				p.labels[5] = trimwhitespace(String($('#field_pink').val())).substr(0,50);
-				p.labels[6] = trimwhitespace(String($('#field_purple').val())).substr(0,50);
-				p.labels[7] = trimwhitespace(String($('#field_grey').val())).substr(0,50);
+			let newlabels = [];
+			newlabels[0] = String($('#field_red').val()).trim().substr(0,50);
+			newlabels[1] = String($('#field_orange').val()).trim().substr(0,50);
+			newlabels[2] = String($('#field_yellow').val()).trim().substr(0,50);
+			newlabels[3] = String($('#field_green').val()).trim().substr(0,50);
+			newlabels[4] = String($('#field_blue').val()).trim().substr(0,50);
+			newlabels[5] = String($('#field_pink').val()).trim().substr(0,50);
+			newlabels[6] = String($('#field_purple').val()).trim().substr(0,50);
+			newlabels[7] = String($('#field_grey').val()).trim().substr(0,50);
 				for (var i=0; i<=7; i++) {
-					if (p.labels[i]=="") {
-						p.labels[i] = Project.defaultlabels[i];
+					if (newlabels[i]=="") {
+						newlabels[i] = Project.defaultlabels[i];
 					}
 				}
-				p.store();
-				$(this).dialog('close');
-				transactionCompleted("Label edit");
-				$(this).remove();
-			}
+			new Transaction('labelEdit',
+				[{id: p.id, labels: p.labels}],
+				[{id: p.id, labels: newlabels}],
+				_("Edit labels")
+			);
+			$(this).remove();
+		}
 	});
 	dialog.dialog({
 		title: _("Edit labels"),
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
 		modal: true,
 		width: 285,
 		height: 320,
@@ -3366,35 +4040,63 @@ function showLabelEditForm() {
 	});
 }
 
-function workspacedrophandler(event, ui) {
+function workspacedrophandler(event, ui) {		// eslint-disable-line no-unused-vars
+	let typ = ui.draggable[0].id;
 	// The id of the template must be a valid type
-	if (!Rules.nodetypes[ui.draggable[0].id]) {
+	if (!Rules.nodetypes[typ]) {
 		bugreport('object with unknown type','workspacedrophandler');
 	}
-	var rn = new Node(ui.draggable[0].id);
-	/* 50 = half the width of a div.node; 10 = half the height
-	 * The center of the new Node is therefore roughly on the the drop spot.
-	 */
-	rn.autosettitle();
-	var r = $('#tab_diagrams').offset();
-	rn.paint();
-	rn.setposition(
-		event.originalEvent.pageX-50-r.left+$('#diagrams'+Service.cid).scrollLeft(),
-		event.originalEvent.pageY-10-r.top +$('#diagrams'+Service.cid).scrollTop()
-	);
-	// Now we now the width and height. Adjust the position if necessary.
-	rn.setposition(rn.position.x,rn.position.y);
-	$('.tC').css('visibility','hidden');
-	transactionCompleted("Node add");
+
+	$('.tC').hide();
+
+	let newid = createUUID();
+	let newtitle = Node.autotitle(typ);
+	let r = $('#tab_diagrams').offset();
+	let newx = event.originalEvent.pageX-50-r.left+$('#tab_diagrams'+Service.cid).scrollLeft();
+	let newy = event.originalEvent.pageY-10-r.top +$('#tab_diagrams'+Service.cid).scrollTop();
+
+	if (typ=='tNOT' || typ=='tACT') {
+		new Transaction('nodeCreateDelete',
+			{nodes: [{id: newid}], clusters: []},
+			{nodes: [{
+				id: newid,
+				type: typ,
+				service: Service.cid,
+				title: newtitle,
+				x: newx,
+				y: newy,
+				width: (typ=='tNOT'?100:null),
+				height: (typ=='tNOT'?50:null)
+				}], clusters: []},
+			_("New node")
+		);
+	} else {
+		let project = Project.get(Project.cid);
+		new Transaction('nodeCreateDelete',
+			{nodes: [{id: newid}], clusters: []},
+			{ nodes: [{
+				id: newid,
+				type: typ,
+				service: Service.cid,
+				title: newtitle,
+				x: newx,
+				y: newy,
+				component: createUUID(),
+				assmnt: project.defaultassessmentdata(typ)
+				}], clusters: []},
+			_("New node")
+		);
+	}
 }
 
-function refreshThreatsDialog(force) {
+function refreshComponentThreatAssessmentsDialog(force) {
 	if (!$('#componentthreats').dialog('isOpen') && force!==true)  return;
 
-	// Dialog is open, nog repaint its contents
+	// Dialog is open, now repaint its contents
 	var c = Component.get(Component.ThreatsComponent);
 	var snippet = '<div id="dialogthreatlist">\
 		<div class="threat">\
+		<div class="th_mal th_col thr_header">_LM_</div>\
 		<div class="th_name th_col thr_header">_LN_</div>\
 		<div class="th_freq th_col thr_header">_LF_</div>\
 		<div class="th_impact th_col thr_header">_LI_</div>\
@@ -3402,92 +4104,95 @@ function refreshThreatsDialog(force) {
 		<div class="th_remark th_col thr_header">_LR_</div>\
 		</div>\
 		<div id="threats_CI_" class="threats"></div>\
-		<input id="dthadddia_CI_" class="addthreatbutton" type="button" value="_BA_">\
-		<input id="dthcopydia_CI_" class="copybutton" type="button" value="_BC_">\
-		<input id="dthpastedia_CI_" class="pastebutton" type="button" value="_BP_">\
 		</div>';
-	snippet = snippet.replace(/_LN_/g, _("Name"));
-	snippet = snippet.replace(/_LF_/g, _("Freq."));
-	snippet = snippet.replace(/_LI_/g, _("Impact"));
-	snippet = snippet.replace(/_LT_/g, _("Total"));
-	snippet = snippet.replace(/_LR_/g, _("Remark"));
-	snippet = snippet.replace(/_BA_/g, _("+ Add vulnerability"));
-	snippet = snippet.replace(/_BC_/g, _("Copy"));
-	snippet = snippet.replace(/_BP_/g, _("Paste"));
+	snippet = snippet.replace(/_LM_/g, _H("Cause"));
+	snippet = snippet.replace(/_LN_/g, _H("Name"));
+	snippet = snippet.replace(/_LF_/g, _H("Freq"));
+	snippet = snippet.replace(/_LI_/g, _H("Impact"));
+	snippet = snippet.replace(/_LT_/g, _H("Total"));
+	snippet = snippet.replace(/_LR_/g, _H("Remark"));
+	snippet = snippet.replace(/_BA_/g, _H("+ Add vulnerability"));
+	snippet = snippet.replace(/_BC_/g, _H("Copy"));
+	snippet = snippet.replace(/_BP_/g, _H("Paste"));
 	snippet = snippet.replace(/_CI_/g, c.id);
 	$('#componentthreats').html(snippet);
 	c.setmarkeroid(null);
 
-	for (var i=0; i<c.thrass.length; i++) {
-		if (c.thrass[i]==null) continue;
-		var th = ThreatAssessment.get(c.thrass[i]);
-		th.addtablerow('#threats'+c.id,'dia');
+	for (const th of c.assmnt) {
+		if (th==null) continue;
+		Assessment.get(th).addtablerow('#threats'+c.id,'dia');
 	}
-	$('#dthadddia'+c.id).button();
-	$('#dthcopydia'+c.id).button();
-	$('#dthpastedia'+c.id).button();
-	$('#dthadddia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthcopydia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthpastedia'+c.id).removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#dthadddia'+c.id).on('click',  function() {
-		var c = Component.get(nid2id(this.id));
-		var th = new ThreatAssessment((c.type=='tUNK' ? 'tEQT' : c.type));
-		c.addthrass(th);
-		th.addtablerow('#threats'+c.id,'dia');
-		transactionCompleted("Vuln add");
-	});
-	$('#dthcopydia'+c.id).on('click',  function() {
-		var cm = Component.get(nid2id(this.id));
-		ThreatAssessment.Clipboard = [];
-		for (var i=0; i<cm.thrass.length; i++) {
-			var te = ThreatAssessment.get(cm.thrass[i]);
-			ThreatAssessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
-		}
-	});
-	$('#dthpastedia'+c.id).on('click',  function() {
-		var cm = Component.get(nid2id(this.id));
-		var newte = cm.mergeclipboard();
-		for (i=0; i<cm.thrass.length; i++) {
-			th = ThreatAssessment.get(cm.thrass[i]);
-			if (newte.indexOf(cm.thrass[i])==-1) {
-				$('#dthdia_'+th.id).remove();
-			}
-			th.addtablerow('#threats'+cm.id,'dia');
-		}
-		cm.setmarker();
-		transactionCompleted("Vuln paste");
-	});
+	$('.malset label').removeClass('ui-corner-left ui-corner-right');
+
 	$('#threats'+c.id).sortable({
 		containment: 'parent',
 		helper: 'clone',
 		cursor: 'ns-resize',
 		deactivate: function(/*event,ui*/) {
 			var newlist = [];
-			for (var i=0; i<this.children.length; i++) {
-				newlist.push( nid2id(this.children[i].id) );
+			for (const ch of this.children) newlist.push(nid2id(ch.id));
+			if (newlist.length != c.assmnt.length) {
+				bugreport("internal error in sorting","refreshComponentThreatAssessmentsDialog");
 			}
-			if (newlist.length != c.thrass.length) {
-				bugreport("internal error in sorting","refreshThreatsDialog");
-			}
-			c.thrass = newlist;
-			c.store();
-			transactionCompleted("Reorder thrass of component "+c.id);
+			if (c.assmnt.every( (v,i) => (newlist[i]==v) )) return; // Return if no change
+			new Transaction('compAssmntsReorder',
+				[{id: c.id, assmnt: c.assmnt}],
+				[{id: c.id, assmnt: newlist}],
+				_("Reorder vulnerabilities of "+H(c.title)));
 		}
 	});
 }
 
-function displayThreatsDialog(cid,where) {
+function addvulnhandler(cid) {
+	let c = Component.get(cid);
+	let vid = createUUID();
+	let aid = createUUID();
+	let clid = createUUID();
+	let claid = createUUID();
+	let ntitle = Vulnerability.autotitle(c.project);
+	new Transaction('vulnCreateDelete',[{
+			create: false,
+			id: vid
+		}],[{
+			create: true,
+			id: vid,
+			project: c.project,
+			type: (c.type=='tUNK' ? 'tEQT' : c.type),
+			title: ntitle,
+			description: "",
+			common: false,
+			cluster: clid,
+			cla: claid,
+			index: 0
+		}],_("New vulnerability"),true);
+	new Transaction('assmCreateDelete',
+		[{
+			create: false,
+			assmnt: [{id: aid}],
+			clid: clid
+		}],
+		[{
+			create: true,
+			vuln: vid,
+			assmnt: [{id: aid, component: c.id}],
+			clid: clid
+		}],
+		 _("New vulnerability")
+	);
+}
+	
+function displayComponentThreatAssessmentsDialog(cid,where) {
 	var c = Component.get(cid);
 	Component.ThreatsComponent = cid;
 
 	if ($('#componentthreats').dialog('isOpen')) {
 		$('#componentthreats').dialog('close');
 	}
-	refreshThreatsDialog(true);
+	refreshComponentThreatAssessmentsDialog(true);
 	$('#componentthreats').dialog({
 		title: _("Vulnerability assessment for '%%'", c.title) + (c.nodes.length>1 ? _(" (%% nodes)", c.nodes.length) : ""),
-		position: {my: 'left top', at: 'right', of: where, collision: 'fit'},
-		closeOnEscape: false
+		classes: {"ui-dialog-titlebar": "ui-corner-top"},
+		position: {my: 'left top', at: 'right', of: where, collision: 'fit'}
 	});
 	$('#componentthreats').dialog('open');
 	// First delete button gains focus, and is highlighted. Looks ugly.
@@ -3495,10 +4200,6 @@ function displayThreatsDialog(cid,where) {
 }
 
 function displayChecklistsDialog(type) {
-	$('#'+type+'addthreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#'+type+'copythreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#'+type+'pastethreat').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-
 	$("#checklist_"+type).dialog('open');
 	$('.checklist input').each( function () {
 		$(this).trigger('blur'); return true;
@@ -3511,7 +4212,7 @@ function displayChecklistsDialog(type) {
  * str: the joining word
  * E.g. arrayJoinAsString(["red","green","orange","blue"],"and") = "red, green, orange and blue"
  */
-function arrayJoinAsString(a,str) {
+function arrayJoinAsString(a,str) {		// eslint-disable-line no-unused-vars
 	if (a.length==0)  return _("(none)");
 	if (a.length==1)  return a[0];
 	var last = a.pop();
@@ -3521,156 +4222,90 @@ function arrayJoinAsString(a,str) {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
-/* * * * * * * * * * * * * * * * *|	  Single Faults	  |* * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * *|	  Single Faults         |* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * *+-------------------------+* * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 function initTabSingleFs() {
-	$('#singlefs_body').tabs({
+	$('#tab_singlefs').tabs({
 		activate: bottomTabsShowHandlerSFaults,
 		create: bottomTabsShowHandlerSFaults,
 		classes: {
 			"ui-tabs": "ui-corner-bottom ui-corner-tl",
 			"ui-tabs-nav": "ui-corner-bottom",
-			"ui-tabs-tab": "ui-corner-bottom",
-			"ui-tabs-panel": "ui-corner-asdf"
+			"ui-tabs-tab": "ui-corner-bottom"
 		}
 	});
-	$('#singlefs_body').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
-	$('#bottomtabssf').on('mouseenter', 'li', function(){
+	$('#tab_singlefs').on('click', 'span.tabcloseicon', bottomTabsCloseHandler);
+	$('#bottomtabssinglefs').on('mouseenter', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-close').addClass('ui-icon-circle-close');
 	});
-	$('#bottomtabssf').on('mouseleave', 'li', function(){
+	$('#bottomtabssinglefs').on('mouseleave', 'li', function(){
 		$(this).find('.tabcloseicon').removeClass('ui-icon-circle-close').addClass('ui-icon-close');
 	});
 
-	$('#servaddbuttonsf').on('click',  function() {
-		var p = Project.get( Project.cid );
-		var s = new Service();
-		p.addservice(s.id);
-		s.autosettitle();
-		s.load();
-		$('#singlefstabtitle'+s.id).trigger('click');
-		transactionCompleted("Service add");
-	});
 }
 
-var SFSortOpt = 'alph';
-
+/* paintSingleFailures(s): paint the contents of a single SF tab
+ * s: the Service to be painted.
+ */
 function paintSingleFailures(s) {
-	var appendstring = "";
+	var snippet, appendstring = "";
 	$('#singlefs_workspace'+s.id).empty();
 
 	var it = new ComponentIterator({service: s.id});
-	it.first();
-	if (!it.notlast()) {
+	if (it.isEmpty()) {
 		$('#singlefs_workspace'+s.id).append(
 			'<p class="firstp sfaccordion">'
 			+ _("This space will show all vulnerability evaluations for the components in this service. ")
 			+ _("Since this diagram for this service is empty, there is nothing to see here yet. ")
 			+ _("Add some nodes to the diagrams first.")
 		);
+		$('#sfexpandall').button('disable');
+		$('#sfcollapseall').button('disable');
+		$('input[name=sfsort]').checkboxradio('disable');
 		return;
 	}
+	$('#sfexpandall').button('enable');
+	$('#sfcollapseall').button('enable');
+	$('input[name=sfsort]').checkboxradio('enable');
 
 	// Adding elements to the DOM is slow, so it is best to do it all at
 	// once, rather than piece by piece.
 	// First collect the bulk of the DOM elements to be appended. Then loop
 	// over the components again, adding the vulnerabilities to them, and adding
 	// behaviour stuff.
-	snippet = '\
-		<div id="somesf_SV_" class="displayoptsarea donotprint">\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L1_</span><br>\n\
-			<span id="expandallsf_SV_">_EA_</span>\n\
-			<span id="collapseallsf_SV_" class="collapseall">_CA_</span>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L2_</span><br>\n\
-			<fieldset>\n\
-				<input type="radio" id="sfsort_alph_SV_" name="sfsort_SV_"><label for="sfsort_alph_SV_">_O1_</label>\n\
-				<input type="radio" id="sfsort_type_SV_" name="sfsort_SV_"><label for="sfsort_type_SV_">_O2_</label>\n\
-				<input type="radio" id="sfsort_thrt_SV_" name="sfsort_SV_"><label for="sfsort_thrt_SV_">_O3_</label>\n\
-			</fieldset>\n\
-		  </div>\n\
-		</div>\
-		<div id="sfacclist_SV_" class="sfacclist">\
-		</div>\
-	';
-	snippet = snippet.replace(/_L1_/g, _("Fold:"));
-	snippet = snippet.replace(/_EA_/g, _("Expand all"));
-	snippet = snippet.replace(/_CA_/g, _("Collapse all"));
-	snippet = snippet.replace(/_L2_/g, _("Sort:"));
-	snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
-	snippet = snippet.replace(/_O2_/g, _("by Type"));
-	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
-	snippet = snippet.replace(/_SN_/g, H(s.title));
-	snippet = snippet.replace(/_SV_/g, s.id);
-	snippet = snippet.replace(/_PN_/g, H(Project.get(s.project).title));
-	snippet = snippet.replace(/_PJ_/g, s.project);
-	$('#singlefs_workspace'+s.id).append(snippet);
-	$('#somesf'+s.id).headroom({
-		scroller: document.querySelector('#singlefs_workspace'+s.id),
-		tolerance : {
-			up : 20,
-			down : 20
-		}
-	});
+	$('#singlefs_workspace'+s.id).append(`<div id="sfacclist${s.id}" class="sfacclist"></div>`);
 
-	$('#expandallsf'+s.id).button({icon: 'ui-icon-plus'});
-	$('#collapseallsf'+s.id).button({icon: 'ui-icon-minus'});
-	$('#somesf'+s.id+' input[type=radio]').checkboxradio({icon: false});
-	$('#somesf'+s.id+' fieldset').controlgroup();
-
-	$('#expandallsf'+s.id).on('click',  function(evt){
-		$('#singlefs_workspace'+s.id).scrollTop(0);
-		expandAllSingleF(nid2id(evt.target.id));
-	});
-	$('#collapseallsf'+s.id).on('click',  function(evt){
-		$('#singlefs_workspace'+s.id).scrollTop(0);
-		collapseAllSingleF(nid2id(evt.target.id));
-	});
-
-	var create_sf_sortfunc = function(opt,sid) {
-		return function(/*evt*/) {
-			SFSortOpt = opt;
-			paintSingleFailures(Service.get(sid));
-		};
-	};
-
-	$('[for=sfsort_alph'+s.id+']').on('click', create_sf_sortfunc('alph',s.id));
-	$('[for=sfsort_type'+s.id+']').on('click', create_sf_sortfunc('type',s.id));
-	$('[for=sfsort_thrt'+s.id+']').on('click', create_sf_sortfunc('thrt',s.id));
-
-	switch (SFSortOpt) {
+	let currorder = $('input[name=sfsort]:checked').val();
+	s.sfsortorder = currorder;
+	switch (currorder) {
 	case 'alph':
-		$('#sfsort_alph'+s.id).prop('checked',true);
-		it.sortByName();
+		it.sortByTitle();
 		break;
 	case 'type':
-		$('#sfsort_type'+s.id).prop('checked',true);
 		it.sortByType();
 		break;
 	case 'thrt':
-		$('#sfsort_thrt'+s.id).prop('checked',true);
 		it.sortByLevel();
 		break;
 	default:
 		bugreport("Unknown node sort option","paintSingleFailures");
 	}
-	$('#somesf'+s.id+' fieldset').controlgroup('refresh');
 
-	for (it.first(); it.notlast(); it.next()) {
-		var i;
-		var cm = it.getcomponent();
+	for (const cm of it) {
 		//if (cm.type=='tACT') continue;
-		var snippet = '\n\
+		snippet = '\n\
 		  <div id="sfaccordion_SV___ID_" class="sfaccordion">\n\
 			<h3><a href="#">_LSF_ "_TI_" (_TY__AP_) _LB_<span id="sfamark_SV___ID_"></span></a></h3>\n\
 			<div>\n\
+			 <div class="topbuttons donotprint"><div id="sfaadd_SV___ID_" class="addthreatbutton titlebarbutton">_BA_</div>\n\
+			 <div id="sfacopy_SV___ID_" class="copybutton titlebaricon" title="_BC_"><img src="../img/ccopy.png" alt="_BC_"></div>\n\
+			 <div id="sfapaste_SV___ID_" class="pastebutton titlebaricon" title="_BP_"><img src="../img/cpaste.png" alt="_BP_"></div></div>\n\
 			 <div id="sfa_SV___ID_">\n\
 			  <div class="threat">\n\
+			   <div class="th_mal th_col thr_header">_LC_</div>\n\
 			   <div class="th_name th_col thr_header">_LN_</div>\n\
 			   <div class="th_freq th_col thr_header">_LF_</div>\n\
 			   <div class="th_impact th_col thr_header">_LI_</div>\n\
@@ -3680,49 +4315,38 @@ function paintSingleFailures(s) {
 			 </div>\n\
 		';
 		snippet = snippet.replace(/_LSF_/g, _("Single failures for"));
+		snippet = snippet.replace(/_LC_/g, _("Cause"));
 		snippet = snippet.replace(/_LN_/g, _("Name"));
-		snippet = snippet.replace(/_LF_/g, _("Freq."));
+		snippet = snippet.replace(/_LF_/g, _("Freq"));
 		snippet = snippet.replace(/_LI_/g, _("Impact"));
 		snippet = snippet.replace(/_LT_/g, _("Total"));
 		snippet = snippet.replace(/_LR_/g, _("Remark"));
 
-		if (Preferences.label) {
-			var p = Project.get(cm.project);
-			var labels = [];
-			var str;
-			for (i=0; i<cm.nodes.length; i++) {
-				var rn = Node.get(cm.nodes[i]);
-				if (rn.color!='none' && labels.indexOf(rn.color)==-1) {
-					labels.push(rn.color);
-				}
+		var p = Project.get(cm.project);
+		var labels = [];
+		var str;
+		for (const n of cm.nodes) {
+			let rn = Node.get(n);
+			if (rn.color!='none' && labels.indexOf(rn.color)==-1) {
+				labels.push(rn.color);
 			}
-			if (labels.length==0) {
-				snippet = snippet.replace(/_LB_/, '');
-			} else if (labels.length==1) {
-				str = '<div class="sflabelgroup"><div class="smallblock B'+labels[0]+'"></div><span class="labelind">'+H(p.strToLabel(labels[0]))+'</span></div>';
-				snippet = snippet.replace(/_LB_/, str);
-			} else {
-				str = '<div class="sflabelgroup">';
-				for (i=0; i<labels.length; i++) {
-					str += '<div class="smallblock B'+labels[i]+'" title="' + H(p.strToLabel(labels[i])) + '"></div>';
-				}
-				str += '</div>';
-				snippet = snippet.replace(/_LB_/, str);
-			}
-		} else {
+		}
+		if (labels.length==0) {
 			snippet = snippet.replace(/_LB_/, '');
+		} else if (labels.length==1) {
+			str = '<div class="sflabelgroup"><div class="smallblock B'+labels[0]+'"></div><span class="labelind">'+H(p.strToLabel(labels[0]))+'</span></div>';
+			snippet = snippet.replace(/_LB_/, str);
+		} else {
+			str = '<div class="sflabelgroup">';
+			for (const l of labels) str += '<div class="smallblock B'+l+'" title="' + H(p.strToLabel(l)) + '"></div>';
+			str += '</div>';
+			snippet = snippet.replace(/_LB_/, str);
 		}
 
 		snippet += "<div class='sfa_sortable'>\n";
-		for (i=0; i<cm.thrass.length; i++) {
-			var te = ThreatAssessment.get(cm.thrass[i]);
-			snippet += te.addtablerow_textonly("sfa"+s.id+'_'+cm.id);
-		}
+		for (const thid of cm.assmnt) snippet += Assessment.get(thid).addtablerow_textonly("sfa"+s.id+'_'+cm.id);
 		snippet += "</div>\n";
 		snippet += '\n\
-			 <input id="sfaadd_SV___ID_" class="addthreatbutton" type="button" value="_BA_">\n\
-			 <input id="sfacopy_SV___ID_" class="copybutton" type="button" value="_BC_">\n\
-			 <input id="sfapaste_SV___ID_" class="pastebutton" type="button" value="_BP_">\n\
 			</div>\n\
 		  </div>\n\
 		';
@@ -3742,48 +4366,26 @@ function paintSingleFailures(s) {
 	$('#sfacclist'+s.id).append(appendstring);
 
 	// Now loop again, add vulnerabilities and behaviour.
-	for (it.first(); it.notlast(); it.next()) {
-		cm = it.getcomponent();
+	for (const cm of it) {
 		cm.setmarkeroid("#sfamark"+s.id+'_'+cm.id);
-		for (i=0; i<cm.thrass.length; i++) {
-			te = ThreatAssessment.get(cm.thrass[i]);
-			te.addtablerow_behavioronly('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
-		}
-		var addhandler = function(s,cm) {
-			return function() {
-				var th = new ThreatAssessment( (cm.type=='tUNK' ? 'tEQT' : cm.type) );
-				cm.addthrass(th);
-				th.addtablerow('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
-				cm.setmarker();
-				transactionCompleted("Vuln add");
-			};
-		};
+		for (const thid of cm.assmnt) Assessment.get(thid).addtablerow_behavioronly("sfa"+s.id+'_'+cm.id);
 		var copyhandler = function(s,cm) {
 			return function() {
-				ThreatAssessment.Clipboard = [];
-				for (var i=0; i<cm.thrass.length; i++) {
-					var te = ThreatAssessment.get(cm.thrass[i]);
-					ThreatAssessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
+				Assessment.Clipboard = [];
+				for (const thid of cm.assmnt) {
+					var te = Assessment.get(thid);
+					Assessment.Clipboard.push({t: te.title, y: te.type, d: te.description, p: te.freq, i: te.impact, r: te.remark});
 				}
 			};
 		};
 		var pastehandler = function(s,cm) {
 			return function() {
-				var newte = cm.mergeclipboard();
-				for (i=0; i<cm.thrass.length; i++) {
-					var th = ThreatAssessment.get(cm.thrass[i]);
-					if (newte.indexOf(cm.thrass[i])==-1) {
-						$('#dthsfa'+s.id+'_'+cm.id+'_'+th.id).remove();
-					}
-					th.addtablerow('#sfa'+s.id+'_'+cm.id,"sfa"+s.id+'_'+cm.id);
-				}
-				cm.setmarker();
-				transactionCompleted("Vuln paste");
+				cm.mergeclipboard();
 			};
 		};
-		$('#sfaadd'+s.id+'_'+cm.id).on('click',  addhandler(s,cm) );
-		$('#sfacopy'+s.id+'_'+cm.id).on('click',  copyhandler(s,cm) );
-		$('#sfapaste'+s.id+'_'+cm.id).on('click',  pastehandler(s,cm) );
+		$('#sfaadd'+s.id+'_'+cm.id).button().on('click',  function() {return addvulnhandler(cm.id);} );
+		$('#sfacopy'+s.id+'_'+cm.id).button().on('click',  copyhandler(s,cm) );
+		$('#sfapaste'+s.id+'_'+cm.id).button().on('click',  pastehandler(s,cm) );
 		var openclose = function(cm){
 			return function(event,ui) {
 				opencloseSFAccordion(cm,s.id,event,ui);
@@ -3805,24 +4407,18 @@ function paintSingleFailures(s) {
 			deactivate: function(/*event,ui*/) {
 				var newlist = [];
 				var cm = Component.get( nid2id(this.previousElementSibling.id) );
-				for (var i=0; i<this.children.length; i++) {
-//					var obj = $('#' + this.children[i].id);
-					newlist.push( nid2id(this.children[i].id) );
-				}
-				if (cm==null || newlist.length != cm.thrass.length) {
+				for (const ch of this.children) newlist.push( nid2id(ch.id) );
+				if (cm==null || newlist.length != cm.assmnt.length) {
 					bugreport("internal error in sorting","paintSingleFailures");
 				}
-				cm.thrass = newlist;
-				cm.store();
-				transactionCompleted("Reorder thrass of component "+cm.id);
+				if (cm.assmnt.every( (v,i) => (newlist[i]==v) )) return;  // Return if no change
+				new Transaction('compAssmntsReorder',
+					[{id: cm.id, assmnt: cm.assmnt}],
+					[{id: cm.id, assmnt: newlist}],
+					_("Reorder vulnerabilities of "+H(cm.title)));
 			}
 		});
 	}
-
-	$('#singlefs_body input[type=button]').button();
-	$('#singlefs_body input[class~="addthreatbutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#singlefs_body input[class~="copybutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
-	$('#singlefs_body input[class~="pastebutton"]').removeClass('ui-corner-all').addClass('ui-corner-bottom');
 }
 
 /* This function is called when the head of the accordion for Component is clicked, but before
@@ -3834,8 +4430,7 @@ function opencloseSFAccordion(cm,sid,event,ui) {
 
 function expandAllSingleF(sid) {
 	var it = new ComponentIterator({service: sid});
-	for (it.first(); it.notlast(); it.next()) {
-		var cm = it.getcomponent();
+	for (const cm of it) {
 		if (cm.type=='tACT') {
 			bugreport("Found a component of type actor. That should not exist.", "expandAllSingleF");
 			continue;
@@ -3855,8 +4450,7 @@ function expandAllSingleF(sid) {
 
 function collapseAllSingleF(sid) {
 	var it = new ComponentIterator({service: sid});
-	for (it.first(); it.notlast(); it.next()) {
-		var cm = it.getcomponent();
+	for (const cm of it) {
 		if (cm.type=='tACT') {
 			bugreport("Found a component of type actor. That should not exist.", "collapseAllSingleF");
 			continue;
@@ -3873,8 +4467,6 @@ function collapseAllSingleF(sid) {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-// Time for submenu
-var ccfmsm_timer;
 // The cluster for which details are currently displayed on the right-hand side.
 var CurrentCluster;
 
@@ -3882,11 +4474,20 @@ function initTabCCFs() {
 	CurrentCluster = null;
 
 	// Localise user interface
-	$('#mi_ccfc span.lc:first').html( _("Create new cluster") );
-	$('#mi_ccfm span.lc:first').html( _("Move to") );
+	$('#mi_ccfc span').text( _("Create new cluster") );
+	$('#mi_ccfm span').text( _("Move to") );
+	$('#ccfmenu li.lcT span').text(_("Common failures"));
 	$('#ccfmenu').menu().hide();
 
 	// Event handlers for mouse actions
+	$('#ccfs_body').on('click', '.ccfaccordionbody', function(event) {
+		var nc = nid2id(this.id);
+		if (nc!=CurrentCluster) {
+			repaintClusterDetails(NodeCluster.get(nc));
+		}
+		event.stopPropagation();
+	});
+
 	$('#ccfs_details').on('click', '.childnode', clickSelectHandler);
 	$('#ccfs_details').on('click', '.clusternode', clickCollapseHandler);
 	$('#ccfs_details').on('contextmenu', '.tlistitem', contextMenuHandler);
@@ -3899,31 +4500,47 @@ function initTabCCFs() {
 	$('#mi_ccfmsm').on('click', '.ui-menu-item', moveToClusterHandler);
 }
 
+/* repaintCCFDetailsIfVisible(nc): repaint cluster details, if currently visible on-screen.
+ * nc: optional; id of NodeCluster that must be visible; default is to repaint any visible NodeCluster.
+ */
+function repaintCCFDetailsIfVisible(nc) {		// eslint-disable-line no-unused-vars
+	if (CurrentCluster==null) return;
+//	if ($('#workspace').tabs('option','active') != TabWorkCCF) return;
+	if (nc!=null && nc!=CurrentCluster) return;
+	let keepscrollpos = $('#ccfs_details').scrollTop();
+	repaintClusterDetails(NodeCluster.get(CurrentCluster));
+	$('#ccfs_details').scrollTop(keepscrollpos);
+}
+
 // To be able to extend the selection.
 var LastSelectedNode;
 // To find the NodeCluster id on which the context menu was invoked.
 var MenuCluster;
 
 
-/* In the event handlers 'this.id' is of the form linode123_678 (for nodes)
- * or linode678 (for cluster headings), where 123 is a Node id and 678 is a NodeCluster id.
+/* In the event handlers 'this.id' is of the form linodeNNN_CCC (for nodes)
+ * or linodeCCC (for cluster headings), where NNN is a Node id and CCC is a NodeCluster id.
  *
  * To get the cluster id, just use nid2id().
- * To get the node id, first strip underscore and digits, then use nid2id().
- *
- *	var node_id = nid2id(this.id.replace(/_\d+$/,''));
- *	var cluster_id = nid2id(this.id);
- *
- * If either format is to be handled, then the following may be more useful:
- *
- *  var node_id = nid2id(this.id.replace(/\d+$/,'').replace(/_$/,''));
- *
- * since it either returns the node id or NaN in case of a cluster heading.
+ * To get the node id, use internalID().
  */
+
+/* internalID(str)
+ * If str ends in XXXabcdYYY, where XXX and YYY are UUIDs, then return XXX.
+ * Else return null.
+ */
+function internalID(str) {
+	str = str.replace(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/, '');
+	var m = str.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/);
+	if (m) {
+		return m[1];
+	} else {
+		return null;
+	}
+}
 
 function clickCollapseHandler(ev) {
 	var ul = $(this).parent();
-//	var nid = nid2id(this.id.replace(/\d+$/,'').replace(/_$/,''));
 	var cluster = NodeCluster.get(nid2id(this.id));
 
 	$('#ccfmenu').hide();
@@ -3970,8 +4587,8 @@ function clickSelectHandler(ev) {
 			// node laste selected. Else ignore.
 			if (LastSelectedNode && nid2id(this.id)==nid2id(LastSelectedNode)) {
 				// Select all nodes from LastSelectedId to this.id, inclusive.
-				var fromnid = nid2id(LastSelectedNode.replace(/_\d+$/,''));
-				var tonid = nid2id(this.id.replace(/_\d+$/,''));
+				var fromnid = internalID(LastSelectedNode);
+				var tonid = internalID(this.id);
 //				var cluster = nid2id(this.id);
 
 				var idlist = [];
@@ -3983,17 +4600,17 @@ function clickSelectHandler(ev) {
 				});
 				// find the from and to nodes
 				var fromi, toi;
-				for (var i=0; i<idlist.length; i++) {
-					var nd = nid2id(idlist[i].replace(/_\d+$/,''));
+				idlist.forEach(function(v,i) {
+					var nd = internalID(v);
 					if (fromnid==nd) fromi = i;
 					if (tonid==nd) toi = i;
-				}
+				});
 				// Swap so that fromi <= toi
 				if (fromi>toi) {
-					i=fromi; fromi=toi; toi=i;
+					let i=fromi; fromi=toi; toi=i;
 				}
 				// Select all those nodes
-				for (i=fromi; i<=toi; i++) {
+				for (let i=fromi; i<=toi; i++) {
 					$('#'+idlist[i]).addClass('li_selected');
 				}
 			}
@@ -4009,27 +4626,27 @@ function clickSelectHandler(ev) {
 }
 
 function contextMenuHandler(ev) {
-	var nid = nid2id(this.id.replace(/\d+$/,'').replace(/_$/,''));
+	var nid = internalID(this.id);
 	var cluster = NodeCluster.get(nid2id(this.id));
 //	var root = NodeCluster.get(cluster.root());
 
 	MenuCluster = cluster.id;
-	$('#ccfmenu').css('left', ev.clientX+2);
-	$('#ccfmenu').css('top', ev.clientY-5);
+//	$('#ccfmenu').css('left', ev.clientX+2);
+//	$('#ccfmenu').css('top', ev.clientY-5);
 
-	if (isNaN(nid)) {
+	if (nid==null) {
 		// Popup menu called on a cluster
 		// Cannot move to the parent (because that's where it is already), nor can it be
 		// moved into any of its own descendants. And it cannot be moved onto itself.
 		populateClusterSubmenu(cluster, cluster.allclusters().concat(cluster.parentcluster));
-		$('#mi_ccfc span.lc:first').html( _("Remove cluster") );
+		$('#mi_ccfc span').text( _("Remove cluster") );
 		$('#mi_ccfc div').append('<span class="ui-icon ui-icon-trash"></span>');
 		$('#mi_ccfc').removeClass('ui-state-disabled');
 		LastSelectedNode = null;
 	} else {
 		// Popup menu called on node
 		populateClusterSubmenu(cluster,[]);
-		$('#mi_ccfc span.lc:first').html( _("Create new cluster") );
+		$('#mi_ccfc span').text( _("Create new cluster") );
 		$('#mi_ccfc span.ui-icon').remove();
 		LastSelectedNode = this.id;
 		// Remove the selection unless the current node is also selected
@@ -4045,23 +4662,29 @@ function contextMenuHandler(ev) {
 		}
 	}
 
+	$('#ccfmenu').menu('collapseAll');
 	$('#ccfmenu').show();
+	$('#ccfmenu').position({
+		my: "left top",
+		at: "left+" + ev.clientX + "px top+" + ev.clientY + "px",
+		of: "body",
+		collision: "fit"
+	});
 }
 
 function populateClusterSubmenu(cluster,exceptions) {
 	var allclusters = NodeCluster.get(cluster.root()).allclusters();
 	var snippet = '';
 	/* Add all sub(sub)-clusters as submenuitems */
-	for (var i=0; i<allclusters.length; i++) {
-		var cl = NodeCluster.get(allclusters[i]);
+	for (const clid of allclusters) {
+		var cl = NodeCluster.get(clid);
 		snippet += '<li id="ccf_msm_CI_" class="_DIS_"><div><span class="lc">_CN_</span></div></li>';
-		snippet = snippet.replace(/_CI_/, cl.id);
-		snippet = snippet.replace(/_DIS_/, (exceptions.indexOf(cl.id)==-1 ? '' : 'ui-state-disabled'));
-		if (i==0) {
-			/* root cluster */
-			snippet = snippet.replace(/_CN_/, cl.title + ' ' + _("(root)"));
+		snippet = snippet.replace(/_CI_/, clid);
+		snippet = snippet.replace(/_DIS_/, (exceptions.indexOf(clid)==-1 ? '' : 'ui-state-disabled'));
+		if (cl.isroot()) {
+			snippet = snippet.replace(/_CN_/, H(cl.title) + ' ' + _("(root)"));
 		} else {
-			snippet = snippet.replace(/_CN_/, cl.title);
+			snippet = snippet.replace(/_CN_/, H(cl.title));
 		}
 	}
 	$('#mi_ccfmsm').html(snippet);
@@ -4069,54 +4692,15 @@ function populateClusterSubmenu(cluster,exceptions) {
 }
 
 function createClusterHandler(/*event*/) {
-	var cluster = NodeCluster.get(MenuCluster);
+	let cluster = NodeCluster.get(MenuCluster);
 
 	$('#ccfmenu').hide();
 	if (LastSelectedNode) {
-		// Called on a node: create a new cluster from selection
-		var nc = new NodeCluster(cluster.type);
-		nc.setproject(cluster.project);
-		nc.setparent(cluster.id);
-		cluster.addchildcluster( nc.id );
-		nc.addthrass();
-		moveSelectionToCluster(nc);
-		transactionCompleted("Create cluster from selection");
+		createClusterFromNodes(cluster,getSelectedNodes());
 	} else {
 		// Called on a cluster; absorbe that cluster into its parent.
 		removeCluster(cluster);
-		transactionCompleted("Remove cluster");
 	}
-}
-
-function removeCluster(cluster) {
-	var parent = NodeCluster.get(cluster.parentcluster);
-	var root = NodeCluster.get(cluster.root());
-
-	for (var i=0; i<cluster.childnodes.length; i++) {
-		parent.addchildnode(cluster.childnodes[i]);
-	}
-	for (i=0; i<cluster.childclusters.length; i++) {
-		parent.addchildcluster(cluster.childclusters[i]);
-	}
-	parent.removechildcluster(cluster.id);
-	cluster.destroy();
-	root.normalize();
-	root.calculatemagnitude();
-	repaintCluster(root.id);
-	repaintClusterDetails(root);
-}
-
-function moveCluster(from_cluster,to_cluster) {
-	var parent = NodeCluster.get(from_cluster.parentcluster);
-	var root = NodeCluster.get(from_cluster.root());
-
-	parent.removechildcluster(from_cluster.id);
-	to_cluster.addchildcluster(from_cluster.id);
-
-	root.normalize();
-	root.calculatemagnitude();
-	repaintCluster(root.id);
-	repaintClusterDetails(root);
 }
 
 function moveToClusterHandler(/*event*/) {
@@ -4126,138 +4710,112 @@ function moveToClusterHandler(/*event*/) {
 	$('#ccfmenu').hide();
 	if (LastSelectedNode) {
 		// Called on a node: move selection to cluster
-		moveSelectionToCluster(to_cluster);
-		transactionCompleted("Move selection to cluster");
+		moveNodesToCluster(getSelectedNodes(),to_cluster);
 	} else {
 		var from_cluster = NodeCluster.get(MenuCluster);
 		moveCluster(from_cluster, to_cluster);
-		transactionCompleted("Move cluster");
 	}
 }
 
-/* Each selected node is moved into 'cluster', then the entire set of clusters
- * is normalized, recalculated, and scheduled for repainting.
+/* createClusterFromNodes: create a new nodecluster, initiated by drag&drop or by the menu.
+ * cluster: parent cluster of the new cluster
+ * fromnodes: array of Node ids. Must be member-nodes of the root of the cluster
+ * newtitle: title of the new cluster, or null for a default title.
  */
-function moveSelectionToCluster(cluster) {
-	var root = NodeCluster.get(cluster.root());
-	$('.li_selected').each(function(){
-		var n = nid2id(this.id.replace(/_\d+$/,''));
-		root.removechildnode(n);
-		cluster.addchildnode(n);
-	});
-	root.normalize();
-	root.calculatemagnitude();
-	repaintCluster(root.id);
-	repaintClusterDetails(root);
-	// Wait for the repaint to finish, the new cluster to be painted, then
-	// trigger a rename
-	setTimeout(function(){
-		$('#litext'+cluster.id).trigger('click');
-	},500);
+function createClusterFromNodes(cluster,fromnodes,newtitle) {
+	let root = NodeCluster.get(cluster.root());
+	let ncid = createUUID();
+	new Transaction('clusterStructure',
+		[{root: root.id, structure: root.structure(), destroy: ncid}],
+		[{create: ncid, type: cluster.type, parent: cluster.id, title: newtitle,
+			project: cluster.project, nodes: fromnodes,
+			assmnt: createUUID()
+		}],
+		_("create new cluster"));
 }
 
-var CCFSortOpt = 'alph';
+/* moveNodesToCluster: make an existing cluster the container for some nodes
+ * fromnodes: array of Node ids. Must be member-nodes of the root of the cluster
+ * to_cluster: cluster to move the nodes to
+ */
+function moveNodesToCluster(nodes,to_cluster) {
+	let root = NodeCluster.get(to_cluster.root());
+	new Transaction('clusterStructure',
+		[{root: root.id, structure: root.structure()}],
+		[{move: nodes, to: to_cluster.id}],
+		_("move nodes to cluster"));
+}
+
+/* removeCluster: disband a cluster (from the menu, or by dragging it onto its parent)
+ */
+function removeCluster(cluster) {
+	let root = NodeCluster.get(cluster.root());
+	new Transaction('clusterStructure',
+		[{root: root.id, structure: root.structure()}],
+		[{remove: cluster.id}],
+		_("remove cluster %%", cluster.title));
+}
+
+/* moveCluster: change the parent of an existing cluster.
+ * from_cluster: the cluster to be moved
+ * to_cluster: its new parent
+ */
+function moveCluster(from_cluster,to_cluster) {
+	let root = NodeCluster.get(from_cluster.root());
+	new Transaction('clusterStructure',
+		[{root: root.id, structure: root.structure()}],
+		[{move_from: from_cluster.id, move_to: to_cluster.id}],
+		_("move cluster %%", from_cluster.title));
+}
+
+/* Obtain an array of nodes currently selected (highlighted)
+ */
+function getSelectedNodes() {
+	let arr = [];
+	$('.li_selected').each(function(){
+		arr.push(internalID(this.id));
+	});
+	return arr;
+}
+
 //var CCFMinOpt = '-';
 
-function AddAllClusters() {
+function PaintAllClusters() {
 	var snippet = '\
-		<h1 class="printonly underlay">_LCCF_</h1>\
-		<h2 class="printonly underlay projectname">_LP_: _PN_</h2>\
-		<p id="noccf" class="firstp sfaccordion">_N1_\
+		<h1 class="printonly">_LCCF_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
+		<p id="noccf" class="firstp">_N1_\
 		_N2_\
 		_N3_</p>\
-		<div id="outerimpacthint" style="display:none"><div id="hintpoint"></div><img src="../img/hint.png"><div id="impacthint"></div></div>\
-		<div id="someccf" class="donotprint displayoptsarea">\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L1_</span><br>\n\
-			<span id="expandallccf">_EA_</span>\n\
-			<span id="collapseallccf" class="collapseall">_CA_</span>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L2_</span><br>\n\
-			<fieldset>\n\
-				<input type="radio" id="ccfsort_alph" name="ccfsort"><label for="ccfsort_alph">_O1_</label>\n\
-				<input type="radio" id="ccfsort_type" name="ccfsort"><label for="ccfsort_type">_O2_</label>\n\
-				<input type="radio" id="ccfsort_thrt" name="ccfsort"><label for="ccfsort_thrt">_O3_</label>\n\
-			</fieldset>\n\
-		  </div>\n\
-		</div>\
+		<div id="outerimpacthint" style="display:none"><div id="hintpoint"></div><img src="../img/hint.png" alt="?"><div id="impacthint"></div></div>\
 		<div id="ccfacclist">\
 		</div>\
 	';
-	snippet = snippet.replace(/_LP_/g, _("Project"));
-	snippet = snippet.replace(/_LCCF_/g, _("Common Cause Failures"));
-	snippet = snippet.replace(/_N1_/g, _("This space will show all vulnerabilities domains for the components in this project."));
-	snippet = snippet.replace(/_N2_/g, _("Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet."));
-	snippet = snippet.replace(/_N3_/g, _("Add some nodes to the diagrams first."));
-	snippet = snippet.replace(/_L1_/g, _("Fold:"));
-	snippet = snippet.replace(/_EA_/g, _("Expand all"));
-	snippet = snippet.replace(/_CA_/g, _("Collapse all"));
-	snippet = snippet.replace(/_L2_/g, _("Sort:"));
-	snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
-	snippet = snippet.replace(/_O2_/g, _("by Type"));
-	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
-	snippet = snippet.replace(/_PJ_/g, Project.cid);
+	snippet = snippet.replace(/_LCCF_/g, _H("Common Cause Failures"));
+	snippet = snippet.replace(/_N1_/g, _H("This space will show all vulnerabilities domains for the components in this project."));
+	snippet = snippet.replace(/_N2_/g, _H("Since there are no vulnerabilities that occur in two or mode nodes, there is nothing to see here yet."));
+	snippet = snippet.replace(/_N3_/g, _H("Add some nodes to the diagrams first."));
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
-	$('#ccfs_body').append(snippet);
-	$('#someccf').headroom({
-		scroller: document.querySelector('#ccfs_body'),
-		tolerance : {
-			up : 20,
-			down : 20
-		}
-	});
-
-	$('#expandallccf').button({icon: 'ui-icon-plus'});
-	$('#collapseallccf').button({icon: 'ui-icon-minus'});
-	$('#someccf input[type=radio]').checkboxradio({icon: false});
-	$('#someccf fieldset').controlgroup();
+	$('#ccfs_body').html(snippet);
 
 	// create list of all vulnerabilities
 	// for each vulnerability, list the nested list / vulnerability-domain-tree
 	// allow manipulation of nested list
 	var it = new NodeClusterIterator({project:Project.cid, isroot:true});
-	if (!it.notlast()) {
-		$('#noccf').css('display', 'block');
-		$('#someccf').css('display', 'none');
+	if (it.isEmpty()) {
+		ccfsVisible(false);
 		return;
 	}
-
+	ccfsVisible(true);
 	sortClustersToCurrentOrder(it);
-	$('#someccf fieldset').controlgroup('refresh');
-
-	$('#noccf').css('display', 'none');
-	$('#someccf').css('display', 'block');
-	$('#expandallccf').on('click',  function(evt){
-		$('#ccfs_body').scrollTop(0);
-		expandAllCCF(nid2id(evt.target.id));
-	});
-	$('#collapseallccf').on('click',  function(evt){
-		$('#ccfs_body').scrollTop(0);
-		collapseAllCCF(nid2id(evt.target.id));
-	});
-	var create_ccf_sortfunc = function(opt) {
-		return function() {
-			CCFSortOpt = opt;
-			$('#ccfs_body').empty();
-			AddAllClusters();
-		};
-	};
-
-	$('[for=ccfsort_alph]').on('click', create_ccf_sortfunc('alph'));
-	$('[for=ccfsort_type]').on('click', create_ccf_sortfunc('type'));
-	$('[for=ccfsort_thrt]').on('click', create_ccf_sortfunc('thrt'));
-
-	for (it.first(); it.notlast(); it.next()) {
-		var nc = it.getNodeCluster();
+	for (const nc of it) {
 		addClusterElements(nc);
 		repaintCluster(nc.id);
 	}
 	$('#ccfs_body').append('<br><br>');
 
 	// Show the details of the first open accordion
-	for (it.first(); it.notlast(); it.next()) {
-		nc = it.getNodeCluster();
+	for (const nc of it) {
 		if (nc.accordionopened && CurrentCluster==null) {
 			// Delay painting until the accordions are done
 			window.setTimeout(function() {
@@ -4266,32 +4824,40 @@ function AddAllClusters() {
 			break;
 		}
 	}
+}
 
-	$('.ccfaccordionbody').on('click', function(event) {
-		var nc = nid2id(this.id);
-		if (nc!=CurrentCluster) {
-			repaintClusterDetails(NodeCluster.get(nc));
-		}
-		event.stopPropagation();
-	});
+function ccfsVisible(vis) {
+	if (vis) {
+		$('#noccf').hide();
+		$('#someccf').show();
+		$('#ccfs_details').show();
+		$('#ccfexpandall').button('enable');
+		$('#ccfcollapseall').button('enable');
+		$('#ccfsortsection input[name=ccfsort]').checkboxradio('enable');
+	} else {
+		$('#noccf').show();
+		$('#someccf').hide();
+		$('#ccfs_details').hide();
+		$('#ccfexpandall').button('disable');
+		$('#ccfcollapseall').button('disable');
+		$('#ccfsortsection input[name=ccfsort]').checkboxradio('disable');
+	}
 }
 
 function sortClustersToCurrentOrder(it) {
-	switch (CCFSortOpt) {
+	let currorder = $('input[name=ccfsort]:checked').val();
+	switch (currorder) {
 	case 'alph':
-		$('#ccfsort_alph').prop('checked',true);
-		it.sortByName();
+		it.sortByTitle();
 		break;
 	case 'type':
-		$('#ccfsort_type').prop('checked',true);
 		it.sortByType();
 		break;
 	case 'thrt':
-		$('#ccfsort_thrt').prop('checked',true);
 		it.sortByLevel();
 		break;
 	default:
-		bugreport("Unknown node sort option","AddAllClusters");
+		bugreport("Unknown node sort option","PaintAllClusters");
 	}
 }
 
@@ -4328,9 +4894,9 @@ function addClusterElements(nc) {
 				var it = new NodeClusterIterator({project:Project.cid, isroot:true, isstub: false});
 				sortClustersToCurrentOrder(it);
 				$('#ccfs_details').empty();
+				$('.ccfhighlight').removeClass('ccfhighlight');
 				CurrentCluster = null;
-				for (it.first(); it.notlast(); it.next()) {
-					var cl = it.getNodeCluster();
+				for (const cl of it) {
 					if (cl.id==nc.id)  continue;
 					if (cl.accordionopened) {
 						repaintClusterDetails(cl);
@@ -4364,8 +4930,7 @@ function addClusterElements(nc) {
 function expandAllCCF() {
 	var it = new NodeClusterIterator({project: Project.cid});
 
-	for (it.first(); it.notlast(); it.next()) {
-		var cl = it.getNodeCluster();
+	for (const cl of it) {
 		if (cl.isroot()) {
 			var el = $('#ccfaccordion'+cl.id);
 			el.accordion('option','animate',false);
@@ -4384,8 +4949,7 @@ function expandAllCCF() {
 	// Show the details of the first cluster
 	it = new NodeClusterIterator({project: Project.cid, isroot:true, isstub: false});
 	sortClustersToCurrentOrder(it);
-	it.first();
-	repaintClusterDetails(it.getNodeCluster());
+	repaintClusterDetails(it.first());
 }
 
 function collapseAllCCF() {
@@ -4393,8 +4957,7 @@ function collapseAllCCF() {
 	$('.ccfaccordion').removeClass('ccfhighlight');
 	CurrentCluster = null;
 	var it = new NodeClusterIterator({project: Project.cid});
-	for (it.first(); it.notlast(); it.next()) {
-		var cl = it.getNodeCluster();
+	for (const cl of it) {
 		if (cl.isroot()) {
 			var el = $('#ccfaccordion'+cl.id);
 			el.accordion('option','animate',false);
@@ -4420,6 +4983,7 @@ function repaintCluster(elem) {
 
 	var snippet = '<div>\
 		<div class="threat">\
+		<div class="th_mal th_col thr_header">_LC_</div>\
 		<div class="th_name th_col thr_header">_LN_</div>\
 		<div class="th_freq th_col thr_header">_LF_</div>\
 		<div class="th_impact th_col thr_header">_LI_</div>\
@@ -4428,43 +4992,41 @@ function repaintCluster(elem) {
 		</div>\
 		<div id="ccftable_ID_" class="threats">\
 		</div></div>\n';
-	snippet = snippet.replace(/_LN_/g, _("Name"));
-	snippet = snippet.replace(/_LF_/g, _("Freq."));
-	snippet = snippet.replace(/_LI_/g, _("Impact"));
-	snippet = snippet.replace(/_LT_/g, _("Total"));
-	snippet = snippet.replace(/_LR_/g, _("Remark"));
+	snippet = snippet.replace(/_LC_/g, _H("Cause"));
+	snippet = snippet.replace(/_LN_/g, _H("Name"));
+	snippet = snippet.replace(/_LF_/g, _H("Freq"));
+	snippet = snippet.replace(/_LI_/g, _H("Impact"));
+	snippet = snippet.replace(/_LT_/g, _H("Total"));
+	snippet = snippet.replace(/_LR_/g, _H("Remark"));
 	snippet = snippet.replace(/_ID_/g, nc.id);
 	$('#ccfaccordionbody'+nc.id).html( snippet );
 	computeSpacesMakeup(nc,'#ccftable'+nc.id,'ccf'+nc.id);
 	nc.calculatemagnitude();
-	nc.setallmarkeroid('#ccfamark');
 
 	if (nc.childclusters.length + nc.childnodes.length < 2) {
 		// Just an empty/invisible placeholder for a node cluster that is too small
 		$('#ccfaccordion'+nc.id).css('display', 'none');
 		// Check whether there are any cluster remaining visible
-		var it = new NodeClusterIterator({project:Project.cid, isroot:true});
-		for (it.first(); it.notlast(); it.next()) {
-			nc = it.getNodeCluster();
-			if (nc.childclusters.length + nc.childnodes.length >= 2) {
-				return;
-			}
-		}
+		var it = new NodeClusterIterator({project:Project.cid, isroot:true, isstub: false});
+		if (!it.isEmpty()) return;
 		// None were visible
-		$('#noccf').css('display', 'block');
-		$('#someccf').css('display', 'none');
-		$('#ccfs_details').empty().scrollTop(0);
+		ccfsVisible(false);
 		return;
 	}
 
+	ccfsVisible(true);
 	$('#ccfaccordion'+nc.id).css('display', 'block');
-	nc.setallmarkeroid('#ccfamark');
+	repaintClusterDetails(nc,false);
 }
 
-function repaintClusterDetails(nc) {
+function repaintClusterDetails(nc,force) {
+	if (force==null)  force=true;
+	if (CurrentCluster && CurrentCluster!=nc.id && !force)  return;
+
 	CurrentCluster = nc.id;
 	$('#ccfs_details').empty().scrollTop(0);
 	$('#ccfs_details').append( listFromCluster(nc) );
+	$('#ccfs_details').append('<br><br>');
 	$('.ccfaccordion').removeClass('ccfhighlight');
 	$('#ccfaccordion'+nc.id).addClass('ccfhighlight');
 
@@ -4478,9 +5040,13 @@ function repaintClusterDetails(nc) {
 		start: function(/*event,ui*/) {
 			$('.li_selected').addClass('ui-draggable-dragging');
 			$(this).addClass('li_selected');
+			$('.tlistitem,.ui-accordion-header').addClass('hidepointer');
+			$('body').css('cursor','none');
 		},
 		stop: function(/*event,ui*/) {
 			$('.li_selected').removeClass('ui-draggable-dragging li_selected');
+			$('.tlistitem,.ui-accordion-header').removeClass('hidepointer');
+			$('body').css('cursor','');
 		}
 	});
 	$('.tlistitem,.tlistroot').droppable({
@@ -4493,52 +5059,51 @@ function repaintClusterDetails(nc) {
 		drop: nodeClusterReorder
 	});
 	$('.litext').editInPlace({
-		bg_over: 'rgb(255,204,102)',
+		bg_over: 'var(--highlt)',
 		text_size: 40,
 		callback: function(domid, enteredText) {
 			var nc = NodeCluster.get( nid2id(domid) );
-			nc.settitle(enteredText);
-			$('#dthE_ccf'+nc.root()+'name'+nc.thrass).html(H(nc.title));
-			transactionCompleted("Rename cluster");
+			new Transaction('clusterTitle',
+				[{id: nc.id, title: nc.title}],
+				[{id: nc.id, title: enteredText}],
+				_("Rename cluster")
+			);
 			return H(nc.title);
 		}
 	});
 }
 
-function listFromCluster(nc) {
+function listFromCluster(nc,indent) {
+	if (indent==null) indent=0;
 	var str;
 	// Cluster heading
 	if (nc.isroot()) {
-		str = '\n\
-			<ul id="tlist_ID_" class="tlist" style="padding-left: 0px;">\n\
-			<li id="linode_ID_" class="tlistroot clusternode ui-state-default ui-state-selected">\n\
-			_TI_ (_TY_)\n\
-			</li>\n\
-		';
+		str = `
+			<ul id="tlist${nc.id}" class="tlist" style="padding-left: 0px;">
+			 <li id="linode${nc.id}" class="clusternode tlistroot ui-state-default ui-state-selected">
+			   ${H(nc.title)} (${Rules.nodetypes[nc.type]})
+			 </li>
+		`;
 	} else {
-		str = '\n\
-			<ul id="tlist_ID_" class="tlist">\n\
-			<li id="linode_ID_" class="tlistitem clusternode ui-state-default ui-state-selected">\n\
-			<span id="cltrgl_ID_" class="ui-icon ui-icon-triangle-1-_LT_ clustericon"></span>\
-			<span id="litext_ID_" class="litext">_TI_</span>\
-			<span id="ccfamark_ID_"></span></a>\n\
-			</li>\n\
-		';
+		str = `
+			<ul id="tlist${nc.id}" class="tlist">
+			 <li id="linode${nc.id}" style="top: ${4+17*indent}px; z-index: ${100-indent}" class="clusternode tlistitem ui-state-default ui-state-selected">
+			   <span id="cltrgl${nc.id}" class="ui-icon ui-icon-triangle-1-${nc.accordionopened?'s':'e'} clustericon"></span>
+			   <span id="litext${nc.id}" class="litext">${H(nc.title)}</span>
+			   <span id="ccfamark${nc.id}"></span></a>
+			 </li>
+		`;
 	}
-	str = str.replace(/_ID_/g, nc.id);
-	str = str.replace(/_LT_/g, (nc.accordionopened ? 's' : 'e'));
-	str = str.replace(/_TI_/g, H(nc.title));
-	str = str.replace(/_TY_/g, Rules.nodetypes[nc.type]);
 
 	// Insert all child clusters, recursively
-	for (var i=0; i<nc.childclusters.length; i++) {
-		var cc = NodeCluster.get(nc.childclusters[i]);
+	for (const clid of nc.childclusters) {
+		var cc = NodeCluster.get(clid);
 		str += '<li';
 		if (!nc.isroot() && !nc.accordionopened) {
 			str += ' style="display: none;"';
 		}
 		str += '>\n';
-		str += listFromCluster(cc);
+		str += listFromCluster(cc,indent+1);
 		str += '</li>\n';
 	}
 	if (nc.isroot()) {
@@ -4550,13 +5115,13 @@ function listFromCluster(nc) {
 	// Return array of nodes from 'fromarr' with color 'col', sorted by name
 	var sortednodeswithcolor = function(col,fromarr) {
 		var arr = [];
-		for (i=0; i<fromarr.length; i++) {
-			var rn = Node.get(nc.childnodes[i]);
+		for (const nid of fromarr) {
+			var rn = Node.get(nid);
 			if (rn==null) {
 				bugreport("Child node does not exist","listFromCluster:sortednodeswithcolor");
 			}
 			if (rn.color==col) {
-				arr.push(rn.id);
+				arr.push(nid);
 			}
 		}
 		// Array temp now holds all node of color 'col. Now sort those by name
@@ -4583,17 +5148,16 @@ function listFromCluster(nc) {
 	}
 
 	// Finally insert all child nodes
-	for (i=0; i<node.length; i++) {
-		var rn = Node.get(node[i]);
+	for (const nodeid of node) {
+		var rn = Node.get(nodeid);
 		var cm = Component.get(rn.component);
 		var sv = "";
 
 		// Single node classes can (will) be present in multiple services.
 		if (cm.single) {
-			for (var j=0; j<cm.nodes.length; j++) {
-				var n = Node.get(cm.nodes[j]);
+			for (const nid of cm.nodes) {
 				if (sv!='') sv += '; ';
-				sv += Service.get(n.service).title;
+				sv += Service.get(Node.get(nid).service).title;
 			}
 		} else {
 			sv = Service.get(rn.service).title;
@@ -4607,29 +5171,25 @@ function listFromCluster(nc) {
 		str = str.replace(/_DI_/g, (nc.isroot() || nc.accordionopened ? 'list-item' : 'none'));
 		str += rn.htmltitle();
 
-		if (Preferences.label) {
-			var p = Project.get(Project.cid);
-			// Single node classes can have multiple labels
-			var labels = [];
-			if (cm.single) {
-				for (j=0; j<cm.nodes.length; j++) {
-					n = Node.get(cm.nodes[j]);
-					if (n.color!='none' && labels.indexOf(n.color)==-1) {
-						labels.push(n.color);
-					}
+		var p = Project.get(Project.cid);
+		// Single node classes can have multiple labels
+		var labels = [];
+		if (cm.single) {
+			for (const nid of cm.nodes) {
+				let n = Node.get(nid);
+				if (n.color!='none' && labels.indexOf(n.color)==-1) {
+					labels.push(n.color);
 				}
-			} else {
-				if (rn.color!='none') labels = [rn.color];
 			}
-			if (labels.length==1 ) {
-				str += '<div class="ccflabelgroup"><div class="smallblock B'+rn.color+'"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
-			} else if (labels.length>1) {
-				str += '<div class="ccflabelgroup">';
-				for (j=0; j<labels.length; j++) {
-					str += '<div class="smallblock B'+labels[j]+'" title="' + H(p.strToLabel(labels[j])) + '"></div>';
-				}
-				str += '</div>';
-			}
+		} else {
+			if (rn.color!='none') labels = [rn.color];
+		}
+		if (labels.length==1 ) {
+			str += '<div class="ccflabelgroup"><div class="smallblock B'+rn.color+'"></div><span class="labelind">'+H(p.strToLabel(rn.color))+'</span></div>';
+		} else if (labels.length>1) {
+			str += '<div class="ccflabelgroup">';
+			for (const l of labels) str+='<div class="smallblock B'+l+'" title="' + H(p.strToLabel(l)) + '"></div>';
+			str += '</div>';
 		}
 
 		str += '</li>\n';
@@ -4701,10 +5261,7 @@ function computeRows(nc) {
 			SpacesMakeup[i][d-1] |= 1;
 		}
 //	}
-	for (i=0; i<nc.childclusters.length; i++) {
-		var cc = NodeCluster.get(nc.childclusters[i]);
-		computeRows(cc);
-	}
+	for (const clid of nc.childclusters) computeRows(NodeCluster.get(clid));
 }
 /* eslint-enable no-bitwise */
 
@@ -4713,13 +5270,13 @@ function appendAllThreats(nc,domid,prefix) {
 		bugreport("nc is null","appendAllThreats");
 	}
 	Spaces_row++;
-	var th = ThreatAssessment.get(nc.thrass);
+	var th = Assessment.get(nc.assmnt);
 	// Only paint threat assessment if at least two child nodes (clusters don't count)
 //	if (nc.childnodes.length>1) {
 		var spaces = "";
 		spaces += '<span class="linechar">';
 		for (var i=0; i<nc.depth(); i++) {
-			spaces += '<img src="../img/_KIND_.png" class="lineimg">';
+			spaces += '<img src="../img/_KIND_.png" class="lineimg" alt="">';
 			switch (SpacesMakeup[Spaces_row][i]) {
 			case 0:
 				spaces = spaces.replace(/_KIND_/, 'barB');
@@ -4750,10 +5307,7 @@ function appendAllThreats(nc,domid,prefix) {
 //		th.setfreq('-');
 //		th.setimpact('-');
 //	}
-	for (i=0; i<nc.childclusters.length; i++) {
-		var cc = NodeCluster.get(nc.childclusters[i]);
-		appendAllThreats(cc,domid,prefix);
-	}
+	for (const clid of nc.childclusters) appendAllThreats(NodeCluster.get(clid),domid,prefix);
 }
 
 /*
@@ -4786,105 +5340,58 @@ function appendAllThreats(nc,domid,prefix) {
 	Drop onto self (either node or cluster): invalid.
  */
 function nodeClusterReorder(event,ui) {
-	// dragid is either of the form "linode137" or "linode456_137", where
-	// 137 is a NodeCluster id and 456 is a Node id.
-	// In either case nid2id() will get the cluster id.
-	// First stripping digits, then stripping non-digits, then calling nid2id() will
-	// either result in NaN or the Node id.
+	// See the note at the start of the definition of internalID()
 	var dragid = ui.draggable[0].id;
 	var dropid = this.id;
 	// Only valid drops are to be expected.
-	var drag_n=null, drag; // source node and cluster
-	var drop_n=null, drop; // destination node and cluster
-	var drag_cluster, drop_cluster, root_cluster;
+	var drag_n, drag; // source node and cluster
+	var drop_n, drop; // destination node and cluster
+	var drag_cluster, drop_cluster;
 
 	drag = nid2id(dragid);
-	dragid = dragid.replace(/\d+$/,"");
-	dragid = dragid.replace(/\D+$/,"");
-	dragid = nid2id(dragid);
-	if (!isNaN(dragid)) {
-		drag_n = dragid;
-	}
+	drag_n = internalID(dragid);
 
 	drop = nid2id(dropid);
-	dropid = dropid.replace(/\d+$/,"");
-	dropid = dropid.replace(/\D+$/,"");
-	dropid = nid2id(dropid);
-	if (!isNaN(dropid)) {
-		drop_n = dropid;
-	}
+	drop_n = internalID(dropid);
 
 	if (drag!=null) drag_cluster = NodeCluster.get(drag);
 	if (drop!=null) drop_cluster = NodeCluster.get(drop);
-	if (drop_cluster) root_cluster = NodeCluster.get(drop_cluster.root());
 
 	if (drag_n!=null) {
 		// A node is being dragged
 		if (drop_n!=null && drag==drop) {
 			// Dropped on a node of the same cluster
-			var nc = new NodeCluster(drag_cluster.type);
-			nc.setproject(drag_cluster.project);
-			var dragNode = Node.get(drag_n);
-			var dropNode = Node.get(drop_n);
-			if (!dragNode || !dropNode) {
-				bugreport('drag node or drop node does not exist', 'nodeClusterReorder');
-			}
+			let dragNode = Node.get(drag_n);
+			let dropNode = Node.get(drop_n);
+			let newtitle = null;
 			if (dragNode.color==dropNode.color && dragNode.color!='none') {
 				// Both have the same label. Name the new node cluster after this label.
 				var p = Project.get(Project.cid);
-				nc.settitle( p.strToLabel(dragNode.color) );
+				newtitle = p.strToLabel(dragNode.color);
 			}
-			$(this).addClass('li_selected');
-			$('.li_selected').each(function(){
-				var n = this.id;
-				n = n.replace(/\d+$/,"");
-				n = n.replace(/\D+$/,"");
-				n = nid2id(n);
-				root_cluster.removechildnode(n);
-				nc.addchildnode(n);
-			});
-			nc.setparent(drag);
-			nc.addthrass();
-			drag_cluster.addchildcluster( nc.id );
-			root_cluster.calculatemagnitude();
-			root_cluster.normalize();
-			repaintCluster(root_cluster.id);
-			repaintClusterDetails(root_cluster);
-			transactionCompleted("Create cluster");
+			let nodes = getSelectedNodes();
+			nodes.push(drop_n);
+			createClusterFromNodes(drag_cluster,nodes,newtitle);
 		} else if (drop_n!=null && drag!=drop) {
 			bugreport("Node dropped on node of a different cluster","nodeClusterReorder");
 		} else if (drop_n==null && drag==drop) {
 			bugreport("Node dropped on its containing cluster","nodeClusterReorder");
 		} else if (drop_n==null && drag!=drop) {
 			// Dropped into a different cluster
-			$('.li_selected').each(function(){
-				var n = this.id;
-				n = n.replace(/\d+$/,"");
-				n = n.replace(/\D+$/,"");
-				n = nid2id(n);
-				root_cluster.removechildnode(n);
-				drop_cluster.addchildnode(n);
-			});
-			root_cluster.normalize();
-			root_cluster.calculatemagnitude();
-			repaintCluster(root_cluster.id);
-			repaintClusterDetails(root_cluster);
-			transactionCompleted("Move node from cluster");
+			moveNodesToCluster(getSelectedNodes(),drop_cluster);
 		}
 	} else {
 		// A cluster is being dragged
-		if (DEBUG && drag_cluster.hasdescendant(drop)) {
+		if (DEBUG && drag_cluster.containscluster(drop)) {
 			bugreport("Cluster dropped on a descendant","nodeClusterReorder");
 		} else if (drop_n!=null) {
 			bugreport("Cluster dropped on a node","nodeClusterReorder");
 		} else if (drop_n==null && drop==drag_cluster.parentcluster) {
 			// Cluster dropped on its parent cluster
 			removeCluster(drag_cluster);
-			transactionCompleted("Remove cluster");
 		} else {
 			// Cluster dropped on a different cluster
 			moveCluster(drag_cluster,drop_cluster);
-			transactionCompleted("Move cluster");
 		}
 	}
 }
@@ -4907,28 +5414,19 @@ function nodeClusterReorder(event,ui) {
 function allowDrop(elem) {
 	if (Preferences.tab!=2)  return false;
 	if (this==elem[0])  return false;
+	if (!$(elem).hasClass('tlistitem')) return false; // Could be dragging a dialog box without an id
 	// Source and target information
-	var drag_n=null, drag;	// source node and cluster (id)
-	var drop_n=null, drop; // destination node and cluster (id)
+	var drag_n, drag;	// source node and cluster (id)
+	var drop_n, drop; // destination node and cluster (id)
 	var drag_cluster, drop_cluster; // source and destination clusters (object)
 
 	var id = elem[0].id;
 	drag = nid2id(id);
-	id = id.replace(/\d+$/,"");
-	id = id.replace(/\D+$/,"");
-	id = nid2id(id);
-	if (!isNaN(id)) {
-		drag_n = id;
-	}
+	drag_n = internalID(id);
 
 	id = this.id;
 	drop = nid2id(id);
-	id = id.replace(/\d+$/,"");
-	id = id.replace(/\D+$/,"");
-	id = nid2id(id);
-	if (!isNaN(id)) {
-		drop_n = id;
-	}
+	drop_n = internalID(id);
 
 	drag_cluster = NodeCluster.get(drag);
 	drop_cluster = NodeCluster.get(drop);
@@ -4949,7 +5447,7 @@ function allowDrop(elem) {
 		if (drop_n!=null) {
 			return false;
 		} else {
-			return !(drag_cluster.hasdescendant(drop));
+			return !(drag_cluster.containscluster(drop));
 		}
 	}
 	/* unreachable */
@@ -4963,174 +5461,108 @@ function allowDrop(elem) {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+const TabAnaVulnOverview = 0;
+const TabAnaAssOverview = 1;
+const TabAnaNodeCounts = 2;
+const TabAnaVulReports = 3;
+const TabAnaLonglist = 4;
 
 function initTabAnalysis() {
-	$("a[href^='#at1']").html(_("Failures and Vulnerabilities"));
-	$("a[href^='#at2']").html(_("Assessments by level"));
-	$("a[href^='#at3']").html(_("Node counts"));
-	$("a[href^='#at4']").html(_("Checklist reports"));
-	$("a[href^='#at5']").html(_("Longlist"));
+	$("a[href^='#at1']").text(_("Vulnerability overview"));
+	$("a[href^='#at2']").text(_("Assessments overview"));
+	$("a[href^='#at3']").text(_("Node counts"));
+	$("a[href^='#at4']").text(_("Vulnerability reports"));
+	$("a[href^='#at5']").text(_("Risk longlist"));
 
-	$('#analysis_body').tabs({
+	$('#tab_analysis').tabs({
 		classes: {
 			"ui-tabs": "ui-corner-bottom ui-corner-tl",
 			"ui-tabs-nav": "ui-corner-bottom",
 			"ui-tabs-tab": "ui-corner-bottom",
 			"ui-tabs-panel": "ui-corner-tl"
-		}
+		},
+		activate: repaintCurrentAnalysis
 	});
+
+	$('#minV').selectmenu({
+		appendTo: '#anallopts',
+		select: function(/*event,ui*/) {
+			MinValue = $('#minV').val();
+			$('#longlist').html(listSelectedRisks());
+		}
+	}).val(MinValue);
 }
 
-function AddAllAnalysis() {
-	paintNodeThreatTables();
-	paintVulnsTable();
-	paintNodeTypeStats();
-	paintChecklistReports();
-	paintLonglist();
+function repaintCurrentAnalysis() {
+	$('#tb_home .toolbarsection').hide();
+	switch ($('#tab_analysis').tabs('option','active')) {
+	case TabAnaVulnOverview:
+		$('#anavulnopts').show();
+		paintVulnerabilityOverview();
+		break;
+	case TabAnaAssOverview:
+		paintAssessmentOverview();
+		break;
+	case TabAnaNodeCounts:
+		paintNodeTypeStats();
+		break;
+	case TabAnaVulReports:
+		paintChecklistReports();
+		break;
+	case TabAnaLonglist:
+		$('#anallopts').show();
+		paintLonglist();
+		break;
+	default:
+		bugreport('unknown tab encountered','vertTabSelected');
+	}
+}
+
+function repaintAnalysisIfVisible(anatab) {		// eslint-disable-line no-unused-vars
+	if ($('#workspace').tabs('option','active') != TabWorkAna) return;
+	if (anatab!=null && anatab!=$('#tab_analysis').tabs('option','active')) return;
+	repaintCurrentAnalysis();
 }
 
 var FailureThreatSortOpt = {node: 'thrt', threat: 'type'};
 
-function paintNodeThreatTables() {
-	ComponentExclusions = {};
-	ClusterExclusions = {};
+function paintVulnerabilityOverview() {
+	ComponentExclusions.clear();
+	ClusterExclusions.clear();
 
 	$('#at1').empty();
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h1>\
-		<h2 class="printonly underlay projectname">_L1_</h2>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h1>\
 	';
-	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
+	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
+	snippet = snippet.replace(/_LD_/g, _H("Vulnerability overview"));
 
-	snippet += '\n\
-		<div id="ana_nodevuln" class="displayoptsarea donotprint">\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_LS1_</span><br>\n\
-			<fieldset>\n\
-				<input type="radio" id="ana_nodesort_alph" name="ana_nodesort"><label for="ana_nodesort_alph">_O1_</label>\n\
-				<input type="radio" id="ana_nodesort_type" name="ana_nodesort"><label for="ana_nodesort_type">_O2_</label>\n\
-				<input type="radio" id="ana_nodesort_thrt" name="ana_nodesort"><label for="ana_nodesort_thrt">_O3_</label>\n\
-			</fieldset>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_LS2_</span><br>\n\
-			<fieldset>\n\
-				<input type="radio" id="ana_failsort_alph" name="ana_failsort"><label for="ana_failsort_alph">_O1_</label>\n\
-				<input type="radio" id="ana_failsort_type" name="ana_failsort"><label for="ana_failsort_type">_O2_</label>\n\
-			</fieldset>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_LS3_</span><br>\n\
-			<input type="button" id="quickwinslink" value="_Q1_">\n\
-			<input type="button" id="clearexclusions" value="_Q2_"><br>\n\
-		  </div>\n\
-		</div>\n\
-		<div id="ana_nodethreattable" class="ana_nodeccfblock"></div>\n\
+	snippet += '<div id="ana_nodethreattable" class="ana_nodeccfblock"></div>\n\
 		<div id="ana_ccftable" class="ana_nodeccfblock"></div>\n\
 	';
-	snippet = snippet.replace(/_L1_/g, _("Single & Common Cause Failures versus Vulnerabilities"));
-	snippet = snippet.replace(/_LS1_/g, _("Sort nodes and clusters:"));
-	snippet = snippet.replace(/_LS2_/g, _("Sort vulnerabilities:"));
-	snippet = snippet.replace(/_LS3_/g, _("Click cells to include/exclude them."));
-	snippet = snippet.replace(/_O1_/g, _("Alphabetically"));
-	snippet = snippet.replace(/_O2_/g, _("by Type"));
-	snippet = snippet.replace(/_O3_/g, _("by Vulnerability level"));
-	snippet = snippet.replace(/_Q1_/g, _("show Quick Wins"));
-	snippet = snippet.replace(/_Q2_/g, _("clear exclusions"));
 	$('#at1').html(snippet);
-	$('#ana_nodevuln').headroom({
-		scroller: document.querySelector('#at1'),
-		tolerance : {
-			up : 20,
-			down : 20
-		}
-	});
 
-	$('#ana_nodevuln input[type=button]').button();
-	$('#ana_nodevuln input[type=radio]').checkboxradio({icon: false});
 	$('#ana_nodesort_'+FailureThreatSortOpt.node).prop('checked',true);
 	$('#ana_failsort_'+FailureThreatSortOpt.threat).prop('checked',true);
-	$('#ana_nodevuln fieldset').controlgroup();
-
-	var create_ananode_sortfunc = function(opt) {
-		return function() {
-			FailureThreatSortOpt.node = opt;
-			paintSFTable();
-			paintCCFTable();
-		};
-	};
-	$('[for=ana_nodesort_alph]').on('click', create_ananode_sortfunc('alph'));
-	$('[for=ana_nodesort_type]').on('click', create_ananode_sortfunc('type'));
-	$('[for=ana_nodesort_thrt]').on('click', create_ananode_sortfunc('thrt'));
-
-	var create_anafail_sortfunc = function(opt) {
-		return function() {
-			FailureThreatSortOpt.threat = opt;
-			paintSFTable();
-			paintCCFTable();
-		};
-	};
-	$('[for=ana_failsort_alph]').on('click', create_anafail_sortfunc('alph'));
-	$('[for=ana_failsort_type]').on('click', create_anafail_sortfunc('type'));
-
-	$('#quickwinslink').button().button('option','disabled',false).on('click',  function() {
-		var exclCm = computeComponentQuickWins();
-		var exclCl = computeClusterQuickWins();
-		ComponentExclusions = { };
-		ClusterExclusions = { };
-		for (var i=0; i<exclCm.length; i++) {
-			ComponentExclusions[exclCm[i]] = true;
-		}
-		for (i=0; i<exclCl.length; i++) {
-			ClusterExclusions[exclCl[i]] = true;
-		}
-		paintSFTable();
-		paintCCFTable();
-		$('#clearexclusions').button('option','disabled', (exclCm.length==0 && exclCl.length==0));
-	});
-	$('#clearexclusions').button().button('option','disabled',true).on('click',  function() {
-		ComponentExclusions = { };
-		ClusterExclusions = { };
-		paintSFTable();
-		paintCCFTable();
-		$('#clearexclusions').button('option','disabled',true);
-	});
 
 	paintSFTable();
 	paintCCFTable();
 }
 
-// Two associative arrays that record the single failures and CCFs that have been
+// Two Sets that record the single failures and CCFs that have been
 // marked as disabled/excluded. These failures will not contribute to the total
 // vulnerability score for that item. This allows simple "what if" analysis.
-// Keys are strings; when a key is present its value is always 'true'.
-// ComponentExclusions: component ID + '_' + threatassessment ID
-// ClusterExclusions: cluster ID + '_0'
+// ComponentExclusions values: component ID + '_' + threatassessment ID
+// ClusterExclusions values: cluster ID'
 // These two values are also recorded on the <TD> table cells, as the attributes
 // 'component', 'threat', and 'cluster'. These attributes are inspected in
 // the click-event handler on $('.nodecell') and $('.clustercell').
 //
-var ComponentExclusions = {};
-var ClusterExclusions = {};
-
-// Returns true iff Node id nid and ThreatAssessment id tid are in the exclusions list
-function exclusionsContains(list,nid,tid) {
-	return list[nid+"_"+tid];
-}
-function exclusionsRemove(list,nid,tid) {
-	delete list[nid+"_"+tid];
-}
-function exclusionsAdd(list,nid,tid) {
-	list[nid+"_"+tid] = true;
-}
-function exclusionsIsEmpty(list) {
-	var x;
-	for (x in list) { return false; }
-	return true;
-}
+var ComponentExclusions = new Set();
+var ClusterExclusions = new Set();
 
 // Returns an array contaiing keys for ComponentExclusions
 function computeComponentQuickWins() {
@@ -5138,15 +5570,14 @@ function computeComponentQuickWins() {
 	var cit = new ComponentIterator({project: Project.cid});
 
 	// Cycle over all of the nodes (components, really)
-	for (cit.first(); cit.notlast(); cit.next()) {
-		var cm = cit.getcomponent();
+	for (const cm of cit) {
 		// Don't bother with incomplete or low-risk components
 		if (cm.magnitude=='-' || cm.magnitude=='L' || cm.magnitude=='U') continue;
 		// Cycle over all vulnerabilities, and count how many are equal to the overall magnitude.
 		// There must be at least one such vuln!
 		var cnt = 0;
-		for (var i=0; i<cm.thrass.length; i++) {
-			var ta = ThreatAssessment.get(cm.thrass[i]);
+		for (const thid of cm.assmnt) {
+			var ta = Assessment.get(thid);
 			if (ta.total==cm.magnitude) {
 				var keepid = ta.id;
 				cnt++;
@@ -5165,17 +5596,16 @@ function computeClusterQuickWins() {
 	var suggestions = [];
 	var ncit = new NodeClusterIterator({project: Project.cid, isroot: true, isstub: false});
 
-	for (ncit.first(); ncit.notlast(); ncit.next()) {
-		var cl = ncit.getNodeCluster();
+	for (const cl of ncit) {
 		// Don't bother with incomplete or low-risk clusters
 		if (cl.magnitude=='-' || cl.magnitude=='L' || cl.magnitude=='U') continue;
 
 		var candidates = cl.allclusters();
-		for (var i=0; i<candidates.length; i++) {
-			var aarr = {};
-			exclusionsAdd(aarr,candidates[i],0);
+		for (const clid of candidates) {
+			var aarr = new Set();
+			aarr.add(clid);
 			if (ClusterMagnitudeWithExclusions(cl,aarr) != cl.magnitude){
-				suggestions.push(candidates[i]+'_0');
+				suggestions.push(clid);
 			}
 		}
 	}
@@ -5184,12 +5614,10 @@ function computeClusterQuickWins() {
 }
 
 function paintSFTable() {
-	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	var cit = new ComponentIterator({project: Project.cid});
-
 	switch (FailureThreatSortOpt.node) {
 	case 'alph':
-		cit.sortByName();
+		cit.sortByTitle();
 		break;
 	case 'type':
 		cit.sortByType();
@@ -5201,9 +5629,10 @@ function paintSFTable() {
 		bugreport("Unknown component sort option","paintSFTable");
 	}
 
+	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	switch (FailureThreatSortOpt.threat) {
 	case 'alph':
-		tit.sortByName();
+		tit.sortByTitle();
 		break;
 	case 'type':
 		tit.sortByType();
@@ -5213,88 +5642,83 @@ function paintSFTable() {
 	}
 
 	$('#ana_nodethreattable').empty();
-	var numthreats = 0;
+	var numvulns = tit.count();
 	var Nodesum = [];
-	for (tit.first(); tit.notlast(); tit.next()) numthreats++;
 	// If the table would be empty, then don't paint row and column headers
 	// but show a message instead
-	if (numthreats==0) {
+	if (numvulns==0) {
 		$('#ana_nodethreattable').html("<p style=\"margin-left:3em; width:50em;\">"
-			+ _("This space will show an overview of all diagram nodes and their vulnerabilities. ")
-			+ _("Since all service diagrams are empty, there is nothing to see here yet. ")
-			+ _("Add some nodes to the diagrams first.")
+			+ _H("This space will show an overview of all diagram nodes and their vulnerabilities. ")
+			+ _H("Since all service diagrams are empty, there is nothing to see here yet. ")
+			+ _H("Add some nodes to the diagrams first.")
 		);
+		$('#anavnsortsection input[name=ana_nodesort]').checkboxradio('option','disabled',true);
+		$('#anavnsortsection input[name=ana_failsort]').checkboxradio('option','disabled',true);
+		$('#quickwinslink').button('option','disabled',true);
 		return;
 	}
-
+	$('#anavnsortsection input[name=ana_nodesort]').checkboxradio('option','disabled',false);
+	$('#anavnsortsection input[name=ana_failsort]').checkboxradio('option','disabled',false);
+	$('#quickwinslink').button('option','disabled',false);
+	
 	// Initialise to '-'
-	for (cit.first(); cit.notlast(); cit.next()) Nodesum[cit.getcomponentid()] = '-';
+	cit.forEach(cm => Nodesum[cm.id] = '-');
 
 	// Do the header
 	var snippet = '\n\
+		<h3>_SF_</h3>\n\
 		<table style="width:_TW_em">\n\
 		<colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
 		<colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
+		<colgroup><col span="1" style="width:_WR_em"></colgroup>\n\
 		<thead>\n\
 		 <tr>\n\
-		  <td class="nodetitlecell largetitlecell">_SF_</td>\n\
+		  <td></td>\n\
 	';
 	// 20em = width of first column
-	// 1.7em = width of threat columns
-	// numthreats = number of threat columns
-	snippet = snippet.replace(/_SF_/, _("Single failures"));
+	// 1.7em = width of vulnerability columns
+	// numvulns = number of vulnerability columns
+	snippet = snippet.replace(/_SF_/, _H("Single failures"));
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
-	snippet = snippet.replace(/_TW_/, 20+1.7*(numthreats+1));
-	snippet = snippet.replace(/_NT_/, numthreats+1);
-	for (tit.first(); tit.notlast(); tit.next()) {
-		var nc = tit.getNodeCluster();
+	snippet = snippet.replace(/_WR_/, 6);
+	snippet = snippet.replace(/_TW_/, 20+1.7*(numvulns+1)+6);
+	snippet = snippet.replace(/_NT_/, numvulns+1);
+	for (const nc of tit) {
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}
-	snippet += '<td class="headercell"><b>_OV_</b></td>\n\
+	snippet += '<td class="headercell"><b>_OV_</b></td><td></td>\n\
 		 </tr>\n\
 		</thead>\n\
 		<tbody>\n\
 	';
 	snippet = snippet.replace(/_OV_/, _("Overall"));
 	// Do each of the table rows
-	for (cit.first(); cit.notlast(); cit.next()) {
-		var cm = cit.getcomponent();
+	for (const cm of cit) {
 		snippet += '<tr><td class="nodetitlecell">';
 		snippet += H(cm.title);
 		snippet += '&nbsp;</td>';
-		for (tit.first(); tit.notlast(); tit.next()) {
-			nc = tit.getNodeCluster();
+		for (const nc of tit) {
 			// Find the threat assessment for this node
 			var ta = {};
-			for (var i=0; i<cm.thrass.length; i++) {
-				ta = ThreatAssessment.get(cm.thrass[i]);
+			for (const thid of cm.assmnt) {
+				ta = Assessment.get(thid);
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
 			if (ta.title==nc.title && ta.type==nc.type) {
-				snippet += '<td class="nodecell _EX_ M_CL_" component="_NO_" threat="_TH_" title="_TI_">_TO_</td>';
-				snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[ta.total]);
-				snippet = snippet.replace(/_TO_/g, ta.total);
-				snippet = snippet.replace(/_TI_/g, H(cm.title)+" / "+H(ta.title)+" ("+Rules.nodetypes[ta.type]+")");
-				snippet = snippet.replace(/_NO_/g, cm.id);
-				snippet = snippet.replace(/_TH_/g, ta.id);
-				snippet = snippet.replace(/_EX_/g, exclusionsContains(ComponentExclusions,cm.id,ta.id)?"excluded":"" );
-				if (!exclusionsContains(ComponentExclusions,cm.id,ta.id)) {
-					Nodesum[cm.id] = ThreatAssessment.sum(Nodesum[cm.id], ta.total);
+				snippet += `<td class="nodecell ${ComponentExclusions.has(cm.id+'_'+ta.id)?"excluded":""} M${Assessment.valueindex[ta.total]}" data-component="${cm.id}" data-threat="${ta.id}" title="${H(cm.title)} / ${H(ta.title)} (${Rules.nodetypes[ta.type]})">${ta.total}</td>`;
+				if (!ComponentExclusions.has(cm.id+'_'+ta.id)) {
+					Nodesum[cm.id] = Assessment.sum(Nodesum[cm.id], ta.total);
 				}
 			} else {
 				snippet += '<td class="blankcell">&thinsp;</td>';
 			}
 		}
-		snippet += '<td class="M_CL_" title="_TI_">_TO_</td><td>_ZZ_</td></tr>\n';
-		snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[Nodesum[cm.id]]);
-		snippet = snippet.replace(/_TO_/g, Nodesum[cm.id]);
-		snippet = snippet.replace(/_TI_/g, H(cm.title)+" / overall vulnerability level");
-		if (cm.magnitude==Nodesum[cm.id]) {
-			snippet = snippet.replace(/_ZZ_/g, '');
-		} else {
-			snippet = snippet.replace(/_ZZ_/g, '<span class="reduced">' + _("reduced") + '</span>');
+		let reduced = '';
+		if (cm.magnitude!=Nodesum[cm.id]) {
+			reduced = '<span class="reduced">' + _("reduced") + '</span>';
 		}
+		snippet += `<td class="M${Assessment.valueindex[Nodesum[cm.id]]}" title="${H(cm.title)} /  ${_H("overall vulnerability level")}">${Nodesum[cm.id]}</td><td>${reduced}</td></tr>\n`;
 	}
 	// Do the ending/closing
 	snippet += '\n\
@@ -5303,14 +5727,14 @@ function paintSFTable() {
 	';
 	$('#ana_nodethreattable').html(snippet);
 
-	$('.nodecell').on('click',  function(evt){
-		var cmid = parseInt($(evt.currentTarget).attr('component'),10);
-		var tid = parseInt($(evt.currentTarget).attr('threat'),10);
-		if (exclusionsContains(ComponentExclusions,cmid,tid)) {
-			exclusionsRemove(ComponentExclusions,cmid,tid);
-			$('#clearexclusions').button('option','disabled',exclusionsIsEmpty(ComponentExclusions));
+	$('#ana_nodethreattable .nodecell').on('click',  function(evt){
+		var cmid = $(evt.currentTarget).data('component');
+		var tid = $(evt.currentTarget).data('threat');
+		if (ComponentExclusions.has(cmid+'_'+tid)) {
+			ComponentExclusions.delete(cmid+'_'+tid);
+			$('#clearexclusions').button('option','disabled',ComponentExclusions.size==0 && ClusterExclusions.size==0);
 		} else {
-			exclusionsAdd(ComponentExclusions,cmid,tid);
+			ComponentExclusions.add(cmid+'_'+tid);
 			$('#clearexclusions').button('option','disabled',false);
 		}
 		paintSFTable();
@@ -5319,11 +5743,9 @@ function paintSFTable() {
 
 function paintCCFTable() {
 	var ncit = new NodeClusterIterator({project: Project.cid, isroot: true, isstub: false});
-	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
-
 	switch (FailureThreatSortOpt.node) {
 	case 'alph':
-		ncit.sortByName();
+		ncit.sortByTitle();
 		break;
 	case 'type':
 		ncit.sortByType();
@@ -5335,9 +5757,10 @@ function paintCCFTable() {
 		bugreport("Unknown node sort option","paintCCFTable");
 	}
 
+	var tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	switch (FailureThreatSortOpt.threat) {
 		case 'alph':
-			tit.sortByName();
+			tit.sortByTitle();
 			break;
 		case 'type':
 			tit.sortByType();
@@ -5347,34 +5770,34 @@ function paintCCFTable() {
 	}
 
 	$('#ana_ccftable').empty();
-	var numthreats = 0;
-	for (tit.first(); tit.notlast(); tit.next()) numthreats++;
+	var numvulns = 0;
+	for (const cl of tit) numvulns++;		// eslint-disable-line no-unused-vars
 	// Do not paint an empty table
-	ncit.first();
-	if (!ncit.notlast() || numthreats==0)  return;
+	if (ncit.isEmpty() || numvulns==0)  return;
 
 	// Do the header
 	var snippet = '\n\
+	<h3>_CCF_</h3>\n\
 	<table style="width:_TW_em">\n\
 	<colgroup><col span="1" style="width:_WF_em"></colgroup>\n\
 	<colgroup><col span="_NT_" style="width:_WC_em"></colgroup>\n\
+	<colgroup><col span="1" style="width:_WR_em"></colgroup>\n\
 	<thead>\n\
-	<tr>\n\
-	<td class="nodetitlecell largetitlecell">_CCF_</td>\n\
+	<tr><td></td>\n\
 	';
 	snippet = snippet.replace(/_CCF_/, _("Common cause failures"));
 	// 20em = width of first column
-	// 1.7em = width of threat columns
-	// numthreats = number of threat columns
+	// 1.7em = width of vulnerability columns
+	// numvulns = number of vulnerability columns
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
-	snippet = snippet.replace(/_TW_/, 20+1.7*(numthreats+1));
-	snippet = snippet.replace(/_NT_/, numthreats+1);
-	for (tit.first(); tit.notlast(); tit.next()) {
-		var nc = tit.getNodeCluster();
+	snippet = snippet.replace(/_WR_/, 6);
+	snippet = snippet.replace(/_TW_/, 20+1.7*(numvulns+1)+6);
+	snippet = snippet.replace(/_NT_/, numvulns+1);
+	for (const nc of tit) {
 		snippet += '<td class="headercell">'+H(nc.title)+'</td>\n';
 	}
-	snippet += '<td class="headercell"><b>_OV_</b></td>\n\
+	snippet += '<td class="headercell"><b>_OV_</b></td><td></td>\n\
 		 </tr>\n\
 		</thead>\n\
 		<tbody>\n\
@@ -5382,16 +5805,16 @@ function paintCCFTable() {
 	snippet = snippet.replace(/_OV_/, _("Overall"));
 
 	// Do each of the table rows
-	for (ncit.first(); ncit.notlast(); ncit.next()) {
-		var cl = ncit.getNodeCluster();
-		var ta = ThreatAssessment.get(cl.thrass);
+	for (const cl of ncit) {
+		var ta = Assessment.get(cl.assmnt);
 
-		var col;
-		for (tit.first(),col=0; tit.notlast(); tit.next(),col++) {
-			if (tit.getNodeClusterid()==ncit.getNodeClusterid()) break;
+		var col=0;
+		for (const cl2 of tit) {
+			if (cl2.id==cl.id) break;
+			col++;
 		}
 
-		snippet += addCCFTableRow(col,numthreats,ta,cl,0);
+		snippet += addCCFTableRow(col,numvulns,ta,cl,0);
 
 		col++;
 	}
@@ -5405,30 +5828,32 @@ function paintCCFTable() {
 	$('#ana_ccftable').html(snippet);
 
 	$('.clustercell').on('click',  function(evt){
-		var cid = parseInt($(evt.currentTarget).attr('cluster'),10);
-		if (exclusionsContains(ClusterExclusions,cid,0)) {
-			exclusionsRemove(ClusterExclusions,cid,0);
+		var cid = $(evt.currentTarget).data('cluster');
+		if (ClusterExclusions.has(cid)) {
+			ClusterExclusions.delete(cid);
+			$('#clearexclusions').button('option','disabled',ComponentExclusions.size==0 && ClusterExclusions.size==0);
 		} else {
-			exclusionsAdd(ClusterExclusions,cid,0);
+			ClusterExclusions.add(cid);
+			$('#clearexclusions').button('option','disabled',false);
 		}
 		paintCCFTable();
 	});
 }
 
-function addCCFTableRow(col,numthreats,ta,cl,indent) {
+function addCCFTableRow(col,numvulns,ta,cl,indent) {
 	var suffix = "";
 	if (indent>0) {
 		suffix = " :" + new Array(indent+1).join("&nbsp;&nbsp;");
 	}
 	var snippet = '<tr><td class="nodetitlecell">'+H(cl.title)+suffix+'&nbsp;</td>\n';
-	for (var i=0; i<numthreats; i++) {
+	for (var i=0; i<numvulns; i++) {
 		if (i==col &&cl.childnodes.length>1) {
-			snippet += '<td class="clustercell _EX_ M_CL_" cluster="_CI_" title="_TI_">_TO_</td>';
-			snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[ta.total]);
+			snippet += '<td class="clustercell _EX_ M_CL_" data-cluster="_CI_" title="_TI_">_TO_</td>';
+			snippet = snippet.replace(/_CL_/g, Assessment.valueindex[ta.total]);
 			snippet = snippet.replace(/_TO_/g, ta.total);
-			snippet = snippet.replace(/_TI_/g, "CCF for "+H(cl.title)+" ("+Rules.nodetypes[cl.type]+")");
+			snippet = snippet.replace(/_TI_/g, _("CCF for ")+cl.title+" ("+Rules.nodetypes[cl.type]+")");
 			snippet = snippet.replace(/_CI_/g, cl.id);
-			snippet = snippet.replace(/_EX_/g, exclusionsContains(ClusterExclusions,cl.id,0)?"excluded":"" );
+			snippet = snippet.replace(/_EX_/g, ClusterExclusions.has(cl.id)?"excluded":"" );
 		} else {
 			snippet += '<td class="'+(indent>0?'continuationcell':'blankcell')+'">&thinsp;</td>';
 		}
@@ -5438,47 +5863,46 @@ function addCCFTableRow(col,numthreats,ta,cl,indent) {
 	} else {
 		snippet += '<td class="clustercell M_CL_" title="_TI_">_TO_</td><td>_ZZ_</td></tr>\n';
 		var clustertotal = ClusterMagnitudeWithExclusions(cl,ClusterExclusions);
-		snippet = snippet.replace(/_CL_/g, ThreatAssessment.valueindex[clustertotal]);
+		snippet = snippet.replace(/_CL_/g, Assessment.valueindex[clustertotal]);
 		snippet = snippet.replace(/_TO_/g, clustertotal);
-		snippet = snippet.replace(/_TI_/g, "Total for "+H(cl.title)+" ("+Rules.nodetypes[cl.type]+")");
+		snippet = snippet.replace(/_TI_/g, "Total for "+cl.title+" ("+Rules.nodetypes[cl.type]+")");
 		if (cl.magnitude==clustertotal) {
 			snippet = snippet.replace(/_ZZ_/g, '');
 		} else {
 			snippet = snippet.replace(/_ZZ_/g, '<span class="reduced">' + _("reduced") + '</span>');
 		}
 	}
-	for (i=0; i<cl.childclusters.length; i++) {
-		var ccl = NodeCluster.get(cl.childclusters[i]);
-		ta = ThreatAssessment.get(ccl.thrass);
-		snippet += addCCFTableRow(col,numthreats,ta,ccl,indent+1);
+	for (const clid of cl.childclusters) {
+		var ccl = NodeCluster.get(clid);
+		ta = Assessment.get(ccl.assmnt);
+		snippet += addCCFTableRow(col,numvulns,ta,ccl,indent+1);
 	}
 
 	return snippet;
 }
 
 function ClusterMagnitudeWithExclusions(cl,list) {
-	if (cl.thrass==null)  return '-';
-	var ta = ThreatAssessment.get(cl.thrass);
-	var mag = exclusionsContains(list,cl.id,0) ? "U" : ta.total;
-	for (var i=0; i<cl.childclusters.length; i++) {
-		var cc = NodeCluster.get(cl.childclusters[i]);
-		mag = ThreatAssessment.sum(mag,ClusterMagnitudeWithExclusions(cc,list));
+	if (cl.assmnt==null)  return '-';
+	var ta = Assessment.get(cl.assmnt);
+	var mag = list.has(cl.id) ? "U" : ta.total;
+	for (const clid of cl.childclusters) {
+		var cc = NodeCluster.get(clid);
+		mag = Assessment.sum(mag,ClusterMagnitudeWithExclusions(cc,list));
 	}
 	return mag;
 }
 
-function paintVulnsTable() {
-	var freq_snippet = paintVulnsTableType(1);
+function paintAssessmentOverview() {
+	var freq_snippet = paintAssessmentOverviewType(1);
 	var impact_snippet;
 	var total_snippet;
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
-		<h2 class="printonly underlay projectname">_LD_</h2>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
 	';
-	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
-	snippet = snippet.replace(/_LD_/g, _("Vulnerability assessment details") );
+	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LD_/g, _H("Assessments overview") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 	$('#at2').html(snippet);
 
@@ -5493,8 +5917,8 @@ function paintVulnsTable() {
 		return;
 	}
 
-	impact_snippet = paintVulnsTableType(2);
-	total_snippet = paintVulnsTableType(0);
+	impact_snippet = paintAssessmentOverviewType(2);
+	total_snippet = paintAssessmentOverviewType(0);
 
 	snippet = '\
 		<div id="svulns_tabs">\
@@ -5518,11 +5942,14 @@ function paintVulnsTable() {
 	$('#total_acc').append(total_snippet);
 	$('#svulns_tabs').tabs({
 		event: 'mouseenter',
-		heightStyle: 'content'
+		heightStyle: 'content',
+		classes: {
+			'ui-tabs-nav': 'ui-corner-top'
+		}
 	});
 }
 
-/* paintVulnsTableType(t): create HTML code for vulnerabilities tables
+/* paintAssessmentOverviewType(t): create HTML code for vulnerabilities tables
  *
  * t==0: vulnerability level
  * t==1: frequency
@@ -5530,7 +5957,7 @@ function paintVulnsTable() {
  *
  * Returns an HTML snippet for the table, or an empty string when there are no vulnerabilities to show.
  */
-function paintVulnsTableType(tabletype) {
+function paintAssessmentOverviewType(tabletype) {
 	var switchvar;
 	var v_total = {};
 	var v_U = {'__TOTAL__':0};
@@ -5546,7 +5973,7 @@ function paintVulnsTableType(tabletype) {
 	function addUp(ta) {
 		var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
 		if (v_total[t]) v_total[t]++; else v_total[t]=1;
-		switchvar = (tabletype==0 ? ta.total : (tabletype==1 ? ta.freq : ta.impact) );
+		switchvar = (tabletype==0 ? ta.total : (tabletype==1 ? ta.freqDisp : ta.impact) );
 		switch (switchvar) {
 		case 'U': v_U['__TOTAL__']++; if (v_U[t]>0) v_U[t]++; else v_U[t]=1; break;
 		case 'L': v_L['__TOTAL__']++; if (v_L[t]>0) v_L[t]++; else v_L[t]=1; break;
@@ -5557,25 +5984,18 @@ function paintVulnsTableType(tabletype) {
 		case 'A': v_A['__TOTAL__']++; if (v_A[t]>0) v_A[t]++; else v_A[t]=1; break;
 		case '-': v_N['__TOTAL__']++; if (v_N[t]>0) v_N[t]++; else v_N[t]=1; break;
 		default:
-			bugreport("Unknown threat-value","paintVulnsTable");
+			bugreport("Unknown threat-value","paintAssessmentOverview");
 		}
 	}
 
 	// Precompute all numbers
 	// Iterate over all components
 	var cit = new ComponentIterator({project: Project.cid});
-	for (cit.first(); cit.notlast(); cit.next()) {
-		var cm = cit.getcomponent();
-		for (var i=0; i<cm.thrass.length; i++) {
-			addUp(ThreatAssessment.get(cm.thrass[i]));
-		}
-	}
+	cit.forEach(cm => cm.assmnt.forEach(thid => addUp(Assessment.get(thid))));
+
 	// Tterate over all cluster assessments
 	var tit = new NodeClusterIterator({project: Project.cid, isempty: false});
-	for (tit.first(); tit.notlast(); tit.next()) {
-		var nc = tit.getNodeCluster();
-		addUp(ThreatAssessment.get(nc.thrass));
-	}
+	tit.forEach(nc => addUp(Assessment.get(nc.assmnt)));
 
 	var grandtotal = v_U['__TOTAL__']+v_L['__TOTAL__']+v_M['__TOTAL__']+v_H['__TOTAL__']+
 		v_V['__TOTAL__']+v_X['__TOTAL__']+v_A['__TOTAL__']+v_N['__TOTAL__'];
@@ -5616,28 +6036,26 @@ function paintVulnsTableType(tabletype) {
 	</tr>\n\
 	';
 
-	snippet = snippet.replace(/_LJ_/g, _("Jump to:"));
 	snippet = snippet.replace(/_LF_/g, _("Frequencies"));
 	snippet = snippet.replace(/_LI_/g, _("Impacts"));
 	snippet = snippet.replace(/_LO_/g, _("Overall levels"));
 	snippet = snippet.replace(/_SV_/g, _("Assessments for"));
-	snippet = snippet.replace(/_LVU_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['U']] );
-	snippet = snippet.replace(/_LVL_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['L']] );
-	snippet = snippet.replace(/_LVM_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['M']] );
-	snippet = snippet.replace(/_LVH_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['H']] );
-	snippet = snippet.replace(/_LVV_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['V']] );
-	snippet = snippet.replace(/_LVX_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['X']] );
-	snippet = snippet.replace(/_LVA_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['A']] );
-	snippet = snippet.replace(/_LVN_/g, ThreatAssessment.descr[ThreatAssessment.valueindex['-']] );
+	snippet = snippet.replace(/_LVU_/g, Assessment.descr[Assessment.valueindex['U']] );
+	snippet = snippet.replace(/_LVL_/g, Assessment.descr[Assessment.valueindex['L']] );
+	snippet = snippet.replace(/_LVM_/g, Assessment.descr[Assessment.valueindex['M']] );
+	snippet = snippet.replace(/_LVH_/g, Assessment.descr[Assessment.valueindex['H']] );
+	snippet = snippet.replace(/_LVV_/g, Assessment.descr[Assessment.valueindex['V']] );
+	snippet = snippet.replace(/_LVX_/g, Assessment.descr[Assessment.valueindex['X']] );
+	snippet = snippet.replace(/_LVA_/g, Assessment.descr[Assessment.valueindex['A']] );
+	snippet = snippet.replace(/_LVN_/g, Assessment.descr[Assessment.valueindex['-']] );
 	snippet = snippet.replace(/_LT_/g, _("Total") );
 	snippet = snippet.replace(/_TT_/g, (tabletype==0 ? _("levels") : (tabletype==1 ? _("frequencies") : _("impacts")) ));
 	// Do each of the table rows
 	tit = new NodeClusterIterator({project: Project.cid, isroot: true, isempty: false});
 	tit.sortByType();
 //	var col = 0;
-	for (tit.first(); tit.notlast(); tit.next()) {
-		var cl = tit.getNodeCluster();
-		var ta = ThreatAssessment.get(cl.thrass);
+	for (const cl of tit) {
+		var ta = Assessment.get(cl.assmnt);
 		var t = ta.title + ' (' + Rules.nodetypes[ta.type] + ')';
 
 		snippet += '<tr><td class="nodetitlecell">'+H(t)+'&nbsp;</td>\n';
@@ -5700,7 +6118,7 @@ function paintVulnsTableType(tabletype) {
 	</tbody>\n\
 	</table>\n\
 	';
-	const MAXCOLH = 30;
+	const MAXCOLH = 40;
 	snippet = snippet.replace(/_2_/, 5 + MAXCOLH*v_U['__TOTAL__']/max);
 	snippet = snippet.replace(/_3_/, 5 + MAXCOLH*v_L['__TOTAL__']/max);
 	snippet = snippet.replace(/_4_/, 5 + MAXCOLH*v_M['__TOTAL__']/max);
@@ -5716,36 +6134,28 @@ function paintVulnsTableType(tabletype) {
 function paintNodeTypeStats() {
 	var tStats = {};
 	var tTot = 0;
-	var numservice = 0;
-	var sit = new ServiceIterator(Project.cid);
-	sit.sortByName();
+	var sit = new ServiceIterator({project: Project.cid});
+	sit.sortByTitle();
 
 	$('#at3').empty();
 
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
-		<h2 class="printonly underlay projectname">_LD_</h2>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
 	';
 	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
-	snippet = snippet.replace(/_LD_/g, _("Node types counted by service") );
+	snippet = snippet.replace(/_LD_/g, _("Node counts") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
-	for (var typ in Rules.nodetypes) tStats[typ] = 0;
-	snippet +='\n\
-	<table><tr>\n\
-	';
-	for (sit.first(); sit.notlast(); sit.next()) {
-		var s = sit.getservice();
+	for (var typ of Rules.types) tStats[typ] = 0;
+	for (const s of sit) {
 		var sStats = {};
 		var sTot = 0;
 		var nit = new NodeIterator({service: s.id});
 
-		for (typ in Rules.nodetypes) sStats[typ] = 0;
-		snippet += '\n\
-		<td>\n\
-		<div id="servicestats_SI_" class="servicestats">\n\
+		for (typ of Rules.types) sStats[typ] = 0;
+		snippet += '<div id="servicestats_SI_" class="servicestats">\n\
 		<b>_SN_</b><br>\n\
 		<table class="statstable">\n\
 		<thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n\
@@ -5755,8 +6165,7 @@ function paintNodeTypeStats() {
 		snippet = snippet.replace(/_LN_/g, _("Num") );
 		snippet = snippet.replace(/_SI_/g, s.id);
 		snippet = snippet.replace(/_SN_/g, H(s.title));
-		for (nit.first(); nit.notlast(); nit.next()) {
-			var rn = nit.getnode();
+		for (const rn of nit) {
 			var cm = Component.get(rn.component);
 			sStats[rn.type]++;
 			if (rn.type!='tNOT') sTot++;
@@ -5774,21 +6183,11 @@ function paintNodeTypeStats() {
 		snippet += '<tr><td class="statstype">('+Rules.nodetypes['tNOT']+'</td><td class="statsnum">'+sStats['tNOT']+')</td></tr>\n';
 		snippet += '\
 		</tbody></table></div>\n\
-		</td>\n\
 		';
 		snippet = snippet.replace(/_LT_/g, _("Total") );
-		numservice++;
-		if (numservice%6==0) {
-			snippet += '\n\
-			</tr>\n\
-			<tr>\n\
-			';
-		}
 	}
 	// Project total
-	snippet += '\n\
-	<td>\n\
-	<div id="servicestatsTotal" class="servicestats">\n\
+	snippet += '<div id="servicestatsTotal" class="servicestats">\n\
 	<b>_LP_</b><br>\n\
 	<table class="statstable">\n\
 	<thead><th class="statstype">_LT_</th><th class="statsnum">_LN_</th></thead>\n\
@@ -5805,13 +6204,8 @@ function paintNodeTypeStats() {
 	<tr><td class="statstype">_LT_</td><td class="statsnum">'+tTot+'</td></tr>\n\
 	<tr><td class="statstype">('+Rules.nodetypes['tNOT']+'</td><td class="statsnum">'+tStats['tNOT']+')</td></tr>\n\
 	</tbody></table></div>\n\
-	</td>\n\
 	';
 	snippet = snippet.replace(/_LT_/g, _("Total") );
-	// Finishing
-	snippet += '\n\
-	</tr></table>\n\
-	';
 	$('#at3').append(snippet);
 }
 
@@ -5820,19 +6214,20 @@ function paintChecklistReports() {
 
 
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
-		<h2 class="printonly underlay projectname">_LD_</h2>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
 	';
-	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
-	snippet = snippet.replace(/_LD_/g, _("Checklist usage") );
+	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LD_/g, _H("Checklist reports") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
-	snippet += '<h3>' + _("Removed vulnerabilities") + '</h3>\n';
+	snippet += '<div class="checklistreport"><h3>' + _H("Removed vulnerabilities") + '</h3>\n';
 	snippet += showremovedvulns();
-	snippet += '<h3>' + _("Custom vulnerabilities") + '</h3>\n';
+	snippet += '</div>';
+	snippet += '<div class="checklistreport"><h3>' + _H("Custom vulnerabilities") + '</h3>\n';
 	snippet += showcustomvulns();
+	snippet += '</div>';
 
 	$('#at4').html(snippet);
 
@@ -5850,19 +6245,17 @@ function showremovedvulns() {
 	// First find all components with at least one vulnerability removed, and find all
 	// vulnerabilities that were removed at least once.
 	var cit = new ComponentIterator({project: Project.cid});
-	cit.sortByName();
-	for (cit.first(); cit.notlast(); cit.next()) {
-		cm = cit.getcomponent();
-		var tit = new ThreatIterator(Project.cid,cm.type);
-		for (tit.first(); tit.notlast(); tit.next()) {
-			var th = tit.getthreat();
+	cit.sortByTitle();
+	for (const cm of cit) {
+		var tit = new VulnerabilityIterator({project: Project.cid, type: cm.type});
+		for (const th of tit) {
 			// Check whether this threat was used
-			for (i=0; i<cm.thrass.length; i++) {
-				var ta = ThreatAssessment.get(cm.thrass[i]);
+			for (i=0; i<cm.assmnt.length; i++) {
+				var ta = Assessment.get(cm.assmnt[i]);
 				// we have a match
 				if (th.type==ta.type && th.title==ta.title) break;
 			}
-			if (i<cm.thrass.length) continue;
+			if (i<cm.assmnt.length) continue;
 			// We found a checklist threat that was not used on this component
 			if (VulnIDs.indexOf(th.id)==-1) VulnIDs.push(th.id);
 			if (CompIDs.indexOf(cm.id)==-1) CompIDs.push(cm.id);
@@ -5883,14 +6276,14 @@ function showremovedvulns() {
 	  <td class="nodetitlecell largetitlecell"></td>\n\
 	';
 	// 20em = width of first column
-	// 1.7em = width of threat columns
-	// numthreats = number of threat columns
+	// 1.7em = width of vulnerability columns
+	// numvulns = number of vulnerability columns
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
 	snippet = snippet.replace(/_TW_/, 20+1.7*VulnIDs.length);
 	snippet = snippet.replace(/_NT_/, VulnIDs.length);
 	for (j=0; j<VulnIDs.length; j++) {
-		snippet += '<td class="headercell">'+H(Threat.get(VulnIDs[j]).title)+'</td>\n';
+		snippet += '<td class="headercell">'+H(Vulnerability.get(VulnIDs[j]).title)+'</td>\n';
 	}
 	snippet += '\
 	  </tr>\n\
@@ -5899,11 +6292,11 @@ function showremovedvulns() {
 	';
 
 	// Do each of the table rows
-	for (i=0; i<CompIDs.length; i++) {
-		cm = Component.get(CompIDs[i]);
+	for (const cid of CompIDs) {
+		cm = Component.get(cid);
 		snippet += '<tr><td class="nodetitlecell">'+H(cm.title)+'</td>';
-		for (j=0; j<VulnIDs.length; j++) {
-			if (CompVulns[cm.id] && CompVulns[cm.id].indexOf(VulnIDs[j])==-1) {
+		for (const v of VulnIDs) {
+			if (CompVulns[cid] && CompVulns[cid].indexOf(v)==-1) {
 				snippet += '<td class="blankcell"></td>';
 			} else {
 				snippet += '<td class="blankcell">X</td>';
@@ -5916,13 +6309,14 @@ function showremovedvulns() {
 	snippet += '\n\
 	</tbody>\n\
 	</table>\n\
+	<p>\n\
 	';
 
 	if (num==0) {
-		snippet += _("No checklist vulnerabilities have been discarded on components of this project.");
+		snippet += _H("No checklist vulnerabilities have been discarded on components of this project.");
 	} else {
 		snippet += '<br>'+
-			_("%% checklist %% (for %% unique %%) discarded on %% %% of this project.",
+			_H("%% checklist %% (for %% unique %%) discarded on %% %% of this project.",
 			num,
 			plural(_("vulnerability"), _("vulnerabilities"), num),
 			VulnIDs.length,
@@ -5931,7 +6325,7 @@ function showremovedvulns() {
 			plural(_("component"), _("components"), CompIDs.length)
 		);
 	}
-	snippet += '<br><br>\n';
+	snippet += '</p><br><br>\n';
 
 	return snippet;
 }
@@ -5942,27 +6336,28 @@ function showcustomvulns() {
 	var VulnTitles = [];// list of all threat titles that were removed at least once
 	var CompIDs = [];	// list of all component IDs that had at least one threat removed
 	var CompVulns = [];	// CompVulns[x] = list of threat titles removed for component with ID 'x'.
-	var i,j,cm;
 
-	// All checklist threats
-	var tit = new ThreatIterator(Project.cid,'tUNK');
+	// All Vulnerabilities
+	var tit = new VulnerabilityIterator({project: Project.cid, common: true});
 
 	// Iterate over all vulnerabilities to all components
 	// First find all components with at least one vulnerability removed, and find all
 	// vulnerabilities that were removed at least once.
 	var cit = new ComponentIterator({project: Project.cid});
-	cit.sortByName();
-	for (cit.first(); cit.notlast(); cit.next()) {
-		cm = cit.getcomponent();
-		for (i=0; i<cm.thrass.length; i++) {
-			var ta = ThreatAssessment.get(cm.thrass[i]);
+	cit.sortByTitle();
+	for (const cm of cit) {
+		for (const thid of cm.assmnt) {
+			var ta = Assessment.get(thid);
 			// Check whether this threat occurs in its checklist
-			for (tit.first(); tit.notlast(); tit.next()) {
-				var th = tit.getthreat();
+			let found = false;
+			for (const th of tit) {
 				// we have a match
-				if (th.type==ta.type && th.title==ta.title) break;
+				if (th.type==ta.type && th.title==ta.title) {
+					found = true;
+					break;
+				}
 			}
-			if (tit.notlast()) continue;
+			if (found) continue;
 			// We found a threat assessment that does not occur in the checklists
 			if (VulnTitles.indexOf(ta.title)==-1) VulnTitles.push(ta.title);
 			if (CompIDs.indexOf(cm.id)==-1) CompIDs.push(cm.id);
@@ -5983,14 +6378,14 @@ function showcustomvulns() {
 	  <td class="nodetitlecell largetitlecell"></td>\n\
 	';
 	// 20em = width of first column
-	// 1.7em = width of threat columns
-	// numthreats = number of threat columns
+	// 1.7em = width of vulnerability columns
+	// numvulns = number of vulnerability columns
 	snippet = snippet.replace(/_WF_/, 20);
 	snippet = snippet.replace(/_WC_/, 1.7);
 	snippet = snippet.replace(/_TW_/, 20+1.7*VulnTitles.length);
 	snippet = snippet.replace(/_NT_/, VulnTitles.length);
-	for (j=0; j<VulnTitles.length; j++) {
-		snippet += '<td class="headercell">'+H(VulnTitles[j])+'</td>\n';
+	for (const vuln of VulnTitles) {
+		snippet += '<td class="headercell">'+H(vuln)+'</td>\n';
 	}
 	snippet += '\
 	  </tr>\n\
@@ -5999,11 +6394,11 @@ function showcustomvulns() {
 	';
 
 	// Do each of the table rows
-	for (i=0; i<CompIDs.length; i++) {
-		cm = Component.get(CompIDs[i]);
+	for (const id of CompIDs) {
+		let cm = Component.get(id);
 		snippet += '<tr><td class="nodetitlecell">'+H(cm.title)+'</td>';
-		for (j=0; j<VulnTitles.length; j++) {
-			if (CompVulns[cm.id] && CompVulns[cm.id].indexOf(VulnTitles[j])==-1) {
+		for (const vul of VulnTitles) {
+			if (CompVulns[cm.id] && CompVulns[cm.id].indexOf(vul)==-1) {
 				snippet += '<td class="blankcell"></td>';
 			} else {
 				snippet += '<td class="blankcell">+</td>';
@@ -6016,13 +6411,14 @@ function showcustomvulns() {
 	snippet += '\n\
 	</tbody>\n\
 	</table>\n\
+	<p>\n\
 	';
 
 	if (num==0) {
-		snippet += _("No custom vulnerabilities have been added to any of the components in this project.");
+		snippet += _H("No custom vulnerabilities have been added to any of the components in this project.");
 	} else {
 		snippet += '<br>'+
-			_("%% custom %% (for %% unique %%) added to %% %% of this project.",
+			_H("%% custom %% (for %% unique %%) added to %% %% of this project.",
 				num,
 				plural(_("vulnerability"), _("vulnerabilities"), num),
 				VulnTitles.length,
@@ -6031,7 +6427,7 @@ function showcustomvulns() {
 				plural(_("component"), _("components"), CompIDs.length)
 			);
 	}
-	snippet += '<br><br>\n';
+	snippet += '</p><br><br>\n';
 
 	return snippet;
 }
@@ -6042,57 +6438,26 @@ var MinValue = 'H';
 function paintLonglist() {
 	$('#at5').empty();
 
-
 	var snippet = '\
-		<h1 class="printonly underlay">_LTT_</h1>\
-		<h2 class="printonly underlay projectname">_LP_ _PN_</h2>\
-		<h2 class="printonly underlay projectname">_LD_</h2>\
+		<h1 class="printonly">_LD_</h2>\
+		<h2 class="printonly">_LTT_</h1>\
+		<h2 class="printonly projectname">_PN_</h2>\
 	';
-	snippet = snippet.replace(/_LTT_/g, _("Reports and Analysis Tools") );
-	snippet = snippet.replace(/_LP_/g, _("Project:") );
-	snippet = snippet.replace(/_LD_/g, _("Risk longlist") );
+	snippet = snippet.replace(/_LTT_/g, _H("Reports and Analysis Tools") );
+	snippet = snippet.replace(/_LD_/g, _H("Risk longlist") );
 	snippet = snippet.replace(/_PN_/g, H(Project.get(Project.cid).title));
 
-	snippet += '\n\
-		<div id="lloptions" class="displayoptsarea donotprint">\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L1_</span><br>\n\
-			<input type="checkbox" id="incX" checked><label for="incX">_LU_</label><br>\n\
-			<input type="checkbox" id="incA" checked><label for="incA">_LA_</label>\n\
-		  </div>\n\
-		  <div class="displayopt">\n\
-			<span class="displayoptlabel">_L2_</span><br>\n\
-			<select id="minV"></select>\n\
-		  </div>\n\
-		</div>\n\
-		<div id="longlist"></div>\
-	';
-	snippet = snippet.replace(/_L1_/g, _("Include:") );
-	snippet = snippet.replace(/_LU_/g, _("Unknown") );
-	snippet = snippet.replace(/_LA_/g, _("Ambiguous") );
-	snippet = snippet.replace(/_L2_/g, _("Minimum value:") );
+	snippet += '<div id="longlist"></div>';
+	$('#at5').html(snippet);
 
 	var selectoptions = "";
-	for (var i=ThreatAssessment.valueindex['U']; i<=ThreatAssessment.valueindex['V']; i++) {
+	for (var i=Assessment.valueindex['U']; i<=Assessment.valueindex['V']; i++) {
 		selectoptions += '<option value="_V_">_D_</option>\n';
-		selectoptions = selectoptions.replace(/_V_/g, ThreatAssessment.values[i]);
-		selectoptions = selectoptions.replace(/_D_/g, ThreatAssessment.descr[i]);
+		selectoptions = selectoptions.replace(/_V_/g, Assessment.values[i]);
+		selectoptions = selectoptions.replace(/_D_/g, H(Assessment.descr[i]));
 	}
-	$('#at5').html(snippet);
-	$('#lloptions').headroom({
-		scroller: document.querySelector('#at5'),
-		tolerance : {
-			up : 20,
-			down : 20
-		}
-	});
-
-	$('#minV').html(selectoptions).selectmenu({
-		select: function(/*event,ui*/) {
-			MinValue = $('#minV').val();
-			$('#longlist').html(listSelectedRisks());
-		}
-	}).val(MinValue).selectmenu('refresh');
+	$('#minV').html(selectoptions);
+	$('#minV').val(MinValue).selectmenu('refresh');
 
 	$('#incX').on('change',  function() {
 		$('#longlist').html(listSelectedRisks());
@@ -6113,25 +6478,23 @@ function listSelectedRisks() {
 	// exclCl is a list (array) of "clusterID_0"
 	var exclCm = computeComponentQuickWins();
 	var exclCl = computeClusterQuickWins();
-	cit.sortByName();
+	cit.sortByTitle();
 
-	for (cit.first(); cit.notlast(); cit.next()) {
-		var cm = cit.getcomponent();
-		for (tit.first(); tit.notlast(); tit.next()) {
-			var nc = tit.getNodeCluster();
+	for (const cm of cit) {
+		for (const nc of tit) {
 			// Find the threat assessment for this node
 			var ta = null;
-			for (var i=0; i<cm.thrass.length; i++) {
-				ta = ThreatAssessment.get(cm.thrass[i]);
+			for (const thid of cm.assmnt) {
+				ta = Assessment.get(thid);
 				if (ta.title==nc.title && ta.type==nc.type) break;
 			}
 			if (ta && ta.title==nc.title && ta.type==nc.type
 			&& (
-				(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
+				(Assessment.valueindex[ta.total]>=Assessment.valueindex[MinValue] && Assessment.valueindex[ta.total]<Assessment.valueindex['X'])
 				||
-				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').prop('checked'))
+				(Assessment.valueindex[ta.total]==Assessment.valueindex['X'] && $('#incX').prop('checked'))
 				||
-				(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').prop('checked'))
+				(Assessment.valueindex[ta.total]==Assessment.valueindex['A'] && $('#incA').prop('checked'))
 				)
 			) {
 				matches.push({
@@ -6139,41 +6502,40 @@ function listSelectedRisks() {
 					cm: cm.title,
 					ccf: false,
 					qw: (exclCm.indexOf(cm.id+'_'+ta.id)>=0),
-					v: ThreatAssessment.valueindex[ta.total]
+					v: Assessment.valueindex[ta.total]
 				});
 			}
 		}
 	}
 	tit = new NodeClusterIterator({project: Project.cid, isempty: false});
-	for (tit.first(); tit.notlast(); tit.next()) {
-		nc = tit.getNodeCluster();
-		if (!nc.thrass) continue;
+	for (const nc of tit) {
+		if (!nc.assmnt) continue;
 
-		ta = ThreatAssessment.get(nc.thrass);
+		ta = Assessment.get(nc.assmnt);
 		if (
-			(ThreatAssessment.valueindex[ta.total]>=ThreatAssessment.valueindex[MinValue] && ThreatAssessment.valueindex[ta.total]<ThreatAssessment.valueindex['X'])
+			(Assessment.valueindex[ta.total]>=Assessment.valueindex[MinValue] && Assessment.valueindex[ta.total]<Assessment.valueindex['X'])
 			||
-			(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
+			(Assessment.valueindex[ta.total]==Assessment.valueindex['X'] && $('#incX').attr('checked')=='checked')
 			||
-			(ThreatAssessment.valueindex[ta.total]==ThreatAssessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
+			(Assessment.valueindex[ta.total]==Assessment.valueindex['A'] && $('#incA').attr('checked')=='checked')
 		) {
 			var r = NodeCluster.get(nc.root());
 			matches.push({
 				ta: r.title,
 				cm: (nc.isroot() ? _("All nodes") : nc.title),
 				ccf: true,
-				qw: (exclCl.indexOf(nc.id+'_0')>=0),
-				v: ThreatAssessment.valueindex[ta.total]
+				qw: (exclCl.indexOf(nc.id)>=0),
+				v: Assessment.valueindex[ta.total]
 			});
 		}
 	}
 	matches.sort( function(a,b) {
 		// A(mbiguous) is the highest
-		if (a.v==ThreatAssessment.valueindex['A']) {
-			if (b.v==ThreatAssessment.valueindex['A'])  return 0;
+		if (a.v==Assessment.valueindex['A']) {
+			if (b.v==Assessment.valueindex['A'])  return 0;
 			else return 1;
 		}
-		if (b.v==ThreatAssessment.valueindex['A']) {
+		if (b.v==Assessment.valueindex['A']) {
 			return -1;
 		}
 		// Neither A nor B is A(mbiguous). We can compare by valueindex
@@ -6190,12 +6552,11 @@ function listSelectedRisks() {
 	var lastV = null;
 	var lastQW = null;
 	var count = [];
-	for (i=0; i<matches.length; i++) {
-		var m = matches[i];
+	for (const m of matches) {
 		if (m.v!=lastV || m.qw!=lastQW) {
 			if (snippet!='') snippet+='<br>\n';
-			snippet += '<b>' + H(ThreatAssessment.descr[m.v]) +
-				(m.qw ? ' ' + _("(quick wins)") : '')+
+			snippet += '<b>' + H(Assessment.descr[m.v]) +
+				(m.qw ? ' ' + _H("(quick wins)") : '')+
 				'</b><br>\n';
 			lastV = m.v;
 			lastQW = m.qw;
@@ -6205,43 +6566,32 @@ function listSelectedRisks() {
 		snippet +=
 			H(m.cm) +
 			' <span style="color: grey;">' +
-			(m.ccf ? _("and common cause risk") : _("and risk")) +
+			(m.ccf ? _H("and common cause risk") : _H("and risk")) +
 			'</span> ' +
 			H(m.ta) +
 			'<br>\n';
 	}
 	// Add a line with subtotals and totals to the front of the snippet.
 	var head = '';
-	for (i=ThreatAssessment.valueindex['A']; i<=ThreatAssessment.valueindex['X']; i++) {
+	for (let i=Assessment.valueindex['A']; i<=Assessment.valueindex['X']; i++) {
 		if (!count[i]) continue;
 		if (head=='') {
 			head += '(';
 		} else {
 			head += ', ';
 		}
-		head += count[i] + ' ' + H(ThreatAssessment.descr[i]);
+		head += count[i] + ' ' + H(Assessment.descr[i]);
 	}
 	if (head!='') {
 		head += ')';
 	}
 
 	var total = 0;
-	for (i=0; i<count.length; i++) {
-		total += (count[i] ? count[i] : 0);
-	}
-	head = _("Number of risks on longlist:") + ' ' + total + ' '+ head;
+	for (const c of count) total += (c ? c : 0);
+	head = _H("Number of risks on longlist:") + ' ' + total + ' '+ head;
 	head += '<br>\n';
 
 	return head + '<br>' + snippet;
-}
-
-/* H: make a string safe to use inside HTML code
- *
- * This function should be further up in this source file, but XCode fails to properly parse the
- * complex regex properly. Therefore included as last.
- */
-function H(str) {
-	return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 

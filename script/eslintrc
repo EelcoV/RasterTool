@@ -11,7 +11,7 @@
 		"SharedArrayBuffer": "readonly"
 	},
 	"parserOptions": {
-		"ecmaVersion": 2018,
+		"ecmaVersion": 6,
 		"sourceType": "module"
 	},
 	"rules": {
@@ -19,12 +19,12 @@
 		"semi": ["error","always"],
 		"consistent-return": ["error"],
 		"curly": ["error", "multi-line"],
-		"no-mixed-spaces-and-tabs": ["warn"],
+		"no-mixed-spaces-and-tabs": ["off"],
 		"no-unused-vars": ["warn", {"args": "after-used"}],
 		"no-useless-return": ["warn"],
 		"brace-style": ["warn", "1tbs", {"allowSingleLine": true}],
 		"no-bitwise": ["error"],
-		"no-lonely-if": ["warn"],
+		"no-lonely-if": ["off"],
 		"no-negated-condition": ["off"],
 		"comma-dangle": ["error", {
 			"arrays": "never",
@@ -32,6 +32,7 @@
 			"imports": "never",
 			"exports": "never",
 			"functions": "never"
-		}]
+		}],
+		"guard-for-in": ["error"]
 	}
 }

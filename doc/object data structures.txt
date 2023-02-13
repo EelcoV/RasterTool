@@ -1,0 +1,135 @@
+Raster File and LocalStorage Description
+========================================
+
+Raster project files (and LocalStorage) consist of lines with a key and a value. Both are strings.
+In project files there is a tab between key and value, and a newline after the value.
+
+The key looks like "raster:«num»:«char»:«id»"
+«num»	Version number. Version 0 is not in use anymore. Versions 1, 2, 3, 4 can be read (4 is the latest).
+«char»	A single uppercase character indicating the type of object.
+«id»	The id of the object (integer in version<=2, or a UUID in version>=3).
+The preferences always has «id»=="0"
+
+The value is a JSON object with properties that are single lowercase letters. Properties differ for each object type.
+The table shows the correspondence between properties in data files and object properties in the ECMAScript code.
+Unknown properties are silently discarded.
+
+Version 0:	pre-beta, unsupported.
+Version 1:	Oldest supported version.
+Version 2:	Names are case-insensitive, adds an additional label (pink).
+Version 3:	Changed from integer IDs to UUIDs.
+Version 4:	Replaced Threat and ThreatAssessment by Vulnerability and Assessment. All Assessments have a
+			corresponding Vulnerability (whereas custom vulnerabilities had ThreatAssessments but no Threat).
+			Previously, Project.threats[] contained the full list of all Threats; as of version 4 Project.vulns[]
+			contains only vulnerabilities with Vulnerability.common==true.
+			Added iconset, wpa to Project, index to Node.
+
+In the table below, types are one of 'tWLS', 'tWRD', 'tEQT', 'tUNK', 'tACT', 'tNOT'.
+Standing for respectively wireless links, wired links, equipment, unknown links, actors, notes.
+
+
+Property		setter					prop.	Reference		Comment
+--------------  ----------------------  ------  --------------  -----------------------
+P: Project
+.id				creator(p.id)									changed in version 3
+.title			settitle(str)			.l
+.group			create only				.g
+.shared			shared(bool)			.a
+.description	setdescription(str)		.d
+.date			setdate(d)				.w 						when = date
+.services[i]	addservice(s.id,title)	.s		[Service]
+.threats[i]		(internal)				.t  	[Threat]		version<=3, careful: 't' is also used for 'type'
+.vulns[i]		(internal)				.t  	[Vulnerability]	version>=4, careful: 't' is also used for 'type'
+.labels[i]		(internal)				.c						extra label for version>=2
+.iconset		seticonset(str)			.i						version>=4
+.wpa			setwpa(str)				.q						version>=4: worst plausible attacker
+-				-						.r		Transaction		version>=4, current transaction in undo-list
+
+T: Threat 														version<=3, removed in version 4
+.id				creator(p.id,type,th.id)						changed in version 3
+.project		setproject(p.id)		.p		Project
+.type			creator(type,th.id)		.t
+.title			settitle(str)			.l
+.description	setdescription(str)		.d
+
+V: Vulnerability 												version>=4, added in version 4
+.id				creator(pid,type,vid)
+.project		creator(pid,type,vid)	.p		Project
+.type			creator(pid,type,vid)	.t
+.title			settitle(str)			.l
+.description	setdescription(str)		.d
+.common			setcommon(b)			.c
+.malice			setmalice(b)			.m						true->'malicous', false->'natural'
+
+S: Service
+.id				creator(s.id)									changed in version 3
+.title			settitle(str)			.l						case-insensitive for version>=2
+.project		setproject(p.id)		.p		Project
+
+N: Node
+.id				creator(type,n.id)								changed in version 3
+.type			creator(type,n.id)		.t
+.title			various					.l						case-insensitive for version>=2
+.suffix			various					.f
+.service		Service.cid				.s		Service
+.component		setcomponent(ct.id)		.m		Component
+.position.x		setposition(x,y)		.x
+.position.y		setposition(x,y)		.y
+.position.width	   (internal)			.w
+.position.height   (internal)			.h
+._normw			(internal)				.v						version<4, from 4 onwards value is derived from iconset
+._normh			(internal)				.g						version<4, from 4 onwards value is derived from iconset
+.connect[]		(internal)				.c		[Node]
+.color			setlabel(c)				.o
+.icon			iconinit(idx)			.i						version>=4
+
+C: Component
+.id				creator(type,ct.id)								changed in version 3
+.type			creator(type,n.id)		.t
+.project		setproject(p.id)		.p		Project
+.thrass[]		(internal)				.e		[ThreatAssessment]  for version<4
+.assmnt[]		(internal)				.e		[Assessment]	for version>=4
+.title			settitle(str)			.l
+.nodes[]		addnode(n.id)			.n		[Node]
+.single			setsingle				.s
+.accordionopened setaccordionopened(b)	.o
+
+L: NodeCluster	creator(type,cl.id)
+.id																changed in version 3
+.type									.t
+.title									.l						case-insensitive for version>1
+.project								.p		Project
+.parentcluster							.u		NodeCluster		u = up
+.childclusters[]						.c		[NodeCluster]	c = child
+.childnodes[]							.n		[Node]			n = nodes
+.thrass									.e		ThreatAssessment  for version<4
+.assmnt									.e		Assessment		for version>=4
+.accordionopened setaccordionopened(b)	.o
+
+E: ThreatAssessment (used to be ThreatEvaluation)
+.id				creator(type,te.id)								changed in version 3
+.type			creator(type,te.id)		.t
+.component		setcomponent(n.id)		.m		Component
+.cluster		setcluster(f.id)		.u		NodeCluster
+.title			settitle(str)			.l
+.freq			setfreq(str)			.p
+.impact			setimpact(str)			.i
+.remark			setremark(str)			.r
+
+A: Assessment 													version>=4, added in version 4
+.id				creator(type,as.id)
+.type			creator(type,as.id)		.t
+.vulnerability	setvulnerability(vid)	.v		Vulnerability
+.component		setcomponent(n.id)		.m		Component
+.cluster		setcluster(f.id)		.u		NodeCluster
+._title			settitle(str)			.l
+.freq			setfreq(str)			.p
+.impact			setimpact(str)			.i
+.remark			setremark(str)			.r
+
+R: RasterPreferences											key always has id "0"
+.emsize			"em_none", "em_small", "em_large"
+.tab			0..3
+.creator		"name of creator"
+
+Transactions are not saved in project files, and therefore not explained here.

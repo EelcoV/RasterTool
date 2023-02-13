@@ -24,7 +24,7 @@ var appMenu;
 /* Labels and Vulnlevels are set in the main process, and sent to the Renderer using
  *   win.webContents.send('options', kind, value)
  * PDF options are set in the Renderer, and sent to the main process using
- *   ipc.on('pdfoption-modified', handler)
+ *   ipc.on('option-modified', handler)
  * Updates are checked in CheckForUpdate()
  */
 const DefaultRasterOptions = {
@@ -32,6 +32,8 @@ const DefaultRasterOptions = {
 	labels: true,
 	// 0 = none, 1 = small, 2 = large
 	vulnlevel: 2,
+	// true = show, false = hide
+	minimap: true,
 	// 0 = portrait, 1 = landscape
 	pdforientation: 1,
 	// 3 = A3, 4 = A4
@@ -41,7 +43,9 @@ const DefaultRasterOptions = {
 	// datetime of last successful check for updates
 	updatechecktime: 0,
 	// Hardware acceleration: there is no UI for this (must edit preference file by hand!)
-	disablehardwareacceleration: true
+	disablehardwareacceleration: true,
+	// Default iconsets installed
+	iconsets: ['Default','Classic']
 };
 
 const prefsDir = app.getPath('userData');
@@ -75,16 +79,16 @@ function createWindow(filename) {
 	// Create the browser window.
 	var win = new BrowserWindow({
 		webPreferences: {
-			/* Node integration is disabled by default since 5.0.0. Because we do ipc-calls from within almost
-			 * all Raster objects, simply preloading the ipc-calls from a separate Javascript file is not
-			 * feasible. We *know* that we only load our own scripts, so Node integration should not pose a danger.
+			/* Node integration is disabled by default since 5.0.0. Context isolation is enabled since 12.0.0.
+			 * We *know* that we only load local scripts, so Node integration should not pose a danger.
 			 */
-			nodeIntegration: true
+			nodeIntegration: true,
+			contextIsolation: false
 		},
 		x: pos.x,
 		y: pos.y,
-		width: 1500, // Need more width for split-view CCFs
-		height: 600,
+		width: 1400, // Need more width for split-view CCFs
+		height: 650,
 		show: false
 	});
 	Win[win.id] = win;
@@ -102,6 +106,7 @@ function createWindow(filename) {
 
 	win.once('ready-to-show', function()  {
 		win.webContents.send('window-id',win.id);
+		win.webContents.send('prefs-dir',prefsDir);
 		if (filename) {
 			ReadFileAndLoad(win,filename);
 		} else {
@@ -109,6 +114,7 @@ function createWindow(filename) {
 		}
 		win.webContents.send('options', 'labels', app.rasteroptions.labels);
 		win.webContents.send('options', 'vulnlevel', app.rasteroptions.vulnlevel);
+		win.webContents.send('options', 'iconsets', JSON.stringify(app.rasteroptions.iconsets));
 		EnableMenuItems(true);
 		win.show();
 		CheckForUpdates(win);
@@ -123,31 +129,6 @@ function createWindow(filename) {
 		}
 	});
 }
-/* This workaround was made unnecessary in August 2018.
- * See https://github.com/electron/libchromiumcontent/pull/503
-
-function ForceWindowRepaint() {
-	// At least on "plain" Windows (e.g. without Aero desktop effects enabled), the window is not
-	// always repainted. For example, when saving a new project the project name is not painted
-	// in the title bar until the window is obscured and brought forward again.
-	// This stupid hack seems to force a refresh.
-	// See https://github.com/electron/electron/issues/1821
-
-	if (process.platform!="win32") return;
-
-	var win = BrowserWindow.getFocusedWindow();
-	if (!win) return;
-	var wasMaximized = win.isMaximized();
-	var bounds = win.getBounds();
-
-	win.setSize(bounds.width - 1, bounds.height - 1);
-	if (wasMaximized) {
-		win.maximize();
-	} else {
-		win.setSize(bounds.width, bounds.height);
-	}
-}
-*/
 
 function ReadFileAndLoad(win,filename) {
 	try {
@@ -188,14 +169,16 @@ function checkSaveModifiedDocument(win) {
 
 	var buttonval = dialog.showMessageBoxSync(win, {
 		type: 'warning',
-		buttons: [_("Cancel"), _("Discard changes")],
+		buttons: [_("Cancel"), _("Discard changes"), _("Save changes")],
 		cancelID: 0,
-		defaultId: 0,
+		defaultId: 2,
 		title: _("Discard all changes?"),
-		message: _("There are unsaved changes. If you continue those will be lost."),
-		detail: _("Cancel to save changes.")
+		message: _("There are unsaved changes. If you continue those will be lost.")
 	});
-	return (buttonval != 0);
+	if (buttonval==2) {
+		win.webContents.send('document-finalsave');
+	}
+	return (buttonval==1);
 }
 
 function doSaveAs(win,str) {
@@ -257,16 +240,14 @@ function doNew() {
 }
 
 function tryClose(win) {
-	if (!checkSaveModifiedDocument(win)) {
-		return;
-	} else {
+	if (checkSaveModifiedDocument(win)) {
 		// Allow garbage collection to remove the window
 		delete Win[win.id];
 		win.close();
 	}
 }
 
-function doPrint(win) {
+function doSaveAsPDF(win) {
 	var filename = dialog.showSaveDialogSync(win, {
 		title: _("Save as PDF"),
 		filters: [{
@@ -277,39 +258,66 @@ function doPrint(win) {
 	});
 	if (!filename) return;
 
-	win.webContents.setZoomFactor(app.rasteroptions.pdfscale/100.0);
-	setTimeout(function() {
-		win.webContents.printToPDF({
-			pageSize: (app.rasteroptions.pdfsize==3 ? 'A3' : 'A4'),
-			landscape: (app.rasteroptions.pdforientation==1),
-			printBackground: true
-		}, function(error, data) {
-			win.webContents.setZoomFactor(1.0);
-			if (error) {
-				dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
-				return;
-			}
-			try {
-				fs.writeFileSync(filename, data);
-			}
-			catch (e) {
-				dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
-			}
-		});
-	}, 200);
+	win.webContents.printToPDF({
+		pageSize: (app.rasteroptions.pdfsize==3 ? 'A3' : 'A4'),
+		landscape: (app.rasteroptions.pdforientation==1),
+		scaleFactor: app.rasteroptions.pdfscale,
+		marginsType: 2, // minimum margins
+		printBackground: true
+	})
+	.then(data => {
+		try {
+			fs.writeFileSync(filename, data);
+		} catch (error) {
+			dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
+		}
+	})
+	.catch(error => {
+		dialog.showErrorBox(_("File was not saved"), _("System notification:") +"\n"+error);
+	});
+}
+
+function doPrint(win) {
+	win.webContents.print({
+		printBackground: true
+	}, (success, errorType) => {
+		if (!success && errorType!='cancelled') dialog.showErrorBox(_("An error occurred while printing"), _("System notification:") +"\n"+errorType);
+	});
 }
 
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-function debug(msg) {
-	dialog.showErrorBox("Debug information", msg);
+//function debug(msg) {
+//	dialog.showErrorBox("Debug information", msg);
+//}
+
+function EnableViewRadio(menu,val)  {
+	var menuitems = Menu.getApplicationMenu().items;
+	let viewm = menuitems[(process.platform=='darwin' ? 3 : 2)].submenu.items;
+	let subm = viewm[menu].submenu.items;
+	let i;
+
+	switch (menu) {
+	case 0:		// Labels
+		subm[val?0:1].checked = true;
+		break;
+	case 1:		// Vulnerability levels
+		if (val==1) i=0;
+		if (val==2) i=1;
+		if (val==0) i=2;
+		subm[i].checked = true;
+		break;
+	case 2:		// Mini-map
+		subm[val?0:1].checked = true;
+		break;
+	}
 }
 
 function EnableMenuItems(val)  {
 	if (process.platform !== 'darwin')  return;
 	// MacOS. Grey out the several menu items when no windows are open
-	var menuitems = Menu.getApplicationMenu().items;
+	var menuitems = Menu.getApplicationMenu().items; // Deprecated
 	var fileMenu = menuitems[1].submenu.items;
 	fileMenu[2].enabled = val;
 	fileMenu[3].enabled = val;
@@ -317,18 +325,10 @@ function EnableMenuItems(val)  {
 	fileMenu[5].enabled = val;
 	fileMenu[6].enabled = val;
 	var viewMenu = menuitems[3].submenu.items;
-	viewMenu[0].enabled = val;
-	viewMenu[1].enabled = val;
-	viewMenu[3].enabled = val;
 	viewMenu[4].enabled = val;
 	viewMenu[5].enabled = val;
 	viewMenu[7].enabled = val;
 	viewMenu[8].enabled = val;
-	viewMenu[9].submenu.items[0].enabled = val;
-	viewMenu[9].submenu.items[1].enabled = val;
-	viewMenu[9].submenu.items[2].enabled = val;
-	viewMenu[10].enabled = val;
-	viewMenu[12].enabled = val;
 	var helpMenu = menuitems[5].submenu.items;
 	helpMenu[0].enabled = val;
 }
@@ -336,8 +336,8 @@ function EnableMenuItems(val)  {
 function AllWindowsSetLabels(val) {
 	app.rasteroptions.labels = val;
 	var allwins = BrowserWindow.getAllWindows();
-	for (var i=0; i<allwins.length; i++) {
-		allwins[i].webContents.send('options', 'labels', val);
+	for (const win of allwins) {
+		win.webContents.send('options', 'labels', val);
 	}
 	SavePreferences();
 }
@@ -345,17 +345,25 @@ function AllWindowsSetLabels(val) {
 function AllWindowsSetVulnlevel(val) {
 	app.rasteroptions.vulnlevel = val;
 	var allwins = BrowserWindow.getAllWindows();
-	for (var i=0; i<allwins.length; i++) {
-		allwins[i].webContents.send('options', 'vulnlevel', val);
+	for (const win of allwins) {
+		win.webContents.send('options', 'vulnlevel', val);
+	}
+	SavePreferences();
+}
+
+function AllWindowsSetMinimap(val) {
+	app.rasteroptions.minimap = val;
+	var allwins = BrowserWindow.getAllWindows();
+	for (const win of allwins) {
+		win.webContents.send('options', 'minimap', val);
 	}
 	SavePreferences();
 }
 
 function SavePreferences(/*win*/) {
 	try {
-		fs.writeFileSync(prefsFile, JSON.stringify(app.rasteroptions));
-	}
-	catch (e) {
+		fs.writeFileSync(prefsFile, JSON.stringify(app.rasteroptions,null,'\t'));
+	} catch (e) {
 		// ignore silently
 	}
 }
@@ -412,11 +420,23 @@ function CheckForUpdates(win) {
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-ipc.on('pdfoption-modified', function(event,id,opt,val) {
+ipc.on('option-modified', function(event,id,opt,val) {
 	var win = BrowserWindow.fromId(id);
 	if (!win)  return;
 
 	switch (opt) {
+	case 'labels':
+		app.rasteroptions.labels = val;
+		EnableViewRadio(0,val);
+		break;
+	case 'vulnlevel':
+		app.rasteroptions.vulnlevel = val;
+		EnableViewRadio(1,val);
+		break;
+	case 'minimap':
+		app.rasteroptions.minimap = val;
+		EnableViewRadio(2,val);
+		break;
 	case 'pdforientation':
 		app.rasteroptions.pdforientation = val;
 		break;
@@ -432,9 +452,18 @@ ipc.on('pdfoption-modified', function(event,id,opt,val) {
 	SavePreferences(win);
 });
 
+ipc.on('document-new', function(/*event,id*/) {
+	doNew();
+});
+
+ipc.on('document-import', function(/*event,id*/) {
+	doOpen(null);
+});
+
 ipc.on('document-modified', function(event,id) {
-	var win = BrowserWindow.fromId(id);
-	if (!win)  return;
+	if (!id) return;
+	let win = BrowserWindow.fromId(id);
+	if (!win) return;
 
 	win.documentIsModified = true;
 	win.setDocumentEdited(true);
@@ -447,11 +476,26 @@ ipc.on('document-save', function(event,id,str) {
 	doSave(win,str);
 });
 
+ipc.on('document-save-then-close', function(event,id,str) {
+	var win = BrowserWindow.fromId(id);
+	if (!win)  return;
+
+	doSave(win,str);
+	win.close();
+});
+
 ipc.on('document-saveas', function(event,id,str) {
 	var win = BrowserWindow.fromId(id);
 	if (!win)  return;
 	
 	doSaveAs(win,str);
+});
+
+ipc.on('do-saveaspdf', function(event,id) {
+	var win = BrowserWindow.fromId(id);
+	if (!win)  return;
+	
+	doSaveAsPDF(win);
 });
 
 // This method will be called when Electron has finished initialization and is ready to create browser windows.
@@ -505,8 +549,7 @@ app.on('web-contents-created', function(event, contents) {
 // Create a directory to store preferences in
 try {
 	fs.mkdirSync(prefsDir);
-}
-catch (e) {
+} catch (e) {
 	// Ignore silently
 }
 
@@ -525,8 +568,7 @@ try {
 			app.rasteroptions[key] = raw_pref[key];
 		}
 	});
-}
-catch (e) {
+} catch (e) {
 	// ignore silently
 }
 
@@ -575,10 +617,13 @@ MenuTemplate = [{
 	}, {
 		type: 'separator'
 	}, {
-		label: _("PDF settings..."),
-		click: function (item, focusedWindow) { doOpen(focusedWindow); }
+		label: _("Save as PDF..."),
+		accelerator: 'Shift+CmdOrCtrl+P',
+		click: function (item, focusedWindow) {
+			if (focusedWindow) focusedWindow.webContents.send('pdf-settings-show',app.rasteroptions);
+		}
 	}, {
-		label: _("Save as PDF"),
+		label: _("Print"),
 		accelerator: 'CmdOrCtrl+P',
 		click: function (item, focusedWindow) {
 			if (focusedWindow) doPrint(focusedWindow);
@@ -593,10 +638,14 @@ MenuTemplate = [{
 	label: _("Edit"),
 	submenu: [{
 		label: _("Undo"),
-		role: 'undo'
+//		role: 'undo',
+		accelerator: 'CmdOrCtrl+Z',
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('edit-undo'); }
 	}, {
 		label: _("Redo"),
-		role: 'redo'
+//		role: 'redo',
+		accelerator: 'Shift+CmdOrCtrl+Z',
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('edit-redo'); }
 	}, {
 		type: 'separator'
 	}, {
@@ -615,48 +664,83 @@ MenuTemplate = [{
 }, {
 	label: _("View"),
 	submenu: [{
-		label: _("Show labels"),
-		type: 'radio',
-		checked: (app.rasteroptions.labels==true),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetLabels(true);
-		}
+		label: _("Labels"),
+		submenu: [
+			{
+				label: _("Show labels"),
+				type: 'radio',
+				checked: (app.rasteroptions.labels==true),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetLabels(true);
+				}
+			}, {
+				label: _("Hide labels"),
+				type: 'radio',
+				checked: (app.rasteroptions.labels==false),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetLabels(false);
+				}
+			}
+		]
+	},{
+		label: _("Vulnerability levels"),
+		submenu: [
+			{
+				label: _("Small vulnerability levels"),
+				type: 'radio',
+				checked: (app.rasteroptions.vulnlevel==1),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetVulnlevel(1);
+				}
+			}, {
+				label: _("Large vulnerability levels"),
+				type: 'radio',
+				checked: (app.rasteroptions.vulnlevel==2),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetVulnlevel(2);
+				}
+			}, {
+				label: _("No vulnerability levels"),
+				type: 'radio',
+				checked: (app.rasteroptions.vulnlevel==0),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetVulnlevel(0);
+				}
+			}
+		]
 	}, {
-		label: _("Hide labels"),
-		type: 'radio',
-		checked: (app.rasteroptions.labels==false),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetLabels(false);
-		}
-	}, {
-		type: 'separator'
-	}, {
-		label: _("Small vulnerability levels"),
-		type: 'radio',
-		checked: (app.rasteroptions.vulnlevel==1),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetVulnlevel(1);
-		}
-	}, {
-		label: _("Large vulnerability levels"),
-		type: 'radio',
-		checked: (app.rasteroptions.vulnlevel==2),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetVulnlevel(2);
-		}
-	}, {
-		label: _("No vulnerability levels"),
-		type: 'radio',
-		checked: (app.rasteroptions.vulnlevel==0),
-		click: function (/*item, focusedWindow*/) {
-			AllWindowsSetVulnlevel(0);
-		}
-	}, {
+		label: _("Mini-map"),
+		submenu: [
+			{
+				label: _("Show mini-map"),
+				type: 'radio',
+				checked: (app.rasteroptions.labels==true),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetMinimap(true);
+				}
+			}, {
+				label: _("Hide mini-map"),
+				type: 'radio',
+				checked: (app.rasteroptions.labels==false),
+				click: function (/*item, focusedWindow*/) {
+					AllWindowsSetMinimap(false);
+				}
+			}
+		]
+	},{
 		type: 'separator'
 	}, {
 		label: _("Find nodes..."),
 		accelerator: 'CmdOrCtrl+F',
 		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('find-show'); }
+	}, {
+		label: _("Edit labels..."),
+		accelerator: 'CmdOrCtrl+L',
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('labeledit-show'); }
+	}, {
+		label: _("Project details..."),
+		accelerator: 'Shift+CmdOrCtrl+D',
+		click: function (item, focusedWindow) {	if (focusedWindow) focusedWindow.webContents.send('props-show'); }
 	}, {
 		type: 'separator'
 	}, {
