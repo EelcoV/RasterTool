@@ -450,6 +450,30 @@ function initAllAndSetup() {
 			evt.preventDefault();
 			return;	// eslint-disable-line no-useless-return
 		}
+		// Cmd-L for MacOS or Ctrl-L for Windows: to show Label editor
+		if ((evt.ctrlKey || evt.metaKey) && !evt.shiftKey && evt.key=='l') {
+			// Make sure no element has focus, to not interfere with text editing
+			simulateClick('#buttlabels');
+			evt.preventDefault();
+			return;
+		}
+		// tab: cycle the toolbars
+		if (!evt.ctrlKey && !evt.metaKey && !evt.shiftKey && evt.key=='Tab') {
+			// Make sure no element has focus, to not interfere with text editing
+			switch ($('#toolbars').tabs('option','active')) {
+			case TabTBProjects:
+				$('#toolbars').tabs('option','active',TabTBHome);
+				break;
+			case TabTBHome:
+				$('#toolbars').tabs('option','active',TabTBSettings);
+				break;
+			case TabTBSettings:
+				$('#toolbars').tabs('option','active',TabTBProjects);
+				break;
+			}
+			evt.preventDefault();
+			return;	// eslint-disable-line no-useless-return
+		}
 //		console.log("key pressed: "
 //			+ (evt.metaKey ? "Cmd-" : "")
 //			+ (evt.ctrlKey ? "Ctrl-" : "")
