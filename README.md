@@ -18,5 +18,3 @@ Depending on your installation type these documentation files may not be present
 
 Copyright (C) Eelco Vriezekolk, Universiteit Twente, Agentschap Telecom.
 See LICENSE.md
-
-* see `doc/Project groups.md` for instructions on configuring the server (intranet) version.
