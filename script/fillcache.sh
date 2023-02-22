@@ -16,9 +16,9 @@ if [ ! -f electron-v$ELECTRONVERSION-darwin-arm64.zip ]; then
 	curl -s -S -O -L https://github.com/electron/electron/releases/download/v$ELECTRONVERSION/electron-v$ELECTRONVERSION-darwin-arm64.zip &
 fi
 
-if [ ! -f electron-v$ELECTRONVERSION-win32-ia32.zip ]; then
-	curl -s -S -O -L https://github.com/electron/electron/releases/download/v$ELECTRONVERSION/electron-v$ELECTRONVERSION-win32-ia32.zip &
-fi
+#if [ ! -f electron-v$ELECTRONVERSION-win32-ia32.zip ]; then
+#	curl -s -S -O -L https://github.com/electron/electron/releases/download/v$ELECTRONVERSION/electron-v$ELECTRONVERSION-win32-ia32.zip &
+#fi
 
 if [ ! -f electron-v$ELECTRONVERSION-win32-x64.zip ]; then
 	curl -s -S -O -L https://github.com/electron/electron/releases/download/v$ELECTRONVERSION/electron-v$ELECTRONVERSION-win32-x64.zip &
