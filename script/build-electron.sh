@@ -284,7 +284,7 @@ CreateAll()
 	CreateAppVersion $RLANG
 	CreateMacOSVersion $RLANG arm64
 	CreateMacOSVersion $RLANG x64
-	CreateWin32Version $RLANG ia32
+	#CreateWin32Version $RLANG ia32
 	CreateWin32Version $RLANG x64
 #	rm -fr $BUILDDIR
 }
