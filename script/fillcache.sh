@@ -32,7 +32,8 @@ if [ ! -d 7z ]; then
 	unzip -q ../script/7z.zip &
 fi
 
-if [ script/electron.iconset -nt cache/raster.icns ]; then
+cd ..
+if [ ! -f cache/raster.icns -o script/electron.iconset -nt cache/raster.icns ]; then
 	iconutil --convert icns --output cache/raster.icns script/electron.iconset &
 fi
 
