@@ -21,7 +21,7 @@ Not sure about modules yet. First check whether they impede debugging in the Dev
 
 ##  Other style issues
 * Do *not* create new strings, arrays as objects (`new String('literal here)` etc).
-* Avoid use of falsy/thruthy conditions, as it leads to bugs. Do not use `if (!id) ...` but use `if (id==null) ...` instead. There is no `eslint` rule for this, unfortunately. We have seen many bugs where the variable was not an object reference but an integer with zero as a legitimate value. 
+* **Avoid use of falsy/thruthy conditions,** as it leads to bugs. Do not use `if (!id) ...` but use `if (id==null) ...` instead. There is no `eslint` rule for this, unfortunately. We have seen many bugs where the variable was not an object reference but an integer with zero as a legitimate value. Also if an object has a boolen property that may or may not exist `if (obj.prop)` may give unexpected results.
 
 ##  Naming
 

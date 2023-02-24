@@ -6,12 +6,12 @@
 # These three must be integers
 !define VERSIONMAJOR 4
 !define VERSIONMINOR 0
-!define VERSIONBUILD 0
+!define VERSIONBUILD 1
 # The definition below must match the definition in Versions.sh
-!define RASTERNUMVERSION "4.0"
+!define RASTERNUMVERSION "4.0.1"
 
 # This is the size (in kB) of all the files copied into "Program Files"
-!define INSTALLSIZE 134000
+!define INSTALLSIZE 230000
 
 BrandingText "Raster"
 
@@ -37,7 +37,7 @@ Page instfiles
 UserInfo::GetAccountType
 pop $0
 ${If} $0 != "admin" ;Require admin rights on NT4+
-        messageBox mb_iconstop "Beheerders-rechten nodig!"
+        messageBox mb_iconstop "Beheerders-rechten nodig."
         setErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
         quit
 ${EndIf}

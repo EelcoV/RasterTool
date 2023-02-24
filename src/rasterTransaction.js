@@ -8,7 +8,7 @@ saveThenStartWatching,
 #else
 setModified,
 #endif
-_, _H, Assessment, AssessmentIterator, bugreport, checkForErrors, Component, createUUID, CurrentCluster, escapeNewlines, exportProject, H, lengthy, nid2id, NodeCluster, NodeClusterIterator, PaintAllClusters, paintSingleFailures, Preferences, Project, randomrot, rasterAlert, RefreshNodeReportDialog, repaintAnalysisIfVisible, repaintCCFDetailsIfVisible, repaintCluster, repaintClusterDetails, Service, startWatching, stopWatching, TabAnaNodeCounts, TabAnaVulnOverview, urlEncode, Vulnerability, VulnerabilityIterator
+_, _H, Assessment, AssessmentIterator, bugreport, checkForErrors, Component, createUUID, CurrentCluster, escapeNewlines, exportProject, H, lengthy, nid2id, NodeCluster, NodeClusterIterator, PaintAllClusters, paintSingleFailures, Preferences, Project, randomrot, rasterAlert, refreshComponentThreatAssessmentsDialog, RefreshNodeReportDialog, repaintAnalysisIfVisible, repaintCCFDetailsIfVisible, repaintCluster, repaintClusterDetails, Service, startWatching, stopWatching, TabAnaNodeCounts, TabAnaVulnOverview, urlEncode, Vulnerability, VulnerabilityIterator
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1004,12 +1004,12 @@ Transaction.prototype = {
 					nc.settitle(d.title);
 				}
 				refreshChecklistsDialog(vln.type);
-//				refreshComponentThreatAssessmentsDialog();
+				refreshComponentThreatAssessmentsDialog();
 				// Repaint each component in which this vulnerability appears
 				let it = new AssessmentIterator({vuln: d.vuln});
 				for (const a of it) {
 					if (!a.component) continue;
-					Component.get(a.component).repaint();
+					Component.get(a.component).updatevuln(d);
 				}
 			}
 			PaintAllClusters(); // Since the sort order may have changed, repaint everything; this is slow :-(

@@ -452,12 +452,12 @@ Assessment.prototype = {
 		
 		let cbs = $(`#dth_${prefix}mal${this.id}`);
 		let inp = $('input',cbs);
-		inp.checkboxradio({icon: false});
-		$('fieldset',cbs).controlgroup();
 		inp.eq(0).prop('checked',!this.malice);
 		inp.eq(1).prop('checked',this.malice);
-		inp.checkboxradio('option','disabled',true);
-		inp.checkboxradio('refresh');
+		inp.checkboxradio({icon: false, disabled: !interact});
+		$('fieldset',cbs).controlgroup();
+//		inp.checkboxradio('option','disabled',true);
+//		inp.checkboxradio('refresh');
 
 		let selectoptions = '';
 		for (let i=0; i<Assessment.values.length; i++) {
@@ -664,7 +664,7 @@ Assessment.prototype = {
 		});
 	
 		if (interact) {
-			inp.checkboxradio('option','disabled',false);
+//			inp.checkboxradio('option','disabled',false);
 			inp.on('change', function() {
 				let val = $(`#dth_${prefix}mal${assmnt.id} input`).eq(1).prop('checked');
 				new Transaction('vulnDetails',

@@ -4419,6 +4419,7 @@ function paintSingleFailures(s) {
 			}
 		});
 	}
+	$('.malset label').removeClass('ui-corner-left ui-corner-right');
 }
 
 /* This function is called when the head of the accordion for Component is clicked, but before
@@ -4813,6 +4814,7 @@ function PaintAllClusters() {
 		repaintCluster(nc.id);
 	}
 	$('#ccfs_body').append('<br><br>');
+	$('.malset label').removeClass('ui-corner-left ui-corner-right');
 
 	// Show the details of the first open accordion
 	for (const nc of it) {

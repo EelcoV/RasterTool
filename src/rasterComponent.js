@@ -473,6 +473,40 @@ Component.prototype = {
 		$(this._markeroid).html(str);
 	},
 
+	// Update the type, name, description or of a vulnerability for this component
+	// data: object with these properties
+	//	vuln: ID of the Vulnerability to change
+	//	malice: new setting natural/malicious (may be null or absent, indicating no change)
+	//	title: new title (may be null or absent, indicating no change)
+	//	description: new description (may be null or absent, indicating no change)
+	updatevuln: function(data) {
+		let assmt;
+		let svcs = new Set();
+		this.nodes.forEach(nid => svcs.add(Node.get(nid).service));
+		for (const thid of this.assmnt)  {
+			if (Assessment.get(thid).vulnerability==data.vuln) {
+				assmt = thid;
+				break;
+			}
+		}
+		for (const sid of svcs) {
+			let prefix = `sfa${sid}_${this.id}`;
+			if (data.malice!=undefined) {
+				let inp = $(`#dth_${prefix}mal${assmt} input`);
+				inp.eq(0).prop('checked',!data.malice);
+				inp.eq(1).prop('checked',data.malice);
+				inp.checkboxradio('refresh');
+			}
+			if (data.title && data.title!=null) {
+				$(`#dth_${prefix}name${assmt}`).text(data.title);
+			}
+			if (data.description && data.description!=null) {
+				$(`#dth_${prefix}name${assmt}`).attr('title',data.description);
+			}
+		}
+		$('.malset label').removeClass('ui-corner-left ui-corner-right');
+	},
+
 	repaint: function() {
 		// repaint this component for each service in which it occurs
 		let svcs = new Set();
@@ -481,14 +515,14 @@ Component.prototype = {
 			let prefix = `sfa${sid}_${this.id}`;
 			let snippet = "";
 			for (const thid of this.assmnt) snippet += Assessment.get(thid).addtablerow_textonly(prefix) + '\n';
-			$('#sfaccordion'+sid+'_'+this.id+' .sfa_sortable').html(snippet);
+			$(`#sfaccordion${sid}_${this.id} .sfa_sortable`).html(snippet);
 			for (const thid of this.assmnt) Assessment.get(thid).addtablerow_behavioronly(prefix);
 			this.setmarkeroid("#sfamark"+sid+'_'+this.id);
 		}
 		if (this.id==Component.ThreatsComponent) {
 			refreshComponentThreatAssessmentsDialog();
 		}
-		$('.malset label').removeClass('ui-corner-left ui-corner-right');
+//		$('.malset label').removeClass('ui-corner-left ui-corner-right');
 	},
 
 	updateLabelGroup(sid) {
